@@ -1,6 +1,18 @@
 {
   "name": "cookbook",
   "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @cookbook/web",
+    "build": "npm run build -w @cookbook/web",
+    "typecheck": "npm run typecheck -w @cookbook/web",
+    "test": "npm test -w @cookbook/web",
+    "deploy": "npm run deploy -w @cookbook/web",
+    "db:migrate:local": "npm run db:migrate:local -w @cookbook/web",
+    "db:migrate:remote": "npm run db:migrate:remote -w @cookbook/web"
+  },
   "volta": {
     "node": "24.15.0"
   }
