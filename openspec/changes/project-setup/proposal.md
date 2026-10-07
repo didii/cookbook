@@ -6,7 +6,7 @@ The repo is empty apart from a Node version pin, and the family cookbook needs a
 
 ## What Changes
 
-- Add a TypeScript full-stack web app using React Router v7 in framework mode with server-side rendering.
+- Add a TypeScript full-stack web app using React Router (v8, the current release) in framework mode with server-side rendering, in `packages/web` of an npm workspace.
 - Host it on Cloudflare Workers, with the deployment described by a Wrangler config committed to the repo.
 - Bind a D1 (managed SQLite) database and establish SQL migration files in the repo as the way schema changes are made. No tables are created in this change.
 - Put the site behind Cloudflare Access: family members sign in with a one-time code sent to their email, limited to an allowlist of family emails, with no account to create.
@@ -28,7 +28,7 @@ None.
 
 ## Impact
 
-- **Code**: new app source, build configuration, Wrangler config and migrations directory at the repo root; `package.json` gains dependencies and scripts while keeping the existing Node pin.
-- **Dependencies**: React Router v7, Vite, Wrangler and the Cloudflare Vite plugin, plus one small library for verifying signed identity tokens.
+- **Code**: new app source, build configuration, Wrangler config and migrations directory in `packages/web`; the root `package.json` becomes a workspace root with pass-through scripts and keeps the existing Node pin. The unused C# rules are removed from `.gitignore` because they ignore any `packages` folder.
+- **Dependencies**: React Router v8, Vite, Wrangler and the Cloudflare Vite plugin, plus one small library for verifying signed identity tokens.
 - **External systems**: a Cloudflare account with the Zero Trust free plan, a domain managed by Cloudflare, one D1 database, and one Access application with a family email allowlist. The Access application and DNS are configured once in the Cloudflare dashboard, not in code.
 - **Cost**: the domain registration; everything else is expected to stay within free tiers.

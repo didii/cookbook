@@ -1,0 +1,2 @@
+# Copy to .dev.vars. Stands in for the signed-in family member during local development only.
+DEV_USER_EMAIL=you@example.com

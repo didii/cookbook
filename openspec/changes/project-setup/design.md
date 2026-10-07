@@ -25,14 +25,18 @@ The developer knows React well and has no Cloudflare experience, so the design p
 
 ## Decisions
 
-### Scaffold from the official React Router Cloudflare template
+### Scaffold with Cloudflare's React Router starter
 
-Generate the app with `create-react-router` using the `cloudflare` template from `remix-run/react-router-templates`, then merge it into the repo root, keeping the existing Volta pin in `package.json`. The template wires up Vite, the Cloudflare Vite plugin, a Worker entry and typed bindings, which is exactly the part that is easy to get wrong by hand.
+Generate the app with `npm create cloudflare@latest -- --framework=react-router` and merge it into the repo. This produces React Router v8, the current release. The `cloudflare` template that used to live in `remix-run/react-router-templates` has been removed; that repo now points to Cloudflare's guide. The starter wires up Vite, the Cloudflare Vite plugin, a Worker entry and typed bindings, which is exactly the part that is easy to get wrong by hand.
 
-- *Alternative: the `cloudflare-d1` template.* It adds Drizzle ORM. Rejected for now: there are no tables yet, and plain D1 prepared statements are enough until queries get repetitive.
+- *Alternative: adding an ORM such as Drizzle.* Rejected for now: there are no tables yet, and plain D1 prepared statements are enough until queries get repetitive.
 - *Alternative: hand-written setup.* Rejected: more work for the same result.
 
 Use npm as the package manager, since nothing else is installed or configured.
+
+### One workspace package, `packages/web`
+
+The repo is an npm workspace and the whole app (source, Worker entry, migrations, tests, Wrangler and build config) lives in `packages/web` as `@cookbook/web`. The root `package.json` holds the Node pin and pass-through scripts, so `npm run dev`, `npm test` and the rest work from the repo root. No other packages exist yet; shared code gets its own package when a second consumer appears.
 
 ### Wrangler config is the only infrastructure definition
 
@@ -46,7 +50,7 @@ The config sets `workers_dev: false` and `preview_urls: false`. Those Cloudflare
 
 Cloudflare Access attaches a signed JWT to every request it lets through (`Cf-Access-Jwt-Assertion`). A single function establishes identity for a request: it verifies the token's signature against the team's published keys, checks the audience tag and expiry, and returns the email claim, or nothing. It uses the `jose` library for verification.
 
-The function is called in one place that every request passes through (React Router server middleware if stable in the scaffolded version, otherwise the root loader plus the Worker entry), which returns 403 when no identity is established and otherwise exposes the email to loaders.
+The function is called in the Worker entry, which every request to the Worker passes through before React Router sees it. It returns 403 when no identity is established and otherwise hands the email to loaders through a React Router context. The Worker entry was chosen over route middleware because it also covers requests that match no route.
 
 - *Alternative: trust the `Cf-Access-Authenticated-User-Email` header.* Rejected: any request that reaches the Worker by a path Access does not cover could set that header itself. Verifying the signature makes the app safe even if routing is misconfigured.
 - *Alternative: hand-rolled verification with Web Crypto.* Rejected: JWT verification is easy to get subtly wrong, and this is the one security boundary in the app.
@@ -73,7 +77,7 @@ One route renders on the server, queries D1, and shows the signed-in email. It i
 - [Cloudflare's Zero Trust free plan may ask for a payment method] → Known from exploration; the owner confirms at signup.
 - [Access misconfiguration (wrong audience tag or team domain) locks everyone out with 403] → The README lists where each value comes from; the failure is closed, not open.
 - [Fetching the team's signing keys adds a network call] → `jose` caches the key set in memory per Worker instance; cost is one fetch per cold start.
-- [React Router's middleware API may not be stable in the scaffolded version] → Fall back to the Worker entry and root loader; the identity function is the same either way.
+- [`npm audit` reports a high-severity advisory in `sharp`, pulled in by Wrangler's local emulator] → It is a development-only dependency and is not part of the deployed Worker; it clears when Wrangler updates.
 - [Deploying from a laptop means no deploy history beyond git] → Acceptable for one developer; CI can be added without changing anything here.
 
 ## Migration Plan
