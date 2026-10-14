@@ -1,7 +1,7 @@
 /** Shared azulejo pattern definition; render once in the document. */
 export function TileDefs() {
   return (
-    <svg width="0" height="0" aria-hidden="true" focusable="false" style={{ position: "absolute" }}>
+    <svg width="0" height="0" aria-hidden="true" focusable="false" style={{ position: 'absolute' }}>
       <defs>
         <symbol id="wave" viewBox="0 0 300 22" preserveAspectRatio="none">
           <path

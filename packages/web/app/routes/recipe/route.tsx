@@ -1,21 +1,21 @@
-import { Link, data } from "react-router";
+import { Link, data } from 'react-router';
 
-import type { Route } from "./+types/route";
-import { IngredientList } from "./IngredientList";
-import { StepList } from "./StepList";
-import { Wave } from "./Wave";
-import { findRecipe, recipes } from "~/lib/recipes";
-import { tileFor } from "~/lib/tile";
-import { TileBand } from "~/shared/TileBand";
+import type { Route } from './+types/route';
+import { IngredientList } from './IngredientList';
+import { StepList } from './StepList';
+import { Wave } from './Wave';
+import { findRecipe, recipes } from '~/lib/recipes';
+import { tileFor } from '~/lib/tile';
+import { TileBand } from '~/shared/TileBand';
 
 export function loader({ params }: Route.LoaderArgs) {
   const recipe = findRecipe(params.slug);
-  if (!recipe) throw data("Recept niet gevonden", { status: 404 });
+  if (!recipe) throw data('Recept niet gevonden', { status: 404 });
   return { recipe, tile: tileFor(recipes.indexOf(recipe)) };
 }
 
 export function meta({ loaderData }: Route.MetaArgs) {
-  return [{ title: `${loaderData?.recipe.title ?? "Recept"} · Familiekookboek` }];
+  return [{ title: `${loaderData?.recipe.title ?? 'Recept'} · Familiekookboek` }];
 }
 
 export default function Recipe({ loaderData }: Route.ComponentProps) {
@@ -26,9 +26,7 @@ export default function Recipe({ loaderData }: Route.ComponentProps) {
       <Link to="/" className="mb-2 inline-block py-2 font-extrabold underline-offset-[0.25em]">
         ← Alle recepten
       </Link>
-      <h1 className="text-[clamp(2rem,6vw,3.5rem)] leading-[1.05] font-black tracking-[-0.03em] text-balance">
-        {r.title}
-      </h1>
+      <h1 className="text-[clamp(2rem,6vw,3.5rem)] leading-[1.05] font-black tracking-[-0.03em] text-balance">{r.title}</h1>
       <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 font-extrabold">
         <span className="rounded-full border-3 border-ink bg-yel px-3.5 py-0.5">van {r.by}</span>
         <span>{r.time}</span>

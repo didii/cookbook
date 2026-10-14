@@ -1,7 +1,7 @@
-@import "tailwindcss" source(".");
+@import 'tailwindcss' source('.');
 
 @theme {
-  --font-sans: "Mulish", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Mulish', ui-sans-serif, system-ui, sans-serif;
 
   --color-red: #c8281e;
   --color-yel: #f2b705;

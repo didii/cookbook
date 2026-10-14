@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { Link } from 'react-router';
 
 export function Header({ email }: { email: string }) {
   return (

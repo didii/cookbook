@@ -1,7 +1,7 @@
-import { Link } from "react-router";
+import { Link } from 'react-router';
 
-import type { Recipe } from "~/lib/recipes";
-import { TileBand } from "~/shared/TileBand";
+import type { Recipe } from '~/lib/recipes';
+import { TileBand } from '~/shared/TileBand';
 
 type Props = { recipe: Recipe; tile: number; eager?: boolean };
 
@@ -14,7 +14,7 @@ export function RecipeCard({ recipe: r, tile, eager }: Props) {
       <img
         src={r.image}
         alt=""
-        loading={eager ? "eager" : "lazy"}
+        loading={eager ? 'eager' : 'lazy'}
         width="640"
         height="400"
         className="block aspect-16/10 w-full border-b-3 border-ink object-cover"

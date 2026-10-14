@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState } from 'react';
 
-import type { Recipe } from "~/lib/recipes";
+import type { Recipe } from '~/lib/recipes';
 
-type Props = { ingredients: Recipe["ingredients"] };
+type Props = { ingredients: Recipe['ingredients'] };
 
 export function IngredientList({ ingredients }: Props) {
   const [done, setDone] = useState<Set<number>>(new Set());
