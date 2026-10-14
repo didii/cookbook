@@ -1,5 +1,6 @@
 import {
   isRouteErrorResponse,
+  Link,
   Links,
   Meta,
   Outlet,
@@ -9,6 +10,8 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { TileDefs } from "./components";
+import { userEmailContext } from "./context";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -19,13 +22,13 @@ export const links: Route.LinksFunction = () => [
   },
   {
     rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
+    href: "https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;700;800;900&display=swap",
   },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="nl">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -33,6 +36,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
+        <TileDefs />
         {children}
         <ScrollRestoration />
         <Scripts />
@@ -41,20 +45,37 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function App() {
-  return <Outlet />;
+export function loader({ context }: Route.LoaderArgs) {
+  return { email: context.get(userEmailContext) };
+}
+
+export default function App({ loaderData }: Route.ComponentProps) {
+  return (
+    <>
+      <a className="skip" href="#main">
+        Naar de inhoud
+      </a>
+      <header className="top">
+        <Link to="/" className="logo">
+          Familiekookboek
+        </Link>
+        <span className="who">{loaderData.email}</span>
+      </header>
+      <Outlet />
+    </>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let message = "Oops!";
-  let details = "An unexpected error occurred.";
+  let message = "Oeps!";
+  let details = "Er ging iets mis.";
   let stack: string | undefined;
 
   if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? "404" : "Error";
+    message = error.status === 404 ? "404" : "Fout";
     details =
       error.status === 404
-        ? "The requested page could not be found."
+        ? "Deze pagina bestaat niet."
         : error.statusText || details;
   } else if (import.meta.env.DEV && error && error instanceof Error) {
     details = error.message;
@@ -62,7 +83,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   }
 
   return (
-    <main className="pt-16 p-4 container mx-auto">
+    <main className="page">
       <h1>{message}</h1>
       <p>{details}</p>
       {stack && (

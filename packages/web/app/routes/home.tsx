@@ -1,23 +1,34 @@
-import { env } from "cloudflare:workers";
+import { Link } from "react-router";
 
 import type { Route } from "./+types/home";
-import { userEmailContext } from "../context";
+import { TileBand, tileFor } from "../components";
+import { recipes } from "../recipes";
 
 export function meta({}: Route.MetaArgs) {
-  return [{ title: "Cookbook" }];
+  return [{ title: "Familiekookboek" }];
 }
 
-export async function loader({ context }: Route.LoaderArgs) {
-  const db = await env.DB.prepare("SELECT 1 AS ok").first<{ ok: number }>();
-  return { email: context.get(userEmailContext), dbOk: db?.ok === 1 };
-}
-
-export default function Home({ loaderData }: Route.ComponentProps) {
+export default function Home() {
   return (
-    <main className="pt-16 p-4 container mx-auto">
-      <h1>Cookbook</h1>
-      <p>Signed in as {loaderData.email}</p>
-      <p>Database: {loaderData.dbOk ? "ok" : "unavailable"}</p>
+    <main id="main" className="page">
+      <h1 className="h1">Wat eten we vandaag?</h1>
+      <p className="lead">{recipes.length} recepten van de familie.</p>
+      <ul className="grid">
+        {recipes.map((r, i) => (
+          <li key={r.slug}>
+            <Link to={`/recepten/${r.slug}`} className="card">
+              <img src={r.image} alt="" loading={i < 3 ? "eager" : "lazy"} width="640" height="400" />
+              <TileBand first={tileFor(i)} />
+              <span className="card-body">
+                <span className="card-title">{r.title}</span>
+                <span className="card-meta">
+                  van {r.by} · {r.time}
+                </span>
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </main>
   );
 }
