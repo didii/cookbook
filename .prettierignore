@@ -1,0 +1,7 @@
+build
+.react-router
+worker-configuration.d.ts
+package-lock.json
+.impeccable
+.claude
+openspec

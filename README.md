@@ -16,12 +16,12 @@ Cloudflare Access does not run locally. `DEV_USER_EMAIL` in `.dev.vars` stands i
 
 The local database is a SQLite file under `packages/web/.wrangler`, so no Cloudflare account is needed.
 
-| Command | What it does |
-|---|---|
-| `npm run dev` | Dev server with hot reload |
-| `npm test` | Unit tests |
+| Command             | What it does                   |
+| ------------------- | ------------------------------ |
+| `npm run dev`       | Dev server with hot reload     |
+| `npm test`          | Unit tests                     |
 | `npm run typecheck` | Regenerate types and typecheck |
-| `npm run build` | Production build |
+| `npm run build`     | Production build               |
 
 ## Database migrations
 

@@ -43,10 +43,10 @@ In the Zero Trust dashboard (free plan, up to 50 users):
 
 The app verifies the token Access attaches to each request, and needs two values for that:
 
-| Variable | Value |
-|---|---|
+| Variable             | Value                                               |
+| -------------------- | --------------------------------------------------- |
 | `ACCESS_TEAM_DOMAIN` | The team domain, `<team-name>.cloudflareaccess.com` |
-| `ACCESS_AUD` | The Access application's Audience (AUD) tag |
+| `ACCESS_AUD`         | The Access application's Audience (AUD) tag         |
 
 Both can be read from the login redirect instead of the dashboard:
 
