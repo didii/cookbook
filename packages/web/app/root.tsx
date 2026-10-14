@@ -1,6 +1,5 @@
 import {
   isRouteErrorResponse,
-  Link,
   Links,
   Meta,
   Outlet,
@@ -10,8 +9,10 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
-import { TileDefs } from "./components";
-import { userEmailContext } from "./context";
+import { userEmailContext } from "~/lib/context";
+import { Header } from "~/shared/Header";
+import { SkipLink } from "~/shared/SkipLink";
+import { TileDefs } from "~/shared/TileDefs";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -52,15 +53,8 @@ export function loader({ context }: Route.LoaderArgs) {
 export default function App({ loaderData }: Route.ComponentProps) {
   return (
     <>
-      <a className="skip" href="#main">
-        Naar de inhoud
-      </a>
-      <header className="top">
-        <Link to="/" className="logo">
-          Familiekookboek
-        </Link>
-        <span className="who">{loaderData.email}</span>
-      </header>
+      <SkipLink />
+      <Header email={loaderData.email} />
       <Outlet />
     </>
   );
@@ -83,8 +77,8 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   }
 
   return (
-    <main className="page">
-      <h1>{message}</h1>
+    <main className="mx-auto max-w-272 px-[max(1rem,4vw)] pt-8 pb-16">
+      <h1 className="text-5xl font-black">{message}</h1>
       <p>{details}</p>
       {stack && (
         <pre className="w-full p-4 overflow-x-auto">

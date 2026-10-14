@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { generateKeyPair, SignJWT } from "jose";
 
-import { identify } from "../app/identity.ts";
+import { identify } from "../app/lib/identity.ts";
 
 const teamDomain = "team.cloudflareaccess.com";
 const audience = "aud-tag";

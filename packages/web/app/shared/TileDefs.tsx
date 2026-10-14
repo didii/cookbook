@@ -1,6 +1,3 @@
-/** Rotating tile for a recipe. Colour per person is not decided yet. */
-export const tileFor = (i: number) => i % 9;
-
 /** Shared azulejo pattern definition; render once in the document. */
 export function TileDefs() {
   return (
@@ -16,19 +13,6 @@ export function TileDefs() {
           />
         </symbol>
       </defs>
-    </svg>
-  );
-}
-
-/** One tile repeated across the width; `round` scales it so only whole tiles fit. */
-export function TileBand({ first }: { first: number }) {
-  return <div className="tile-band" style={{ backgroundImage: `url(/img/tile${(first % 9) + 1}.svg)` }} aria-hidden="true" />;
-}
-
-export function Wave() {
-  return (
-    <svg className="wave" aria-hidden="true" preserveAspectRatio="none">
-      <use href="#wave" />
     </svg>
   );
 }

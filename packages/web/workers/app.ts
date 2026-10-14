@@ -1,8 +1,8 @@
 import { createRemoteJWKSet, type JWTVerifyGetKey } from "jose";
 import { createRequestHandler, RouterContextProvider } from "react-router";
 
-import { userEmailContext } from "../app/context";
-import { identify } from "../app/identity";
+import { userEmailContext } from "../app/lib/context";
+import { identify } from "../app/lib/identity";
 
 const requestHandler = createRequestHandler(
   () => import("virtual:react-router/server-build"),
