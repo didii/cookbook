@@ -1,0 +1,7 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "react", "jsx-a11y"],
+  "rules": { "react/rules-of-hooks": "error", "react/exhaustive-deps": "error" },
+  "env": { "browser": true, "node": true },
+  "ignorePatterns": ["**/build/", "**/.react-router/", "**/worker-configuration.d.ts", "**/.impeccable/", ".claude/", "openspec/"]
+}
