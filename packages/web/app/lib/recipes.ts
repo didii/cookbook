@@ -6,6 +6,7 @@ export type Recipe = {
   time: string;
   servings: number;
   image: string;
+  seal: string;
   intro: string;
   ingredients: { q: string; item: string }[];
   steps: string[];
@@ -19,6 +20,7 @@ export const recipes: Recipe[] = [
     time: '1u 20',
     servings: 8,
     image: '/img/appeltaart.jpg',
+    seal: 'jia-wei',
     intro: 'Met een dikke laag zure appels en een rooster van deeg bovenop.',
     ingredients: [
       { q: '250 g', item: 'zelfrijzend bloem' },
@@ -45,6 +47,7 @@ export const recipes: Recipe[] = [
     time: '3u 00',
     servings: 6,
     image: '/img/stoofvlees.jpg',
+    seal: 'jia-chang-bian-fan',
     intro: 'Langzaam gaar in donker bier, met een snee brood met mosterd erin.',
     ingredients: [
       { q: '1 kg', item: 'rundsstoofvlees' },
@@ -70,6 +73,7 @@ export const recipes: Recipe[] = [
     time: '30 min',
     servings: 4,
     image: '/img/pannenkoeken.jpg',
+    seal: 'kai-fan',
     intro: 'Dun en groot, met stroop of spek.',
     ingredients: [
       { q: '250 g', item: 'bloem' },
@@ -91,6 +95,7 @@ export const recipes: Recipe[] = [
     time: '2u 30',
     servings: 8,
     image: '/img/erwtensoep.jpg',
+    seal: 'hui-wei-wu-qiong',
     intro: 'Zo dik dat de lepel rechtop blijft staan.',
     ingredients: [
       { q: '500 g', item: 'spliterwten' },
@@ -113,6 +118,7 @@ export const recipes: Recipe[] = [
     time: '45 min',
     servings: 4,
     image: '/img/rijstpap.jpg',
+    seal: 'fu',
     intro: 'Met bruine suiker en een klontje boter.',
     ingredients: [
       { q: '1 l', item: 'volle melk' },
@@ -134,6 +140,7 @@ export const recipes: Recipe[] = [
     time: '25 min',
     servings: 4,
     image: '/img/frikandellen.jpg',
+    seal: 'suan-tian-ku-la',
     intro: 'Uit de frituur, met curry en uitjes.',
     ingredients: [
       { q: '4', item: 'frikandellen' },

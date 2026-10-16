@@ -5,7 +5,6 @@ import './app.css';
 import { userEmailContext } from '~/lib/context';
 import { Header } from '~/shared/Header';
 import { SkipLink } from '~/shared/SkipLink';
-import { TileDefs } from '~/shared/TileDefs';
 
 export const links: Route.LinksFunction = () => [
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
@@ -30,7 +29,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <TileDefs />
         {children}
         <ScrollRestoration />
         <Scripts />
