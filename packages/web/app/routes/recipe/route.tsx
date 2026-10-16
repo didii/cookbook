@@ -3,9 +3,10 @@ import { Link, data } from 'react-router';
 import type { Route } from './+types/route';
 import { IngredientList } from './IngredientList';
 import { StepList } from './StepList';
-import { Wave } from './Wave';
 import { findRecipe, recipes } from '~/lib/recipes';
 import { tileFor } from '~/lib/tile';
+import { Fret } from '~/shared/Fret';
+import { Seal } from '~/shared/Seal';
 import { TileBand } from '~/shared/TileBand';
 
 export function loader({ params }: Route.LoaderArgs) {
@@ -34,9 +35,10 @@ export default function Recipe({ loaderData }: Route.ComponentProps) {
       </p>
       <p className="mt-2 max-w-[60ch] text-lg text-muted">{r.intro}</p>
 
-      <div className="mt-6 overflow-hidden rounded-xl border-3 border-ink bg-white shadow-hard">
+      <div className="@container relative mt-6 overflow-hidden rounded-xl border-3 border-ink bg-white shadow-hard">
         <img src={r.image} alt="" width="1280" height="640" className="block aspect-2/1 w-full border-b-3 border-ink object-cover" />
-        <TileBand first={tile} className="border-b-0" />
+        <Seal id={r.seal} className="h-16" />
+        <TileBand first={tile} responsive className="border-b-0" />
       </div>
 
       <div className="mt-10 grid grid-cols-[minmax(0,1fr)] gap-10 min-[52rem]:grid-cols-[minmax(16rem,22rem)_1fr] min-[52rem]:items-start">
@@ -52,7 +54,7 @@ export default function Recipe({ loaderData }: Route.ComponentProps) {
             Bereiding
           </h2>
           <StepList steps={r.steps} />
-          <Wave />
+          <Fret size={18} className="mt-7 text-red" />
         </section>
       </div>
     </main>

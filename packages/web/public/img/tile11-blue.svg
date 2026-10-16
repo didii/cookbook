@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 287 287">
+  <rect width="287" height="287" fill="#f8fbff"/>
+  <g fill="none" stroke="#1c3f94" stroke-width="5"><circle cx="0" cy="0" r="68"/><circle cx="0" cy="287" r="68"/><circle cx="287" cy="0" r="68"/><circle cx="287" cy="287" r="68"/></g>
+  <g fill="#8aa8e0"><circle cx="0" cy="0" r="46"/><circle cx="0" cy="287" r="46"/><circle cx="287" cy="0" r="46"/><circle cx="287" cy="287" r="46"/></g>
+  <g fill="#1c3f94"><circle cx="0" cy="0" r="18"/><circle cx="0" cy="287" r="18"/><circle cx="287" cy="0" r="18"/><circle cx="287" cy="287" r="18"/></g>
+  <g fill="#3667c4"><circle cx="143.5" cy="14" r="7"/><circle cx="143.5" cy="273" r="7"/><circle cx="14" cy="143.5" r="7"/><circle cx="273" cy="143.5" r="7"/></g>
+  <circle cx="143.5" cy="143.5" r="72" fill="none" stroke="#3667c4" stroke-width="3"/>
+  <circle cx="143.5" cy="143.5" r="42" fill="#1c3f94"/>
+  <circle cx="143.5" cy="143.5" r="52" fill="none" stroke="#f8fbff" stroke-width="4"/>
+  <rect x="129.5" y="129.5" width="28" height="28" fill="#f8fbff"/>
+</svg>

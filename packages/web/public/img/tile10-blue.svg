@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 287 287">
+  <rect width="287" height="287" fill="#f8fbff"/>
+  <circle cx="0" cy="0" r="66" fill="#1c3f94"/><circle cx="0" cy="287" r="66" fill="#1c3f94"/><circle cx="287" cy="0" r="66" fill="#1c3f94"/><circle cx="287" cy="287" r="66" fill="#1c3f94"/><circle cx="0" cy="0" r="50" fill="#f8fbff"/><circle cx="0" cy="287" r="50" fill="#f8fbff"/><circle cx="287" cy="0" r="50" fill="#f8fbff"/><circle cx="287" cy="287" r="50" fill="#f8fbff"/><circle cx="0" cy="0" r="32" fill="#8aa8e0"/><circle cx="0" cy="287" r="32" fill="#8aa8e0"/><circle cx="287" cy="0" r="32" fill="#8aa8e0"/><circle cx="287" cy="287" r="32" fill="#8aa8e0"/>
+  <g fill="#3667c4"><circle cx="143.5" cy="14" r="8"/><circle cx="143.5" cy="273" r="8"/><circle cx="14" cy="143.5" r="8"/><circle cx="273" cy="143.5" r="8"/></g>
+  <g transform="translate(143.5 143.5)">
+    <g fill="#3667c4"><path d="M0 0C20-20 20-58 0-78C-20-58-20-20 0 0Z" transform="rotate(45)"/><path d="M0 0C20-20 20-58 0-78C-20-58-20-20 0 0Z" transform="rotate(135)"/><path d="M0 0C20-20 20-58 0-78C-20-58-20-20 0 0Z" transform="rotate(225)"/><path d="M0 0C20-20 20-58 0-78C-20-58-20-20 0 0Z" transform="rotate(315)"/></g>
+    <g fill="#1c3f94" stroke="#f8fbff" stroke-width="3"><path d="M0 0C24-24 24-70 0-96C-24-70-24-24 0 0Z" transform="rotate(0)"/><path d="M0 0C24-24 24-70 0-96C-24-70-24-24 0 0Z" transform="rotate(90)"/><path d="M0 0C24-24 24-70 0-96C-24-70-24-24 0 0Z" transform="rotate(180)"/><path d="M0 0C24-24 24-70 0-96C-24-70-24-24 0 0Z" transform="rotate(270)"/></g>
+    <circle r="27" fill="#f8fbff"/><circle r="19" fill="#8aa8e0"/><circle r="7" fill="#1c3f94"/>
+  </g>
+</svg>
