@@ -1,6 +1,6 @@
-import { RecipeCard } from './RecipeCard';
 import { recipes } from '~/lib/recipes';
 import { tileFor } from '~/lib/tile';
+import { RecipeCard } from './RecipeCard';
 
 export function meta() {
   return [{ title: 'Familiekookboek' }];

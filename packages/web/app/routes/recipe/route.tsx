@@ -1,13 +1,12 @@
-import { Link, data } from 'react-router';
-
-import type { Route } from './+types/route';
-import { IngredientList } from './IngredientList';
-import { StepList } from './StepList';
+import { data, Link } from 'react-router';
 import { findRecipe, recipes } from '~/lib/recipes';
 import { tileFor } from '~/lib/tile';
 import { Fret } from '~/shared/Fret';
 import { Seal } from '~/shared/Seal';
 import { TileBand } from '~/shared/TileBand';
+import type { Route } from './+types/route';
+import { IngredientList } from './IngredientList';
+import { StepList } from './StepList';
 
 export function loader({ params }: Route.LoaderArgs) {
   const recipe = findRecipe(params.slug);

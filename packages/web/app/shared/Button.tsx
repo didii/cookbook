@@ -1,5 +1,4 @@
 import type { ComponentProps } from 'react';
-
 import { cn } from '~/shared/cn';
 
 type Props = ComponentProps<'button'> & { main?: boolean };

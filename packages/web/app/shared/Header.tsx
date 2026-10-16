@@ -1,5 +1,4 @@
 import { Link } from 'react-router';
-
 import { Fret } from '~/shared/Fret';
 
 export function Header({ email }: { email: string }) {

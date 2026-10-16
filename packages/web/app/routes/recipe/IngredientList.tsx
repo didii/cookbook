@@ -1,5 +1,4 @@
 import { useState } from 'react';
-
 import type { Recipe } from '~/lib/recipes';
 
 type Props = { ingredients: Recipe['ingredients'] };
