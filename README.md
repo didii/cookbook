@@ -48,3 +48,7 @@ Manual tasks that happen outside the codebase are written up in [`docs/`](docs):
 
 - [Cloudflare setup](docs/cloudflare-setup.md): one-time setup of the account, database, domain and login, for rebuilding from scratch.
 - [Add or remove a family member](docs/add-family-member.md): who can sign in.
+
+## Kanban board
+
+Quick and dirty Kanban board to manage progress: https://claude.ai/artifact/WKZqbBbofJm2XhEkwtwYBT
