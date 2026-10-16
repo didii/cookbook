@@ -9,5 +9,5 @@
 ## 2. Page
 
 - [x] 2.1 Make the recipe route loader use `getRecipe`, throw 404 for an unknown slug, and handle null time/image/seal; verify with `pnpm dev` that `/recepten/appeltaart` shows seeded data and `/recepten/nope` returns 404 (spec scenarios in specs/recipe-viewing)
-- [ ] 2.2 Update the Capabilities line in `packages/web/PRODUCT.md` if it still says the recipe data is undefined; verify by reading it
+- [x] 2.2 Update the Capabilities line in `packages/web/PRODUCT.md` if it still says the recipe data is undefined; verify by reading it
 - [ ] 2.3 Run `pnpm format:fix`, `pnpm lint:fix`, then confirm `pnpm format:check` and `pnpm lint:check` pass
