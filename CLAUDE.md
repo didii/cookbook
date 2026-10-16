@@ -19,3 +19,7 @@ Use the `ArtifactData` tool (a deferred tool: load it with ToolSearch `select:Ar
 - Add a card: action `set`, `doc_id` `c<num>`, with `num` = highest existing `num` + 1 (read the board first), plus `title`, `notes`, `status` and `rank`. Never reuse a number. Keep titles and notes brief.
 - Delete a card: action `delete`, and only when the user asks.
 - Keep the board up to date without being asked: move a card to `doing` (bottom of that column) when work on it starts, to `review` when its PR is opened. Never move a card to `done`: the user does that when the PR is merged. Match the card by its OpenSpec change or the user's `#N`; if no card clearly matches, ask rather than guess. Do not rewrite the page itself (the artifact's HTML) unless asked.
+
+# Pull requests
+
+- When you finish the last task of an OpenSpec change and nothing is unclear or open to question, push the branch and open a PR for review right away, without asking first. Then move the card to `review`.
