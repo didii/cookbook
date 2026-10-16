@@ -1,24 +1,22 @@
 {
   "name": "cookbook",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
   "scripts": {
-    "dev": "npm run dev -w @cookbook/web",
-    "build": "npm run build -w @cookbook/web",
-    "typecheck": "npm run typecheck -w @cookbook/web",
-    "test": "npm test -w @cookbook/web",
-    "deploy": "npm run deploy -w @cookbook/web",
-    "db:migrate:local": "npm run db:migrate:local -w @cookbook/web",
-    "db:migrate:remote": "npm run db:migrate:remote -w @cookbook/web",
+    "dev": "pnpm --filter @cookbook/web run dev",
+    "build": "pnpm --filter @cookbook/web run build",
+    "typecheck": "pnpm --filter @cookbook/web run typecheck",
+    "test": "pnpm --filter @cookbook/web run test",
+    "deploy": "pnpm --filter @cookbook/web run deploy",
+    "db:migrate:local": "pnpm --filter @cookbook/web run db:migrate:local",
+    "db:migrate:remote": "pnpm --filter @cookbook/web run db:migrate:remote",
     "lint:check": "eslint .",
     "lint:fix": "eslint . --fix",
     "format:check": "prettier --check .",
     "format:fix": "prettier --write ."
   },
   "volta": {
-    "node": "24.15.0"
+    "node": "24.15.0",
+    "pnpm": "11.28.6"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
@@ -29,5 +27,9 @@
     "globals": "^17.13.0",
     "prettier": "^3.9.10",
     "typescript-eslint": "^8.71.2"
+  },
+  "engines": {
+    "npm": "please-use-pnpm",
+    "pnpm": ">=11"
   }
 }

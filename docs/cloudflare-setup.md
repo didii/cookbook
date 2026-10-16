@@ -11,7 +11,7 @@ Everything needed to stand the cookbook up from scratch on a Cloudflare account.
 
 1. Run `npx -w @cookbook/web wrangler d1 create cookbook`. Answer "no" if it offers to edit the config.
 2. Copy the printed `database_id` into the `d1_databases` entry.
-3. Run `npm run db:migrate:remote`.
+3. Run `pnpm db:migrate:remote`.
 
 ## 3. Route
 
@@ -25,7 +25,7 @@ Keep `workers_dev` and `preview_urls` set to `false`. Those addresses are not co
 
 ## 4. First deploy
 
-Run `npm run deploy`. Wrangler creates the DNS record for the subdomain.
+Run `pnpm run deploy`. Wrangler creates the DNS record for the subdomain.
 
 Until step 6 is done the app answers every request with 403, so deploying before Access exists exposes nothing but the static JS and CSS files. Right after the very first deploy some paths may return a 500 for a few minutes.
 
@@ -56,7 +56,7 @@ curl -sI https://cookbook.rhythm-coder.dev/
 
 The `Location` header points at the team domain, and its `kid` parameter is the AUD tag.
 
-Put both in `wrangler.jsonc` and run `npm run deploy` again. If either is missing or wrong, signed-in users get a 403 from the app.
+Put both in `wrangler.jsonc` and run `pnpm run deploy` again. If either is missing or wrong, signed-in users get a 403 from the app.
 
 ## 7. Check
 
