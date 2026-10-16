@@ -1,5 +1,4 @@
 import { useState } from 'react';
-
 import { Button } from '~/shared/Button';
 
 type Props = { steps: string[] };

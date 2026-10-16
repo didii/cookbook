@@ -1,6 +1,5 @@
 import { createRemoteJWKSet, type JWTVerifyGetKey } from 'jose';
 import { createRequestHandler, RouterContextProvider } from 'react-router';
-
 import { userEmailContext } from '../app/lib/context';
 import { identify } from '../app/lib/identity';
 

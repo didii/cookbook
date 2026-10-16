@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-
 import { pickSeal, seals } from '../app/lib/seals.ts';
 
 test('skips the last three seals and picks among the least used', () => {

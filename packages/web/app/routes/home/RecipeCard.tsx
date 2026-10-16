@@ -1,5 +1,4 @@
 import { Link } from 'react-router';
-
 import type { Recipe } from '~/lib/recipes';
 import { Seal } from '~/shared/Seal';
 import { TileBand } from '~/shared/TileBand';
