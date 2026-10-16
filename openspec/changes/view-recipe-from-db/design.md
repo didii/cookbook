@@ -16,8 +16,8 @@ The route already renders the page from `findRecipe()` sample data. Loaders get 
 ## Decisions
 
 - **Expose `env` via a second router context** (`cloudflareEnvContext` in `lib/context.ts`, set in `workers/app.ts`), mirroring `userEmailContext`. Alternative: pass `env` as `loadContext`; the existing context key pattern is already in use.
-- **Query in `lib/recipes.ts`**: replace the sample array with `getRecipe(db, slug)` running one `db.batch` of three selects (recipe, ingredients ordered by position, steps ordered by position). The sample array stays as `sampleRecipes` for the home page until card #4.
-- **Component props stay close to today's**: map `quantity_text`→`q`, `name`→`item`, `body`→`steps[]`, so `IngredientList` and `StepList` are unchanged. `time` and `image` become nullable in the page; the `TileBand` tile and `seal` fall back (tile by recipe id, seal omitted when null).
+- **Query in `lib/recipes.ts`**: replace the sample array with `getRecipe(db, slug)` running one `db.batch` (a single round trip) of three selects keyed by slug (recipe, ingredients joined to recipes ordered by position, steps likewise); one big join would repeat every ingredient per step. The sample array stays as `sampleRecipes` for the home page until card #4.
+- **Component props use the stored names**: `author`, `quantity_text`, `name` stay as in the database (no `by`/`q`/`item` aliases). `StoredRecipe` is its own type built from `RecipeRow`, independent of the sample `Recipe`. `time` and `image` are nullable in the page; the `TileBand` tile and `seal` fall back (tile by recipe id, seal omitted when null).
 - **Dev seed** `seed/dev.sql` copies the six sample recipes; run with `wrangler d1 execute DB --local --file`. Not a migration, never applied to remote.
 
 ## Risks / Trade-offs

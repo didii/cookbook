@@ -158,9 +158,7 @@ export const recipes: Recipe[] = [
 
 export const findRecipe = (slug: string | undefined) => recipes.find((r) => r.slug === slug);
 
-export type StoredRecipe = Omit<Recipe, 'time' | 'image' | 'seal'> & { id: number; time: string | null; image: string | null; seal: string | null };
-
-type RecipeRow = {
+export type RecipeRow = {
   id: number;
   slug: string;
   title: string;
@@ -172,22 +170,24 @@ type RecipeRow = {
   seal: string | null;
 };
 
-/** One round trip: the recipe plus its ingredients and steps in stored order. */
+export type IngredientRow = { quantity_text: string; name: string };
+
+export type StoredRecipe = RecipeRow & { ingredients: IngredientRow[]; steps: string[] };
+
+/** One round trip (a single batch): the recipe plus its ingredients and steps in stored order. */
 export async function getRecipe(db: D1Database, slug: string): Promise<StoredRecipe | undefined> {
-  const row = await db
-    .prepare('SELECT id, slug, title, author, time, servings, intro, image, seal FROM recipes WHERE slug = ?')
-    .bind(slug)
-    .first<RecipeRow>();
-  if (!row) return undefined;
-  const [ingredients, steps] = await db.batch<{ q: string; item: string } | { body: string }>([
-    db.prepare('SELECT quantity_text AS q, name AS item FROM ingredients WHERE recipe_id = ? ORDER BY position').bind(row.id),
-    db.prepare('SELECT body FROM steps WHERE recipe_id = ? ORDER BY position').bind(row.id),
+  const [recipe, ingredients, steps] = await db.batch([
+    db.prepare('SELECT id, slug, title, author, time, servings, intro, image, seal FROM recipes WHERE slug = ?').bind(slug),
+    db
+      .prepare('SELECT i.quantity_text, i.name FROM ingredients i JOIN recipes r ON r.id = i.recipe_id WHERE r.slug = ? ORDER BY i.position')
+      .bind(slug),
+    db.prepare('SELECT s.body FROM steps s JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ? ORDER BY s.position').bind(slug),
   ]);
-  const { author, ...rest } = row;
+  const row = (recipe.results as RecipeRow[])[0];
+  if (!row) return undefined;
   return {
-    ...rest,
-    by: author,
-    ingredients: ingredients.results as { q: string; item: string }[],
+    ...row,
+    ingredients: ingredients.results as IngredientRow[],
     steps: (steps.results as { body: string }[]).map((s) => s.body),
   };
 }

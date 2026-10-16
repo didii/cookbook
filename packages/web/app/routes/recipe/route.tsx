@@ -29,7 +29,7 @@ export default function Recipe({ loaderData }: Route.ComponentProps) {
       </Link>
       <h1 className="text-[clamp(2rem,6vw,3.5rem)] leading-[1.05] font-black tracking-[-0.03em] text-balance">{r.title}</h1>
       <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 font-extrabold">
-        <span className="rounded-full border-3 border-ink bg-yel px-3.5 py-0.5">van {r.by}</span>
+        <span className="rounded-full border-3 border-ink bg-yel px-3.5 py-0.5">van {r.author}</span>
         {r.time && <span>{r.time}</span>}
         <span>{r.servings} personen</span>
       </p>
