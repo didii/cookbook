@@ -26,7 +26,7 @@ Mobile and tablet in the kitchen; desktop for browsing and contributing. Sign-in
 
 - Stack: React Router on Cloudflare Workers (packages/web); D1 for storage (see openspec/specs/recipe-storage), recipe pages read from it, the home page still lists sample data.
 - UI language: Dutch.
-- Photo/scan handling, and editing workflow are not yet defined.
+- Photo/scan handling and the editing workflow are not yet defined.
 
 ## Evidence on Hand
 
