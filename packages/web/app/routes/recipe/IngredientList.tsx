@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import type { Recipe } from '~/lib/recipes';
+import type { StoredRecipe } from '~/lib/recipes';
 
-type Props = { ingredients: Recipe['ingredients'] };
+type Props = { ingredients: StoredRecipe['ingredients'] };
 
 export function IngredientList({ ingredients }: Props) {
   const [done, setDone] = useState<Set<number>>(new Set());
@@ -24,8 +24,8 @@ export function IngredientList({ ingredients }: Props) {
               onChange={() => toggle(i)}
               className="m-0 size-6 shrink-0 cursor-pointer appearance-none rounded-full border-3 border-ink bg-white checked:bg-jade checked:shadow-[inset_0_0_0_3px_#fff]"
             />
-            <b className="min-w-14 font-black text-blu tabular-nums group-has-checked:text-muted">{x.q}</b>
-            <span>{x.item}</span>
+            <b className="min-w-14 font-black text-blu tabular-nums group-has-checked:text-muted">{x.quantity_text}</b>
+            <span>{x.name}</span>
           </label>
         </li>
       ))}

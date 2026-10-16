@@ -1,6 +1,6 @@
 import { createRemoteJWKSet, type JWTVerifyGetKey } from 'jose';
 import { createRequestHandler, RouterContextProvider } from 'react-router';
-import { userEmailContext } from '../app/lib/context';
+import { envContext, userEmailContext } from '../app/lib/context';
 import { identify } from '../app/lib/identity';
 
 const requestHandler = createRequestHandler(() => import('virtual:react-router/server-build'), import.meta.env.MODE);
@@ -21,6 +21,7 @@ export default {
 
     const context = new RouterContextProvider();
     context.set(userEmailContext, email);
+    context.set(envContext, env);
     return requestHandler(request, context);
   },
 } satisfies ExportedHandler<Env>;

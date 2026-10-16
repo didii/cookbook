@@ -24,9 +24,9 @@ Mobile and tablet in the kitchen; desktop for browsing and contributing. Sign-in
 
 ## Capabilities and Constraints
 
-- Stack: React Router on Cloudflare Workers (packages/web); currently only a home page showing the signed-in email.
+- Stack: React Router on Cloudflare Workers (packages/web); D1 for storage (see openspec/specs/recipe-storage), recipe pages read from it, the home page still lists sample data.
 - UI language: Dutch.
-- Recipe data model, photo/scan handling, and editing workflow are not yet defined.
+- Photo/scan handling and the editing workflow are not yet defined.
 
 ## Evidence on Hand
 

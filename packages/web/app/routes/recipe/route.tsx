@@ -1,5 +1,6 @@
 import { data, Link } from 'react-router';
-import { findRecipe, recipes } from '~/lib/recipes';
+import { envContext } from '~/lib/context';
+import { getRecipe } from '~/lib/recipes';
 import { tileFor } from '~/lib/tile';
 import { Fret } from '~/shared/Fret';
 import { Seal } from '~/shared/Seal';
@@ -8,10 +9,10 @@ import type { Route } from './+types/route';
 import { IngredientList } from './IngredientList';
 import { StepList } from './StepList';
 
-export function loader({ params }: Route.LoaderArgs) {
-  const recipe = findRecipe(params.slug);
+export async function loader({ params, context }: Route.LoaderArgs) {
+  const recipe = await getRecipe(context.get(envContext).DB, params.slug);
   if (!recipe) throw data('Recept niet gevonden', { status: 404 });
-  return { recipe, tile: tileFor(recipes.indexOf(recipe)) };
+  return { recipe, tile: tileFor(recipe.id) };
 }
 
 export function meta({ loaderData }: Route.MetaArgs) {
@@ -28,15 +29,15 @@ export default function Recipe({ loaderData }: Route.ComponentProps) {
       </Link>
       <h1 className="text-[clamp(2rem,6vw,3.5rem)] leading-[1.05] font-black tracking-[-0.03em] text-balance">{r.title}</h1>
       <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 font-extrabold">
-        <span className="rounded-full border-3 border-ink bg-yel px-3.5 py-0.5">van {r.by}</span>
-        <span>{r.time}</span>
+        <span className="rounded-full border-3 border-ink bg-yel px-3.5 py-0.5">van {r.author}</span>
+        {r.time && <span>{r.time}</span>}
         <span>{r.servings} personen</span>
       </p>
       <p className="mt-2 max-w-[60ch] text-lg text-muted">{r.intro}</p>
 
       <div className="@container relative mt-6 overflow-hidden rounded-xl border-3 border-ink bg-white shadow-hard">
-        <img src={r.image} alt="" width="1280" height="640" className="block aspect-2/1 w-full border-b-3 border-ink object-cover" />
-        <Seal id={r.seal} className="h-16" />
+        {r.image && <img src={r.image} alt="" width="1280" height="640" className="block aspect-2/1 w-full border-b-3 border-ink object-cover" />}
+        {r.image && r.seal && <Seal id={r.seal} className="h-16" />}
         <TileBand first={tile} responsive className="border-b-0" />
       </div>
 
