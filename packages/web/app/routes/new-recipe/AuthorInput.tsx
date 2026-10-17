@@ -1,4 +1,5 @@
 import { Autocomplete } from '@base-ui/react/autocomplete';
+import { useState } from 'react';
 
 type Props = { authors: string[]; defaultValue?: string; invalid?: boolean; describedBy?: string; className?: string };
 
@@ -6,9 +7,23 @@ type Props = { authors: string[]; defaultValue?: string; invalid?: boolean; desc
 export function AuthorInput({ authors, defaultValue, invalid, describedBy, className }: Props) {
   // Ignores letter case and accents: "oma" finds "Oma".
   const { contains } = Autocomplete.useFilter({ sensitivity: 'base' });
+  const [text, setText] = useState(defaultValue ?? '');
+  const [open, setOpen] = useState(false);
+  // No match means nothing to pick, so the popup closes instead of showing an empty box (APG: the popup is shown only while it has options).
+  const hasMatches = authors.some((a) => contains(a, text));
 
   return (
-    <Autocomplete.Root items={authors} name="author" defaultValue={defaultValue} filter={contains} openOnInputClick autoHighlight={false}>
+    <Autocomplete.Root
+      items={authors}
+      name="author"
+      defaultValue={defaultValue}
+      onValueChange={setText}
+      open={open && hasMatches}
+      onOpenChange={setOpen}
+      filter={contains}
+      openOnInputClick
+      autoHighlight={false}
+    >
       <Autocomplete.Input
         id="author"
         required
@@ -19,7 +34,7 @@ export function AuthorInput({ authors, defaultValue, invalid, describedBy, class
       />
       <Autocomplete.Portal>
         <Autocomplete.Positioner sideOffset={6} className="z-10 w-(--anchor-width)">
-          <Autocomplete.Popup className="max-h-60 overflow-y-auto rounded-[0.625rem] border-3 border-ink bg-white shadow-hard-sm empty:hidden">
+          <Autocomplete.Popup className="max-h-60 overflow-y-auto rounded-[0.625rem] border-3 border-ink bg-white shadow-hard-sm">
             <Autocomplete.List>
               {(author: string) => (
                 <Autocomplete.Item
