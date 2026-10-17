@@ -1,11 +1,13 @@
 {
   "name": "cookbook",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "pnpm --filter @cookbook/web run dev",
     "build": "pnpm --filter @cookbook/web run build",
     "typecheck": "pnpm --filter @cookbook/web run typecheck",
-    "test": "pnpm --filter @cookbook/web run test",
+    "test": "pnpm --filter @cookbook/web run test && node --test \"scripts/*.test.ts\"",
+    "spec:check": "node scripts/spec-check.ts --report",
     "deploy": "pnpm --filter @cookbook/web run deploy",
     "db:migrate:local": "pnpm --filter @cookbook/web run db:migrate:local",
     "db:migrate:remote": "pnpm --filter @cookbook/web run db:migrate:remote",
