@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: A new recipe can be added from the app
-The system SHALL offer, from every page, a link to a form at `/recepten/nieuw` where a family member provides a title, an author and a number of servings, and SHALL save the recipe when the form is submitted.
+The system SHALL offer, from every page, a link to a form at `/recepten/nieuw` where a family member provides a title and an author, and optionally a number of servings, and SHALL save the recipe when the form is submitted.
 
 #### Scenario: Link to the form
 - **WHEN** a family member looks at any page
@@ -14,6 +14,10 @@ The system SHALL offer, from every page, a link to a form at `/recepten/nieuw` w
 #### Scenario: Recipe is created
 - **WHEN** a family member submits a title, an author and a number of servings greater than zero
 - **THEN** the recipe is stored with those values and the family member's email as its creator, and they are taken to its page
+
+#### Scenario: Servings left empty
+- **WHEN** a family member submits a title and an author and leaves the servings empty
+- **THEN** the recipe is stored without servings and they are taken to its page
 
 ### Requirement: A new recipe gets a unique address
 The system SHALL give each created recipe a slug derived from its title that no other recipe has, and SHALL NOT use a slug that would clash with a fixed address.
@@ -50,7 +54,7 @@ The system SHALL suggest, while the author is typed, the authors already on stor
 - **THEN** the recipe is stored with the author "Oma"
 
 ### Requirement: Invalid input is refused
-The system SHALL refuse a submission with a blank title, a blank author, or servings that are not a whole number greater than zero, store nothing, and show the form again with what was entered and what is wrong.
+The system SHALL refuse a submission with a blank title, a blank author, or servings that are filled in but not a whole number greater than zero, store nothing, and show the form again with what was entered and what is wrong.
 
 #### Scenario: Missing title
 - **WHEN** the form is submitted with a blank title
@@ -59,3 +63,14 @@ The system SHALL refuse a submission with a blank title, a blank author, or serv
 #### Scenario: Invalid servings
 - **WHEN** the form is submitted with servings of zero, a negative number, a fraction or text
 - **THEN** no recipe is stored and the form shows an error for the servings
+
+### Requirement: The form is usable with assistive technology
+The system SHALL mark the required fields of the form visibly with an asterisk that is explained on the form and not conveyed by colour alone, SHALL expose them as required to assistive technology, and SHALL, after a refused submission, describe each error in text tied to its field and move focus to the first field in error.
+
+#### Scenario: Required fields are marked
+- **WHEN** a family member opens the new recipe form
+- **THEN** the title and author labels carry an asterisk, the form explains that fields with an asterisk are required, and the servings label has none
+
+#### Scenario: Errors are announced and focused
+- **WHEN** a submission is refused
+- **THEN** each error is shown as text associated with its field and focus is on the first field in error

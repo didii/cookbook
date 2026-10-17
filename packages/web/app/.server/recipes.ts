@@ -4,7 +4,7 @@ export type RecipeRow = {
   title: string;
   author: string;
   time: string | null;
-  servings: number;
+  servings: number | null;
   intro: string;
   image: string | null;
   seal: string | null;
@@ -35,7 +35,7 @@ export async function getRecipe(db: D1Database, slug: string): Promise<StoredRec
 export type NewRecipe = {
   title: string;
   author: string;
-  servings: number;
+  servings?: number;
   time?: string;
   intro?: string;
   image?: string;
@@ -83,7 +83,7 @@ export async function createRecipe(db: D1Database, recipe: NewRecipe): Promise<s
         recipe.title,
         recipe.author,
         recipe.author,
-        recipe.servings,
+        recipe.servings ?? null,
         recipe.time ?? null,
         recipe.intro ?? '',
         recipe.image ?? null,

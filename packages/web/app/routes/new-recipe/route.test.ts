@@ -38,6 +38,12 @@ test('recipe-creation › Recipe is created', async () => {
   assert.equal((await db.prepare("SELECT created_by FROM recipes WHERE slug = 'soep'").first())?.created_by, 'oma@example.com');
 });
 
+test('recipe-creation › Servings left empty', async () => {
+  const res = (await submit({ title: 'Zonder porties', author: 'Oma', servings: '' })) as Response;
+  assert.equal(res.headers.get('Location'), '/recepten/zonder-porties');
+  assert.equal((await getRecipe(db, 'zonder-porties'))?.servings, null);
+});
+
 test('recipe-creation › Missing title', async () => {
   const before = await count();
   const res = (await submit({ title: '   ', author: 'Oma', servings: '4' })) as {
@@ -51,7 +57,7 @@ test('recipe-creation › Missing title', async () => {
 
 test('recipe-creation › Invalid servings', async () => {
   const before = await count();
-  for (const servings of ['0', '-2', '2.5', 'veel', '']) {
+  for (const servings of ['0', '-2', '2.5', 'veel']) {
     const res = (await submit({ title: 'Taart', author: 'Oma', servings })) as { init: { status: number }; data: { errors: object } };
     assert.equal(res.init.status, 400, servings);
     assert.deepEqual(Object.keys(res.data.errors), ['servings'], servings);
@@ -61,3 +67,7 @@ test('recipe-creation › Invalid servings', async () => {
 
 // The filter runs in the browser (Base UI's Autocomplete with a base-sensitivity filter), so this needs a real browser; checked by hand.
 test.todo('recipe-creation › Suggestions ignore letter case');
+
+// These need a browser (visible asterisk and focus), so they are checked by hand.
+test.todo('recipe-creation › Required fields are marked');
+test.todo('recipe-creation › Errors are announced and focused');

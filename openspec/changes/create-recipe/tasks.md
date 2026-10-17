@@ -14,6 +14,11 @@
 - [x] 3.1 Add `listAuthors` and the case-insensitive author reuse in `createRecipe` (`app/.server/recipes.ts`); verify with tests named `recipe-creation › Existing authors are suggested`, `recipe-creation › New author is accepted` and `recipe-creation › Existing spelling is reused`.
 - [x] 3.2 Add `@base-ui/react` and the `AuthorInput` component with the route loader supplying the authors; verify with a loader-level test named `recipe-creation › Suggestions ignore letter case` (the filter configuration, or a `test.todo` with the reason if it needs a browser), and by typing "oma" in `pnpm dev` at 360px and desktop width and submitting a new author.
 
-## 4. Wrap-up
+## 4. Optional servings and accessibility
 
-- [x] 4.1 Run `pnpm format:fix`, `pnpm lint:fix`, `pnpm format:check`, `pnpm lint:check`, `pnpm typecheck` and `pnpm test:ai`; verify all pass.
+- [x] 4.1 Add migration `0002_optional_servings.sql`, make servings optional in `.server/recipes.ts`, the action and the recipe page; verify with tests named `recipe-storage › Servings are optional`, `recipe-creation › Servings left empty` and an updated `recipe-viewing › Optional fields are empty`, and by checking that existing rows, ingredients, steps and links survive the migration.
+- [x] 4.2 Mark required fields with the explained asterisk, drop `required` from servings, and focus the first field in error; verify by `test.todo`s named `recipe-creation › Required fields are marked` and `recipe-creation › Errors are announced and focused` (they need a browser, with the reason on the line above) and by tabbing through the form and submitting it empty in `pnpm dev`.
+
+## 5. Wrap-up
+
+- [x] 5.1 Run `pnpm format:fix`, `pnpm lint:fix`, `pnpm format:check`, `pnpm lint:check`, `pnpm typecheck` and `pnpm test:ai`; verify all pass.
