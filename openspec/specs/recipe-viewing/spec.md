@@ -1,4 +1,5 @@
 # recipe-viewing Specification
+
 ## Purpose
 
 Lets a signed-in family member open a stored recipe and read everything needed to cook it.
