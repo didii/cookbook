@@ -15,4 +15,4 @@
 
 ## 3. Docs
 
-- [ ] 3.1 Reword the testing policy in `packages/web/STRUCTURE.md` (unit tests for logic and edge cases; each scenario tested at the lowest level that runs the real thing; loader-level integration tests only where a scenario needs them; the `capability › Scenario title` name; `test.todo` for what cannot be automated) and add the short rule to the root `CLAUDE.md` conventions; verify no remaining text says "one integration test per endpoint" and `pnpm format:check` and `pnpm lint:check` pass
+- [x] 3.1 Reword the testing policy in `packages/web/STRUCTURE.md` (unit tests for logic and edge cases; each scenario tested at the lowest level that runs the real thing; loader-level integration tests only where a scenario needs them; the `capability › Scenario title` name; `test.todo` for what cannot be automated) and add the short rule to the root `CLAUDE.md` conventions; verify no remaining text says "one integration test per endpoint" and `pnpm format:check` and `pnpm lint:check` pass

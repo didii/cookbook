@@ -1,6 +1,7 @@
 # Conventions
 
 - Before a change is considered complete, format it with Prettier (which also organizes imports: sorted by path, no blank lines between them) and leave no lint errors. Run the auto-fixers first (`pnpm format:fix`, `pnpm lint:fix`), fix what remains by hand, and confirm with `pnpm format:check` and `pnpm lint:check`.
+- Every scenario in `openspec/specs` needs a test named `<capability> › <Scenario title>` (exact `#### Scenario:` title, one scenario per test), or a `test.todo` with that name when it cannot be automated. Confirm with `pnpm spec:check`.
 
 # Kanban board
 
