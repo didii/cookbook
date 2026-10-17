@@ -6,7 +6,7 @@
     "build": "react-router build",
     "dev": "react-router dev",
     "typecheck": "wrangler types && react-router typegen && tsc -b",
-    "test": "node --test",
+    "test": "node --import tsx --test",
     "deploy": "pnpm run build && wrangler deploy",
     "preview": "pnpm run build && vite preview",
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
