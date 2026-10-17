@@ -23,6 +23,10 @@ The local database is a SQLite file under `packages/web/.wrangler`, so no Cloudf
 | `pnpm typecheck` | Regenerate types and typecheck |
 | `pnpm build`     | Production build               |
 
+## Branches
+
+Work on a `feature/<name>` branch off `main` and merge it through a pull request.
+
 ## Database migrations
 
 Schema changes are SQL files in `packages/web/migrations`.
