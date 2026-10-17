@@ -55,3 +55,7 @@ This changes the earlier policy of one integration test per endpoint: a loader-l
 2. Rename, split and add tests until the report is clean (only `test.todo` left).
 3. Remove `--report` from the CI step and the `spec:check` script default.
 4. Rollback: delete the CI step; the tests keep working with their names.
+
+## Revision after review
+
+The check is part of `pnpm test`, not a separate command. `scripts/spec-check.ts` exports `checkRepo()`, which returns one line per violation; `scripts/spec-check.test.ts` asserts it returns nothing, so a violation fails the run and its message lists the offenders. The web test script also globs `../../scripts/*.test.ts`. The `spec:check` script, the `--report` mode, the `file:line` map, the todo listing and the separate CI step are gone (`node --test` already counts todos). This supersedes the decisions above on `spec:check`, `--report` and the CI step.

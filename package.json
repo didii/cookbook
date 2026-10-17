@@ -7,7 +7,6 @@
     "build": "pnpm --filter @cookbook/web run build",
     "typecheck": "pnpm --filter @cookbook/web run typecheck",
     "test": "pnpm --filter @cookbook/web run test",
-    "spec:check": "node scripts/spec-check.ts",
     "deploy": "pnpm --filter @cookbook/web run deploy",
     "db:migrate:local": "pnpm --filter @cookbook/web run db:migrate:local",
     "db:migrate:remote": "pnpm --filter @cookbook/web run db:migrate:remote",

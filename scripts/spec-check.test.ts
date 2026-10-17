@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { check, findTests, parseScenarios } from './spec-check.ts';
+import { check, checkRepo, findTests, parseScenarios } from './spec-check.ts';
 
 const main = `## Requirements
 
@@ -79,4 +79,8 @@ test('check lists missing scenarios, unknown test names and duplicates; a todo s
     ['cap › Gone'],
   );
   assert.deepEqual(result.duplicates, ['cap › A']);
+});
+
+test('every spec scenario has a test and every scenario-named test has a spec', () => {
+  assert.deepEqual(checkRepo(), []);
 });

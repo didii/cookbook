@@ -1,7 +1,7 @@
 // Checks that every spec scenario has a test named `<capability> › <Scenario title>`.
-// Usage: node scripts/spec-check.ts [--report]   (--report prints the gaps but always exits 0)
+// Run by spec-check.test.ts, so `pnpm test` fails on a gap.
 import { globSync, readFileSync } from 'node:fs';
-import { basename, dirname } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 
 export type Spec = { capability: string; markdown: string; delta: boolean };
 export type TestRef = { name: string; file: string; line: number; todo: boolean };
@@ -67,36 +67,19 @@ export function check(scenarios: { keys: Set<string>; duplicates: Set<string> },
   };
 }
 
-function main() {
-  const report = process.argv.includes('--report');
-  const specFiles = [...globSync('openspec/specs/*/spec.md'), ...globSync('openspec/changes/*/specs/*/spec.md')];
-  const specs = specFiles.map((f) => ({
-    capability: basename(dirname(f)),
-    markdown: readFileSync(f, 'utf8'),
-    delta: f.replaceAll('\\', '/').startsWith('openspec/changes/'),
-  }));
-  const testFiles = globSync('packages/**/*.test.ts', { exclude: (p) => basename(String(p)) === 'node_modules' });
-  const tests = findTests(testFiles.map((path) => ({ path: path.replaceAll('\\', '/'), text: readFileSync(path, 'utf8') })));
-  const scenarios = parseScenarios(specs);
-  const { missing, unknown, duplicates } = check(scenarios, tests);
-
-  console.log('Scenarios:');
-  for (const k of [...scenarios.keys].sort()) {
-    const refs = tests.filter((t) => t.name === k && !t.todo).map((t) => `${t.file}:${t.line}`);
-    console.log(`  ${k} -> ${refs.length ? refs.join(', ') : '(none)'}`);
-  }
-  const todos = tests.filter((t) => t.todo);
-  if (todos.length) {
-    console.log('\nTodo (not automated):');
-    for (const t of todos) console.log(`  ${t.name} -> ${t.file}:${t.line}`);
-  }
-  const problems = [
+/** Checks the repo's specs against its tests and returns one line per violation (empty when clean). */
+export function checkRepo(root = join(import.meta.dirname, '..')) {
+  const read = (f: string) => readFileSync(join(root, f), 'utf8');
+  const norm = (f: string) => f.replaceAll('\\', '/');
+  const specs = [...globSync('openspec/specs/*/spec.md', { cwd: root }), ...globSync('openspec/changes/*/specs/*/spec.md', { cwd: root })].map(
+    (f) => ({ capability: basename(dirname(f)), markdown: read(f), delta: norm(f).startsWith('openspec/changes/') }),
+  );
+  const testFiles = globSync('packages/**/*.test.ts', { cwd: root, exclude: (p) => basename(String(p)) === 'node_modules' });
+  const tests = findTests(testFiles.map((f) => ({ path: norm(f), text: read(f) })));
+  const { missing, unknown, duplicates } = check(parseScenarios(specs), tests);
+  return [
     ...missing.map((k) => `no test: ${k}`),
     ...unknown.map((t) => `unknown scenario: ${t.name} (${t.file}:${t.line})`),
     ...duplicates.map((k) => `duplicate scenario title: ${k}`),
   ];
-  if (problems.length) console.log(`\nProblems:\n${problems.map((p) => `  ${p}`).join('\n')}`);
-  process.exitCode = problems.length && !report ? 1 : 0;
 }
-
-if (import.meta.main) main();

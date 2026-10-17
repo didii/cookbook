@@ -31,3 +31,7 @@ None.
 - `packages/web/app/lib/identity.test.ts`, `packages/web/workers/handler.test.ts`, `packages/web/migrations/migrations.test.ts`, `packages/web/app/lib/recipes.test.ts`, `packages/web/app/routes/recipe/route.test.ts` (renamed, split, extended; new `test.todo` entries)
 - `packages/web/STRUCTURE.md` and the root `CLAUDE.md` (convention and policy)
 - Depends on PR #7 (`add-testing-setup`) being merged first.
+
+## Revision after review
+
+`pnpm spec:check` and its CI step are dropped: `pnpm test` runs the check (see the revision in design.md) and prints only violations.
