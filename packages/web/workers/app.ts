@@ -1,27 +1,9 @@
-import { createRemoteJWKSet, type JWTVerifyGetKey } from 'jose';
-import { createRequestHandler, RouterContextProvider } from 'react-router';
-import { envContext, userEmailContext } from '../app/lib/context';
-import { identify } from '../app/lib/identity';
+import { createRequestHandler } from 'react-router';
+import { createFetch } from './handler';
 
 const requestHandler = createRequestHandler(() => import('virtual:react-router/server-build'), import.meta.env.MODE);
 
-let jwks: JWTVerifyGetKey | undefined;
-
 export default {
-  async fetch(request, env) {
-    const email = await identify(request, {
-      teamDomain: env.ACCESS_TEAM_DOMAIN,
-      audience: env.ACCESS_AUD,
-      getKey: (header, token) => (jwks ??= createRemoteJWKSet(new URL(`https://${env.ACCESS_TEAM_DOMAIN}/cdn-cgi/access/certs`)))(header, token),
-      // Stand-in identity is compiled out of production builds.
-      // Cast because DEV_USER_EMAIL is only in the generated Env when a local .dev.vars exists.
-      devEmail: import.meta.env.DEV ? (env as { DEV_USER_EMAIL?: string }).DEV_USER_EMAIL : undefined,
-    });
-    if (!email) return new Response('Forbidden', { status: 403 });
-
-    const context = new RouterContextProvider();
-    context.set(userEmailContext, email);
-    context.set(envContext, env);
-    return requestHandler(request, context);
-  },
+  // Stand-in identity is compiled out of production builds.
+  fetch: createFetch({ requestHandler, dev: import.meta.env.DEV }),
 } satisfies ExportedHandler<Env>;
