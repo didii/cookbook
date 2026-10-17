@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { StoredRecipe } from '~/lib/recipes';
+import type { StoredRecipe } from '~/.server/recipes';
 
 type Props = { ingredients: StoredRecipe['ingredients'] };
 

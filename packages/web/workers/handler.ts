@@ -1,7 +1,7 @@
 import { createRemoteJWKSet, type JWTVerifyGetKey } from 'jose';
 import { RouterContextProvider } from 'react-router';
-import { envContext, userEmailContext } from '~/lib/context';
-import { identify } from '~/lib/identity';
+import { envContext, userEmailContext } from '~/.server/context';
+import { identify } from '~/.server/identity';
 
 type Options = {
   requestHandler: (request: Request, context: RouterContextProvider) => Response | Promise<Response>;

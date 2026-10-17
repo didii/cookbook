@@ -1,6 +1,6 @@
 import { data, Link } from 'react-router';
-import { envContext } from '~/lib/context';
-import { getRecipe } from '~/lib/recipes';
+import { envContext } from '~/.server/context';
+import { getRecipe } from '~/.server/recipes';
 import { tileFor } from '~/lib/tile';
 import { Fret } from '~/shared/Fret';
 import { Seal } from '~/shared/Seal';

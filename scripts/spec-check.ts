@@ -74,7 +74,11 @@ export function checkRepo(root = join(import.meta.dirname, '..')) {
   const specs = [...globSync('openspec/specs/*/spec.md', { cwd: root }), ...globSync('openspec/changes/*/specs/*/spec.md', { cwd: root })].map(
     (f) => ({ capability: basename(dirname(f)), markdown: read(f), delta: norm(f).startsWith('openspec/changes/') }),
   );
-  const testFiles = globSync('packages/**/*.test.ts', { cwd: root, exclude: (p) => basename(String(p)) === 'node_modules' });
+  // `**` skips dot directories, so `.server/` is listed explicitly
+  const testFiles = globSync(['packages/**/*.test.ts', 'packages/*/app/.server/*.test.ts'], {
+    cwd: root,
+    exclude: (p) => basename(String(p)) === 'node_modules',
+  });
   const tests = findTests(testFiles.map((f) => ({ path: norm(f), text: read(f) })));
   const { missing, unknown, duplicates } = check(parseScenarios(specs), tests);
   return [

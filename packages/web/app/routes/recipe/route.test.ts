@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
 import { RouterContextProvider } from 'react-router';
-import { envContext } from '~/lib/context';
+import { envContext } from '~/.server/context';
 import type { Route } from './+types/route';
 import { loader } from './route';
 
