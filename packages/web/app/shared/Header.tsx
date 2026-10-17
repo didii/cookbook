@@ -8,7 +8,17 @@ export function Header({ email }: { email: string }) {
         <Link to="/" className="text-2xl font-black tracking-tight no-underline focus-visible:outline-white">
           Familiekookboek
         </Link>
-        <span className="truncate text-sm font-bold">{email}</span>
+        <div className="flex min-w-0 items-center gap-4">
+          {/* The email is hidden on phones: the row has no room for both it and the link. */}
+          <span className="hidden truncate text-sm font-bold sm:inline">{email}</span>
+          <Link
+            to="/recepten/nieuw"
+            className="flex min-h-11 shrink-0 items-center rounded-[0.625rem] border-3 border-white px-3 font-black no-underline focus-visible:outline-white"
+          >
+            <span className="sm:hidden">+ Nieuw</span>
+            <span className="hidden sm:inline">Nieuw recept</span>
+          </Link>
+        </div>
       </div>
       <Fret size={14} className="mb-1.5 text-yel" />
     </header>
