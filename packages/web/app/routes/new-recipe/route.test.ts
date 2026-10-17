@@ -58,3 +58,6 @@ test('recipe-creation › Invalid servings', async () => {
   }
   assert.equal(await count(), before);
 });
+
+// The filter runs in the browser (Base UI's Autocomplete with a base-sensitivity filter), so this needs a real browser; checked by hand.
+test.todo('recipe-creation › Suggestions ignore letter case');

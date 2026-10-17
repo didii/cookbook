@@ -1,10 +1,15 @@
 import { data, Form, redirect } from 'react-router';
 import { envContext, userEmailContext } from '~/.server/context';
-import { createRecipe } from '~/.server/recipes';
+import { createRecipe, listAuthors } from '~/.server/recipes';
 import { Button } from '~/shared/Button';
 import type { Route } from './+types/route';
+import { AuthorInput } from './AuthorInput';
 
 type Field = 'title' | 'author' | 'servings';
+
+export async function loader({ context }: Route.LoaderArgs) {
+  return { authors: await listAuthors(context.get(envContext).DB) };
+}
 
 export async function action({ request, context }: Route.ActionArgs) {
   const form = await request.formData();
@@ -32,7 +37,7 @@ export function meta() {
 
 const inputClass = 'mt-1 block min-h-13 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-lg text-ink aria-invalid:border-red';
 
-export default function NewRecipe({ actionData }: Route.ComponentProps) {
+export default function NewRecipe({ loaderData, actionData }: Route.ComponentProps) {
   const errors = actionData?.errors ?? {};
   const values = actionData?.values;
 
@@ -51,17 +56,27 @@ export default function NewRecipe({ actionData }: Route.ComponentProps) {
             <label htmlFor={name} className="font-extrabold">
               {label}
             </label>
-            <input
-              id={name}
-              name={name}
-              type={type}
-              defaultValue={values?.[name]}
-              required
-              aria-invalid={errors[name] ? true : undefined}
-              aria-describedby={errors[name] ? `${name}-error` : undefined}
-              className={inputClass}
-              {...extra}
-            />
+            {name === 'author' ? (
+              <AuthorInput
+                authors={loaderData.authors}
+                defaultValue={values?.author}
+                invalid={!!errors.author}
+                describedBy={errors.author ? 'author-error' : undefined}
+                className={inputClass}
+              />
+            ) : (
+              <input
+                id={name}
+                name={name}
+                type={type}
+                defaultValue={values?.[name]}
+                required
+                aria-invalid={errors[name] ? true : undefined}
+                aria-describedby={errors[name] ? `${name}-error` : undefined}
+                className={inputClass}
+                {...extra}
+              />
+            )}
             {errors[name] && (
               <p id={`${name}-error`} className="mt-1 font-bold text-red">
                 {errors[name]}

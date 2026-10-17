@@ -12,8 +12,8 @@
 ## 3. Author autocomplete
 
 - [x] 3.1 Add `listAuthors` and the case-insensitive author reuse in `createRecipe` (`app/.server/recipes.ts`); verify with tests named `recipe-creation › Existing authors are suggested`, `recipe-creation › New author is accepted` and `recipe-creation › Existing spelling is reused`.
-- [ ] 3.2 Add `@base-ui/react` and the `AuthorInput` component with the route loader supplying the authors; verify with a loader-level test named `recipe-creation › Suggestions ignore letter case` (the filter configuration, or a `test.todo` with the reason if it needs a browser), and by typing "oma" in `pnpm dev` at 360px and desktop width and submitting a new author.
+- [x] 3.2 Add `@base-ui/react` and the `AuthorInput` component with the route loader supplying the authors; verify with a loader-level test named `recipe-creation › Suggestions ignore letter case` (the filter configuration, or a `test.todo` with the reason if it needs a browser), and by typing "oma" in `pnpm dev` at 360px and desktop width and submitting a new author.
 
 ## 4. Wrap-up
 
-- [ ] 4.1 Run `pnpm format:fix`, `pnpm lint:fix`, `pnpm format:check`, `pnpm lint:check`, `pnpm typecheck` and `pnpm test:ai`; verify all pass.
+- [x] 4.1 Run `pnpm format:fix`, `pnpm lint:fix`, `pnpm format:check`, `pnpm lint:check`, `pnpm typecheck` and `pnpm test:ai`; verify all pass.
