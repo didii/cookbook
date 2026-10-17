@@ -4,7 +4,7 @@
 
 - [x] 1.1 Add `scripts/spec-check.ts` (exported `parseScenarios`, `findTests`, `check`; `main` runs only when executed directly) with `--report`, the `file:line` map, a todo section, and exit code 1 on missing, unknown or duplicate scenarios; add `scripts/spec-check.test.ts` with unit tests on small markdown and test-file fixtures (ADDED/MODIFIED/REMOVED handling, de-duplication, todo recognized, unknown test name, duplicate title) and verify `node --test scripts` passes
 - [x] 1.2 Add the root script `"spec:check": "node scripts/spec-check.ts --report"`, make the root `test` script also run `node --test scripts`, and verify `pnpm spec:check` prints the current gaps without failing and `pnpm test` passes
-- [ ] 1.3 Add a `pnpm spec:check` step to `.github/workflows/ci.yml` after `pnpm test`; verify the workflow file is valid and `pnpm format:check` passes
+- [x] 1.3 Add a `pnpm spec:check` step to `.github/workflows/ci.yml` after `pnpm test`; verify the workflow file is valid and `pnpm format:check` passes
 
 ## 2. Close the gaps
 
