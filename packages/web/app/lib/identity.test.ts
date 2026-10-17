@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { generateKeyPair, SignJWT } from 'jose';
-import { identify } from '../app/lib/identity.ts';
+import { accessJwtHeader, identify } from './identity';
 
 const teamDomain = 'team.cloudflareaccess.com';
 const audience = 'aud-tag';
@@ -25,7 +25,7 @@ function token({
 
 const request = (jwt?: string, headers: Record<string, string> = {}) =>
   new Request('https://cookbook.example.com/', {
-    headers: jwt ? { ...headers, 'Cf-Access-Jwt-Assertion': jwt } : headers,
+    headers: jwt ? { ...headers, [accessJwtHeader]: jwt } : headers,
   });
 
 test('valid token returns the email', async () => {

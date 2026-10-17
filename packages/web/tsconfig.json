@@ -6,6 +6,10 @@
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
     "strict": true,
+    "paths": {
+      "~/*": ["./app/*"],
+      "~testing/*": ["./testing/*"]
+    },
     "noEmit": true
   }
 }
