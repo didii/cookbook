@@ -17,4 +17,4 @@
 ## 3. CI and docs
 
 - [ ] 3.1 Add `.github/workflows/ci.yml` (ubuntu, Node 24, pnpm 11, frozen install; steps `typecheck`, `lint:check`, `format:check`, `test`, `build`; on pull requests and pushes to `main`); verify the workflow runs green on the PR
-- [ ] 3.2 Update `packages/web/STRUCTURE.md`: tests sit next to the file they test (`testing/` holds shared helpers), plus the testing policy (one happy-path integration test per endpoint; logic and edge cases as unit tests; how to run `pnpm test`); drop the "`node --test` does not resolve `~/`" claim from the Imports bullet (tsx does), and verify no remaining text says tests live in `test/`, and confirm `pnpm format:check` and `pnpm lint:check` pass
+- [x] 3.2 Update `packages/web/STRUCTURE.md`: tests sit next to the file they test (`testing/` holds shared helpers), plus the testing policy (one happy-path integration test per endpoint; logic and edge cases as unit tests; how to run `pnpm test`); drop the "`node --test` does not resolve `~/`" claim from the Imports bullet (tsx does), and verify no remaining text says tests live in `test/`, and confirm `pnpm format:check` and `pnpm lint:check` pass
