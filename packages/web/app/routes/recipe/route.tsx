@@ -1,5 +1,5 @@
 import { data, Link } from 'react-router';
-import { envContext } from '~/lib/context';
+import { envContext } from '~/.server/context';
 import { getRecipe } from '~/lib/recipes';
 import { tileFor } from '~/lib/tile';
 import { Fret } from '~/shared/Fret';
