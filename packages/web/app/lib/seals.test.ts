@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { pickSeal, seals } from '../app/lib/seals.ts';
+import { pickSeal, seals } from './seals';
 
 test('skips the last three seals and picks among the least used', () => {
   const existing = [seals[0], seals[0], seals[1], seals[2], seals[3]];

@@ -1,11 +1,21 @@
 {
   "extends": "./tsconfig.json",
-  "include": [".react-router/types/**/*", "app/**/*", "app/**/.server/**/*", "app/**/.client/**/*", "workers/**/*", "worker-configuration.d.ts"],
+  "include": [
+    ".react-router/types/**/*",
+    "app/**/*",
+    "app/**/.server/**/*",
+    "app/**/.client/**/*",
+    "workers/**/*",
+    "testing/**/*",
+    "migrations/**/*.ts",
+    "seed/**/*.ts",
+    "worker-configuration.d.ts"
+  ],
   "compilerOptions": {
     "composite": true,
     "strict": true,
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
-    "types": ["vite/client"],
+    "types": ["vite/client", "node"],
     "target": "ES2022",
     "module": "ES2022",
     "moduleResolution": "bundler",

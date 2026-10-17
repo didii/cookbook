@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { createTestDb } from './db.ts';
+import { createTestDb } from './db';
 
 test('applies the migrations to an in-memory D1', async () => {
   const { db, dispose } = await createTestDb();
