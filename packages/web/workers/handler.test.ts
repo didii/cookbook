@@ -33,7 +33,7 @@ function setup(dev: boolean) {
 
 const get = (jwt?: string) => new Request('https://cookbook.example.com/', { headers: jwt ? { [accessJwtHeader]: jwt } : {} });
 
-test('refuses a request without identity and never reaches the app', async () => {
+test('family-access › Request with no identity proof', async () => {
   const { calls, fetch } = setup(false);
   const res = await fetch(get(), env);
   assert.equal(res.status, 403);
@@ -56,12 +56,22 @@ test('passes the app its response, with the verified email and the env in the co
   assert.equal(calls[0].get(envContext), env);
 });
 
-test('honors the stand-in email only in dev', async () => {
+test('family-access › Local run with a stand-in member', async () => {
   const dev = setup(true);
   assert.equal((await dev.fetch(get(), env)).status, 200);
   assert.equal(dev.calls[0].get(userEmailContext), 'dev@example.com');
+});
 
+test('family-access › Stand-in identity configured on a deployed app', async () => {
   const prod = setup(false);
   assert.equal((await prod.fetch(get(), env)).status, 403);
   assert.equal(prod.calls.length, 0);
 });
+
+// Not automated: sign-in happens at Cloudflare Access, outside this code.
+test.todo('family-access › Allowlisted member signs in');
+test.todo('family-access › Unknown email is refused');
+test.todo('family-access › First visit by a new family member');
+test.todo('family-access › Returning within the session period');
+// Not automated: the home page needs a component or loader-level test.
+test.todo('family-access › Home page shows who is signed in');
