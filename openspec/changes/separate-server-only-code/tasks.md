@@ -6,5 +6,5 @@
 ## 2. Enforce and document
 
 - [x] 2.1 Run `pnpm typecheck` and `pnpm build`; confirm the build succeeds and that a temporary top-level import of `~/.server/identity` in a component fails it (then remove the import). Verify: both outcomes observed.
-- [ ] 2.2 Update `packages/web/STRUCTURE.md`: add `.server/` to the layout, say `lib/` is for code that runs on both sides, fix the `lib/recipes.ts` test example. Verify: file reads correctly and paths exist.
-- [ ] 2.3 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check`. Verify: all clean.
+- [x] 2.2 Update `packages/web/STRUCTURE.md`: add `.server/` to the layout, say `lib/` is for code that runs on both sides, fix the `lib/recipes.ts` test example. Verify: file reads correctly and paths exist.
+- [x] 2.3 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check`. Verify: all clean.
