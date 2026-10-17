@@ -115,7 +115,7 @@ test('createRecipe stores every property, ingredient and step so getRecipe reads
   );
   const row = await db
     .prepare(
-      "SELECT r.created_by, i.amount, i.unit FROM recipes r JOIN ingredients i ON i.recipe_id = r.id WHERE r.slug = 'alles' AND i.position = 1",
+      "SELECT r.created_by, i.amount, i.unit FROM recipes r JOIN ingredients i ON i.recipe_id = r.id WHERE r.slug = 'alles' AND i.position = 0",
     )
     .first();
   assert.deepEqual(row, { created_by: 'iemand@example.com', amount: 250, unit: 'g' });

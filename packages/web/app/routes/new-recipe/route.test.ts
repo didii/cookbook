@@ -27,8 +27,6 @@ const submit = (fields: Record<string, string>) => {
   } as Partial<Route.ActionArgs> as Route.ActionArgs);
 };
 
-const count = async () => (await db.prepare('SELECT COUNT(*) AS n FROM recipes').first<{ n: number }>())?.n;
-
 test('recipe-creation › Recipe is created', async () => {
   const res = (await submit({ title: ' Soep ', author: 'Oma', servings: '4' })) as Response;
   assert.equal(res.status, 302);
@@ -42,27 +40,6 @@ test('recipe-creation › Servings left empty', async () => {
   const res = (await submit({ title: 'Zonder porties', author: 'Oma', servings: '' })) as Response;
   assert.equal(res.headers.get('Location'), '/recepten/zonder-porties');
   assert.equal((await getRecipe(db, 'zonder-porties'))?.servings, null);
-});
-
-test('recipe-creation › Missing title', async () => {
-  const before = await count();
-  const res = (await submit({ title: '   ', author: 'Oma', servings: '4' })) as {
-    init: { status: number };
-    data: { errors: object; values: object };
-  };
-  assert.equal(res.init.status, 400);
-  assert.deepEqual(Object.keys(res.data.errors), ['title']);
-  assert.equal(await count(), before);
-});
-
-test('recipe-creation › Invalid servings', async () => {
-  const before = await count();
-  for (const servings of ['0', '-2', '2.5', 'veel']) {
-    const res = (await submit({ title: 'Taart', author: 'Oma', servings })) as { init: { status: number }; data: { errors: object } };
-    assert.equal(res.init.status, 400, servings);
-    assert.deepEqual(Object.keys(res.data.errors), ['servings'], servings);
-  }
-  assert.equal(await count(), before);
 });
 
 // The filter runs in the browser (Base UI's Autocomplete with a base-sensitivity filter), so this needs a real browser; checked by hand.

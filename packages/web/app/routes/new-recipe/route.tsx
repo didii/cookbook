@@ -5,8 +5,7 @@ import { createRecipe, listAuthors } from '~/.server/recipes';
 import { Button } from '~/shared/Button';
 import type { Route } from './+types/route';
 import { AuthorInput } from './AuthorInput';
-
-type Field = 'title' | 'author' | 'servings';
+import { validate, type Field } from './validate';
 
 export async function loader({ context }: Route.LoaderArgs) {
   return { authors: await listAuthors(context.get(envContext).DB) };
@@ -17,11 +16,7 @@ export async function action({ request, context }: Route.ActionArgs) {
   const text = (name: Field) => String(form.get(name) ?? '').trim();
   const values = { title: text('title'), author: text('author'), servings: text('servings') };
 
-  const errors: Partial<Record<Field, string>> = {};
-  if (!values.title) errors.title = 'Geef het recept een titel.';
-  if (!values.author) errors.author = 'Vul in van wie het recept is.';
-  if (values.servings && (!/^\d+$/.test(values.servings) || Number(values.servings) < 1))
-    errors.servings = 'Vul een heel aantal personen in, minstens 1.';
+  const errors = validate(values);
   if (Object.keys(errors).length) return data({ errors, values }, { status: 400 });
 
   const slug = await createRecipe(context.get(envContext).DB, {

@@ -93,11 +93,9 @@ export async function createRecipe(db: D1Database, recipe: NewRecipe): Promise<s
     ...(recipe.ingredients ?? []).map((ing, i) =>
       db
         .prepare(`INSERT INTO ingredients (recipe_id, position, name, quantity_text, amount, unit) VALUES (${idOf}, ?, ?, ?, ?, ?)`)
-        .bind(slug, i + 1, ing.name, ing.quantityText ?? '', ing.amount ?? null, ing.unit ?? null),
+        .bind(slug, i, ing.name, ing.quantityText ?? '', ing.amount ?? null, ing.unit ?? null),
     ),
-    ...(recipe.steps ?? []).map((body, i) =>
-      db.prepare(`INSERT INTO steps (recipe_id, position, body) VALUES (${idOf}, ?, ?)`).bind(slug, i + 1, body),
-    ),
+    ...(recipe.steps ?? []).map((body, i) => db.prepare(`INSERT INTO steps (recipe_id, position, body) VALUES (${idOf}, ?, ?)`).bind(slug, i, body)),
   ]);
   return slug;
 }
