@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
-import { getRecipe } from './recipes';
+import { createRecipe, getRecipe, slugify } from './recipes';
 
 let db: D1Database;
 let dispose: () => Promise<void>;
@@ -59,4 +59,64 @@ test('maps every recipe column', async () => {
       steps: [],
     },
   );
+});
+
+test('recipe-creation › Slug from title', async () => {
+  assert.equal(slugify('Kip met Rijst!'), 'kip-met-rijst');
+  assert.equal(slugify('  Crème brûlée  '), 'creme-brulee');
+  assert.equal(slugify('!!!'), 'recept');
+  assert.equal(await createRecipe(db, { title: 'Kip met Rijst!', author: 'Oma', servings: 4 }), 'kip-met-rijst');
+});
+
+test('recipe-creation › Same title twice', async () => {
+  const first = await createRecipe(db, { title: 'Dubbel', author: 'Oma', servings: 2 });
+  const second = await createRecipe(db, { title: 'Dubbel', author: 'Papa', servings: 3 });
+  const third = await createRecipe(db, { title: 'Dubbel', author: 'Opa', servings: 4 });
+  assert.deepEqual([first, second, third], ['dubbel', 'dubbel-2', 'dubbel-3']);
+  assert.equal((await getRecipe(db, 'dubbel'))?.author, 'Oma');
+});
+
+test('recipe-creation › Title that clashes with the form address', async () => {
+  assert.equal(await createRecipe(db, { title: 'Nieuw', author: 'Oma', servings: 2 }), 'nieuw-2');
+});
+
+test('createRecipe stores every property, ingredient and step so getRecipe reads them back', async () => {
+  const slug = await createRecipe(db, {
+    title: 'Alles',
+    author: 'Tante An',
+    servings: 6,
+    time: '1u',
+    intro: 'Intro',
+    image: '/alles.jpg',
+    seal: 'fu',
+    createdBy: 'iemand@example.com',
+    ingredients: [{ name: 'bloem', quantityText: '250 g', amount: 250, unit: 'g' }, { name: 'zout' }],
+    steps: ['mengen', 'bakken'],
+  });
+  const r = await getRecipe(db, slug);
+  assert.deepEqual(
+    { ...r, id: 0 },
+    {
+      id: 0,
+      slug: 'alles',
+      title: 'Alles',
+      author: 'Tante An',
+      time: '1u',
+      servings: 6,
+      intro: 'Intro',
+      image: '/alles.jpg',
+      seal: 'fu',
+      ingredients: [
+        { quantity_text: '250 g', name: 'bloem' },
+        { quantity_text: '', name: 'zout' },
+      ],
+      steps: ['mengen', 'bakken'],
+    },
+  );
+  const row = await db
+    .prepare(
+      "SELECT r.created_by, i.amount, i.unit FROM recipes r JOIN ingredients i ON i.recipe_id = r.id WHERE r.slug = 'alles' AND i.position = 1",
+    )
+    .first();
+  assert.deepEqual(row, { created_by: 'iemand@example.com', amount: 250, unit: 'g' });
 });

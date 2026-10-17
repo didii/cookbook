@@ -31,3 +31,69 @@ export async function getRecipe(db: D1Database, slug: string): Promise<StoredRec
     steps: (steps.results as { body: string }[]).map((s) => s.body),
   };
 }
+
+export type NewRecipe = {
+  title: string;
+  author: string;
+  servings: number;
+  time?: string;
+  intro?: string;
+  image?: string;
+  seal?: string;
+  createdBy?: string;
+  ingredients?: { name: string; quantityText?: string; amount?: number; unit?: string }[];
+  steps?: string[];
+};
+
+/** Addresses that are routes of their own and so can't be a recipe slug. */
+const reservedSlugs = ['nieuw'];
+
+/** "Kip met Rijst!" -> "kip-met-rijst". Never empty. */
+export function slugify(title: string): string {
+  const slug = title
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+  return slug || 'recept';
+}
+
+/** The first of base, base-2, base-3, … that no recipe has and that isn't reserved. */
+async function freeSlug(db: D1Database, title: string): Promise<string> {
+  const base = slugify(title);
+  const { results } = await db.prepare("SELECT slug FROM recipes WHERE slug = ? OR slug LIKE ? || '-%'").bind(base, base).all<{ slug: string }>();
+  const taken = new Set([...results.map((r) => r.slug), ...reservedSlugs]);
+  if (!taken.has(base)) return base;
+  for (let n = 2; ; n++) if (!taken.has(`${base}-${n}`)) return `${base}-${n}`;
+}
+
+/** Stores a recipe with its ingredients and steps in one batch and returns its slug. */
+export async function createRecipe(db: D1Database, recipe: NewRecipe): Promise<string> {
+  const slug = await freeSlug(db, recipe.title);
+  const idOf = '(SELECT id FROM recipes WHERE slug = ?)';
+  await db.batch([
+    db
+      .prepare('INSERT INTO recipes (slug, title, author, servings, time, intro, image, seal, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+      .bind(
+        slug,
+        recipe.title,
+        recipe.author,
+        recipe.servings,
+        recipe.time ?? null,
+        recipe.intro ?? '',
+        recipe.image ?? null,
+        recipe.seal ?? null,
+        recipe.createdBy ?? null,
+      ),
+    ...(recipe.ingredients ?? []).map((ing, i) =>
+      db
+        .prepare(`INSERT INTO ingredients (recipe_id, position, name, quantity_text, amount, unit) VALUES (${idOf}, ?, ?, ?, ?, ?)`)
+        .bind(slug, i + 1, ing.name, ing.quantityText ?? '', ing.amount ?? null, ing.unit ?? null),
+    ),
+    ...(recipe.steps ?? []).map((body, i) =>
+      db.prepare(`INSERT INTO steps (recipe_id, position, body) VALUES (${idOf}, ?, ?)`).bind(slug, i + 1, body),
+    ),
+  ]);
+  return slug;
+}
