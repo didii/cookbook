@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
-import { createRecipe, getRecipe, slugify } from './recipes';
+import { createRecipe, getRecipe, listAuthors, slugify } from './recipes';
 
 let db: D1Database;
 let dispose: () => Promise<void>;
@@ -119,4 +119,27 @@ test('createRecipe stores every property, ingredient and step so getRecipe reads
     )
     .first();
   assert.deepEqual(row, { created_by: 'iemand@example.com', amount: 250, unit: 'g' });
+});
+
+test('recipe-creation › Existing authors are suggested', async () => {
+  const fresh = await createTestDb();
+  try {
+    await createRecipe(fresh.db, { title: 'A', author: 'Papa', servings: 1 });
+    await createRecipe(fresh.db, { title: 'B', author: 'Oma', servings: 1 });
+    await fresh.db.prepare("INSERT INTO recipes (slug, title, author, servings) VALUES ('c', 'C', 'OMA', 1)").run();
+    assert.deepEqual(await listAuthors(fresh.db), ['Oma', 'Papa']);
+  } finally {
+    await fresh.dispose();
+  }
+});
+
+test('recipe-creation › New author is accepted', async () => {
+  const slug = await createRecipe(db, { title: 'Nieuwe auteur', author: 'tante Mieke', servings: 2 });
+  assert.equal((await getRecipe(db, slug))?.author, 'tante Mieke');
+});
+
+test('recipe-creation › Existing spelling is reused', async () => {
+  await createRecipe(db, { title: 'Eerste', author: 'Opa Jos', servings: 2 });
+  const slug = await createRecipe(db, { title: 'Tweede', author: 'opa jos', servings: 2 });
+  assert.equal((await getRecipe(db, slug))?.author, 'Opa Jos');
 });

@@ -30,6 +30,25 @@ The system SHALL give each created recipe a slug derived from its title that no 
 - **WHEN** a recipe titled "Nieuw" is created
 - **THEN** its slug is not `nieuw`
 
+### Requirement: The author is suggested from existing authors
+The system SHALL suggest, while the author is typed, the authors already on stored recipes, each author once and matched regardless of letter case, SHALL accept an author that is not yet stored, and SHALL store an author that matches an existing one regardless of case with the existing spelling.
+
+#### Scenario: Existing authors are suggested
+- **WHEN** a family member opens the new recipe form and recipes by "Oma" and "Papa" are stored
+- **THEN** both are offered as suggestions, once each, even when "Oma" was entered with different letter case on several recipes
+
+#### Scenario: Suggestions ignore letter case
+- **WHEN** a family member types "oma" in the author field
+- **THEN** "Oma" is among the suggestions
+
+#### Scenario: New author is accepted
+- **WHEN** a family member submits an author that no stored recipe has
+- **THEN** the recipe is stored with that author as typed
+
+#### Scenario: Existing spelling is reused
+- **WHEN** a family member submits "oma" and "Oma" is already stored as an author
+- **THEN** the recipe is stored with the author "Oma"
+
 ### Requirement: Invalid input is refused
 The system SHALL refuse a submission with a blank title, a blank author, or servings that are not a whole number greater than zero, store nothing, and show the form again with what was entered and what is wrong.
 

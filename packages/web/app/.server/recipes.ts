@@ -74,10 +74,14 @@ export async function createRecipe(db: D1Database, recipe: NewRecipe): Promise<s
   const idOf = '(SELECT id FROM recipes WHERE slug = ?)';
   await db.batch([
     db
-      .prepare('INSERT INTO recipes (slug, title, author, servings, time, intro, image, seal, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+      .prepare(
+        // A case variant of a stored author takes the stored spelling.
+        'INSERT INTO recipes (slug, title, author, servings, time, intro, image, seal, created_by) VALUES (?, ?, COALESCE((SELECT author FROM recipes WHERE author = ? COLLATE NOCASE LIMIT 1), ?), ?, ?, ?, ?, ?, ?)',
+      )
       .bind(
         slug,
         recipe.title,
+        recipe.author,
         recipe.author,
         recipe.servings,
         recipe.time ?? null,
@@ -96,4 +100,12 @@ export async function createRecipe(db: D1Database, recipe: NewRecipe): Promise<s
     ),
   ]);
   return slug;
+}
+
+/** Every author once (case variants count as one), for suggestions. */
+export async function listAuthors(db: D1Database): Promise<string[]> {
+  const { results } = await db
+    .prepare('SELECT author FROM recipes GROUP BY author COLLATE NOCASE ORDER BY author COLLATE NOCASE')
+    .all<{ author: string }>();
+  return results.map((r) => r.author);
 }
