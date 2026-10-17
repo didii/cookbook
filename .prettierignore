@@ -5,3 +5,4 @@ package-lock.json
 .impeccable
 .claude
 openspec
+pnpm-lock.yaml
