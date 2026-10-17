@@ -12,7 +12,7 @@
 
 - [x] 2.1 Extract `createFetch` into `workers/handler.ts` and make `workers/app.ts` a thin wrapper that passes the virtual-build request handler and `import.meta.env.DEV`; verify `pnpm typecheck` and `pnpm build` pass and the app still serves a recipe page via `pnpm dev`
 - [x] 2.2 Add `workers/handler.test.ts` unit tests: no identity gives 403 and the app is not called; valid token (local key via injected `getKey`) calls the app with email and env in the router context; dev email honored only when `dev` is true; verify `pnpm test` passes
-- [ ] 2.3 Add `app/routes/recipe/route.test.ts`, the single integration test (happy path): the real `loader` from `route.tsx` with a seeded in-memory D1 in the router context returns the recipe for a seeded slug; verify `pnpm test` passes
+- [x] 2.3 Add `app/routes/recipe/route.test.ts`, the single integration test (happy path): the real `loader` from `route.tsx` with a seeded in-memory D1 in the router context returns the recipe for a seeded slug; verify `pnpm test` passes
 
 ## 3. CI and docs
 
