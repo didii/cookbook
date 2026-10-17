@@ -19,7 +19,11 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
-      - run: pnpm lint:check
+      - run: pnpm lint:check --format=github
       - run: pnpm format:check
-      - run: pnpm test
+      - run: pnpm test:ci
+      - uses: mikepenz/action-junit-report@v6
+        if: '!cancelled()'
+        with:
+          report_paths: packages/web/junit.xml
       - run: pnpm build

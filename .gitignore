@@ -65,3 +65,5 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+### Test reports
+junit.xml

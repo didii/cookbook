@@ -3,6 +3,8 @@
 - Before a change is considered complete, format it with Prettier (which also organizes imports: sorted by path, no blank lines between them) and leave no lint errors. Run the auto-fixers first (`pnpm format:fix`, `pnpm lint:fix`), fix what remains by hand, and confirm with `pnpm format:check` and `pnpm lint:check`.
 - Every scenario in `openspec/specs` needs a test named `<capability> › <Scenario title>` (exact `#### Scenario:` title, one scenario per test), or a `test.todo` with that name when it cannot be automated. `pnpm test` fails on a scenario without a test or a test naming an unknown scenario.
 
+- When running the tests yourself, use `pnpm test:ai` (compact `dot` reporter: one character per test, details only for failures) instead of `pnpm test`. CI uses `pnpm test:ci`, which also writes `junit.xml`.
+
 # Kanban board
 
 The backlog lives on a Kanban board, a private claude.ai Artifact: https://claude.ai/artifact/WKZqbBbofJm2XhEkwtwYBT. It is not in the repo. Each card is one document in the artifact's database.
