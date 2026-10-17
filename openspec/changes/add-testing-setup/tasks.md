@@ -6,7 +6,7 @@
 - [x] 1.2 Add `tsx` as a devDependency and change the `test` script to `node --import tsx --test`; verify `pnpm test` still passes unchanged
 - [x] 1.3 Add `testing/db.ts` (`createTestDb`) that starts in-memory D1, applies `migrations/*.sql` in order and optionally loads `seed/dev.sql`; verify a smoke test can create it, query `sqlite_master` for the four tables, and dispose
 - [x] 1.4 Move the existing suites next to their sources with `git mv` (`app/lib/identity.test.ts`, `seals.test.ts`, `recipes.test.ts`), fix their relative imports, and rewrite `recipes.test.ts` to use the helper and the seed instead of the fake D1; verify unknown slug gives `undefined`, ingredients and steps come back in position order, and `pnpm test` passes
-- [ ] 1.5 Add `migrations/migrations.test.ts` and `seed/dev.test.ts`: migrations apply cleanly, seed loads the expected recipe/ingredient/step counts, and `UNIQUE` slug, `servings > 0`, missing title, `UNIQUE (recipe_id, position)`, `CHECK (amount > 0)` and cascade delete behave as the `recipe-storage` spec says; verify each rejected insert throws and `pnpm test` passes
+- [x] 1.5 Add `migrations/migrations.test.ts` and `seed/dev.test.ts`: migrations apply cleanly, seed loads the expected recipe/ingredient/step counts, and `UNIQUE` slug, `servings > 0`, missing title, `UNIQUE (recipe_id, position)`, `CHECK (amount > 0)` and cascade delete behave as the `recipe-storage` spec says; verify each rejected insert throws and `pnpm test` passes
 
 ## 2. Testable Worker handler
 
