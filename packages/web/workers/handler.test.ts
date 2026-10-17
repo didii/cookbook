@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import { generateKeyPair, SignJWT } from 'jose';
 import type { RouterContextProvider } from 'react-router';
 import { envContext, userEmailContext } from '~/lib/context';
+import { accessJwtHeader } from '~/lib/identity';
 import { createFetch } from './handler';
 
 // Typed string: the generated Env types these vars as the exact literals from wrangler.jsonc.
@@ -30,7 +31,7 @@ function setup(dev: boolean) {
   return { calls, fetch };
 }
 
-const get = (jwt?: string) => new Request('https://cookbook.example.com/', { headers: jwt ? { 'Cf-Access-Jwt-Assertion': jwt } : {} });
+const get = (jwt?: string) => new Request('https://cookbook.example.com/', { headers: jwt ? { [accessJwtHeader]: jwt } : {} });
 
 test('refuses a request without identity and never reaches the app', async () => {
   const { calls, fetch } = setup(false);
