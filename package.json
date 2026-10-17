@@ -1,6 +1,7 @@
 {
   "name": "cookbook",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "pnpm --filter @cookbook/web run dev",
     "build": "pnpm --filter @cookbook/web run build",

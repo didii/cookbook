@@ -32,11 +32,11 @@ test('valid token returns the email', async () => {
   assert.equal(await identify(request(await token()), options), 'mum@example.com');
 });
 
-test('missing token is refused', async () => {
+test('family-access › Request with no identity proof', async () => {
   assert.equal(await identify(request(), options), null);
 });
 
-test('email header without a token is refused', async () => {
+test('family-access › Forged identity', async () => {
   const forged = request(undefined, {
     'Cf-Access-Authenticated-User-Email': 'mum@example.com',
   });
@@ -53,7 +53,7 @@ test('wrong audience is refused', async () => {
   assert.equal(await identify(request(jwt), options), null);
 });
 
-test('expired token is refused', async () => {
+test('family-access › Expired identity proof', async () => {
   const jwt = await token({ exp: Math.floor(Date.now() / 1000) - 60 });
   assert.equal(await identify(request(jwt), options), null);
 });
