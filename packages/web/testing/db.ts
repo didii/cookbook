@@ -12,8 +12,13 @@ const statements = (file: string) =>
     .map((s) => s.trim())
     .filter(Boolean);
 
-/** In-memory D1 with every migration applied, and optionally the dev seed. Call dispose() when done. */
-export async function createTestDb({ seed = false } = {}) {
+/** Runs a .sql file against the database, statement by statement. */
+export async function applySql(db: D1Database, file: string) {
+  await db.batch(statements(file).map((s) => db.prepare(s)));
+}
+
+/** In-memory D1 with every migration applied and no data. Call dispose() when done. */
+export async function createTestDb() {
   const mf = new Miniflare(
     convertV4MiniflareOptions({
       modules: true,
@@ -22,12 +27,12 @@ export async function createTestDb({ seed = false } = {}) {
       d1Databases: { DB: 'test' },
     }),
   );
-  const db = (await mf.getD1Database('DB')) as unknown as D1Database;
+  // Miniflare's declarations import @cloudflare/workers-types, which is not installed (and would clash with the
+  // generated worker-configuration.d.ts), so getD1Database is typed any. Annotating gives the real D1Database type.
+  const db: D1Database = await mf.getD1Database('DB');
   const migrations = readdirSync(join(root, 'migrations'))
     .filter((f) => f.endsWith('.sql'))
     .sort();
-  const files = migrations.map((f) => join(root, 'migrations', f));
-  if (seed) files.push(join(root, 'seed', 'dev.sql'));
-  for (const file of files) await db.batch(statements(file).map((s) => db.prepare(s)));
+  for (const f of migrations) await applySql(db, join(root, 'migrations', f));
   return { db, dispose: () => mf.dispose() };
 }

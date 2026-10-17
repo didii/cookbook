@@ -2,18 +2,20 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { generateKeyPair, SignJWT } from 'jose';
 import type { RouterContextProvider } from 'react-router';
-import { envContext, userEmailContext } from '../app/lib/context';
+import { envContext, userEmailContext } from '~/lib/context';
 import { createFetch } from './handler';
 
-const teamDomain = 'team.cloudflareaccess.com';
+// Typed string: the generated Env types these vars as the exact literals from wrangler.jsonc.
+const teamDomain: string = 'team.cloudflareaccess.com';
+const audience: string = 'aud-tag';
 const { publicKey, privateKey } = await generateKeyPair('RS256');
-const env = { ACCESS_TEAM_DOMAIN: teamDomain, ACCESS_AUD: 'aud-tag', DEV_USER_EMAIL: 'dev@example.com' } as unknown as Env;
+const env = { ACCESS_TEAM_DOMAIN: teamDomain, ACCESS_AUD: audience, DEV_USER_EMAIL: 'dev@example.com' } as Partial<Env> as Env;
 
 const token = () =>
   new SignJWT({ email: 'mum@example.com' })
     .setProtectedHeader({ alg: 'RS256' })
     .setIssuer(`https://${teamDomain}`)
-    .setAudience('aud-tag')
+    .setAudience(audience)
     .setExpirationTime('1h')
     .sign(privateKey);
 

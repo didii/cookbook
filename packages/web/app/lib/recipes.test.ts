@@ -1,15 +1,15 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
-import { createTestDb } from '../../testing/db';
+import { createTestDb } from '~testing/db';
 import { getRecipe } from './recipes';
 
 let db: D1Database;
 let dispose: () => Promise<void>;
 
 before(async () => {
-  ({ db, dispose } = await createTestDb({ seed: true }));
-  // Inserted out of position order, so the test proves the query sorts.
+  ({ db, dispose } = await createTestDb());
   await db.batch([
+    // Ingredients and steps are inserted out of position order, so the tests prove the query sorts.
     db.prepare("INSERT INTO recipes (slug, title, author, servings) VALUES ('ordering', 'Ordering', 'Oma', 2)"),
     db.prepare("INSERT INTO ingredients (recipe_id, position, name) VALUES ((SELECT id FROM recipes WHERE slug = 'ordering'), 2, 'zout')"),
     db.prepare(
@@ -17,6 +17,9 @@ before(async () => {
     ),
     db.prepare("INSERT INTO steps (recipe_id, position, body) VALUES ((SELECT id FROM recipes WHERE slug = 'ordering'), 2, 'twee')"),
     db.prepare("INSERT INTO steps (recipe_id, position, body) VALUES ((SELECT id FROM recipes WHERE slug = 'ordering'), 1, 'een')"),
+    db.prepare(
+      "INSERT INTO recipes (slug, title, author, time, servings, intro, image, seal) VALUES ('full', 'Full', 'Papa', '1u 20', 8, 'intro', '/full.jpg', 'fu')",
+    ),
   ]);
 });
 
@@ -38,10 +41,22 @@ test('returns ingredients and steps in position order, and leaves optional field
   assert.deepEqual(r?.steps, ['een', 'twee']);
 });
 
-test('reads a seeded recipe with all its parts', async () => {
-  const r = await getRecipe(db, 'appeltaart');
-  assert.equal(r?.title, 'Appeltaart');
-  assert.equal(r?.servings, 8);
-  assert.equal(r?.ingredients.length, 7);
-  assert.equal(r?.steps.length, 6);
+test('maps every recipe column', async () => {
+  const r = await getRecipe(db, 'full');
+  assert.deepEqual(
+    { ...r, id: 0 },
+    {
+      id: 0,
+      slug: 'full',
+      title: 'Full',
+      author: 'Papa',
+      time: '1u 20',
+      servings: 8,
+      intro: 'intro',
+      image: '/full.jpg',
+      seal: 'fu',
+      ingredients: [],
+      steps: [],
+    },
+  );
 });
