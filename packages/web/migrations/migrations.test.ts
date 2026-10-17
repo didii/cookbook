@@ -36,7 +36,15 @@ const link = (step: number, ingredient: number, recipe: number, amount: number |
     .bind(step, ingredient, recipe, amount, amount ? 'g' : null)
     .run();
 
-test('a recipe with all fields reads back as stored', async () => {
+const count = async (sql: string, ...binds: unknown[]) =>
+  (
+    await db
+      .prepare(sql)
+      .bind(...binds)
+      .all()
+  ).results.length;
+
+test('recipe-storage › Recipe is saved', async () => {
   await db
     .prepare('INSERT INTO recipes (slug, title, author, time, servings, intro, image, seal, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
     .bind('full', 'Full', 'Oma', '1u', 8, 'intro', '/a.jpg', 'fu', 'mum@example.com')
@@ -61,82 +69,132 @@ test('a recipe with all fields reads back as stored', async () => {
   );
 });
 
-test('a duplicate slug is refused and the original is unchanged', async () => {
+test('recipe-storage › Duplicate slug is refused', async () => {
   await addRecipe('dup');
   await assert.rejects(addRecipe('dup'));
-  const { results } = await db.prepare("SELECT id FROM recipes WHERE slug = 'dup'").all();
-  assert.equal(results.length, 1);
+  assert.equal(await count("SELECT id FROM recipes WHERE slug = 'dup'"), 1);
 });
 
-test('a recipe needs a title and servings above zero', async () => {
+test('recipe-storage › Required field is missing', async () => {
   await assert.rejects(db.prepare("INSERT INTO recipes (slug, author, servings) VALUES ('no-title', 'Oma', 4)").run());
   await assert.rejects(db.prepare("INSERT INTO recipes (slug, title, author, servings) VALUES ('zero', 'Zero', 'Oma', 0)").run());
 });
 
-test('ingredients and steps need an existing recipe and a unique position', async () => {
-  await assert.rejects(addIngredient(9999, 1));
-  await assert.rejects(addStep(9999, 1));
-  const r = await addRecipe('positions');
-  await addIngredient(r, 1);
-  await addStep(r, 1);
+test('recipe-storage › Ingredients keep their order', async () => {
+  const r = await addRecipe('ingredient-order');
+  const second = await addIngredient(r, 2);
+  const first = await addIngredient(r, 1);
+  const { results } = await db.prepare('SELECT id FROM ingredients WHERE recipe_id = ? ORDER BY position').bind(r).all();
+  assert.deepEqual(
+    results.map((row) => row.id),
+    [first, second],
+  );
   await assert.rejects(addIngredient(r, 1));
-  await assert.rejects(addStep(r, 1));
 });
 
-test('ingredient quantity: amount and unit are kept, empty text is accepted, amount must be positive', async () => {
-  const r = await addRecipe('quantity');
-  const id = await addIngredientWithAmount(r, 1, 250, 'g');
+test('recipe-storage › Ingredient needs a recipe', async () => {
+  await assert.rejects(addIngredient(9999, 1));
+});
+
+test('recipe-storage › Quantity with amount and unit', async () => {
+  const id = await addIngredientWithAmount(await addRecipe('quantity'), 1, 250, 'g');
   assert.deepEqual(await db.prepare('SELECT quantity_text, amount, unit FROM ingredients WHERE id = ?').bind(id).first(), {
     quantity_text: '',
     amount: 250,
     unit: 'g',
   });
-  await assert.rejects(addIngredientWithAmount(r, 2, 0, 'g'));
-  await assert.rejects(addIngredientWithAmount(r, 3, -1, 'g'));
 });
 
-test('a step may carry an image with alt text, or none', async () => {
+test('recipe-storage › Quantity without a number', async () => {
+  const id = await addIngredient(await addRecipe('no-number'), 1);
+  assert.deepEqual(await db.prepare('SELECT quantity_text, amount, unit FROM ingredients WHERE id = ?').bind(id).first(), {
+    quantity_text: '',
+    amount: null,
+    unit: null,
+  });
+});
+
+test('recipe-storage › Non-positive amount refused', async () => {
+  const r = await addRecipe('bad-amount');
+  await assert.rejects(addIngredientWithAmount(r, 1, 0, 'g'));
+  await assert.rejects(addIngredientWithAmount(r, 2, -1, 'g'));
+});
+
+test('recipe-storage › Steps keep their order', async () => {
+  const r = await addRecipe('step-order');
+  const second = await addStep(r, 2);
+  const first = await addStep(r, 1);
+  const { results } = await db.prepare('SELECT id FROM steps WHERE recipe_id = ? ORDER BY position').bind(r).all();
+  assert.deepEqual(
+    results.map((row) => row.id),
+    [first, second],
+  );
+  await assert.rejects(addStep(r, 1));
+});
+
+test('recipe-storage › Step needs a recipe', async () => {
+  await assert.rejects(addStep(9999, 1));
+});
+
+test('recipe-storage › Step with image', async () => {
   const r = await addRecipe('step-image');
   await db.prepare("INSERT INTO steps (recipe_id, position, body, image, image_alt) VALUES (?, 1, 'x', '/s.jpg', 'a pan')").bind(r).run();
-  await addStep(r, 2);
-  assert.deepEqual(await db.prepare('SELECT image, image_alt FROM steps WHERE recipe_id = ? AND position = 1').bind(r).first(), {
+  assert.deepEqual(await db.prepare('SELECT image, image_alt FROM steps WHERE recipe_id = ?').bind(r).first(), {
     image: '/s.jpg',
     image_alt: 'a pan',
   });
 });
 
-test('a step links to ingredients of its own recipe only, once each', async () => {
-  const a = await addRecipe('link-a');
-  const b = await addRecipe('link-b');
-  const step = await addStep(a, 1);
-  const own = await addIngredient(a, 1);
-  const foreign = await addIngredient(b, 1);
-  await link(step, own, a, 200);
-  assert.deepEqual(await db.prepare('SELECT amount, unit FROM step_ingredients WHERE step_id = ?').bind(step).first(), { amount: 200, unit: 'g' });
-  await assert.rejects(link(step, foreign, a));
-  await assert.rejects(link(step, own, a));
-  const whole = await addIngredient(a, 2);
-  await link(step, whole, a);
-  const { results } = await db.prepare('SELECT ingredient_id FROM step_ingredients WHERE step_id = ? AND amount IS NULL').bind(step).all();
-  assert.equal(results.length, 1);
-  await assert.rejects(link(step, whole, a, 0));
+test('recipe-storage › Step without image', async () => {
+  const r = await addRecipe('step-no-image');
+  await addStep(r, 1);
+  assert.deepEqual(await db.prepare('SELECT image, image_alt FROM steps WHERE recipe_id = ?').bind(r).first(), { image: null, image_alt: null });
 });
 
-test('deleting an ingredient removes only its links', async () => {
+test('recipe-storage › Step uses part of an ingredient', async () => {
+  const r = await addRecipe('link-part');
+  const step = await addStep(r, 1);
+  await link(step, await addIngredient(r, 1), r, 200);
+  assert.deepEqual(await db.prepare('SELECT amount, unit FROM step_ingredients WHERE step_id = ?').bind(step).first(), { amount: 200, unit: 'g' });
+});
+
+test('recipe-storage › Step uses a whole ingredient', async () => {
+  const r = await addRecipe('link-whole');
+  const step = await addStep(r, 1);
+  await link(step, await addIngredient(r, 1), r);
+  assert.deepEqual(await db.prepare('SELECT amount, unit FROM step_ingredients WHERE step_id = ?').bind(step).first(), { amount: null, unit: null });
+  await assert.rejects(link(step, await addIngredient(r, 2), r, 0));
+});
+
+test('recipe-storage › Ingredient of another recipe refused', async () => {
+  const a = await addRecipe('link-a');
+  const foreign = await addIngredient(await addRecipe('link-b'), 1);
+  await assert.rejects(link(await addStep(a, 1), foreign, a));
+});
+
+test('recipe-storage › Same ingredient linked twice refused', async () => {
+  const r = await addRecipe('link-twice');
+  const step = await addStep(r, 1);
+  const ingredient = await addIngredient(r, 1);
+  await link(step, ingredient, r);
+  await assert.rejects(link(step, ingredient, r));
+});
+
+test('recipe-storage › Recipe deleted', async () => {
+  const r = await addRecipe('del-recipe');
+  await link(await addStep(r, 1), await addIngredient(r, 1), r);
+  await db.prepare('DELETE FROM recipes WHERE id = ?').bind(r).run();
+  assert.equal(await count('SELECT id FROM ingredients WHERE recipe_id = ?', r), 0);
+  assert.equal(await count('SELECT id FROM steps WHERE recipe_id = ?', r), 0);
+  assert.equal(await count('SELECT step_id FROM step_ingredients WHERE recipe_id = ?', r), 0);
+});
+
+test('recipe-storage › Ingredient deleted', async () => {
   const r = await addRecipe('del-ingredient');
   const step = await addStep(r, 1);
   const ing = await addIngredient(r, 1);
   await link(step, ing, r);
   await db.prepare('DELETE FROM ingredients WHERE id = ?').bind(ing).run();
-  assert.equal((await db.prepare('SELECT id FROM steps WHERE id = ?').bind(step).all()).results.length, 1);
-  assert.equal((await db.prepare('SELECT step_id FROM step_ingredients WHERE step_id = ?').bind(step).all()).results.length, 0);
-});
-
-test('deleting a recipe removes its ingredients, steps and links', async () => {
-  const r = await addRecipe('del-recipe');
-  await link(await addStep(r, 1), await addIngredient(r, 1), r);
-  await db.prepare('DELETE FROM recipes WHERE id = ?').bind(r).run();
-  assert.equal((await db.prepare('SELECT id FROM ingredients WHERE recipe_id = ?').bind(r).all()).results.length, 0);
-  assert.equal((await db.prepare('SELECT id FROM steps WHERE recipe_id = ?').bind(r).all()).results.length, 0);
-  assert.equal((await db.prepare('SELECT step_id FROM step_ingredients WHERE recipe_id = ?').bind(r).all()).results.length, 0);
+  assert.equal(await count('SELECT id FROM steps WHERE id = ?', step), 1);
+  assert.equal(await count('SELECT step_id FROM step_ingredients WHERE step_id = ?', step), 0);
 });
