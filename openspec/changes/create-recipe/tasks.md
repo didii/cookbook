@@ -16,7 +16,7 @@
 
 ## 4. Optional servings and accessibility
 
-- [x] 4.1 Add migration `0002_optional_servings.sql`, make servings optional in `.server/recipes.ts`, the action and the recipe page; verify with tests named `recipe-storage › Servings are optional`, `recipe-creation › Servings left empty` and an updated `recipe-viewing › Optional fields are empty`, and by checking that existing rows, ingredients, steps and links survive the migration.
+- [x] 4.1 Make `servings` nullable in `0001_recipes.sql`, make servings optional in `.server/recipes.ts`, the action and the recipe page; verify with tests named `recipe-storage › Servings are optional`, `recipe-creation › Servings left empty` and an updated `recipe-viewing › Optional fields are empty`.
 - [x] 4.2 Mark required fields with the explained asterisk, drop `required` from servings, and focus the first field in error; verify by `test.todo`s named `recipe-creation › Required fields are marked` and `recipe-creation › Errors are announced and focused` (they need a browser, with the reason on the line above) and by tabbing through the form and submitting it empty in `pnpm dev`.
 
 ## 5. Wrap-up

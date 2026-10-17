@@ -4,7 +4,7 @@ CREATE TABLE recipes (
   title TEXT NOT NULL,
   author TEXT NOT NULL,
   time TEXT,
-  servings INTEGER NOT NULL CHECK (servings > 0),
+  servings INTEGER CHECK (servings > 0),
   intro TEXT NOT NULL DEFAULT '',
   image TEXT,
   seal TEXT,
