@@ -21,7 +21,7 @@ export function TimerCard({ view }: Props) {
         </span>
         <span className="ml-auto flex gap-1.5">
           <TimerButton onClick={() => timers.undoHandOver(view.id)} aria-label="Laat de timer hier verder lopen (de timer in je app loopt door)">
-            Herstel
+            {timers.clock.auto ? 'Hier laten lopen' : 'Herstel'}
           </TimerButton>
           <TimerButton
             onClick={() => timers.stop(view.id)}

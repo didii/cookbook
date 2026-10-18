@@ -21,6 +21,9 @@ import type { TimerControls } from './timersContext';
 
 const subscribeNever = () => () => {};
 
+/** The state until sessionStorage has been read, told apart from a restored (even empty) state by identity. */
+const notRestored: Timers = {};
+
 const read = (key: string) => {
   try {
     return sessionStorage.getItem(key);
@@ -33,9 +36,8 @@ const read = (key: string) => {
 export function useTimers(slug: string, steps: Step[]): TimerControls {
   const defs = useMemo(() => timerDefs(steps), [steps]);
   const key = `timers:${slug}`;
-  const [timers, setTimers] = useState<Timers>({});
+  const [timers, setTimers] = useState<Timers>(notRestored);
   const [now, setNow] = useState(0);
-  const loaded = useRef(false);
   const audio = useRef<AudioContext>(undefined);
   const seen = useRef(new Set<string>());
   const title = useRef<string>(undefined);
@@ -45,14 +47,14 @@ export function useTimers(slug: string, steps: Step[]): TimerControls {
     const at = Date.now();
     // A timer that ended while the page was away is shown as finished but does not beep.
     seen.current = new Set(defs.filter((d) => timerView(restored, d, at).state === 'finished').map((d) => d.id));
-    loaded.current = true;
     // oxlint-disable-next-line react/set-state-in-effect -- sessionStorage may only be read after hydration
     setTimers(restored);
     setNow(at);
   }, [key, defs]);
 
   useEffect(() => {
-    if (!loaded.current) return;
+    // Before the restore the state is the placeholder; writing it would wipe what was stored.
+    if (timers === notRestored) return;
     try {
       sessionStorage.setItem(key, serialize(timers));
     } catch {

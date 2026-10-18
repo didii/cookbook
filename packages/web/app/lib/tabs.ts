@@ -5,6 +5,9 @@ export const tabs = [
 
 export type TabId = (typeof tabs)[number]['id'];
 
+/** The tab named by a location hash (`#steps`), or undefined for any other hash. */
+export const tabFromHash = (hash: string): TabId | undefined => tabs.find((t) => `#${t.id}` === hash)?.id;
+
 /** The tab an arrow, Home or End key moves to, or undefined for any other key. Arrows wrap around. */
 export function tabForKey(current: TabId, key: string): TabId | undefined {
   const i = tabs.findIndex((t) => t.id === current);

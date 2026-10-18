@@ -16,7 +16,7 @@ export const clockIntentUrl = (seconds: number, label: string) =>
 const KEY = 'clock-app-for-all-timers';
 
 /** The setting "hand every timer to the clock app", off by default. Browser storage can be missing or blocked, so every access is guarded. */
-export function readClockSetting(storage?: Pick<Storage, 'getItem'>) {
+export function readClockSetting(storage: Pick<Storage, 'getItem'> = localStorage) {
   try {
     return (storage ?? localStorage).getItem(KEY) === '1';
   } catch {

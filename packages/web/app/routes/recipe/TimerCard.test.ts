@@ -76,3 +76,9 @@ test('a handed over timer is a note with the label below it, which can be undone
 // Need layout: the card sits on its own line below the label on a narrow screen, and the chip shows the countdown on a wide one.
 test.todo('step-timers › Timer card on a narrow screen');
 test.todo('step-timers › Countdown in the chip on a wide screen');
+
+test('with timers always in the app, undoing a hand-over says it runs here', () => {
+  const timers = handOver({}, defs[0].id, 872_000, T0);
+  const html = stepTwo({ ...controlsAt(T0, timers), clock: { available: true, auto: true, setAuto() {} } });
+  assert.ok(html.includes('>Hier laten lopen<') && !html.includes('>Herstel<'));
+});

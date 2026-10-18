@@ -18,7 +18,7 @@ export function CookSwitch({ wanted, lock, manual, onToggle }: Props) {
       <span
         aria-hidden="true"
         data-unable={unable || undefined}
-        className="relative h-6.5 w-11 shrink-0 rounded-full border-3 border-ink bg-white transition-colors group-aria-checked:bg-jade data-unable:bg-yel motion-reduce:transition-none after:absolute after:top-0.5 after:left-0.5 after:size-4.5 after:rounded-full after:bg-ink after:transition-transform after:content-[''] group-aria-checked:after:translate-x-4 group-aria-checked:after:bg-white motion-reduce:after:transition-none"
+        className="relative h-6.5 w-11 shrink-0 rounded-full border-3 border-ink bg-white transition-colors group-aria-checked:bg-jade data-unable:bg-yel motion-reduce:transition-none after:absolute after:top-px after:left-px after:size-4.5 after:rounded-full after:bg-ink after:transition-transform after:content-[''] group-aria-checked:after:translate-x-4.5group-aria-checked:after:bg-white motion-reduce:after:transition-none"
       />
       <span>
         {title}

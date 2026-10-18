@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import type { StoredRecipe } from '~/.server/recipes';
 import { initialCook, observe, setByHand, wantsCookMode } from '~/lib/cookMode';
 import type { Step } from '~/lib/recipes';
-import { arrive, leave, type Positions, type TabId } from '~/lib/tabs';
+import { arrive, leave, tabFromHash, type Positions, type TabId } from '~/lib/tabs';
 import { toggled } from '~/lib/toggled';
 import { cn } from '~/shared/cn';
 import { Fret } from '~/shared/Fret';
@@ -42,7 +42,16 @@ export function RecipePage({ recipe: r, tile, steps }: Props) {
     positions.current = leave(positions.current, tab, window.scrollY);
     arriving.current = true;
     setTab(next);
+    // Keeps the router's history state; a reload then opens the same tab.
+    history.replaceState(history.state, '', `#${next}`);
   };
+
+  // The server renders the first tab; the hash is only known in the browser.
+  useEffect(() => {
+    const fromHash = tabFromHash(location.hash);
+    // oxlint-disable-next-line react/set-state-in-effect -- the hash may only be read after hydration
+    if (fromHash) setTab(fromHash);
+  }, []);
 
   // Back where the tab was left; a tab not visited yet opens with its heading just under the stack.
   useLayoutEffect(() => {

@@ -1,6 +1,7 @@
 import { useContext } from 'react';
 import { TimersContext } from './timersContext';
 
+// TODO #36: temporary; this moves to a user setting (kanban card "Move timer app setting to user settings"), then remove this checkbox.
 /** "Hand every timer to the clock app": only offered where the clock app can be started, which is a phone. */
 export function ClockSetting() {
   const { clock } = useContext(TimersContext);
