@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
 import { RouterContextProvider } from 'react-router';
@@ -55,3 +56,10 @@ test('recipe-viewing › Unknown slug', async () => {
 // Not automated: rendering needs component tests.
 test.todo('recipe-viewing › Optional fields are empty');
 test.todo('recipe-viewing › Ingredient without quantity');
+
+// Rendering needs the JSX settings that tsx doesn't read from this project's tsconfig, so this checks the source:
+// the page links to the edit address of its own recipe and the route table serves it.
+test('recipe-viewing › Link to the edit form', () => {
+  assert.ok(readFileSync(new URL('./route.tsx', import.meta.url), 'utf8').includes('/bewerken`}'));
+  assert.ok(readFileSync(new URL('../../routes.ts', import.meta.url), 'utf8').includes("'recepten/:slug/bewerken'"));
+});
