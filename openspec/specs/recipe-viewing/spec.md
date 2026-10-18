@@ -34,3 +34,10 @@ The system SHALL respond with a 404 when no recipe has the requested slug.
 #### Scenario: Unknown slug
 - **WHEN** a family member opens `/recepten/does-not-exist`
 - **THEN** the response status is 404
+
+### Requirement: The recipe page links to editing
+The system SHALL show on a recipe page a link to the edit form of that recipe.
+
+#### Scenario: Link to the edit form
+- **WHEN** a family member opens the page of a stored recipe
+- **THEN** a link to `/recepten/<slug>/bewerken` is available
