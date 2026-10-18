@@ -74,15 +74,18 @@ test('tabForKey', () => {
 });
 
 test('scroll positions per tab', () => {
-  let positions = leave({}, 'steps', 1200);
-  // Back on a tab that was left inside its content: where it was left. Never visited, or left above its heading: the heading just under the stack.
-  assert.equal(arrive(positions, 'steps', 500, 60), 1200);
-  assert.equal(arrive(positions, 'ingredients', 500, 60), 440);
-  assert.equal(arrive(positions, 'ingredients', 20, 60), 0);
-  positions = leave(positions, 'steps', 300);
-  assert.equal(arrive(positions, 'steps', 500, 60), 440);
-  positions = leave(positions, 'steps', 900);
-  assert.equal(arrive(positions, 'steps', 500, 60), 900);
+  // Left inside its content: back where it was left. Never visited: the heading just under the stack.
+  let positions = leave({}, 'steps', 1200, true);
+  assert.equal(arrive(positions, 'steps', 500, 60, true), 1200);
+  assert.equal(arrive(positions, 'ingredients', 500, 60, true), 440);
+  assert.equal(arrive(positions, 'ingredients', 20, 60, true), 0);
+  // Left above its content (stack not stuck): nothing is remembered.
+  positions = leave(positions, 'steps', 300, false);
+  assert.equal(arrive(positions, 'steps', 500, 60, true), 440);
+  // Arriving with the stack not stuck never scrolls, whatever was remembered.
+  positions = leave(positions, 'steps', 900, true);
+  assert.equal(arrive(positions, 'steps', 500, 60, false), undefined);
+  assert.equal(arrive(positions, 'ingredients', 500, 60, false), undefined);
 });
 
 // Need a browser: the page scrolls back to where the tab was left, and an unvisited tab scrolls to its heading.

@@ -35,12 +35,14 @@ export function RecipePage({ recipe: r, tile, steps }: Props) {
   const stackHeight = useStackHeight(stack);
   const inView = useStepsInView(stack, steps.length);
   const positions = useRef<Positions>({});
-  const arriving = useRef(false);
+  const arriving = useRef<boolean>(undefined);
 
   const select = (next: TabId) => {
     if (next === tab) return;
-    positions.current = leave(positions.current, tab, window.scrollY);
-    arriving.current = true;
+    // The stack is stuck to the top of the screen once the page is scrolled into the tab's content.
+    const stuck = (stack.current?.getBoundingClientRect().top ?? 1) <= 0.5;
+    positions.current = leave(positions.current, tab, window.scrollY, stuck);
+    arriving.current = stuck;
     setTab(next);
     // Keeps the router's history state; a reload then opens the same tab.
     history.replaceState(history.state, '', `#${next}`);
@@ -55,12 +57,14 @@ export function RecipePage({ recipe: r, tile, steps }: Props) {
 
   // Back where the tab was left; a tab not visited yet opens with its heading just under the stack.
   useLayoutEffect(() => {
-    if (!arriving.current) return;
-    arriving.current = false;
+    const stuck = arriving.current;
+    arriving.current = undefined;
+    if (stuck === undefined) return;
     const heading = document.getElementById(tab === 'ingredients' ? 'ing' : 'bereiding');
     if (!heading) return;
     const top = heading.getBoundingClientRect().top + window.scrollY;
-    window.scrollTo({ top: arrive(positions.current, tab, top, stackHeight.current + 12), behavior: 'instant' });
+    const to = arrive(positions.current, tab, top, stackHeight.current + 12, stuck);
+    if (to !== undefined) window.scrollTo({ top: to, behavior: 'instant' });
   }, [tab, stackHeight]);
 
   // Going to the step of a timer: scroll to it and highlight it for three seconds. `n` makes a repeated jump restart the highlight.
