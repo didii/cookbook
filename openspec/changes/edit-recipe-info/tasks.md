@@ -13,7 +13,7 @@
 
 ## 3. Frontend: edit route and link
 
-- [ ] 3.1 Add the `recepten/:slug/bewerken` route (`routes/edit-recipe/`) rendering `RecipeForm` with the stored values, with loader, action, 404 handling and a 400 re-render; verify with route tests named `recipe-editing › Form shows the stored values`, `recipe-editing › Unknown recipe`, `recipe-editing › Invalid edit is refused` and `recipe-editing › Same form for new and existing recipes` (both routes render the same `RecipeForm` component, or a `test.todo` with the reason if it needs a browser).
+- [x] 3.1 Add the `recepten/:slug/bewerken` route (`routes/edit-recipe/`) rendering `RecipeForm` with the stored values, with loader, action, 404 handling and a 400 re-render; verify with route tests named `recipe-editing › Form shows the stored values`, `recipe-editing › Unknown recipe`, `recipe-editing › Invalid edit is refused` and `recipe-editing › Same form for new and existing recipes` (both routes render the same `RecipeForm` component, or a `test.todo` with the reason if it needs a browser).
 - [ ] 3.2 Add the "Bewerk" link to the recipe page; verify with a test named `recipe-viewing › Link to the edit form` (or a `test.todo` with the reason if it needs rendering) and by editing a recipe end to end in `pnpm dev` at 360px and desktop width.
 
 ## 4. Wrap-up

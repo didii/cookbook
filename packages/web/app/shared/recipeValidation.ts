@@ -12,3 +12,21 @@ export function validate(values: Values): Partial<Record<Field, string>> {
     errors.servings = 'Vul een heel aantal personen in, minstens 1.';
   return errors;
 }
+
+/** The trimmed values of a submitted form. */
+export function readForm(form: FormData): Values {
+  const text = (name: Field) => String(form.get(name) ?? '').trim();
+  return { title: text('title'), author: text('author'), servings: text('servings'), time: text('time'), intro: text('intro'), image: text('image') };
+}
+
+/** Valid form values as recipe fields: empty optional ones become undefined. */
+export function toRecipeFields(values: Values) {
+  return {
+    title: values.title,
+    author: values.author,
+    servings: values.servings ? Number(values.servings) : undefined,
+    time: values.time || undefined,
+    intro: values.intro,
+    image: values.image || undefined,
+  };
+}

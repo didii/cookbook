@@ -3,38 +3,21 @@ import { envContext, userEmailContext } from '~/.server/context';
 import { createRecipe, listAuthors } from '~/.server/recipes';
 import { tiles } from '~/lib/tile';
 import { RecipeForm } from '~/shared/RecipeForm';
-import { validate, type Field } from '~/shared/recipeValidation';
+import { readForm, toRecipeFields, validate } from '~/shared/recipeValidation';
 import type { Route } from './+types/route';
 
 export async function loader({ context }: Route.LoaderArgs) {
-  // Picked here rather than while rendering, so the server and the browser agree.
+  // The tile is picked here rather than while rendering, so the server and the browser agree.
   return { authors: await listAuthors(context.get(envContext).DB), tile: Math.floor(Math.random() * tiles.length) };
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
-  const form = await request.formData();
-  const text = (name: Field) => String(form.get(name) ?? '').trim();
-  const values = {
-    title: text('title'),
-    author: text('author'),
-    servings: text('servings'),
-    time: text('time'),
-    intro: text('intro'),
-    image: text('image'),
-  };
+  const values = readForm(await request.formData());
 
   const errors = validate(values);
   if (Object.keys(errors).length) return data({ errors, values }, { status: 400 });
 
-  const slug = await createRecipe(context.get(envContext).DB, {
-    title: values.title,
-    author: values.author,
-    servings: values.servings ? Number(values.servings) : undefined,
-    time: values.time || undefined,
-    intro: values.intro,
-    image: values.image || undefined,
-    createdBy: context.get(userEmailContext),
-  });
+  const slug = await createRecipe(context.get(envContext).DB, { ...toRecipeFields(values), createdBy: context.get(userEmailContext) });
   return redirect(`/recepten/${slug}`);
 }
 
