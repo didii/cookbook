@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
-import { createRecipe, getRecipe, listAuthors, slugify } from './recipes';
+import { seals } from '~/lib/seals';
+import { createRecipe, getRecipe, listAuthors, slugify, updateRecipe } from './recipes';
 
 let db: D1Database;
 let dispose: () => Promise<void>;
@@ -142,4 +143,90 @@ test('recipe-creation › Existing spelling is reused', async () => {
   await createRecipe(db, { title: 'Eerste', author: 'Opa Jos', servings: 2 });
   const slug = await createRecipe(db, { title: 'Tweede', author: 'opa jos', servings: 2 });
   assert.equal((await getRecipe(db, slug))?.author, 'Opa Jos');
+});
+
+test('recipe-creation › Seal is assigned', async () => {
+  const slug = await createRecipe(db, { title: 'Met zegel', author: 'Oma' });
+  assert.ok(seals.includes((await getRecipe(db, slug))?.seal ?? ''));
+});
+
+test('recipe-creation › Least used seals are chosen', async () => {
+  const fresh = await createTestDb();
+  try {
+    const left = ['fu', 'jia'];
+    await fresh.db.batch(
+      seals
+        .filter((s) => !left.includes(s))
+        .map((s) => fresh.db.prepare('INSERT INTO recipes (slug, title, author, seal) VALUES (?, ?, ?, ?)').bind(s, s, 'Oma', s)),
+    );
+    for (let i = 0; i < 5; i++) {
+      const slug = await createRecipe(fresh.db, { title: `Nieuw ${i}`, author: 'Oma' });
+      const seal = (await getRecipe(fresh.db, slug))?.seal ?? '';
+      assert.ok(left.includes(seal), seal);
+      // It is now used once like the others, so the next one is one of the remaining unused seals.
+      left.splice(left.indexOf(seal), 1);
+      if (!left.length) left.push(...seals);
+    }
+  } finally {
+    await fresh.dispose();
+  }
+});
+
+test('recipe-creation › Provided seal is used', async () => {
+  const slug = await createRecipe(db, { title: 'Eigen zegel', author: 'Oma', seal: 'fu' });
+  assert.equal((await getRecipe(db, slug))?.seal, 'fu');
+});
+
+const original = { title: 'Origineel', author: 'Papa', servings: 4, time: '1u', intro: 'oud', image: '/oud.jpg', seal: 'fu' };
+
+test('recipe-editing › Recipe is updated', async () => {
+  const slug = await createRecipe(db, { ...original, ingredients: [{ name: 'ei' }], steps: ['kook'] });
+  await db.prepare("UPDATE recipes SET updated_at = '2000-01-01T00:00:00Z' WHERE slug = ?").bind(slug).run();
+  const changed = { title: 'Nieuw', author: 'Mama', servings: 6, time: '2u', intro: 'nieuw', image: '/nieuw.jpg' };
+  assert.equal(await updateRecipe(db, slug, changed), true);
+  const r = await getRecipe(db, slug);
+  assert.deepEqual([r?.slug, r?.title, r?.author, r?.servings, r?.time, r?.intro, r?.image], [slug, 'Nieuw', 'Mama', 6, '2u', 'nieuw', '/nieuw.jpg']);
+  assert.deepEqual([r?.ingredients.length, r?.steps], [1, ['kook']]);
+  assert.notEqual((await db.prepare('SELECT updated_at FROM recipes WHERE slug = ?').bind(slug).first())?.updated_at, '2000-01-01T00:00:00Z');
+});
+
+test('recipe-editing › Seal kept', async () => {
+  const slug = await createRecipe(db, original);
+  await updateRecipe(db, slug, { title: 'Zelfde zegel', author: 'Papa' });
+  assert.equal((await getRecipe(db, slug))?.seal, 'fu');
+});
+
+test('recipe-editing › Seal provided', async () => {
+  const slug = await createRecipe(db, original);
+  await updateRecipe(db, slug, { title: 'Ander zegel', author: 'Papa', seal: 'jia' });
+  assert.equal((await getRecipe(db, slug))?.seal, 'jia');
+});
+
+test('recipe-editing › Optional field emptied', async () => {
+  const slug = await createRecipe(db, original);
+  await updateRecipe(db, slug, { title: 'Leeg', author: 'Papa' });
+  const r = await getRecipe(db, slug);
+  assert.deepEqual([r?.servings, r?.time, r?.intro, r?.image], [null, null, '', null]);
+});
+
+test('recipe-editing › Edited author reuses spelling', async () => {
+  await createRecipe(db, { title: 'Van Tante', author: 'Tante Rita' });
+  const slug = await createRecipe(db, { title: 'Aan te passen', author: 'Papa' });
+  await updateRecipe(db, slug, { title: 'Aan te passen', author: 'tante rita' });
+  assert.equal((await getRecipe(db, slug))?.author, 'Tante Rita');
+});
+
+test('recipe-editing › Own author can be respelled', async () => {
+  const fresh = await createTestDb();
+  try {
+    const slug = await createRecipe(fresh.db, { title: 'Enige', author: 'Oma' });
+    await updateRecipe(fresh.db, slug, { title: 'Enige', author: 'oma' });
+    assert.equal((await getRecipe(fresh.db, slug))?.author, 'oma');
+  } finally {
+    await fresh.dispose();
+  }
+});
+
+test('updateRecipe reports an unknown slug', async () => {
+  assert.equal(await updateRecipe(db, 'bestaat-niet', { title: 'X', author: 'Y' }), false);
 });

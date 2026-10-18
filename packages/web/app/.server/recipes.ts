@@ -1,3 +1,5 @@
+import { pickSeal } from '~/lib/seals';
+
 export type RecipeRow = {
   id: number;
   slug: string;
@@ -68,9 +70,18 @@ async function freeSlug(db: D1Database, title: string): Promise<string> {
   for (let n = 2; ; n++) if (!taken.has(`${base}-${n}`)) return `${base}-${n}`;
 }
 
+/** A random one of the least used seals. */
+async function chooseSeal(db: D1Database): Promise<string> {
+  const { results } = await db
+    .prepare('SELECT seal, COUNT(*) AS count FROM recipes WHERE seal IS NOT NULL GROUP BY seal')
+    .all<{ seal: string; count: number }>();
+  return pickSeal(results);
+}
+
 /** Stores a recipe with its ingredients and steps in one batch and returns its slug. */
 export async function createRecipe(db: D1Database, recipe: NewRecipe): Promise<string> {
   const slug = await freeSlug(db, recipe.title);
+  const seal = recipe.seal ?? (await chooseSeal(db));
   const idOf = '(SELECT id FROM recipes WHERE slug = ?)';
   await db.batch([
     db
@@ -87,7 +98,7 @@ export async function createRecipe(db: D1Database, recipe: NewRecipe): Promise<s
         recipe.time ?? null,
         recipe.intro ?? '',
         recipe.image ?? null,
-        recipe.seal ?? null,
+        seal,
         recipe.createdBy ?? null,
       ),
     ...(recipe.ingredients ?? []).map((ing, i) =>
@@ -106,4 +117,31 @@ export async function listAuthors(db: D1Database): Promise<string[]> {
     .prepare('SELECT author FROM recipes GROUP BY author COLLATE NOCASE ORDER BY author COLLATE NOCASE')
     .all<{ author: string }>();
   return results.map((r) => r.author);
+}
+
+export type RecipeUpdate = Pick<NewRecipe, 'title' | 'author' | 'servings' | 'time' | 'intro' | 'image' | 'seal'>;
+
+/** Replaces the base information of a recipe; an omitted optional field is cleared, but an omitted seal is kept. Returns whether the recipe exists. */
+export async function updateRecipe(db: D1Database, slug: string, recipe: RecipeUpdate): Promise<boolean> {
+  const result = await db
+    .prepare(
+      // Another recipe's spelling of the author wins; the recipe's own doesn't, or "Oma" could never become "oma".
+      `UPDATE recipes SET title = ?, author = COALESCE((SELECT author FROM recipes WHERE author = ? COLLATE NOCASE AND slug != ? LIMIT 1), ?),
+        servings = ?, time = ?, intro = ?, image = ?, seal = COALESCE(?, seal), updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now')
+      WHERE slug = ?`,
+    )
+    .bind(
+      recipe.title,
+      recipe.author,
+      slug,
+      recipe.author,
+      recipe.servings ?? null,
+      recipe.time ?? null,
+      recipe.intro ?? '',
+      recipe.image ?? null,
+      recipe.seal ?? null,
+      slug,
+    )
+    .run();
+  return result.meta.changes > 0;
 }
