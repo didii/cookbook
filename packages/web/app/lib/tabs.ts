@@ -6,7 +6,9 @@ export const tabs = [
 export type TabId = (typeof tabs)[number]['id'];
 
 /** The tab named by a location hash (`#steps`), or undefined for any other hash. */
-export const tabFromHash = (hash: string): TabId | undefined => tabs.find((t) => `#${t.id}` === hash)?.id;
+export function tabFromHash(hash: string): TabId | undefined {
+  return tabs.find((t) => `#${t.id}` === hash)?.id;
+}
 
 /** The tab an arrow, Home or End key moves to, or undefined for any other key. Arrows wrap around. */
 export function tabForKey(current: TabId, key: string): TabId | undefined {
@@ -24,5 +26,6 @@ export type Positions = Partial<Record<TabId, number>>;
  * - only the old tab has one (the page is scrolled into content the new tab does not have): the uppermost position with the stack stuck, the new tab's heading just under it;
  * - neither has one: nowhere, the tabs swap in place.
  */
-export const arrive = (positions: Positions, from: TabId, to: TabId, headingTop: number, stackHeight: number) =>
-  positions[to] ?? (positions[from] === undefined ? undefined : Math.max(0, headingTop - stackHeight));
+export function arrive(positions: Positions, from: TabId, to: TabId, headingTop: number, stackHeight: number) {
+  return positions[to] ?? (positions[from] === undefined ? undefined : Math.max(0, headingTop - stackHeight));
+}

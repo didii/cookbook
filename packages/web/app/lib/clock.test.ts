@@ -54,7 +54,7 @@ test('step-timers › Clock app not available', () => {
   assert.equal(clockAvailable({ userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/140.0 Safari/537.36' }), false);
 });
 
-test('the clock app setting is off by default and survives missing storage', () => {
+test('the clock app setting is off by default and can be switched', () => {
   const data = new Map<string, string>();
   const storage = {
     getItem: (k: string) => data.get(k) ?? null,
@@ -66,6 +66,9 @@ test('the clock app setting is off by default and survives missing storage', () 
   assert.equal(readClockSetting(storage), true);
   writeClockSetting(false, storage);
   assert.equal(readClockSetting(storage), false);
+});
+
+test('the clock app setting survives missing storage', () => {
   const blocked = {
     getItem() {
       throw new Error('blocked');

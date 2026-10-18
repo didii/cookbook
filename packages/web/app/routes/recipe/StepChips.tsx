@@ -1,17 +1,11 @@
 import type { Step } from '~/lib/recipes';
 import { cn } from '~/shared/cn';
+import { Thermometer } from './icons';
 import { TimerChip } from './TimerChip';
 
 type Props = { step: Step; index: number; done?: boolean };
 
 const chip = 'inline-flex items-center gap-1.5 rounded-md bg-ink/8 px-2 text-sm leading-6 font-bold text-muted';
-
-const Thermometer = () => (
-  <svg viewBox="0 0 16 16" aria-hidden="true" className="size-3.5 shrink-0">
-    <path d="M6 9.2V3a2 2 0 1 1 4 0v6.2a3.5 3.5 0 1 1-4 0z" fill="none" stroke="currentColor" strokeWidth="1.6" />
-    <circle cx="8" cy="11.5" r="1.6" fill="currentColor" />
-  </svg>
-);
 
 /** The chips of one step: quiet static ones for ingredients and oven, an operable one for the timer. Renders nothing for a step without chips. */
 export function StepChips({ step, index, done }: Props) {

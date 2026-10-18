@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { soundAlarm } from '~/lib/alarm';
 import { clockAvailable, clockIntentUrl, readClockSetting, writeClockSetting } from '~/lib/clock';
 import type { Step } from '~/lib/recipes';
-import { signalEnd } from '~/lib/signal';
 import {
   activeTimers,
   add,
@@ -74,7 +74,7 @@ export function useTimers(slug: string, steps: Step[]): TimerControls {
     const ended = newlyFinished(defs, timers, seen.current, now);
     for (const id of ended) seen.current.add(id);
     for (const id of seen.current) if (!finished.some((t) => t.id === id)) seen.current.delete(id);
-    if (ended.length) signalEnd(audio.current);
+    if (ended.length) soundAlarm(audio.current);
   });
 
   const finishedStep = finished[0]?.step;

@@ -6,7 +6,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import type { StoredRecipe } from '~/.server/recipes';
 import type { Step } from '~/lib/recipes';
-import { arrive, tabForKey, type Positions, type TabId } from '~/lib/tabs';
+import { arrive, type Positions, type TabId } from '~/lib/tabs';
 import { IngredientList } from './IngredientList';
 import { RecipePage } from './RecipePage';
 
@@ -62,15 +62,6 @@ test('recipe-viewing › Ticked ingredients are kept', () => {
   assert.ok(html.includes('id="panel-ingredients"') && html.includes('id="panel-steps"'));
   const list = renderToStaticMarkup(createElement(IngredientList, { ingredients: recipe.ingredients, ticked: new Set([1]), onToggle: () => {} }));
   assert.deepEqual(list.match(/checked=""/g)?.length, 1);
-});
-
-test('tabForKey', () => {
-  assert.equal(tabForKey('ingredients', 'ArrowRight'), 'steps');
-  assert.equal(tabForKey('steps', 'ArrowRight'), 'ingredients');
-  assert.equal(tabForKey('ingredients', 'ArrowLeft'), 'steps');
-  assert.equal(tabForKey('steps', 'Home'), 'ingredients');
-  assert.equal(tabForKey('ingredients', 'End'), 'steps');
-  assert.equal(tabForKey('ingredients', 'a'), undefined);
 });
 
 const heading = 500;

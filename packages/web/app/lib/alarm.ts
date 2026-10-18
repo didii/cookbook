@@ -16,7 +16,7 @@ function beep(audio: AudioContext) {
 }
 
 /** Sound and vibration for a timer that ended, where the device has them. The title and the red state back them up. */
-export function signalEnd(audio: AudioContext | undefined, nav: Pick<Navigator, 'vibrate'> | undefined = navigator) {
+export function soundAlarm(audio: AudioContext | undefined, nav: Pick<Navigator, 'vibrate'> | undefined = navigator) {
   if (audio) beep(audio);
   nav?.vibrate?.([200, 100, 200]);
 }

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { soundAlarm } from './alarm';
 import type { Step } from './recipes';
-import { signalEnd } from './signal';
 import { activeTimers, add, finishTitle, formatCountdown, newlyFinished, restore, serialize, start, stop, timerDefs, timerView } from './timers';
 
 // Eleven steps; the ones with a timer are 2, 5, 6, 10 and 11.
@@ -73,11 +73,11 @@ test('step-timers › Timer ends', () => {
   const calls: unknown[] = [];
   const nodes = { connect() {}, frequency: {}, gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} }, start() {}, stop() {} };
   const audio = { currentTime: 0, destination: {}, createOscillator: () => (calls.push('osc'), nodes) as never, createGain: () => nodes as never };
-  signalEnd(audio as unknown as AudioContext, { vibrate: (p) => (calls.push(p), true) });
+  soundAlarm(audio as unknown as AudioContext, { vibrate: (p) => (calls.push(p), true) });
   assert.deepEqual(calls.at(-1), [200, 100, 200]);
   assert.equal(calls.filter((c) => c === 'osc').length, 3);
   // Without audio or vibration support nothing throws.
-  signalEnd(undefined, {} as Navigator);
+  soundAlarm(undefined, {} as Navigator);
 });
 
 test('step-timers › More time after the end', () => {

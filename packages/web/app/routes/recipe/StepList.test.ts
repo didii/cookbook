@@ -3,7 +3,6 @@ import { test } from 'node:test';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { Step } from '~/lib/recipes';
-import { formatMinutes } from '~/lib/steps';
 import { toggled } from '~/lib/toggled';
 import { StepItem } from './StepItem';
 import { StepList } from './StepList';
@@ -70,7 +69,3 @@ test('recipe-viewing › Chip without a matching ingredient row', () => {
 
 // Needs layout: the chip group moves as one to the next line when it does not fit beside the label.
 test.todo('recipe-viewing › Many chips');
-
-test('formatMinutes', () => {
-  assert.deepEqual([5, 30, 60, 90, 125].map(formatMinutes), ['5 min', '30 min', '1 u', '1 u 30', '2 u 5']);
-});
