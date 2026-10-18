@@ -14,6 +14,7 @@ import {
   stop,
   timerDefs,
   timerView,
+  undoHandOver,
   type Timers,
 } from '~/lib/timers';
 import type { TimerControls } from './timersContext';
@@ -135,8 +136,9 @@ export function useTimers(slug: string, steps: Step[]): TimerControls {
       const view = def && timerView(timers, def, Date.now());
       if (!def || view?.state !== 'running') return;
       startInClock(view.remainingMs / 1000, def.step, def.label);
-      update((t) => handOver(t, id, view.remainingMs));
+      update((t, at) => handOver(t, id, view.remainingMs, at));
     },
+    undoHandOver: (id) => update((t) => undoHandOver(t, id)),
     clock: {
       available,
       auto: available && auto,

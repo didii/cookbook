@@ -1,28 +1,34 @@
 import { useContext } from 'react';
 import { formatCountdown, type TimerView } from '~/lib/timers';
 import { cn } from '~/shared/cn';
+import { Alarm, Stop } from './icons';
 import { TimerButton } from './TimerButton';
 import { TimersContext } from './timersContext';
 
 type Props = { view: TimerView };
 
-/** A timer under its step's label: running or finished on a narrow screen, so the chips do not move; the note of a clock app handover on any screen. */
+/** A timer under its step's label: running or finished on a narrow screen, so the chips do not move; the note of a hand-over to the app on any screen. */
 export function TimerCard({ view }: Props) {
   const timers = useContext(TimersContext);
   const finished = view.state === 'finished';
 
   if (view.state === 'native') {
     return (
-      <output className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border-3 border-dashed border-ink py-2 pr-2 pl-3.5">
-        <span className="font-black tabular-nums">In je klok-app · {formatCountdown(view.remainingMs)}</span>
-        {view.label && <small className="min-w-16 flex-1 font-extrabold text-muted">{view.label}</small>}
-        <TimerButton
-          onClick={() => timers.stop(view.id)}
-          aria-label="Wis deze notitie (de timer in je klok-app loopt door)"
-          className="ml-auto hover:bg-red hover:text-white"
-        >
-          Wis
-        </TimerButton>
+      <output className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border-3 border-dashed border-ink py-2 pr-2 pl-3.5">
+        <span className="font-black tabular-nums">In je app · {formatCountdown(view.remainingMs)}</span>
+        <span className="ml-auto flex gap-1.5">
+          <TimerButton onClick={() => timers.undoHandOver(view.id)} aria-label="Laat de timer hier verder lopen (de timer in je app loopt door)">
+            Herstel
+          </TimerButton>
+          <TimerButton
+            onClick={() => timers.stop(view.id)}
+            aria-label="Wis deze notitie (de timer in je app loopt door)"
+            className="hover:bg-red hover:text-white"
+          >
+            Wis
+          </TimerButton>
+        </span>
+        {view.label && <small className="order-last basis-full font-extrabold text-muted">{view.label}</small>}
       </output>
     );
   }
@@ -49,7 +55,8 @@ export function TimerCard({ view }: Props) {
         </TimerButton>
         {!finished && timers.clock.available && (
           <TimerButton onClick={() => timers.handOver(view.id)} aria-label="Geef de resterende tijd aan je klok-app">
-            Klok-app
+            <Alarm />
+            App
           </TimerButton>
         )}
         {finished ? (
@@ -58,6 +65,7 @@ export function TimerCard({ view }: Props) {
           </TimerButton>
         ) : (
           <TimerButton onClick={() => timers.stop(view.id)} aria-label="Stop timer" className="hover:bg-red hover:text-white">
+            <Stop />
             Stop
           </TimerButton>
         )}

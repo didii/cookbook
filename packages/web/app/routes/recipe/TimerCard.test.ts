@@ -28,6 +28,7 @@ const controlsAt = (now: number, timers = start({}, defs[0], T0)): TimerControls
   add() {},
   stop() {},
   handOver() {},
+  undoHandOver() {},
   clock: { available: false, auto: false, setAuto() {} },
 });
 
@@ -58,16 +59,17 @@ test('an idle timer is a start button', () => {
 
 test('the clock app control is offered only where the clock app can be started', () => {
   const running = controlsAt(T0 + 5 * 60_000);
-  assert.ok(!stepTwo(running).includes('Klok-app'));
-  assert.ok(stepTwo({ ...running, clock: { available: true, auto: false, setAuto() {} } }).includes('Klok-app'));
+  assert.ok(!stepTwo(running).includes('>App<'));
+  assert.ok(stepTwo({ ...running, clock: { available: true, auto: false, setAuto() {} } }).includes('>App<'));
   // And no setting without it.
   assert.equal(renderToStaticMarkup(createElement(ClockSetting)), '');
 });
 
-test('a handed over timer is a note that can only be wiped', () => {
-  const timers = handOver({}, defs[0].id, 872_000);
+test('a handed over timer is a note with the label below it, which can be undone or wiped', () => {
+  const timers = handOver({}, defs[0].id, 872_000, T0);
   const html = stepTwo(controlsAt(T0, timers));
-  assert.ok(html.includes('In je klok-app · 14:32') && html.includes('>Wis<') && html.includes('loopt door'));
+  assert.ok(html.includes('In je app · 14:32') && html.includes('>Herstel<') && html.includes('>Wis<') && html.includes('loopt door'));
+  assert.ok(html.indexOf('In je app') < html.indexOf('Deeg rust'));
   assert.ok(!html.includes('>Stop<') && !html.includes('>+1<'));
 });
 

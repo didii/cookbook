@@ -9,7 +9,7 @@ export function ClockSetting() {
   return (
     <label className="mt-3 flex min-h-11 cursor-pointer items-center gap-3 font-bold min-[52rem]:hidden">
       <input type="checkbox" checked={clock.auto} onChange={(e) => clock.setAuto(e.target.checked)} className="m-0 size-5 shrink-0 accent-jade" />
-      Timers altijd in je klok-app starten
+      Timers altijd in je app starten
     </label>
   );
 }
