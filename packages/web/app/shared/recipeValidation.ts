@@ -1,6 +1,6 @@
-export type Field = 'title' | 'author' | 'servings';
+export type Field = 'title' | 'author' | 'servings' | 'time' | 'intro' | 'image';
 
-/** The trimmed form values; servings stays text because it can be empty. */
+/** The trimmed form values; servings stays text because it can be empty. Time, intro and image are free text, so they have no validation. */
 export type Values = Record<Field, string>;
 
 /** One message per invalid field. Servings may be empty, but when filled in it must be a whole number of at least 1. */

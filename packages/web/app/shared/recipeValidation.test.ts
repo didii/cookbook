@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { validate } from './recipeValidation';
 
-const ok = { title: 'Soep', author: 'Oma', servings: '4' };
+const ok = { title: 'Soep', author: 'Oma', servings: '4', time: '', intro: '', image: '' };
 
 test('recipe-creation › Missing title', () => {
   assert.deepEqual(Object.keys(validate({ ...ok, title: '' })), ['title']);

@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Form } from 'react-router';
 import { AuthorInput } from '~/shared/AuthorInput';
 import { Button } from '~/shared/Button';
+import { cn } from '~/shared/cn';
 import type { Field, Values } from '~/shared/recipeValidation';
 
 type Props = {
@@ -19,6 +20,9 @@ const fields: { name: Field; label: string; required: boolean; extra?: object }[
   { name: 'title', label: 'Titel', required: true, extra: { autoComplete: 'off' } },
   { name: 'author', label: 'Van wie is het recept?', required: true },
   { name: 'servings', label: 'Aantal personen', required: false, extra: { inputMode: 'numeric', autoComplete: 'off' } },
+  { name: 'time', label: 'Bereidingstijd', required: false, extra: { autoComplete: 'off' } },
+  { name: 'intro', label: 'Inleiding', required: false },
+  { name: 'image', label: 'Afbeelding (link)', required: false, extra: { inputMode: 'url', autoComplete: 'off' } },
 ];
 
 /** The one form for creating and editing a recipe; the routes only differ in the values, heading and button they pass. */
@@ -54,6 +58,8 @@ export function RecipeForm({ heading, submitLabel, authors, values, errors }: Pr
                 describedBy={errors.author ? 'author-error' : undefined}
                 className={inputClass}
               />
+            ) : name === 'intro' ? (
+              <textarea id={name} name={name} rows={4} defaultValue={values.intro} className={cn(inputClass, 'py-2')} />
             ) : (
               <input
                 id={name}
