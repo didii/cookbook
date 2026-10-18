@@ -10,10 +10,10 @@ const smoren = defs[1]; // step 5, 20 minutes
 const MIN = 60_000;
 const T0 = 1_000_000;
 
-test('timerDefs: ids follow the steps and the position within a step', () => {
+test('timerDefs: ids are the step indexes', () => {
   assert.deepEqual(
     defs.map((d) => d.id),
-    ['1:0', '4:0', '5:0', '9:0', '10:0'],
+    ['1', '4', '5', '9', '10'],
   );
   assert.deepEqual([rust.minutes, rust.label], [30, 'Deeg rust']);
 });
@@ -103,7 +103,7 @@ test('restore ignores what it cannot read or does not know', () => {
   assert.deepEqual(restore(null, defs), {});
   assert.deepEqual(restore('{nope', defs), {});
   assert.deepEqual(restore('[1]', defs), {});
-  assert.deepEqual(restore(JSON.stringify({ '1:0': { endsAt: 'x' }, '99:0': { endsAt: 5 }, '4:0': { endsAt: 7 } }), defs), { '4:0': { endsAt: 7 } });
+  assert.deepEqual(restore(JSON.stringify({ '1': { endsAt: 'x' }, '99': { endsAt: 5 }, '4': { endsAt: 7 } }), defs), { '4': { endsAt: 7 } });
 });
 
 test('step-timers › Timers follow the order of the steps', () => {
@@ -111,7 +111,7 @@ test('step-timers › Timers follow the order of the steps', () => {
   const timers = start(start({}, defs[3], T0), rust, T0 + MIN);
   assert.deepEqual(
     activeTimers(defs, timers, T0 + 2 * MIN).map((t) => t.id),
-    ['1:0', '9:0'],
+    ['1', '9'],
   );
 });
 

@@ -2,26 +2,19 @@
 DELETE FROM recipes;
 
 INSERT INTO recipes (slug, title, author, time, servings, intro, image, seal) VALUES ('appeltaart', 'Appeltaart', 'Oma', '1u 20', 8, 'Met een dikke laag zure appels en een rooster van deeg bovenop.', '/img/appeltaart.jpg', 'jia-wei');
-INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 1, 'zelfrijzende bloem', '250 g');
+INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 1, 'zelfrijzend bloem', '250 g');
 INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 2, 'koude boter', '150 g');
 INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 3, 'basterdsuiker', '100 g');
 INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 4, 'ei', '1');
 INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 5, 'zout', '½ tl');
 INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 6, 'zure appels', '1 kg');
 INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 7, 'kaneel', '¾ tl');
-INSERT INTO steps (recipe_id, position, body) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 1, 'Kneed bloem, boter, suiker, ei en zout snel tot een deeg.');
-INSERT INTO steps (recipe_id, position, body) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 2, 'Wikkel het deeg in folie en laat het 30 minuten rusten in de koelkast.');
-INSERT INTO steps (recipe_id, position, body) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 3, 'Verwarm de oven voor. Vet een springvorm in met een klein klontje boter.');
-INSERT INTO steps (recipe_id, position, body) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 4, 'Schil de appels, snijd ze in blokjes en meng ze met de kaneel.');
-INSERT INTO steps (recipe_id, position, body) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 5, 'Smoor de appelblokjes zachtjes in een pan met een snuifje zout tot ze net zacht zijn. Roer af en toe.');
-INSERT INTO steps (recipe_id, position, body) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 6, 'Giet de appels af in een vergiet en laat ze goed uitlekken en afkoelen, anders wordt de bodem nat.');
-INSERT INTO steps (recipe_id, position, body) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 7, 'Bekleed de vorm met tweederde van het deeg en prik de bodem in met een vork.');
-INSERT INTO steps (recipe_id, position, body) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 8, 'Verdeel de appels over de bodem en strijk ze glad tot aan de rand.');
-INSERT INTO steps (recipe_id, position, body) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 9, 'Snijd de rest van het deeg in repen en leg een rooster over de appels. Bestrijk de randen met losgeklopt ei.');
-INSERT INTO steps (recipe_id, position, body) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 10, 'Bak de taart in het midden van de oven tot ze goudbruin is.');
-INSERT INTO steps (recipe_id, position, body) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 11, 'Laat de taart in de vorm afkoelen voor je aansnijdt. Warm snijden geeft een rommelige taart.');
-INSERT INTO steps (recipe_id, position, body) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 12, 'Maak de rand los met een mes en haal de springvorm eraf. Bestuif met poedersuiker.');
-INSERT INTO steps (recipe_id, position, body) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 13, 'Serveer met een flinke klodder slagroom. Bewaar de rest afgedekt in de koelkast, ze blijft drie dagen goed.');
+INSERT INTO steps (recipe_id, position, body) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 1, 'Kneed bloem, boter, suiker, ei en zout snel tot een deeg. Laat 30 minuten rusten in de koelkast.');
+INSERT INTO steps (recipe_id, position, body) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 2, 'Verwarm de oven voor op 180 °C. Vet een springvorm in.');
+INSERT INTO steps (recipe_id, position, body) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 3, 'Schil de appels, snijd ze in blokjes en meng ze met de kaneel.');
+INSERT INTO steps (recipe_id, position, body) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 4, 'Bekleed de vorm met tweederde van het deeg. Verdeel de appels over de bodem.');
+INSERT INTO steps (recipe_id, position, body) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 5, 'Snijd de rest van het deeg in repen en leg een rooster over de appels.');
+INSERT INTO steps (recipe_id, position, body) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 6, 'Bak de taart 50 minuten tot ze goudbruin is. Laat afkoelen voor je aansnijdt.');
 
 INSERT INTO recipes (slug, title, author, time, servings, intro, image, seal) VALUES ('stoofvlees', 'Stoofvlees', 'Papa', '3u 00', 6, 'Langzaam gaar in donker bier, met een snee brood met mosterd erin.', '/img/stoofvlees.jpg', 'jia-chang-bian-fan');
 INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'stoofvlees'), 1, 'rundsstoofvlees', '1 kg');

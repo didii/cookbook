@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import type { StoredRecipe } from '~/.server/recipes';
 import { initialCook, observe, setByHand, wantsCookMode } from '~/lib/cookMode';
-import type { Step } from '~/lib/steps';
+import type { Step } from '~/lib/recipes';
 import { arrive, leave, type Positions, type TabId } from '~/lib/tabs';
 import { toggled } from '~/lib/toggled';
 import { cn } from '~/shared/cn';
@@ -23,7 +23,7 @@ import { useStepsInView } from './useStepsInView';
 import { useTimers } from './useTimers';
 import { useWakeLock } from './useWakeLock';
 
-type Props = { recipe: StoredRecipe; tile: number; steps: Step[] };
+type Props = { recipe: Omit<StoredRecipe, 'steps'>; tile: number; steps: Step[] };
 
 export function RecipePage({ recipe: r, tile, steps }: Props) {
   const [tab, setTab] = useState<TabId>('ingredients');

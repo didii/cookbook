@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Step } from '~/lib/steps';
+import type { Step } from '~/lib/recipes';
 import { toggled } from '~/lib/toggled';
 import { StepItem } from './StepItem';
 

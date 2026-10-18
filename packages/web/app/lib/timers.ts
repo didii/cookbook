@@ -1,6 +1,6 @@
-import type { Step } from '~/lib/steps';
+import type { Step } from '~/lib/recipes';
 
-/** A timer chip of a recipe. The id is `${step}:${position within the step}`, so the order of the definitions is the order the recipe has. */
+/** The timer of a step. The id is the index of the step, so the order of the definitions is the order the recipe has. */
 export type TimerDef = { id: string; step: number; minutes: number; label?: string };
 
 /** What is remembered of a timer that is not idle: the moment it ends, or, when handed to the clock app, how much time was handed over. */
@@ -13,7 +13,7 @@ export type TimerView = TimerDef & { state: TimerState; remainingMs: number };
 const MINUTE = 60_000;
 
 export const timerDefs = (steps: Step[]): TimerDef[] =>
-  steps.flatMap((s, step) => s.chips.timers.map((t, i) => ({ id: `${step}:${i}`, step, minutes: t.minutes, label: t.label })));
+  steps.flatMap((s, step) => (s.timer ? [{ id: `${step}`, step, minutes: s.timer.minutes, label: s.timer.label }] : []));
 
 /** State is derived from absolute end times, so a background tab or a reload cannot make a timer drift. */
 export function timerView(timers: Timers, def: TimerDef, now: number): TimerView {

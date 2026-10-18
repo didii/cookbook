@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import type { Step } from '~/lib/steps';
+import type { Step } from '~/lib/recipes';
 import { cn } from '~/shared/cn';
 import { StepChips } from './StepChips';
 import { TimerCard } from './TimerCard';
@@ -10,7 +10,8 @@ type Props = { step: Step; number: number; done: boolean; onToggle: () => void; 
 /** One step: label with its done square and the chips on one line, the text below as the tap target. */
 export function StepItem({ step, number, done, onToggle, highlight, peek }: Props) {
   const timers = useContext(TimersContext);
-  const cards = step.chips.timers.flatMap((_, i) => timers.view(`${number - 1}:${i}`) ?? []).filter((t) => t.state !== 'idle');
+  const timer = step.timer && timers.view(`${number - 1}`);
+  const cards = timer && timer.state !== 'idle' ? [timer] : [];
 
   return (
     <li
@@ -43,7 +44,7 @@ export function StepItem({ step, number, done, onToggle, highlight, peek }: Prop
           </span>
           Stap {number}
         </span>
-        <StepChips chips={step.chips} step={number - 1} />
+        <StepChips step={step} index={number - 1} />
       </div>
       {cards.length > 0 && (
         <div className="mb-2 grid gap-2">

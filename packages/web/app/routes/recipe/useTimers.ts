@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { clockAvailable, clockIntentUrl, readClockSetting, writeClockSetting } from '~/lib/clock';
+import type { Step } from '~/lib/recipes';
 import { signalEnd } from '~/lib/signal';
-import type { Step } from '~/lib/steps';
 import {
   activeTimers,
   add,

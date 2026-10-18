@@ -3,7 +3,8 @@ import { test } from 'node:test';
 import { appeltaartSteps } from '~testing/steps';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { formatMinutes, toSteps, type Step } from '~/lib/steps';
+import type { Step } from '~/lib/recipes';
+import { formatMinutes, toSteps } from '~/lib/steps';
 import { toggled } from '~/lib/toggled';
 import { StepItem } from './StepItem';
 import { StepList } from './StepList';
@@ -40,7 +41,7 @@ test('recipe-viewing › Marks are not kept', () => {
 
 test('recipe-viewing › Step without chips', () => {
   const [step] = toSteps(['snijden']);
-  assert.deepEqual(step.chips, { ingredients: [], oven: [], timers: [] });
+  assert.deepEqual(step, { body: 'snijden', ingredients: [] });
   const html = renderStep(step);
   assert.ok(html.includes('Stap 1'));
   assert.equal(html.match(/<li/g)?.length, 1);
@@ -57,7 +58,7 @@ test('recipe-viewing › Chips beside the label', () => {
 });
 
 test('recipe-viewing › Chip without a matching ingredient row', () => {
-  const step = { body: 'kruid', chips: { ingredients: [{ quantity: '1 snuf', name: 'zout' }], oven: [], timers: [] } };
+  const step = { body: 'kruid', ingredients: [{ quantity_text: '1 snuf', name: 'zout' }] };
   assert.ok(renderStep(step).includes('1 snuf</b> zout'));
 });
 
