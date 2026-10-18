@@ -34,4 +34,4 @@ Check every UI task by hand in `pnpm dev` at 360px, 768px and desktop width (on 
 
 ## 6. Wrap-up
 
-- [ ] 6.1 Run `pnpm format:fix`, `pnpm lint:fix`, `pnpm format:check`, `pnpm lint:check`, `pnpm typecheck` and `pnpm test:ai`; run the Impeccable detector on the changed UI files and fix what is mechanical; verify all pass and that every scenario in the three specs has a test or a `test.todo`.
+- [x] 6.1 Run `pnpm format:fix`, `pnpm lint:fix`, `pnpm format:check`, `pnpm lint:check`, `pnpm typecheck` and `pnpm test:ai`; run the Impeccable detector on the changed UI files and fix what is mechanical; verify all pass and that every scenario in the three specs has a test or a `test.todo`.
