@@ -21,9 +21,12 @@ export function StepItem({ step, number, done, onToggle, highlight, peek }: Prop
       className="relative isolate scroll-mt-[calc(var(--stack-h,0px)+0.75rem)] border-t-2 border-dashed border-ink/28 py-4 pb-4.5 first:border-t-0 first:pt-0"
     >
       {/* Tint between the dashed rules. A jump's highlight is remounted by each jump (new key), which restarts the fade; with reduced motion it
-          stays at full tint until removed. Hovering the step's card in the sidebar shows the same tint without the fade. */}
-      {highlight !== undefined && <span key={highlight} aria-hidden="true" className={cn(tint, 'animate-flash motion-reduce:animate-none')} />}
-      {peek && highlight === undefined && <span aria-hidden="true" className={tint} />}
+          stays at full tint until removed. Hovering the step's card in the sidebar shows the same tint without the fade and wins over it: the flash keeps running
+          underneath, hidden with !important (which beats an animation), so it carries on where it was when the hover ends. */}
+      {highlight !== undefined && (
+        <span key={highlight} aria-hidden="true" className={cn(tint, 'animate-flash motion-reduce:animate-none', peek && 'opacity-0!')} />
+      )}
+      {peek && <span aria-hidden="true" className={tint} />}
       <div className="mb-1.5 flex flex-wrap items-center gap-x-2 gap-y-1.5">
         <span
           className={cn('inline-flex items-center gap-1.5 text-[0.8125rem] font-black tracking-[0.08em] uppercase', done ? 'text-jade' : 'text-red')}
