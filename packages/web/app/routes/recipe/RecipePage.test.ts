@@ -48,6 +48,9 @@ test.todo('recipe-viewing › Two columns on a wide screen');
 // Needs layout: the list scrolls by itself when the column is taller than the window.
 test.todo('recipe-viewing › Long ingredient list on a wide screen');
 
+// Needs layout: a tab is at least the screen height minus the measured sticky stack, so a short list sits at the top of its panel.
+test.todo('recipe-viewing › Short tab content');
+
 test('recipe-viewing › Ticked ingredients are kept', () => {
   // Both panels stay mounted, and the ticks live in the page and come down as props, so a tab switch loses nothing.
   const html = page();
