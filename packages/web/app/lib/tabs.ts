@@ -21,6 +21,9 @@ export type Positions = Partial<Record<TabId, number>>;
 /** Remember where the tab being left was scrolled to. */
 export const leave = (positions: Positions, tab: TabId, scrollY: number): Positions => ({ ...positions, [tab]: scrollY });
 
-/** Where to scroll to on arriving at a tab: where it was left, or, on a first visit, with its heading just under the sticky stack. */
+/**
+ * Where to scroll to on arriving at a tab: where it was left, but never above its heading just under the sticky stack. A position above that
+ * was left before scrolling into the tab, so it points at nothing in it (and a tab not visited yet has none).
+ */
 export const arrive = (positions: Positions, tab: TabId, headingTop: number, stackHeight: number) =>
-  positions[tab] ?? Math.max(0, headingTop - stackHeight);
+  Math.max(positions[tab] ?? 0, headingTop - stackHeight, 0);
