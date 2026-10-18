@@ -1,5 +1,5 @@
 // Checks that every spec scenario has a test named `<capability> › <Scenario title>`.
-// Run by spec-check.test.ts, so `pnpm test` fails on a gap.
+// Run by spec-check.test.ts, so `pnpm test` fails on a gap; `pnpm test:spec <change>` checks a change not yet in the main specs.
 import { globSync, readFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 
@@ -67,23 +67,40 @@ export function check(scenarios: { keys: Set<string>; duplicates: Set<string> },
   };
 }
 
-/** Checks the repo's specs against its tests and returns one line per violation (empty when clean). */
-export function checkRepo(root = join(import.meta.dirname, '..')) {
+/**
+ * Checks the repo's specs against its tests and returns one line per violation (empty when clean).
+ * Every scenario of `openspec/specs` needs a test; with `change`, the scenarios of that change's delta specs do too.
+ * A test may name a scenario of any change, so a change can be built before it is merged into the main specs.
+ */
+export function checkRepo(root = join(import.meta.dirname, '..'), change?: string) {
   const read = (f: string) => readFileSync(join(root, f), 'utf8');
   const norm = (f: string) => f.replaceAll('\\', '/');
-  const specs = [...globSync('openspec/specs/*/spec.md', { cwd: root }), ...globSync('openspec/changes/*/specs/*/spec.md', { cwd: root })].map(
-    (f) => ({ capability: basename(dirname(f)), markdown: read(f), delta: norm(f).startsWith('openspec/changes/') }),
-  );
+  const load = (pattern: string, delta: boolean) =>
+    globSync(pattern, { cwd: root }).map((f) => ({ capability: basename(dirname(f)), markdown: read(f), delta }));
+  const main = load('openspec/specs/*/spec.md', false);
+  const required = [...main, ...(change ? load(`openspec/changes/${change}/specs/*/spec.md`, true) : [])];
+  if (change && required.length === main.length) return [`no delta specs found for change: ${change}`];
+  const all = [...main, ...load('openspec/changes/*/specs/*/spec.md', true)];
   // `**` skips dot directories, so `.server/` is listed explicitly
   const testFiles = globSync(['packages/**/*.test.ts', 'packages/*/app/.server/*.test.ts'], {
     cwd: root,
     exclude: (p) => basename(String(p)) === 'node_modules',
   });
   const tests = findTests(testFiles.map((f) => ({ path: norm(f), text: read(f) })));
-  const { missing, unknown, duplicates } = check(parseScenarios(specs), tests);
+  const { missing, duplicates } = check(parseScenarios(required), tests);
+  const { unknown } = check(parseScenarios(all), tests);
   return [
     ...missing.map((k) => `no test: ${k}`),
     ...unknown.map((t) => `unknown scenario: ${t.name} (${t.file}:${t.line})`),
     ...duplicates.map((k) => `duplicate scenario title: ${k}`),
   ];
+}
+
+// `pnpm test:spec <change>`: check one change's delta specs on top of the main specs.
+if (import.meta.main) {
+  const change = process.argv[2];
+  if (!change) throw new Error('usage: pnpm test:spec <change>');
+  const problems = checkRepo(undefined, change);
+  console.log(problems.length ? problems.join('\n') : `${change}: every scenario has a test`);
+  process.exitCode = problems.length ? 1 : 0;
 }

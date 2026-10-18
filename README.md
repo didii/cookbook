@@ -16,12 +16,17 @@ Cloudflare Access does not run locally. `DEV_USER_EMAIL` in `.dev.vars` stands i
 
 The local database is a SQLite file under `packages/web/.wrangler`, so no Cloudflare account is needed.
 
-| Command          | What it does                   |
-| ---------------- | ------------------------------ |
-| `pnpm dev`       | Dev server with hot reload     |
-| `pnpm test`      | Unit tests                     |
-| `pnpm typecheck` | Regenerate types and typecheck |
-| `pnpm build`     | Production build               |
+| Command                                 | What it does                                                                                           |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `pnpm dev`                              | Dev server with hot reload                                                                             |
+| `pnpm test`                             | All tests; scenarios of `openspec/specs` need a test                                                   |
+| `pnpm test:ai`                          | Same, compact `dot` reporter                                                                           |
+| `pnpm test:ci`                          | Same, plus `junit.xml` (used by CI)                                                                    |
+| `pnpm test:spec <change>`               | Also require tests for the scenarios of an OpenSpec change, e.g. `pnpm test:spec redesign-recipe-view` |
+| `pnpm lint:check` / `pnpm lint:fix`     | Check / fix lint errors                                                                                |
+| `pnpm format:check` / `pnpm format:fix` | Check / fix formatting                                                                                 |
+| `pnpm typecheck`                        | Regenerate types and typecheck                                                                         |
+| `pnpm build`                            | Production build                                                                                       |
 
 ## Branches
 

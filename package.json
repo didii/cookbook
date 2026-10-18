@@ -8,6 +8,7 @@
     "typecheck": "pnpm --filter @cookbook/web run typecheck",
     "test": "pnpm --filter @cookbook/web run test",
     "test:ai": "pnpm --filter @cookbook/web run test:ai",
+    "test:spec": "node scripts/spec-check.ts",
     "test:ci": "pnpm --filter @cookbook/web run test:ci",
     "deploy": "pnpm --filter @cookbook/web run deploy",
     "db:migrate:local": "pnpm --filter @cookbook/web run db:migrate:local",

@@ -1,7 +1,7 @@
 # Conventions
 
 - Before a change is considered complete, format it with Prettier (which also organizes imports: sorted by path, no blank lines between them) and leave no lint errors. Run the auto-fixers first (`pnpm format:fix`, `pnpm lint:fix`), fix what remains by hand, and confirm with `pnpm format:check` and `pnpm lint:check`.
-- Every scenario in `openspec/specs` needs a test named `<capability> › <Scenario title>` (exact `#### Scenario:` title, one scenario per test), or a `test.todo` with that name when it cannot be automated. `pnpm test` fails on a scenario without a test or a test naming an unknown scenario.
+- Every scenario in `openspec/specs` needs a test named `<capability> › <Scenario title>` (exact `#### Scenario:` title, one scenario per test), or a `test.todo` with that name when it cannot be automated. `pnpm test` fails on a scenario without a test or a test naming an unknown scenario. It only requires tests for `openspec/specs`; while implementing an OpenSpec change, run `pnpm test:spec <change>` (e.g. `pnpm test:spec redesign-recipe-view`) to see which of that change's delta scenarios still lack a test.
 
 - When running the tests yourself, use `pnpm test:ai` (compact `dot` reporter: one character per test, details only for failures) instead of `pnpm test`. CI uses `pnpm test:ci`, which also writes `junit.xml`.
 
