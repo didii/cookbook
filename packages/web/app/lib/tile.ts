@@ -1,4 +1,4 @@
-/** Tile files in /img, in rotation order. `-blue` is the blue-and-white colourway; tiles 10 and 11 are the lotus and the rings. */
+/** Tile files in /img/tile, in rotation order. `-blue` is the blue-and-white colourway; tiles 10 and 11 are the lotus and the rings. */
 export const tiles = [
   'tile1',
   'tile10-blue',

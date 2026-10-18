@@ -30,7 +30,7 @@ function Pattern({ file, cols, rows, className }: PatternProps) {
 
 /** One tile repeated across the width: 7 whole tiles, or with `responsive` more as the `@container` ancestor gets wider. */
 export function TileBand({ first, responsive, rows = 1, className }: Props) {
-  const file = `/img/${tiles[first % tiles.length]}.svg`;
+  const file = `/img/tile/${tiles[first % tiles.length]}.svg`;
   if (!responsive) return <Pattern file={file} cols={7} rows={rows} className={cn('block', className)} />;
   return steps.map(([cols, show]) => <Pattern key={cols} file={file} cols={cols} rows={rows} className={cn(show, className)} />);
 }
