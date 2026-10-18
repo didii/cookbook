@@ -21,5 +21,6 @@ export default function Recipe({ loaderData }: Route.ComponentProps) {
   const { recipe, tile } = loaderData;
   // A stable array: the timers read their definitions from it.
   const steps = useMemo(() => toSteps(recipe.steps), [recipe.steps]);
-  return <RecipePage recipe={recipe} tile={tile} steps={steps} />;
+  // Keyed by recipe, so another recipe starts with fresh page state (ticks, marks, timers, cook mode).
+  return <RecipePage key={recipe.slug} recipe={recipe} tile={tile} steps={steps} />;
 }

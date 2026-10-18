@@ -7,7 +7,7 @@ export function IngredientList({ ingredients, ticked, onToggle, className }: Pro
   return (
     <ul className={cn('grid list-none gap-2 p-0', className)}>
       {ingredients.map((x, i) => (
-        <li key={i}>
+        <li key={i} id={`ingredient-${i + 1}`}>
           <label className="group flex min-h-13 cursor-pointer items-center gap-3 rounded-[0.625rem] border-3 border-ink bg-white px-3.5 py-2 text-[1.1875rem] font-bold has-checked:bg-transparent has-checked:text-muted has-checked:line-through">
             <input
               type="checkbox"

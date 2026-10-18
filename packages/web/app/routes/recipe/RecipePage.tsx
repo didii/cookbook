@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import type { StoredRecipe } from '~/.server/recipes';
+import { initialCook, observe, setByHand, wantsCookMode } from '~/lib/cookMode';
 import type { Step } from '~/lib/steps';
 import { arrive, leave, type Positions, type TabId } from '~/lib/tabs';
 import { toggled } from '~/lib/toggled';
@@ -9,15 +10,18 @@ import { Fret } from '~/shared/Fret';
 import { Seal } from '~/shared/Seal';
 import { TileBand } from '~/shared/TileBand';
 import { ClockSetting } from './ClockSetting';
+import { CookSwitch } from './CookSwitch';
 import { IngredientList } from './IngredientList';
 import { StepList } from './StepList';
 import { TabBar } from './TabBar';
 import { TimerDock } from './TimerDock';
 import { TimersContext } from './timersContext';
 import { TimerSidebar } from './TimerSidebar';
+import { useNarrow } from './useNarrow';
 import { useStackHeight } from './useStackHeight';
 import { useStepsInView } from './useStepsInView';
 import { useTimers } from './useTimers';
+import { useWakeLock } from './useWakeLock';
 
 type Props = { recipe: StoredRecipe; tile: number; steps: Step[] };
 
@@ -64,6 +68,25 @@ export function RecipePage({ recipe: r, tile, steps }: Props) {
     const timeout = setTimeout(() => setFlash(undefined), 3100);
     return () => clearTimeout(timeout);
   }, [flash]);
+  // Cook mode: starts by itself once cooking has started (the open tab's first item is past the middle of the screen, or an ingredient is ticked)
+  // until the switch is used. Narrow screens only.
+  const narrow = useNarrow();
+  const [cook, setCook] = useState(initialCook);
+  const tickedCount = ticked.size;
+  useEffect(() => {
+    const look = () => {
+      const first = document.getElementById(tab === 'steps' ? 'step-1' : 'ingredient-1');
+      if (first)
+        setCook((c) => observe(c, { firstItemTop: first.getBoundingClientRect().top, viewportHeight: window.innerHeight, ticked: tickedCount }));
+    };
+    // oxlint-disable-next-line react/set-state-in-effect -- reads the layout, which only exists in the browser
+    look();
+    window.addEventListener('scroll', look, { passive: true });
+    return () => window.removeEventListener('scroll', look);
+  }, [tab, tickedCount]);
+  const wanted = wantsCookMode(cook, narrow);
+  const lock = useWakeLock(wanted);
+
   // The step whose sidebar card the mouse is over gets a light tint.
   const [peek, setPeek] = useState<number>();
 
@@ -97,6 +120,7 @@ export function RecipePage({ recipe: r, tile, steps }: Props) {
         </div>
 
         <ClockSetting />
+        <CookSwitch wanted={wanted} lock={lock} manual={cook.manual} onToggle={() => setCook((c) => setByHand(c, !wantsCookMode(c, true)))} />
 
         <div ref={stack} className="sticky top-[env(safe-area-inset-top)] z-20 mt-6 -mx-[max(1rem,4vw)] min-[52rem]:hidden">
           <TabBar tab={tab} onSelect={select} />

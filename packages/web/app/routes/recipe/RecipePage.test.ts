@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { appeltaartSteps } from '~testing/steps';
 import { createElement } from 'react';
@@ -81,3 +82,28 @@ test('scroll positions per tab', () => {
 // Need a browser: the page scrolls back to where the tab was left, and an unvisited tab scrolls to its heading.
 test.todo('recipe-viewing › Position is remembered');
 test.todo('recipe-viewing › First visit of a tab');
+
+test('cook-mode › Switch on a narrow screen', () => {
+  const html = page();
+  const at = html.indexOf('role="switch"');
+  const stack = html.indexOf('class="sticky');
+  // The switch is a real switch, directly above the sticky stack and not part of it.
+  assert.ok(at > 0 && at < stack);
+  assert.ok(/role="switch" aria-checked="false"/.test(html));
+  assert.ok(html.includes('Scherm mag slapen') && html.includes('Gaat vanzelf aan zodra je begint'));
+});
+
+test('cook-mode › No cook mode on a wide screen', () => {
+  // The switch is hidden from 52rem on, and the decision never wants the lock there (see cookMode.test.ts).
+  assert.ok(
+    /role="switch"[^>]*class="[^"]*min-\[52rem\]:hidden/.test(page()) || /class="[^"]*min-\[52rem\]:hidden[^"]*"[^>]*role="switch"/.test(page()),
+  );
+});
+
+test('cook-mode › Choice is not kept', () => {
+  // The choice is plain component state, and the page is keyed by recipe so another recipe starts automatic again.
+  const read = (file: string) => readFileSync(new URL(file, import.meta.url), 'utf8');
+  assert.ok(read('./route.tsx').includes('key={recipe.slug}'));
+  for (const file of ['./RecipePage.tsx', './CookSwitch.tsx', '../../lib/cookMode.ts'])
+    assert.ok(!/localStorage|sessionStorage/.test(read(file)), file);
+});
