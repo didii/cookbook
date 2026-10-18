@@ -44,7 +44,7 @@ export function StepItem({ step, number, done, onToggle, highlight, peek }: Prop
           </span>
           Stap {number}
         </span>
-        <StepChips step={step} index={number - 1} />
+        <StepChips step={step} index={number - 1} done={done} />
       </div>
       {cards.length > 0 && (
         <div className="mb-2 grid gap-2">
@@ -59,7 +59,7 @@ export function StepItem({ step, number, done, onToggle, highlight, peek }: Prop
         onClick={onToggle}
         className={cn(
           '-mx-2.5 block w-[calc(100%+1.25rem)] cursor-pointer rounded-[0.625rem] border-0 bg-transparent px-2.5 py-1 text-left text-[clamp(1.25rem,5.4vw,1.5rem)] leading-[1.35] font-extrabold hover:bg-white/70',
-          done && 'text-muted line-through',
+          done && 'opacity-45',
         )}
       >
         {step.body}
