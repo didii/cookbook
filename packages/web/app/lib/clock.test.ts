@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { appeltaartSteps } from '~testing/steps';
 import { clockAvailable, clockIntentUrl, readClockSetting, writeClockSetting } from './clock';
+import type { Step } from './recipes';
 import { formatCountdown, handOver, startTimer, timerDefs, timerView } from './timers';
 
-const defs = timerDefs(appeltaartSteps);
+const steps: Step[] = [{ body: 'Laat het deeg rusten.', ingredients: [], timer: { minutes: 30, label: 'Deeg rust' } }];
+const defs = timerDefs(steps);
 const MIN = 60_000;
 const T0 = 1_000_000;
 

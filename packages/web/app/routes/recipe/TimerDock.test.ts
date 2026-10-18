@@ -1,15 +1,20 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { appeltaartSteps } from '~testing/steps';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import type { Step } from '~/lib/recipes';
 import { activeTimers, start, timerDefs } from '~/lib/timers';
 import { TimerDock } from './TimerDock';
 import { TimerSidebar } from './TimerSidebar';
 
-const defs = timerDefs(appeltaartSteps);
+const steps: Step[] = Array.from({ length: 10 }, (_, i) => ({
+  body: `stap ${i + 1}`,
+  ingredients: [],
+  timer: i === 1 ? { minutes: 30, label: 'Deeg rust' } : i === 9 ? { minutes: 50, label: 'Bakken' } : undefined,
+}));
+const defs = timerDefs(steps);
 const T0 = 1_000_000;
-const timers = activeTimers(defs, start(start({}, defs[3], T0), defs[0], T0), T0 + 60_000);
+const timers = activeTimers(defs, start(start({}, defs[1], T0), defs[0], T0), T0 + 60_000);
 
 test('the dock holds a pill per timer, earlier steps first, and is hidden when empty', () => {
   const html = renderToStaticMarkup(createElement(TimerDock, { timers, onJump() {} }));

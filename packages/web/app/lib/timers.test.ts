@@ -1,10 +1,19 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { appeltaartSteps } from '~testing/steps';
+import type { Step } from './recipes';
 import { signalEnd } from './signal';
 import { activeTimers, add, finishTitle, formatCountdown, newlyFinished, restore, serialize, start, stop, timerDefs, timerView } from './timers';
 
-const defs = timerDefs(appeltaartSteps);
+// Eleven steps; the ones with a timer are 2, 5, 6, 10 and 11.
+const timerAt: Record<number, { minutes: number; label: string }> = {
+  1: { minutes: 30, label: 'Deeg rust' },
+  4: { minutes: 20, label: 'Appels smoren' },
+  5: { minutes: 10, label: 'Uitlekken' },
+  9: { minutes: 50, label: 'Bakken' },
+  10: { minutes: 45, label: 'Afkoelen' },
+};
+const steps: Step[] = Array.from({ length: 11 }, (_, i) => ({ body: `stap ${i + 1}`, ingredients: [], timer: timerAt[i] }));
+const defs = timerDefs(steps);
 const rust = defs[0]; // step 2, 30 minutes
 const smoren = defs[1]; // step 5, 20 minutes
 const MIN = 60_000;

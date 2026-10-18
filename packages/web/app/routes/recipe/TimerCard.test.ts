@@ -1,14 +1,18 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { appeltaartSteps } from '~testing/steps';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import type { Step } from '~/lib/recipes';
 import { activeTimers, handOver, start, timerDefs, timerView } from '~/lib/timers';
 import { ClockSetting } from './ClockSetting';
 import { StepItem } from './StepItem';
 import { TimersContext, type TimerControls } from './timersContext';
 
-const defs = timerDefs(appeltaartSteps);
+const steps: Step[] = [
+  { body: 'Meng het deeg.', ingredients: [] },
+  { body: 'Laat het deeg 30 minuten rusten.', ingredients: [], timer: { minutes: 30, label: 'Deeg rust' } },
+];
+const defs = timerDefs(steps);
 const T0 = 1_000_000;
 
 /** Controls over a fixed set of timers as they are at `now`. */
@@ -29,7 +33,7 @@ const controlsAt = (now: number, timers = start({}, defs[0], T0)): TimerControls
 
 const stepTwo = (controls: TimerControls) =>
   renderToStaticMarkup(
-    createElement(TimersContext, { value: controls }, createElement(StepItem, { step: appeltaartSteps[1], number: 2, done: false, onToggle() {} })),
+    createElement(TimersContext, { value: controls }, createElement(StepItem, { step: steps[1], number: 2, done: false, onToggle() {} })),
   );
 
 test('a running timer is a card with its controls and a countdown chip', () => {

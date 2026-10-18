@@ -1,16 +1,21 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { appeltaartSteps } from '~testing/steps';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import type { StoredRecipe } from '~/.server/recipes';
+import type { Step } from '~/lib/recipes';
 import { arrive, leave, tabForKey } from '~/lib/tabs';
 import { IngredientList } from './IngredientList';
 import { RecipePage } from './RecipePage';
 
-const recipe: StoredRecipe = {
+const steps: Step[] = [
+  { body: 'snijden', ingredients: [] },
+  { body: 'bakken', ingredients: [], timer: { minutes: 50 } },
+];
+
+const recipe: Omit<StoredRecipe, 'steps'> = {
   id: 1,
   slug: 'appeltaart',
   title: 'Appeltaart',
@@ -24,10 +29,9 @@ const recipe: StoredRecipe = {
     { quantity_text: '4', name: 'appels' },
     { quantity_text: '100 g', name: 'suiker' },
   ],
-  steps: appeltaartSteps.map((s) => s.body),
 };
 
-const page = () => renderToStaticMarkup(createElement(MemoryRouter, null, createElement(RecipePage, { recipe, tile: 0, steps: appeltaartSteps })));
+const page = () => renderToStaticMarkup(createElement(MemoryRouter, null, createElement(RecipePage, { recipe, tile: 0, steps })));
 
 test('recipe-viewing › Tabs on a narrow screen', () => {
   const html = page();

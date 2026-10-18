@@ -1,20 +1,27 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { appeltaartSteps } from '~testing/steps';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { Step } from '~/lib/recipes';
-import { formatMinutes, toSteps } from '~/lib/steps';
+import { formatMinutes } from '~/lib/steps';
 import { toggled } from '~/lib/toggled';
 import { StepItem } from './StepItem';
 import { StepList } from './StepList';
+
+const plain = (body: string): Step => ({ body, ingredients: [] });
+const steps: Step[] = [
+  plain('Kneed het deeg.'),
+  { body: 'Laat het deeg 30 minuten rusten.', ingredients: [], timer: { minutes: 30, label: 'Deeg rust' } },
+  { body: 'Bak de taart.', ingredients: [{ quantity_text: '1', name: 'ei' }], ovenTemperature: 180, timer: { minutes: 50, label: 'Bakken' } },
+  plain('Laat afkoelen.'),
+];
 
 const renderStep = (step: Step, number = 1, done = false) =>
   renderToStaticMarkup(createElement(StepItem, { step, number, done, onToggle: () => {} }));
 
 test('recipe-viewing › Steps are all readable', () => {
-  const html = renderToStaticMarkup(createElement(StepList, { steps: appeltaartSteps }));
-  for (const [i, s] of appeltaartSteps.entries()) {
+  const html = renderToStaticMarkup(createElement(StepList, { steps: steps }));
+  for (const [i, s] of steps.entries()) {
     assert.ok(html.includes(`Stap ${i + 1}</span>`), `label of step ${i + 1}`);
     assert.ok(html.includes(s.body), `text of step ${i + 1}`);
   }
@@ -23,7 +30,7 @@ test('recipe-viewing › Steps are all readable', () => {
 });
 
 test('recipe-viewing › Step is marked done', () => {
-  const [step] = toSteps(['snijden']);
+  const step = plain('snijden');
   assert.ok(renderStep(step).includes('aria-pressed="false"'));
   assert.ok(!renderStep(step).includes('✓'));
   const done = renderStep(step, 1, true);
@@ -36,12 +43,11 @@ test('recipe-viewing › Step is marked done', () => {
 test.todo('recipe-viewing › Nothing shifts when a step is done');
 
 test('recipe-viewing › Marks are not kept', () => {
-  assert.ok(!renderToStaticMarkup(createElement(StepList, { steps: appeltaartSteps })).includes('aria-pressed="true"'));
+  assert.ok(!renderToStaticMarkup(createElement(StepList, { steps: steps })).includes('aria-pressed="true"'));
 });
 
 test('recipe-viewing › Step without chips', () => {
-  const [step] = toSteps(['snijden']);
-  assert.deepEqual(step, { body: 'snijden', ingredients: [] });
+  const step = plain('snijden');
   const html = renderStep(step);
   assert.ok(html.includes('Stap 1'));
   assert.equal(html.match(/<li/g)?.length, 1);
@@ -49,9 +55,9 @@ test('recipe-viewing › Step without chips', () => {
 });
 
 test('recipe-viewing › Chips beside the label', () => {
-  const html = renderStep(appeltaartSteps[9], 10); // oven and timer
+  const html = renderStep(steps[2], 3); // oven and timer
   const head = html.slice(0, html.indexOf('<button type="button" aria-pressed'));
-  assert.ok(head.indexOf('Stap 10') < head.indexOf('180 °C'));
+  assert.ok(head.indexOf('Stap 3') < head.indexOf('180 °C'));
   assert.ok(head.includes('50 min'));
   // The oven chip is quiet text, the timer an operable button.
   assert.ok(head.includes('<li class="inline-flex') && head.includes('<li><button'));
