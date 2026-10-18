@@ -10,7 +10,7 @@ type Props = { step: Step; number: number; done: boolean; onToggle: () => void; 
 /** One step: label with its done square and the chips on one line, the text below as the tap target. */
 export function StepItem({ step, number, done, onToggle, highlight, peek }: Props) {
   const timers = useContext(TimersContext);
-  const cards = timers.active.filter((t) => t.step === number - 1);
+  const cards = step.chips.timers.flatMap((_, i) => timers.view(`${number - 1}:${i}`) ?? []).filter((t) => t.state !== 'idle');
 
   return (
     <li

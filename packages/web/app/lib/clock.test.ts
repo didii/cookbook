@@ -1,0 +1,62 @@
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import { appeltaartSteps } from '~testing/steps';
+import { clockAvailable, clockIntentUrl, readClockSetting, writeClockSetting } from './clock';
+import { formatCountdown, handOver, startTimer, timerDefs, timerView } from './timers';
+
+const defs = timerDefs(appeltaartSteps);
+const MIN = 60_000;
+const T0 = 1_000_000;
+
+test('step-timers › Hand over a running timer', () => {
+  // 14:32 left: that many seconds go to the clock app, with the label, and the page keeps only a note.
+  const left = 14 * MIN + 32_000;
+  const url = clockIntentUrl(left / 1000, 'Deeg rust');
+  assert.ok(url.startsWith('intent:#Intent;action=android.intent.action.SET_TIMER;'));
+  assert.ok(url.includes('i.android.intent.extra.alarm.LENGTH=872;'));
+  assert.ok(url.includes('S.android.intent.extra.alarm.MESSAGE=Deeg%20rust;'));
+  assert.ok(url.includes('B.android.intent.extra.alarm.SKIP_UI=true;'));
+  assert.ok(url.endsWith(';end'));
+  const view = timerView(handOver({}, defs[0].id, left), defs[0], T0 + 99 * MIN);
+  assert.deepEqual([view.state, formatCountdown(view.remainingMs)], ['native', '14:32']);
+});
+
+test('step-timers › Timers handed over automatically', () => {
+  const view = timerView(startTimer({}, defs[0], T0, true), defs[0], T0);
+  assert.deepEqual([view.state, formatCountdown(view.remainingMs)], ['native', '30:00']);
+  // Without the setting it is an ordinary running timer.
+  assert.equal(timerView(startTimer({}, defs[0], T0, false), defs[0], T0).state, 'running');
+});
+
+test('step-timers › Clock app not available', () => {
+  assert.equal(clockAvailable({ userAgent: 'Mozilla/5.0 (Linux; Android 15; Pixel 9) Chrome/140.0 Mobile Safari/537.36' }), true);
+  assert.equal(clockAvailable({ userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Safari/604.1' }), false);
+  assert.equal(clockAvailable({ userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/140.0 Safari/537.36' }), false);
+});
+
+test('the clock app setting is off by default and survives missing storage', () => {
+  const data = new Map<string, string>();
+  const storage = {
+    getItem: (k: string) => data.get(k) ?? null,
+    setItem: (k: string, v: string) => void data.set(k, v),
+    removeItem: (k: string) => void data.delete(k),
+  };
+  assert.equal(readClockSetting(storage), false);
+  writeClockSetting(true, storage);
+  assert.equal(readClockSetting(storage), true);
+  writeClockSetting(false, storage);
+  assert.equal(readClockSetting(storage), false);
+  const blocked = {
+    getItem() {
+      throw new Error('blocked');
+    },
+    setItem() {
+      throw new Error('blocked');
+    },
+    removeItem() {
+      throw new Error('blocked');
+    },
+  };
+  assert.equal(readClockSetting(blocked), false);
+  assert.doesNotThrow(() => writeClockSetting(true, blocked));
+});

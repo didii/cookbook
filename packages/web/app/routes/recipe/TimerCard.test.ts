@@ -3,7 +3,8 @@ import { test } from 'node:test';
 import { appeltaartSteps } from '~testing/steps';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { activeTimers, start, timerDefs, timerView } from '~/lib/timers';
+import { activeTimers, handOver, start, timerDefs, timerView } from '~/lib/timers';
+import { ClockSetting } from './ClockSetting';
 import { StepItem } from './StepItem';
 import { TimersContext, type TimerControls } from './timersContext';
 
@@ -22,6 +23,8 @@ const controlsAt = (now: number, timers = start({}, defs[0], T0)): TimerControls
   start() {},
   add() {},
   stop() {},
+  handOver() {},
+  clock: { available: false, auto: false, setAuto() {} },
 });
 
 const stepTwo = (controls: TimerControls) =>
@@ -47,6 +50,21 @@ test('an idle timer is a start button', () => {
   const html = stepTwo(controlsAt(T0, {}));
   assert.ok(html.includes('aria-label="Start timer van 30 min, Deeg rust"'));
   assert.ok(!html.includes('role="group"'));
+});
+
+test('the clock app control is offered only where the clock app can be started', () => {
+  const running = controlsAt(T0 + 5 * 60_000);
+  assert.ok(!stepTwo(running).includes('Klok-app'));
+  assert.ok(stepTwo({ ...running, clock: { available: true, auto: false, setAuto() {} } }).includes('Klok-app'));
+  // And no setting without it.
+  assert.equal(renderToStaticMarkup(createElement(ClockSetting)), '');
+});
+
+test('a handed over timer is a note that can only be wiped', () => {
+  const timers = handOver({}, defs[0].id, 872_000);
+  const html = stepTwo(controlsAt(T0, timers));
+  assert.ok(html.includes('In je klok-app · 14:32') && html.includes('>Wis<') && html.includes('loopt door'));
+  assert.ok(!html.includes('>Stop<') && !html.includes('>+1<'));
 });
 
 // Need layout: the card sits on its own line below the label on a narrow screen, and the chip shows the countdown on a wide one.

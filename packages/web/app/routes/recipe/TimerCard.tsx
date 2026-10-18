@@ -6,10 +6,26 @@ import { TimersContext } from './timersContext';
 
 type Props = { view: TimerView };
 
-/** A running or finished timer on a narrow screen: on its own line below the step's label, so the chips do not move. */
+/** A timer under its step's label: running or finished on a narrow screen, so the chips do not move; the note of a clock app handover on any screen. */
 export function TimerCard({ view }: Props) {
   const timers = useContext(TimersContext);
   const finished = view.state === 'finished';
+
+  if (view.state === 'native') {
+    return (
+      <output className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border-3 border-dashed border-ink py-2 pr-2 pl-3.5">
+        <span className="font-black tabular-nums">In je klok-app · {formatCountdown(view.remainingMs)}</span>
+        {view.label && <small className="min-w-16 flex-1 font-extrabold text-muted">{view.label}</small>}
+        <TimerButton
+          onClick={() => timers.stop(view.id)}
+          aria-label="Wis deze notitie (de timer in je klok-app loopt door)"
+          className="ml-auto hover:bg-red hover:text-white"
+        >
+          Wis
+        </TimerButton>
+      </output>
+    );
+  }
 
   return (
     <div
@@ -31,6 +47,11 @@ export function TimerCard({ view }: Props) {
         <TimerButton onClick={() => timers.add(view.id, 5)} aria-label="Vijf minuten erbij">
           +5
         </TimerButton>
+        {!finished && timers.clock.available && (
+          <TimerButton onClick={() => timers.handOver(view.id)} aria-label="Geef de resterende tijd aan je klok-app">
+            Klok-app
+          </TimerButton>
+        )}
         {finished ? (
           <TimerButton main onClick={() => timers.stop(view.id)}>
             Klaar

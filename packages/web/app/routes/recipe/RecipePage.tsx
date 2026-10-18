@@ -8,6 +8,7 @@ import { cn } from '~/shared/cn';
 import { Fret } from '~/shared/Fret';
 import { Seal } from '~/shared/Seal';
 import { TileBand } from '~/shared/TileBand';
+import { ClockSetting } from './ClockSetting';
 import { IngredientList } from './IngredientList';
 import { StepList } from './StepList';
 import { TabBar } from './TabBar';
@@ -94,6 +95,8 @@ export function RecipePage({ recipe: r, tile, steps }: Props) {
           {r.image && r.seal && <Seal id={r.seal} className="h-16" />}
           <TileBand first={tile} responsive className="border-b-0" />
         </div>
+
+        <ClockSetting />
 
         <div ref={stack} className="sticky top-[env(safe-area-inset-top)] z-20 mt-6 -mx-[max(1rem,4vw)] min-[52rem]:hidden">
           <TabBar tab={tab} onSelect={select} />

@@ -40,6 +40,10 @@ export function stop(timers: Timers, id: string): Timers {
   return rest;
 }
 
+/** Start a timer, or, with the clock app setting on, start it there right away: the page then only keeps the note. */
+export const startTimer = (timers: Timers, def: TimerDef, now: number, handedOver: boolean): Timers =>
+  handedOver ? handOver(timers, def.id, def.minutes * MINUTE) : start(timers, def, now);
+
 /** Hand a running timer over to the clock app: the page stops counting it. */
 export const handOver = (timers: Timers, id: string, remainingMs: number): Timers => ({ ...timers, [id]: { handedOver: remainingMs } });
 

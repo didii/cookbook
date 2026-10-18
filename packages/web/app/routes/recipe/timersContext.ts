@@ -9,7 +9,19 @@ export type TimerControls = {
   start: (id: string) => void;
   add: (id: string, minutes: number) => void;
   stop: (id: string) => void;
+  /** Start the clock app's timer with the time that is left and stop counting here. */
+  handOver: (id: string) => void;
+  /** `available` only on devices that can start the clock app; `auto` is the setting that hands over every timer at its start. */
+  clock: { available: boolean; auto: boolean; setAuto: (on: boolean) => void };
 };
 
-/** Without a provider (a step rendered alone) every timer is idle and the controls do nothing. */
-export const TimersContext = createContext<TimerControls>({ active: [], view: () => undefined, start() {}, add() {}, stop() {} });
+/** Without a provider (a step rendered alone) every timer is idle, the clock app is not available and the controls do nothing. */
+export const TimersContext = createContext<TimerControls>({
+  active: [],
+  view: () => undefined,
+  start() {},
+  add() {},
+  stop() {},
+  handOver() {},
+  clock: { available: false, auto: false, setAuto() {} },
+});
