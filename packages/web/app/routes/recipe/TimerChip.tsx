@@ -7,7 +7,7 @@ import { TimersContext } from './timersContext';
 type Props = { id: string; minutes: number; label?: string };
 
 const Play = () => (
-  <svg viewBox="0 0 16 16" aria-hidden="true" className="size-4 shrink-0">
+  <svg viewBox="0 0 16 16" aria-hidden="true" className="size-4 shrink-0 transition-transform group-hover:motion-safe:translate-x-px">
     <path d="M3 1.5v13l11-6.5z" fill="currentColor" />
   </svg>
 );
@@ -27,7 +27,7 @@ export function TimerChip({ id, minutes, label }: Props) {
           type="button"
           onClick={() => timers.start(id)}
           aria-label={`Start timer van ${formatMinutes(minutes)}${label ? `, ${label}` : ''}`}
-          className="inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-lg border-3 border-ink bg-jade pr-3 pl-2 text-[0.9375rem] font-black text-white shadow-hard-sm"
+          className="group inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-lg border-3 border-ink bg-jade pr-3 pl-2 text-[0.9375rem] font-black text-white shadow-hard-sm transition-[translate,box-shadow,background-color] duration-100 hover:bg-[color-mix(in_srgb,var(--color-jade),white_14%)] motion-safe:hover:-translate-y-px motion-safe:hover:shadow-[4px_4px_0_var(--color-ink)] motion-safe:active:translate-x-0.5 motion-safe:active:translate-y-0.5 motion-safe:active:shadow-[1px_1px_0_var(--color-ink)]"
         >
           <Play />
           {formatMinutes(minutes)}

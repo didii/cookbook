@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import type { StoredRecipe } from '~/.server/recipes';
 import type { Step } from '~/lib/steps';
@@ -11,8 +11,11 @@ import { TileBand } from '~/shared/TileBand';
 import { IngredientList } from './IngredientList';
 import { StepList } from './StepList';
 import { TabBar } from './TabBar';
+import { TimerDock } from './TimerDock';
 import { TimersContext } from './timersContext';
+import { TimerSidebar } from './TimerSidebar';
 import { useStackHeight } from './useStackHeight';
+import { useStepsInView } from './useStepsInView';
 import { useTimers } from './useTimers';
 
 type Props = { recipe: StoredRecipe; tile: number; steps: Step[] };
@@ -25,6 +28,7 @@ export function RecipePage({ recipe: r, tile, steps }: Props) {
   const timers = useTimers(r.slug, steps);
   const stack = useRef<HTMLDivElement>(null);
   const stackHeight = useStackHeight(stack);
+  const inView = useStepsInView(stack, steps.length);
   const positions = useRef<Positions>({});
   const arriving = useRef(false);
 
@@ -44,6 +48,23 @@ export function RecipePage({ recipe: r, tile, steps }: Props) {
     const top = heading.getBoundingClientRect().top + window.scrollY;
     window.scrollTo({ top: arrive(positions.current, tab, top, stackHeight.current + 12), behavior: 'instant' });
   }, [tab, stackHeight]);
+
+  // Going to the step of a timer: scroll to it and highlight it for three seconds. `n` makes a repeated jump restart the highlight.
+  const [flash, setFlash] = useState<{ step: number; n: number }>();
+  const jump = (step: number) => {
+    // Below 52rem the steps may be on the closed tab.
+    if (!window.matchMedia('(min-width: 52rem)').matches) select('steps');
+    setFlash((f) => ({ step, n: (f?.n ?? 0) + 1 }));
+  };
+  useEffect(() => {
+    if (!flash) return;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.getElementById(`step-${flash.step + 1}`)?.scrollIntoView({ behavior: reduced ? 'instant' : 'smooth', block: 'start' });
+    const timeout = setTimeout(() => setFlash(undefined), 3100);
+    return () => clearTimeout(timeout);
+  }, [flash]);
+  // The step whose sidebar card the mouse is over gets a light tint.
+  const [peek, setPeek] = useState<number>();
 
   // Below 52rem only the open tab shows, at least as tall as the screen under the stack, with the page's bottom padding inside it; from 52rem both show, side by side.
   const panel = (id: TabId) =>
@@ -76,6 +97,7 @@ export function RecipePage({ recipe: r, tile, steps }: Props) {
 
         <div ref={stack} className="sticky top-[env(safe-area-inset-top)] z-20 mt-6 -mx-[max(1rem,4vw)] min-[52rem]:hidden">
           <TabBar tab={tab} onSelect={select} />
+          <TimerDock timers={timers.active.filter((t) => !inView.has(t.step))} onJump={jump} />
         </div>
 
         <div className="mt-6 grid grid-cols-[minmax(0,1fr)] gap-10 min-[52rem]:mt-10 min-[52rem]:grid-cols-[minmax(16rem,22rem)_1fr] min-[52rem]:items-start">
@@ -87,6 +109,7 @@ export function RecipePage({ recipe: r, tile, steps }: Props) {
               'min-[52rem]:sticky min-[52rem]:top-4 min-[52rem]:flex min-[52rem]:max-h-[calc(100svh-2rem)] min-[52rem]:flex-col',
             )}
           >
+            <TimerSidebar timers={timers.active} onJump={jump} onPeek={setPeek} />
             <h2 id="ing" className="mb-4 shrink-0 scroll-mt-[calc(var(--stack-h,0px)+0.75rem)] text-2xl font-black">
               Ingrediënten
             </h2>
@@ -102,7 +125,7 @@ export function RecipePage({ recipe: r, tile, steps }: Props) {
             <h2 id="bereiding" className="mb-4 scroll-mt-[calc(var(--stack-h,0px)+0.75rem)] text-2xl font-black">
               Bereiding
             </h2>
-            <StepList steps={steps} />
+            <StepList steps={steps} highlight={flash} peek={peek} />
             <Fret size={18} className="mt-7 text-red" />
           </section>
         </div>

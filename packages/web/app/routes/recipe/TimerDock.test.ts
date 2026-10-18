@@ -19,10 +19,10 @@ test('the dock holds a pill per timer, earlier steps first, and is hidden when e
 });
 
 test('the sidebar lists the timers with their controls and a jump to the step', () => {
-  const html = renderToStaticMarkup(createElement(TimerSidebar, { timers, onJump() {} }));
+  const html = renderToStaticMarkup(createElement(TimerSidebar, { timers, onJump() {}, onPeek() {} }));
   assert.equal(html.match(/aria-label="Ga naar stap/g)?.length, 2);
   assert.ok(html.includes('Eén minuut erbij') && html.includes('Vijf minuten erbij') && html.includes('>Stop<'));
-  assert.equal(renderToStaticMarkup(createElement(TimerSidebar, { timers: [], onJump() {} })), '');
+  assert.equal(renderToStaticMarkup(createElement(TimerSidebar, { timers: [], onJump() {}, onPeek() {} })), '');
 });
 
 // Need a browser: they depend on which steps are on screen (IntersectionObserver) and on the layout.

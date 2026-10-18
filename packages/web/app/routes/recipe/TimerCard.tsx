@@ -36,7 +36,7 @@ export function TimerCard({ view }: Props) {
             Klaar
           </TimerButton>
         ) : (
-          <TimerButton onClick={() => timers.stop(view.id)} aria-label="Stop timer">
+          <TimerButton onClick={() => timers.stop(view.id)} aria-label="Stop timer" className="hover:bg-red hover:text-white">
             Stop
           </TimerButton>
         )}

@@ -5,15 +5,29 @@ import { StepChips } from './StepChips';
 import { TimerCard } from './TimerCard';
 import { TimersContext } from './timersContext';
 
-type Props = { step: Step; number: number; done: boolean; onToggle: () => void };
+type Props = { step: Step; number: number; done: boolean; onToggle: () => void; highlight?: number; peek?: boolean };
 
 /** One step: label with its done square and the chips on one line, the text below as the tap target. */
-export function StepItem({ step, number, done, onToggle }: Props) {
+export function StepItem({ step, number, done, onToggle, highlight, peek }: Props) {
   const timers = useContext(TimersContext);
   const cards = timers.active.filter((t) => t.step === number - 1);
 
   return (
-    <li className="scroll-mt-[calc(var(--stack-h,0px)+0.75rem)] border-t-2 border-dashed border-ink/28 py-4 pb-4.5 first:border-t-0 first:pt-0">
+    <li
+      id={`step-${number}`}
+      className="relative isolate scroll-mt-[calc(var(--stack-h,0px)+0.75rem)] border-t-2 border-dashed border-ink/28 py-4 pb-4.5 first:border-t-0 first:pt-0"
+    >
+      {/* The highlight of a jump is remounted by each jump (new key), which restarts the fade; with reduced motion it stays at full tint until removed. */}
+      {highlight !== undefined && (
+        <span
+          key={highlight}
+          aria-hidden="true"
+          className="pointer-events-none absolute -inset-x-2 inset-y-1 -z-10 animate-flash rounded-xl bg-yel/55 shadow-[0_0_0_0.5rem_color-mix(in_srgb,var(--color-yel)_55%,transparent)] motion-reduce:animate-none"
+        />
+      )}
+      {peek && highlight === undefined && (
+        <span aria-hidden="true" className="pointer-events-none absolute -inset-x-2 inset-y-1 -z-10 rounded-xl bg-yel/55" />
+      )}
       <div className="mb-1.5 flex flex-wrap items-center gap-x-2 gap-y-1.5">
         <span
           className={cn('inline-flex items-center gap-1.5 text-[0.8125rem] font-black tracking-[0.08em] uppercase', done ? 'text-jade' : 'text-red')}

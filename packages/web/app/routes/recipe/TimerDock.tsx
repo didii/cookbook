@@ -20,7 +20,7 @@ export function TimerDock({ timers, onJump }: Props) {
             onClick={() => onJump(t.step)}
             aria-label={`Stap ${t.step + 1}${t.label ? `, ${t.label}` : ''}, ${finished ? 'klaar' : `${formatCountdown(t.remainingMs)} over`}. Ga naar de stap`}
             className={cn(
-              'inline-flex min-h-10 shrink-0 cursor-pointer items-center gap-2 rounded-full border-3 border-ink py-1 pr-3 pl-1 font-black motion-reduce:animate-none',
+              'group inline-flex min-h-10 shrink-0 cursor-pointer items-center gap-2 rounded-full border-3 border-ink py-1 pr-3 pl-1 font-black transition-transform hover:ring-2 hover:ring-ink motion-reduce:animate-none motion-safe:active:scale-[0.97]',
               finished ? 'animate-ring bg-red text-white' : 'animate-pop bg-white',
             )}
           >
@@ -31,6 +31,9 @@ export function TimerDock({ timers, onJump }: Props) {
             </span>
             <span className="text-[1.0625rem] tabular-nums">{finished ? 'Klaar' : formatCountdown(t.remainingMs)}</span>
             {t.label && <small className={cn('text-sm font-extrabold max-[24rem]:hidden', finished ? 'text-white' : 'text-muted')}>{t.label}</small>}
+            <span aria-hidden="true" className="hidden group-hover:inline">
+              →
+            </span>
           </button>
         );
       })}

@@ -4,10 +4,10 @@ import { cn } from '~/shared/cn';
 import { TimerButton } from './TimerButton';
 import { TimersContext } from './timersContext';
 
-type Props = { timers: TimerView[]; onJump: (step: number) => void };
+type Props = { timers: TimerView[]; onJump: (step: number) => void; onPeek: (step: number | undefined) => void };
 
 /** Wide screens: every running or finished timer above the ingredients, with all its controls, whatever the scroll position. */
-export function TimerSidebar({ timers, onJump }: Props) {
+export function TimerSidebar({ timers, onJump, onPeek }: Props) {
   const controls = useContext(TimersContext);
   if (timers.length === 0) return null;
 
@@ -18,8 +18,11 @@ export function TimerSidebar({ timers, onJump }: Props) {
         {timers.map((t) => {
           const finished = t.state === 'finished';
           return (
+            // oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- mouse-only hint; the same step is reachable by the jump button
             <li
               key={t.id}
+              onMouseEnter={() => onPeek(t.step)}
+              onMouseLeave={() => onPeek(undefined)}
               className={cn(
                 'grid grid-cols-[auto_1fr_auto] items-center gap-x-2.5 gap-y-1 rounded-xl border-3 border-ink py-2 pr-2 pl-2.5 shadow-hard-sm motion-reduce:animate-none',
                 finished ? 'animate-ring bg-red text-white' : 'animate-pop bg-white',
@@ -53,7 +56,7 @@ export function TimerSidebar({ timers, onJump }: Props) {
                     Klaar
                   </TimerButton>
                 ) : (
-                  <TimerButton onClick={() => controls.stop(t.id)} aria-label="Stop timer">
+                  <TimerButton onClick={() => controls.stop(t.id)} aria-label="Stop timer" className="hover:bg-red hover:text-white">
                     Stop
                   </TimerButton>
                 )}
