@@ -18,17 +18,10 @@ export const seals = [
   'wu-gu-feng-deng',
 ];
 
-const RECENT = 3;
-
-/**
- * Seal for a new recipe: random among the least-used ones, skipping those on the last few recipes.
- * `existing` holds the seal of every recipe, oldest first. Lowers repeats next to each other, no guarantee.
- */
+/** Seal for a new recipe: random among the seals the fewest recipes use. `existing` holds the seal of every recipe. */
 export function pickSeal(existing: string[], random = Math.random) {
-  const recent = existing.slice(-RECENT);
   const count = (s: string) => existing.filter((e) => e === s).length;
-  const open = seals.filter((s) => !recent.includes(s));
-  const least = Math.min(...open.map(count));
-  const pool = open.filter((s) => count(s) === least);
+  const least = Math.min(...seals.map(count));
+  const pool = seals.filter((s) => count(s) === least);
   return pool[Math.floor(random() * pool.length)];
 }

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
+import { seals } from '~/lib/seals';
 import { createRecipe, getRecipe, listAuthors, slugify } from './recipes';
 
 let db: D1Database;
@@ -142,4 +143,36 @@ test('recipe-creation › Existing spelling is reused', async () => {
   await createRecipe(db, { title: 'Eerste', author: 'Opa Jos', servings: 2 });
   const slug = await createRecipe(db, { title: 'Tweede', author: 'opa jos', servings: 2 });
   assert.equal((await getRecipe(db, slug))?.author, 'Opa Jos');
+});
+
+test('recipe-creation › Seal is assigned', async () => {
+  const slug = await createRecipe(db, { title: 'Met zegel', author: 'Oma' });
+  assert.ok(seals.includes((await getRecipe(db, slug))?.seal ?? ''));
+});
+
+test('recipe-creation › Least used seals are chosen', async () => {
+  const fresh = await createTestDb();
+  try {
+    const left = ['fu', 'jia'];
+    await fresh.db.batch(
+      seals
+        .filter((s) => !left.includes(s))
+        .map((s) => fresh.db.prepare('INSERT INTO recipes (slug, title, author, seal) VALUES (?, ?, ?, ?)').bind(s, s, 'Oma', s)),
+    );
+    for (let i = 0; i < 5; i++) {
+      const slug = await createRecipe(fresh.db, { title: `Nieuw ${i}`, author: 'Oma' });
+      const seal = (await getRecipe(fresh.db, slug))?.seal ?? '';
+      assert.ok(left.includes(seal), seal);
+      // It is now used once like the others, so the next one is one of the remaining unused seals.
+      left.splice(left.indexOf(seal), 1);
+      if (!left.length) left.push(...seals);
+    }
+  } finally {
+    await fresh.dispose();
+  }
+});
+
+test('recipe-creation › Provided seal is used', async () => {
+  const slug = await createRecipe(db, { title: 'Eigen zegel', author: 'Oma', seal: 'fu' });
+  assert.equal((await getRecipe(db, slug))?.seal, 'fu');
 });

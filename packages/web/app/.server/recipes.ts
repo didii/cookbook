@@ -1,3 +1,5 @@
+import { pickSeal } from '~/lib/seals';
+
 export type RecipeRow = {
   id: number;
   slug: string;
@@ -68,9 +70,16 @@ async function freeSlug(db: D1Database, title: string): Promise<string> {
   for (let n = 2; ; n++) if (!taken.has(`${base}-${n}`)) return `${base}-${n}`;
 }
 
+/** A random one of the least used seals. */
+async function chooseSeal(db: D1Database): Promise<string> {
+  const { results } = await db.prepare('SELECT seal FROM recipes WHERE seal IS NOT NULL').all<{ seal: string }>();
+  return pickSeal(results.map((r) => r.seal));
+}
+
 /** Stores a recipe with its ingredients and steps in one batch and returns its slug. */
 export async function createRecipe(db: D1Database, recipe: NewRecipe): Promise<string> {
   const slug = await freeSlug(db, recipe.title);
+  const seal = recipe.seal ?? (await chooseSeal(db));
   const idOf = '(SELECT id FROM recipes WHERE slug = ?)';
   await db.batch([
     db
@@ -87,7 +96,7 @@ export async function createRecipe(db: D1Database, recipe: NewRecipe): Promise<s
         recipe.time ?? null,
         recipe.intro ?? '',
         recipe.image ?? null,
-        recipe.seal ?? null,
+        seal,
         recipe.createdBy ?? null,
       ),
     ...(recipe.ingredients ?? []).map((ing, i) =>
