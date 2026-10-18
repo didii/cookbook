@@ -19,6 +19,18 @@
   /* A finished timer pulses; a newly shown timer pops in. Both are switched off with motion-reduce. */
   --animate-ring: ring 1s ease-in-out infinite;
   --animate-pop: pop 0.22s ease-out;
+  /* The highlight of a step reached from a timer: in by 20%, held until 60%, out at the end. */
+  --animate-flash: flash 3s ease-in-out forwards;
+  @keyframes flash {
+    0%,
+    100% {
+      opacity: 0;
+    }
+    20%,
+    60% {
+      opacity: 1;
+    }
+  }
   @keyframes ring {
     50% {
       box-shadow: 0 0 0 5px color-mix(in srgb, var(--color-red) 40%, transparent);
