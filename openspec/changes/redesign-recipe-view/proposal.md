@@ -25,5 +25,5 @@ The recipe page is built for reading, not for cooking with messy hands. On a pho
 ## Impact
 
 - `packages/web/app/routes/recipe/` (route, `StepList`, `IngredientList`, new tab, chip, timer and cook-mode components and hooks), `app/app.css` only if a token is missing.
-- The loader's step shape gains a `chips` field that is empty until a later change stores chips; no schema change, no new dependency.
-- A dev-only demo route with fixture chips, to see the design before chips can be stored.
+- The recipe page shows hardcoded sample recipes (`lib/recipes.ts`, whose `Recipe` follows `StoredRecipe`'s field names and gives each step its ingredients, an optional oven temperature and an optional timer) instead of the database, until chips can be stored; no schema change, no new dependency.
+- The Appeltaart sample holds every kind of chip, so the design can be seen at `/recepten/appeltaart`.

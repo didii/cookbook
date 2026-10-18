@@ -1,11 +1,11 @@
 # Tasks
 
-Check every UI task by hand in `pnpm dev` at 360px, 768px and desktop width (on `/recepten/voorbeeld` where chips are needed). A scenario that needs layout, scrolling, intersection or a real wake lock gets `test.todo('<capability> › <Scenario title>')` with the reason on the line above; the rest get real tests named `<capability> › <Scenario title>`. The Artifact preview linked in design.md is the visual reference.
+Check every UI task by hand in `pnpm dev` at 360px, 768px and desktop width (on `/recepten/appeltaart` where chips are needed). A scenario that needs layout, scrolling, intersection or a real wake lock gets `test.todo('<capability> › <Scenario title>')` with the reason on the line above; the rest get real tests named `<capability> › <Scenario title>`, each building its own data (never the sample recipes). The Artifact preview linked in design.md is the visual reference.
 
-## 1. Step data and the dev demo
+## 1. Step data and the hardcoded recipes
 
-- [x] 1.1 Add the `Step`/`StepChips` types to `app/lib/` (ingredients with quantity and name, oven with degrees, timers with minutes and optional label), map the loader's steps to `Step` with empty chips, and add the Appeltaart fixture steps (13 steps, see the preview) in `testing/`; verify with a test named `recipe-viewing › Step without chips` (a step with empty chips renders just its label) and that the existing `recipe-viewing` tests still pass unchanged.
-- [x] 1.2 Add the dev-only route `recepten/voorbeeld` (registered only when `import.meta.env.DEV`) rendering the recipe page with the fixture steps; verify in `pnpm dev` that it opens, and that `pnpm build` output contains no such route.
+- [x] 1.1 Give `Recipe` in `app/lib/recipes.ts` `StoredRecipe`'s field names and `Step`s with `ingredients`, optional `ovenTemperature` and optional `timer`; add the Appeltaart of the preview (13 steps) to the sample recipes; verify with a test named `recipe-viewing › Step without chips` (a step without ingredients, oven or timer renders just its label) and that the existing `recipe-viewing` tests still pass unchanged.
+- [x] 1.2 Make the recipe route's loader read the hardcoded recipes instead of D1 (`getRecipe` stays, tested on its own); verify in `pnpm dev` that `/recepten/appeltaart` opens with its chips, that an unknown slug still gives 404 (`recipe-viewing › Unknown slug`) and that `pnpm build` still succeeds.
 
 ## 2. Steps and chips
 
