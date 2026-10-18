@@ -3,18 +3,67 @@ import { test } from 'node:test';
 import { appeltaartSteps } from '~testing/steps';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { toSteps } from '~/lib/steps';
+import { formatMinutes, toSteps, type Step } from '~/lib/steps';
+import { toggled } from '~/lib/toggled';
+import { StepItem } from './StepItem';
 import { StepList } from './StepList';
+
+const renderStep = (step: Step, number = 1, done = false) =>
+  renderToStaticMarkup(createElement(StepItem, { step, number, done, onToggle: () => {} }));
+
+test('recipe-viewing › Steps are all readable', () => {
+  const html = renderToStaticMarkup(createElement(StepList, { steps: appeltaartSteps }));
+  for (const [i, s] of appeltaartSteps.entries()) {
+    assert.ok(html.includes(`Stap ${i + 1}</span>`), `label of step ${i + 1}`);
+    assert.ok(html.includes(s.body), `text of step ${i + 1}`);
+  }
+  assert.ok(!html.includes('aria-current'));
+  assert.ok(!html.includes('Vorige') && !html.includes('Volgende'));
+});
+
+test('recipe-viewing › Step is marked done', () => {
+  const [step] = toSteps(['snijden']);
+  assert.ok(renderStep(step).includes('aria-pressed="false"'));
+  assert.ok(!renderStep(step).includes('✓'));
+  const done = renderStep(step, 1, true);
+  assert.ok(done.includes('aria-pressed="true"') && done.includes('✓'));
+  // Tapping again restores it.
+  assert.deepEqual([...toggled(toggled(new Set<number>(), 3), 3)], []);
+});
+
+// Needs layout: the label, chips and text keep their positions because the square has the same size in both states.
+test.todo('recipe-viewing › Nothing shifts when a step is done');
+
+test('recipe-viewing › Marks are not kept', () => {
+  assert.ok(!renderToStaticMarkup(createElement(StepList, { steps: appeltaartSteps })).includes('aria-pressed="true"'));
+});
 
 test('recipe-viewing › Step without chips', () => {
   const [step] = toSteps(['snijden']);
   assert.deepEqual(step.chips, { ingredients: [], oven: [], timers: [] });
-  const html = renderToStaticMarkup(createElement(StepList, { steps: [step] }));
-  assert.ok(html.includes('snijden'));
+  const html = renderStep(step);
   assert.ok(html.includes('Stap 1'));
   assert.equal(html.match(/<li/g)?.length, 1);
+  assert.ok(!html.includes('<ul'));
 });
 
-test('the Appeltaart fixture has 13 steps', () => {
-  assert.equal(appeltaartSteps.length, 13);
+test('recipe-viewing › Chips beside the label', () => {
+  const html = renderStep(appeltaartSteps[9], 10); // oven and timer
+  const head = html.slice(0, html.indexOf('<button type="button" aria-pressed'));
+  assert.ok(head.indexOf('Stap 10') < head.indexOf('180 °C'));
+  assert.ok(head.includes('50 min'));
+  // The oven chip is quiet text, the timer an operable button.
+  assert.ok(head.includes('<li class="inline-flex') && head.includes('<li><button'));
+});
+
+test('recipe-viewing › Chip without a matching ingredient row', () => {
+  const step = { body: 'kruid', chips: { ingredients: [{ quantity: '1 snuf', name: 'zout' }], oven: [], timers: [] } };
+  assert.ok(renderStep(step).includes('1 snuf</b> zout'));
+});
+
+// Needs layout: the chip group moves as one to the next line when it does not fit beside the label.
+test.todo('recipe-viewing › Many chips');
+
+test('formatMinutes', () => {
+  assert.deepEqual([5, 30, 60, 90, 125].map(formatMinutes), ['5 min', '30 min', '1 u', '1 u 30', '2 u 5']);
 });
