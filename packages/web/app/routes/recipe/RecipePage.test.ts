@@ -1,0 +1,80 @@
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import { appeltaartSteps } from '~testing/steps';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { MemoryRouter } from 'react-router';
+import type { StoredRecipe } from '~/.server/recipes';
+import { arrive, leave, tabForKey } from '~/lib/tabs';
+import { IngredientList } from './IngredientList';
+import { RecipePage } from './RecipePage';
+
+const recipe: StoredRecipe = {
+  id: 1,
+  slug: 'appeltaart',
+  title: 'Appeltaart',
+  author: 'Oma',
+  time: null,
+  servings: null,
+  intro: 'Zoet',
+  image: null,
+  seal: null,
+  ingredients: [
+    { quantity_text: '4', name: 'appels' },
+    { quantity_text: '100 g', name: 'suiker' },
+  ],
+  steps: appeltaartSteps.map((s) => s.body),
+};
+
+const page = () => renderToStaticMarkup(createElement(MemoryRouter, null, createElement(RecipePage, { recipe, tile: 0, steps: appeltaartSteps })));
+
+test('recipe-viewing › Tabs on a narrow screen', () => {
+  const html = page();
+  assert.equal(html.match(/role="tab"/g)?.length, 2);
+  // The active tab is marked, the bar sticks to the top and is only there below 52rem.
+  assert.ok(html.includes('id="tab-ingredients"') && /id="tab-ingredients"[^>]*aria-selected="true"/.test(html));
+  assert.ok(/id="tab-steps"[^>]*aria-selected="false"/.test(html));
+  assert.ok(/class="sticky[^"]*min-\[52rem\]:hidden"/.test(html));
+  // One panel at a time below 52rem.
+  assert.ok(
+    /id="panel-steps"[^>]*class="[^"]*max-\[51\.99rem\]:hidden/.test(html) ||
+      /class="[^"]*max-\[51\.99rem\]:hidden[^"]*"[^>]*id="panel-steps"/.test(html),
+  );
+});
+
+// Needs layout: from 52rem both panels are shown side by side and the ingredient column is sticky.
+test.todo('recipe-viewing › Two columns on a wide screen');
+
+// Needs layout: the list scrolls by itself when the column is taller than the window.
+test.todo('recipe-viewing › Long ingredient list on a wide screen');
+
+test('recipe-viewing › Ticked ingredients are kept', () => {
+  // Both panels stay mounted, and the ticks live in the page and come down as props, so a tab switch loses nothing.
+  const html = page();
+  assert.ok(html.includes('id="panel-ingredients"') && html.includes('id="panel-steps"'));
+  const list = renderToStaticMarkup(createElement(IngredientList, { ingredients: recipe.ingredients, ticked: new Set([1]), onToggle: () => {} }));
+  assert.deepEqual(list.match(/checked=""/g)?.length, 1);
+});
+
+test('tabForKey', () => {
+  assert.equal(tabForKey('ingredients', 'ArrowRight'), 'steps');
+  assert.equal(tabForKey('steps', 'ArrowRight'), 'ingredients');
+  assert.equal(tabForKey('ingredients', 'ArrowLeft'), 'steps');
+  assert.equal(tabForKey('steps', 'Home'), 'ingredients');
+  assert.equal(tabForKey('ingredients', 'End'), 'steps');
+  assert.equal(tabForKey('ingredients', 'a'), undefined);
+});
+
+test('scroll positions per tab', () => {
+  let positions = leave({}, 'steps', 1200);
+  // Back on a tab that was left: where it was left. Never visited: heading just under the stack.
+  assert.equal(arrive(positions, 'steps', 500, 60), 1200);
+  assert.equal(arrive(positions, 'ingredients', 500, 60), 440);
+  assert.equal(arrive(positions, 'ingredients', 20, 60), 0);
+  positions = leave(positions, 'steps', 300);
+  assert.equal(arrive(positions, 'steps', 500, 60), 300);
+});
+
+// Need a browser: the page scrolls back to where the tab was left, and an unvisited tab scrolls to its heading.
+test.todo('recipe-viewing › Position is remembered');
+test.todo('recipe-viewing › First visit of a tab');
