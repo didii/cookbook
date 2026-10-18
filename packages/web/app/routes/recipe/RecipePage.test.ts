@@ -93,15 +93,13 @@ test('cook-mode › Switch on a narrow screen', () => {
   const stack = html.indexOf('class="sticky');
   // The switch is a real switch, directly above the sticky stack and not part of it.
   assert.ok(at > 0 && at < stack);
-  assert.ok(/role="switch" aria-checked="false"/.test(html));
+  assert.ok(/role="switch"[^>]*aria-checked="false"/.test(html));
   assert.ok(html.includes('Scherm mag slapen') && html.includes('Gaat vanzelf aan zodra je begint'));
 });
 
 test('cook-mode › No cook mode on a wide screen', () => {
   // The switch is hidden from 52rem on, and the decision never wants the lock there (see cookMode.test.ts).
-  assert.ok(
-    /role="switch"[^>]*class="[^"]*min-\[52rem\]:hidden/.test(page()) || /class="[^"]*min-\[52rem\]:hidden[^"]*"[^>]*role="switch"/.test(page()),
-  );
+  assert.ok(/<label class="[^"]*min-\[52rem\]:hidden[^"]*"><span[^>]*role="switch"/.test(page()));
 });
 
 test('cook-mode › Choice is not kept', () => {
