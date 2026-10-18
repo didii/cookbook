@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { validate } from './validate';
+import { validate } from './recipeValidation';
 
 const ok = { title: 'Soep', author: 'Oma', servings: '4' };
 
