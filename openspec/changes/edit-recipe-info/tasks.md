@@ -9,7 +9,7 @@
 
 ## 2. Server: update a recipe
 
-- [ ] 2.1 Add `updateRecipe(db, slug, fields)` to `app/.server/recipes.ts` (title, author, servings, time, intro, image; sets `updated_at`; keeps slug, ingredients and steps, and the seal unless one is passed in; reuses author spelling from other recipes only; returns whether a recipe matched); verify with tests in `recipes.test.ts` named `recipe-editing › Recipe is updated`, `recipe-editing › Seal kept`, `recipe-editing › Seal provided`, `recipe-editing › Optional field emptied`, `recipe-editing › Edited author reuses spelling` and `recipe-editing › Own author can be respelled`.
+- [x] 2.1 Add `updateRecipe(db, slug, fields)` to `app/.server/recipes.ts` (title, author, servings, time, intro, image; sets `updated_at`; keeps slug, ingredients and steps, and the seal unless one is passed in; reuses author spelling from other recipes only; returns whether a recipe matched); verify with tests in `recipes.test.ts` named `recipe-editing › Recipe is updated`, `recipe-editing › Seal kept`, `recipe-editing › Seal provided`, `recipe-editing › Optional field emptied`, `recipe-editing › Edited author reuses spelling` and `recipe-editing › Own author can be respelled`.
 
 ## 3. Frontend: edit route and link
 
