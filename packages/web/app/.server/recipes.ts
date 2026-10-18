@@ -72,8 +72,10 @@ async function freeSlug(db: D1Database, title: string): Promise<string> {
 
 /** A random one of the least used seals. */
 async function chooseSeal(db: D1Database): Promise<string> {
-  const { results } = await db.prepare('SELECT seal FROM recipes WHERE seal IS NOT NULL').all<{ seal: string }>();
-  return pickSeal(results.map((r) => r.seal));
+  const { results } = await db
+    .prepare('SELECT seal, COUNT(*) AS count FROM recipes WHERE seal IS NOT NULL GROUP BY seal')
+    .all<{ seal: string; count: number }>();
+  return pickSeal(results);
 }
 
 /** Stores a recipe with its ingredients and steps in one batch and returns its slug. */

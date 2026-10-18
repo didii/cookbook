@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { pickSeal, seals } from './seals';
 
 test('picks among the least used seals', () => {
-  const existing = [seals[0], seals[0], seals[1], seals[2], seals[3]];
+  const existing = [{ seal: seals[0], count: 2 }, ...seals.slice(1, 4).map((seal) => ({ seal, count: 1 }))];
   const unused = seals.slice(4);
   for (const r of [0, 0.5, 0.999]) assert.ok(unused.includes(pickSeal(existing, () => r)));
 });
@@ -14,6 +14,6 @@ test('can pick every one of the least used seals', () => {
 });
 
 test('works when every seal has been used', () => {
-  const existing = [...seals, ...seals.slice(0, 5)];
+  const existing = seals.map((seal, i) => ({ seal, count: i < 5 ? 2 : 1 }));
   for (const r of [0, 0.999]) assert.ok(seals.indexOf(pickSeal(existing, () => r)) >= 5);
 });

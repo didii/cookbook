@@ -28,6 +28,7 @@ const fields: { name: Field; label: string; required: boolean; extra?: object }[
   { name: 'image', label: 'Afbeelding (link)', required: false, extra: { inputMode: 'url', autoComplete: 'off' } },
 ];
 
+// TODO: extract the text input and textarea (label, error, aria wiring) into shared components as soon as another form needs them.
 /** The one form for creating and editing a recipe; the routes only differ in the values, heading and button they pass. */
 export function RecipeForm({ heading, submitLabel, authors, values, errors, tile }: Props) {
   const [image, setImage] = useState(values.image);
