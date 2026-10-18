@@ -73,23 +73,32 @@ test('tabForKey', () => {
   assert.equal(tabForKey('ingredients', 'a'), undefined);
 });
 
-test('scroll positions per tab', () => {
-  const heading = 500;
-  const stack = 60;
-  const at = (positions: Positions, from: TabId, to: TabId) => arrive(positions, from, to, heading, stack);
-  // Neither tab has a position: the tabs swap in place.
-  assert.equal(at({}, 'steps', 'ingredients'), undefined);
-  // Only the old tab has one: the uppermost position with the stack stuck.
-  assert.equal(at({ steps: 1200 }, 'steps', 'ingredients'), 440);
-  assert.equal(arrive({ steps: 1200 }, 'steps', 'ingredients', 20, stack), 0);
-  // The new tab has one, whether or not the old tab has: there.
-  assert.equal(at({ steps: 1200, ingredients: 700 }, 'steps', 'ingredients'), 700);
+const heading = 500;
+const stack = 60;
+const at = (positions: Positions, from: TabId, to: TabId) => arrive(positions, from, to, heading, stack);
+
+test('recipe-viewing › Position is remembered', () => {
+  // Both tabs were scrolled into: each opens where it was left, in either direction.
+  const positions = { steps: 1200, ingredients: 700 };
+  assert.equal(at(positions, 'ingredients', 'steps'), 1200);
+  assert.equal(at(positions, 'steps', 'ingredients'), 700);
+  // Also when only the new tab has a position.
   assert.equal(at({ ingredients: 700 }, 'steps', 'ingredients'), 700);
 });
 
-// Need a browser: the page scrolls back to where the tab was left, and an unvisited tab scrolls to its heading.
-test.todo('recipe-viewing › Position is remembered');
-test.todo('recipe-viewing › First visit of a tab');
+test('recipe-viewing › First visit of a tab', () => {
+  // Only the old tab was scrolled into: the heading just under the stack, and not above the top of the page.
+  assert.equal(at({ steps: 1200 }, 'steps', 'ingredients'), 440);
+  assert.equal(arrive({ steps: 1200 }, 'steps', 'ingredients', 20, stack), 0);
+});
+
+test('recipe-viewing › Tabs swap in place', () => {
+  assert.equal(at({}, 'steps', 'ingredients'), undefined);
+  assert.equal(at({}, 'ingredients', 'steps'), undefined);
+});
+
+// Needs a browser: the position is kept by a scroll listener while the stack is stuck, and survives scrolling up out of that state.
+test.todo('recipe-viewing › Position survives scrolling up');
 
 test('cook-mode › Switch on a narrow screen', () => {
   const html = page();
