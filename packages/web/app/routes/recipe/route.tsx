@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { data } from 'react-router';
 import { envContext } from '~/.server/context';
 import { getRecipe } from '~/.server/recipes';
@@ -18,5 +19,7 @@ export function meta({ loaderData }: Route.MetaArgs) {
 
 export default function Recipe({ loaderData }: Route.ComponentProps) {
   const { recipe, tile } = loaderData;
-  return <RecipePage recipe={recipe} tile={tile} steps={toSteps(recipe.steps)} />;
+  // A stable array: the timers read their definitions from it.
+  const steps = useMemo(() => toSteps(recipe.steps), [recipe.steps]);
+  return <RecipePage recipe={recipe} tile={tile} steps={steps} />;
 }

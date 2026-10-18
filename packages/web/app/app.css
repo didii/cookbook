@@ -15,6 +15,25 @@
   --shadow-hard: 5px 5px 0 var(--color-ink);
   --shadow-hard-lg: 7px 7px 0 var(--color-ink);
   --shadow-hard-red: 6px 6px 0 var(--color-red);
+
+  /* A finished timer pulses; a newly shown timer pops in. Both are switched off with motion-reduce. */
+  --animate-ring: ring 1s ease-in-out infinite;
+  --animate-pop: pop 0.22s ease-out;
+  @keyframes ring {
+    50% {
+      box-shadow: 0 0 0 5px color-mix(in srgb, var(--color-red) 40%, transparent);
+    }
+  }
+  @keyframes pop {
+    from {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+    to {
+      transform: none;
+      opacity: 1;
+    }
+  }
 }
 
 :root {

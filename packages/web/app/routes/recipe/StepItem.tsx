@@ -1,11 +1,17 @@
+import { useContext } from 'react';
 import type { Step } from '~/lib/steps';
 import { cn } from '~/shared/cn';
 import { StepChips } from './StepChips';
+import { TimerCard } from './TimerCard';
+import { TimersContext } from './timersContext';
 
 type Props = { step: Step; number: number; done: boolean; onToggle: () => void };
 
 /** One step: label with its done square and the chips on one line, the text below as the tap target. */
 export function StepItem({ step, number, done, onToggle }: Props) {
+  const timers = useContext(TimersContext);
+  const cards = timers.active.filter((t) => t.step === number - 1);
+
   return (
     <li className="scroll-mt-[calc(var(--stack-h,0px)+0.75rem)] border-t-2 border-dashed border-ink/28 py-4 pb-4.5 first:border-t-0 first:pt-0">
       <div className="mb-1.5 flex flex-wrap items-center gap-x-2 gap-y-1.5">
@@ -23,8 +29,15 @@ export function StepItem({ step, number, done, onToggle }: Props) {
           </span>
           Stap {number}
         </span>
-        <StepChips chips={step.chips} />
+        <StepChips chips={step.chips} step={number - 1} />
       </div>
+      {cards.length > 0 && (
+        <div className="mb-2 grid gap-2">
+          {cards.map((t) => (
+            <TimerCard key={t.id} view={t} />
+          ))}
+        </div>
+      )}
       <button
         type="button"
         aria-pressed={done}

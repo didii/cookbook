@@ -1,6 +1,7 @@
-import { formatMinutes, type StepChips as Chips } from '~/lib/steps';
+import type { StepChips as Chips } from '~/lib/steps';
+import { TimerChip } from './TimerChip';
 
-type Props = { chips: Chips };
+type Props = { chips: Chips; step: number };
 
 const chip = 'inline-flex items-center gap-1.5 rounded-md bg-ink/8 px-2 text-sm leading-6 font-bold text-muted';
 
@@ -11,14 +12,8 @@ const Thermometer = () => (
   </svg>
 );
 
-const Play = () => (
-  <svg viewBox="0 0 16 16" aria-hidden="true" className="size-4 shrink-0">
-    <path d="M3 1.5v13l11-6.5z" fill="currentColor" />
-  </svg>
-);
-
 /** The chips of one step: quiet static ones for ingredients and oven, an operable one per timer. Renders nothing for a step without chips. */
-export function StepChips({ chips }: Props) {
+export function StepChips({ chips, step }: Props) {
   if (!chips.ingredients.length && !chips.oven.length && !chips.timers.length) return null;
 
   return (
@@ -35,16 +30,7 @@ export function StepChips({ chips }: Props) {
         </li>
       ))}
       {chips.timers.map((x, i) => (
-        <li key={`t${i}`}>
-          <button
-            type="button"
-            className="inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-lg border-3 border-ink bg-jade pr-3 pl-2 text-[0.9375rem] font-black text-white shadow-hard-sm"
-          >
-            <Play />
-            {formatMinutes(x.minutes)}
-            {x.label && <small className="sr-only">{x.label}</small>}
-          </button>
-        </li>
+        <TimerChip key={`t${i}`} id={`${step}:${i}`} minutes={x.minutes} label={x.label} />
       ))}
     </ul>
   );
