@@ -1,6 +1,7 @@
 import { data, Link } from 'react-router';
 import { envContext } from '~/.server/context';
 import { getRecipe } from '~/.server/recipes';
+import { toSteps } from '~/lib/steps';
 import { tileFor } from '~/lib/tile';
 import { Fret } from '~/shared/Fret';
 import { Seal } from '~/shared/Seal';
@@ -58,7 +59,7 @@ export default function Recipe({ loaderData }: Route.ComponentProps) {
           <h2 id="bereiding" className="mb-4 text-2xl font-black">
             Bereiding
           </h2>
-          <StepList steps={r.steps} />
+          <StepList steps={toSteps(r.steps)} />
           <Fret size={18} className="mt-7 text-red" />
         </section>
       </div>

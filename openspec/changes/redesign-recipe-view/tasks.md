@@ -4,7 +4,7 @@ Check every UI task by hand in `pnpm dev` at 360px, 768px and desktop width (on 
 
 ## 1. Step data and the dev demo
 
-- [ ] 1.1 Add the `Step`/`StepChips` types to `app/lib/` (ingredients with quantity and name, oven with degrees, timers with minutes and optional label), map the loader's steps to `Step` with empty chips, and add the Appeltaart fixture steps (13 steps, see the preview) in `testing/`; verify with a test named `recipe-viewing › Step without chips` (a step with empty chips renders just its label) and that the existing `recipe-viewing` tests still pass unchanged.
+- [x] 1.1 Add the `Step`/`StepChips` types to `app/lib/` (ingredients with quantity and name, oven with degrees, timers with minutes and optional label), map the loader's steps to `Step` with empty chips, and add the Appeltaart fixture steps (13 steps, see the preview) in `testing/`; verify with a test named `recipe-viewing › Step without chips` (a step with empty chips renders just its label) and that the existing `recipe-viewing` tests still pass unchanged.
 - [ ] 1.2 Add the dev-only route `recepten/voorbeeld` (registered only when `import.meta.env.DEV`) rendering the recipe page with the fixture steps; verify in `pnpm dev` that it opens, and that `pnpm build` output contains no such route.
 
 ## 2. Steps and chips

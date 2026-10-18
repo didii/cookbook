@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import type { Step } from '~/lib/steps';
 import { Button } from '~/shared/Button';
 
-type Props = { steps: string[] };
+type Props = { steps: Step[] };
 
 export function StepList({ steps }: Props) {
   const [current, setCurrent] = useState(0);
@@ -21,7 +22,7 @@ export function StepList({ steps }: Props) {
             <small className="block text-[0.8125rem] font-extrabold tracking-[0.08em] uppercase group-aria-[current=step]:text-sm group-aria-[current=step]:text-red">
               Stap {i + 1} van {steps.length}
             </small>
-            <span>{s}</span>
+            <span>{s.body}</span>
           </button>
           {i === current && (
             <div className="flex gap-3 px-4">
