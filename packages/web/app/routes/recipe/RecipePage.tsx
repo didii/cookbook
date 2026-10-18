@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import type { StoredRecipe } from '~/.server/recipes';
 import { initialCook, observe, setByHand, wantsCookMode } from '~/lib/cookMode';
 import type { Step } from '~/lib/recipes';
-import { arrive, leave, tabFromHash, type Positions, type TabId } from '~/lib/tabs';
+import { arrive, tabFromHash, type Positions, type TabId } from '~/lib/tabs';
 import { toggled } from '~/lib/toggled';
 import { cn } from '~/shared/cn';
 import { Fret } from '~/shared/Fret';
@@ -35,14 +35,11 @@ export function RecipePage({ recipe: r, tile, steps }: Props) {
   const stackHeight = useStackHeight(stack);
   const inView = useStepsInView(stack, steps.length);
   const positions = useRef<Positions>({});
-  const arriving = useRef<boolean>(undefined);
+  const leaving = useRef<TabId>(undefined);
 
   const select = (next: TabId) => {
     if (next === tab) return;
-    // The stack is stuck to the top of the screen once the page is scrolled into the tab's content.
-    const stuck = (stack.current?.getBoundingClientRect().top ?? 1) <= 0.5;
-    positions.current = leave(positions.current, tab, window.scrollY, stuck);
-    arriving.current = stuck;
+    leaving.current = tab;
     setTab(next);
     // Keeps the router's history state; a reload then opens the same tab.
     history.replaceState(history.state, '', `#${next}`);
@@ -55,15 +52,24 @@ export function RecipePage({ recipe: r, tile, steps }: Props) {
     if (fromHash) setTab(fromHash);
   }, []);
 
-  // Back where the tab was left; a tab not visited yet opens with its heading just under the stack.
+  // The stack is stuck to the top of the screen once the page is scrolled into the tab's content: that is where the open tab's position is kept.
+  useEffect(() => {
+    const keep = () => {
+      if ((stack.current?.getBoundingClientRect().top ?? 1) <= 0.5) positions.current[tab] = window.scrollY;
+    };
+    window.addEventListener('scroll', keep, { passive: true });
+    return () => window.removeEventListener('scroll', keep);
+  }, [tab]);
+
+  // Where the page goes on switching tabs: see `arrive`.
   useLayoutEffect(() => {
-    const stuck = arriving.current;
-    arriving.current = undefined;
-    if (stuck === undefined) return;
+    const from = leaving.current;
+    leaving.current = undefined;
+    if (from === undefined) return;
     const heading = document.getElementById(tab === 'ingredients' ? 'ing' : 'bereiding');
     if (!heading) return;
     const top = heading.getBoundingClientRect().top + window.scrollY;
-    const to = arrive(positions.current, tab, top, stackHeight.current + 12, stuck);
+    const to = arrive(positions.current, from, tab, top, stackHeight.current + 12);
     if (to !== undefined) window.scrollTo({ top: to, behavior: 'instant' });
   }, [tab, stackHeight]);
 

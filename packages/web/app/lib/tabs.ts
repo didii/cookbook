@@ -15,21 +15,14 @@ export function tabForKey(current: TabId, key: string): TabId | undefined {
   return to === undefined ? undefined : tabs[(to + tabs.length) % tabs.length].id;
 }
 
-/** Scroll positions of the tabs that have been left. */
+/** The last scroll position of each tab while the stack was stuck, i.e. the page scrolled into the tab's content. Scrolling back up keeps it. */
 export type Positions = Partial<Record<TabId, number>>;
 
 /**
- * Remember where the tab being left was scrolled to, but only when the stack was stuck, i.e. the page was scrolled into the tab's content.
- * Higher up there is no position worth coming back to.
+ * Where to scroll to when switching tabs, or undefined to stay where the page is:
+ * - the new tab has a position: there;
+ * - only the old tab has one (the page is scrolled into content the new tab does not have): the uppermost position with the stack stuck, the new tab's heading just under it;
+ * - neither has one: nowhere, the tabs swap in place.
  */
-export const leave = (positions: Positions, tab: TabId, scrollY: number, stuck: boolean): Positions => ({
-  ...positions,
-  [tab]: stuck ? scrollY : undefined,
-});
-
-/**
- * Where to scroll to on arriving at a tab, or undefined to stay where the page is. Only a stuck stack scrolls: to where the tab was left, or
- * on a first visit with its heading just under the stack. Above that the tabs swap in place, like tabs anywhere on the web.
- */
-export const arrive = (positions: Positions, tab: TabId, headingTop: number, stackHeight: number, stuck: boolean) =>
-  stuck ? (positions[tab] ?? Math.max(0, headingTop - stackHeight)) : undefined;
+export const arrive = (positions: Positions, from: TabId, to: TabId, headingTop: number, stackHeight: number) =>
+  positions[to] ?? (positions[from] === undefined ? undefined : Math.max(0, headingTop - stackHeight));

@@ -6,7 +6,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import type { StoredRecipe } from '~/.server/recipes';
 import type { Step } from '~/lib/recipes';
-import { arrive, leave, tabForKey } from '~/lib/tabs';
+import { arrive, tabForKey, type Positions, type TabId } from '~/lib/tabs';
 import { IngredientList } from './IngredientList';
 import { RecipePage } from './RecipePage';
 
@@ -74,18 +74,17 @@ test('tabForKey', () => {
 });
 
 test('scroll positions per tab', () => {
-  // Left inside its content: back where it was left. Never visited: the heading just under the stack.
-  let positions = leave({}, 'steps', 1200, true);
-  assert.equal(arrive(positions, 'steps', 500, 60, true), 1200);
-  assert.equal(arrive(positions, 'ingredients', 500, 60, true), 440);
-  assert.equal(arrive(positions, 'ingredients', 20, 60, true), 0);
-  // Left above its content (stack not stuck): nothing is remembered.
-  positions = leave(positions, 'steps', 300, false);
-  assert.equal(arrive(positions, 'steps', 500, 60, true), 440);
-  // Arriving with the stack not stuck never scrolls, whatever was remembered.
-  positions = leave(positions, 'steps', 900, true);
-  assert.equal(arrive(positions, 'steps', 500, 60, false), undefined);
-  assert.equal(arrive(positions, 'ingredients', 500, 60, false), undefined);
+  const heading = 500;
+  const stack = 60;
+  const at = (positions: Positions, from: TabId, to: TabId) => arrive(positions, from, to, heading, stack);
+  // Neither tab has a position: the tabs swap in place.
+  assert.equal(at({}, 'steps', 'ingredients'), undefined);
+  // Only the old tab has one: the uppermost position with the stack stuck.
+  assert.equal(at({ steps: 1200 }, 'steps', 'ingredients'), 440);
+  assert.equal(arrive({ steps: 1200 }, 'steps', 'ingredients', 20, stack), 0);
+  // The new tab has one, whether or not the old tab has: there.
+  assert.equal(at({ steps: 1200, ingredients: 700 }, 'steps', 'ingredients'), 700);
+  assert.equal(at({ ingredients: 700 }, 'steps', 'ingredients'), 700);
 });
 
 // Need a browser: the page scrolls back to where the tab was left, and an unvisited tab scrolls to its heading.
