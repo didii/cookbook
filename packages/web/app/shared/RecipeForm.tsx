@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Form } from 'react-router';
 import { AuthorInput } from '~/shared/AuthorInput';
 import { Button } from '~/shared/Button';
 import { cn } from '~/shared/cn';
+import { ImagePreview } from '~/shared/ImagePreview';
 import type { Field, Values } from '~/shared/recipeValidation';
 
 type Props = {
@@ -12,6 +13,8 @@ type Props = {
   /** The starting values: empty for a new recipe, the stored ones for an existing recipe. */
   values: Values;
   errors: Partial<Record<Field, string>>;
+  /** Index of the tile band shown under the image preview. */
+  tile: number;
 };
 
 const inputClass = 'mt-1 block min-h-13 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-lg text-ink aria-invalid:border-red';
@@ -26,7 +29,8 @@ const fields: { name: Field; label: string; required: boolean; extra?: object }[
 ];
 
 /** The one form for creating and editing a recipe; the routes only differ in the values, heading and button they pass. */
-export function RecipeForm({ heading, submitLabel, authors, values, errors }: Props) {
+export function RecipeForm({ heading, submitLabel, authors, values, errors, tile }: Props) {
+  const [image, setImage] = useState(values.image);
   // After a refused submit, put focus on the first field in error so its label and message are read.
   useEffect(() => {
     const first = fields.find((f) => errors[f.name]);
@@ -70,9 +74,11 @@ export function RecipeForm({ heading, submitLabel, authors, values, errors }: Pr
                 aria-invalid={errors[name] ? true : undefined}
                 aria-describedby={errors[name] ? `${name}-error` : undefined}
                 className={inputClass}
+                onChange={name === 'image' ? (e) => setImage(e.target.value.trim()) : undefined}
                 {...extra}
               />
             )}
+            {name === 'image' && <ImagePreview src={image} tile={tile} />}
             {errors[name] && (
               <p id={`${name}-error`} className="mt-1 font-bold text-red">
                 {errors[name]}

@@ -51,6 +51,10 @@ test('recipe-creation › Servings left empty', async () => {
 // The filter runs in the browser (Base UI's Autocomplete with a base-sensitivity filter), so this needs a real browser; checked by hand.
 test.todo('recipe-creation › Suggestions ignore letter case');
 
+// The preview reacts to typing and to the image failing to load, which needs a browser; checked by hand.
+test.todo('recipe-creation › Preview of the image');
+test.todo('recipe-creation › Image cannot be loaded');
+
 // These need a browser (visible asterisk and focus), so they are checked by hand.
 test.todo('recipe-creation › Required fields are marked');
 test.todo('recipe-creation › Errors are announced and focused');
