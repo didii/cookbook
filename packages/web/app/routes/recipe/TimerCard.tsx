@@ -15,7 +15,10 @@ export function TimerCard({ view }: Props) {
   if (view.state === 'native') {
     return (
       <output className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border-3 border-dashed border-ink py-2 pr-2 pl-3.5">
-        <span className="font-black tabular-nums">In je app · {formatCountdown(view.remainingMs)}</span>
+        <span className="grid">
+          <span className="font-black tabular-nums">In je app · {formatCountdown(view.remainingMs)}</span>
+          {view.label && <small className="font-extrabold text-muted">{view.label}</small>}
+        </span>
         <span className="ml-auto flex gap-1.5">
           <TimerButton onClick={() => timers.undoHandOver(view.id)} aria-label="Laat de timer hier verder lopen (de timer in je app loopt door)">
             Herstel
@@ -28,7 +31,6 @@ export function TimerCard({ view }: Props) {
             Wis
           </TimerButton>
         </span>
-        {view.label && <small className="order-last basis-full font-extrabold text-muted">{view.label}</small>}
       </output>
     );
   }
@@ -38,8 +40,9 @@ export function TimerCard({ view }: Props) {
       role={finished ? 'alert' : 'group'}
       aria-label={finished ? undefined : `Timer${view.label ? ` ${view.label}` : ''}`}
       className={cn(
-        'flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border-3 border-ink py-2 pr-2 pl-3.5 shadow-hard-sm min-[52rem]:hidden',
-        finished ? 'animate-ring bg-red text-white motion-reduce:animate-none' : 'bg-white',
+        'flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border-3 border-ink py-2 pr-2 pl-3.5 min-[52rem]:hidden',
+        // The ring animates box-shadow, so a finished card has no hard shadow to swap with it.
+        finished ? 'animate-ring bg-red text-white motion-reduce:animate-none' : 'bg-white shadow-hard-sm',
       )}
     >
       <span className={cn('leading-none font-black tracking-tight tabular-nums', finished ? 'text-2xl' : 'text-4xl text-jade')}>

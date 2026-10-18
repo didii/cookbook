@@ -34,8 +34,9 @@ function SidebarCard({ timer: t, onJump, onPeek }: { timer: TimerView; onJump: (
         onPeek(undefined);
       }}
       className={cn(
-        'grid grid-cols-[auto_1fr_auto] items-center gap-x-2.5 gap-y-1 rounded-xl border-3 border-ink py-2 pr-2 pl-2.5 shadow-hard-sm motion-reduce:animate-none',
-        finished ? 'animate-ring bg-red text-white' : 'animate-pop bg-white',
+        'grid grid-cols-[auto_1fr_auto] items-center gap-x-2.5 gap-y-1 rounded-xl border-3 border-ink py-2 pr-2 pl-2.5 motion-reduce:animate-none',
+        // The ring animates box-shadow, so a finished card has no hard shadow to swap with it.
+        finished ? 'animate-ring bg-red text-white' : 'animate-pop bg-white shadow-hard-sm',
       )}
     >
       <span
