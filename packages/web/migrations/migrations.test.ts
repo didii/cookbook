@@ -75,6 +75,11 @@ test('recipe-storage › Duplicate slug is refused', async () => {
   assert.equal(await count("SELECT id FROM recipes WHERE slug = 'dup'"), 1);
 });
 
+test('recipe-storage › Servings are optional', async () => {
+  await db.prepare("INSERT INTO recipes (slug, title, author) VALUES ('no-servings', 'No servings', 'Oma')").run();
+  assert.equal((await db.prepare("SELECT servings FROM recipes WHERE slug = 'no-servings'").first())?.servings, null);
+});
+
 test('recipe-storage › Required field is missing', async () => {
   await assert.rejects(db.prepare("INSERT INTO recipes (slug, author, servings) VALUES ('no-title', 'Oma', 4)").run());
   await assert.rejects(db.prepare("INSERT INTO recipes (slug, title, author, servings) VALUES ('zero', 'Zero', 'Oma', 0)").run());
