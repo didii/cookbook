@@ -1,19 +1,26 @@
-import { useImperativeHandle, useRef, type ComponentProps, type CSSProperties, type KeyboardEvent, type Ref } from 'react';
+import { useImperativeHandle, useRef, useState, type ComponentProps, type CSSProperties, type KeyboardEvent, type Ref } from 'react';
+import type { Context } from '~/lib/chips';
+import type { StepRow } from '~/lib/draft';
 import type { TextEdit } from '~/lib/textEdit';
 import type { ItemHandle } from './ItemHandle';
 import { RowGrip } from './RowGrip';
 import { RowToolbar } from './RowToolbar';
-import { StepText } from './StepText';
+import { StepChips } from './StepChips';
+import { StepText, type Mark } from './StepText';
 import { useAfterRender } from './useAfterRender';
 
 type Props = {
   ref?: Ref<ItemHandle>;
   /** The step's number, counting from 1. */
   number: number;
-  text: string;
+  step: StepRow;
+  /** What the step's chips are read against. */
+  context: Context;
   canUp: boolean;
   canDown: boolean;
   onType: (text: string) => void;
+  /** Changes the step's chips with a function of the chip logic. */
+  onChips: (change: (step: StepRow, context: Context) => StepRow) => void;
   /** What the change replaced. */
   onEdit: (edit: TextEdit, body: string) => void;
   /** Enter was pressed at the end of a step that has text. */
@@ -32,10 +39,12 @@ type Props = {
 export function StepEditor({
   ref,
   number,
-  text,
+  step,
+  context,
   canUp,
   canDown,
   onType,
+  onChips,
   onEdit,
   onEnterAtEnd,
   onBackspaceEmpty,
@@ -47,6 +56,13 @@ export function StepEditor({
   const field = useRef<HTMLTextAreaElement>(null);
   const item = useRef<HTMLLIElement>(null);
   const afterRender = useAfterRender();
+  // The chip whose words are filled in: the one hovered or focused, else the one the caret is in.
+  const [chipHot, setChipHot] = useState<string>();
+  const [caret, setCaret] = useState<number>();
+  const hotId = chipHot ?? step.chips.find((c) => c.anchor && caret !== undefined && c.anchor.start < caret && caret < c.anchor.end)?.id;
+  const marks: Mark[] = step.chips.flatMap((c) =>
+    c.anchor ? [{ id: c.id, start: c.anchor.start, end: c.anchor.end, kind: c.mode, hot: c.id === hotId }] : [],
+  );
 
   useImperativeHandle(ref, () => ({
     rect: () => item.current?.getBoundingClientRect(),
@@ -91,14 +107,17 @@ export function StepEditor({
       <StepText
         ref={field}
         label={`Stap ${number}`}
-        value={text}
+        value={step.body}
+        marks={marks}
         placeholder={number === 1 ? 'Bijvoorbeeld: Kneed de bloem met de boter tot een deeg' : undefined}
         onChange={onType}
         onEdit={onEdit}
+        onCaret={setCaret}
         onKeyDown={keyDown}
         onEnterAtEnd={onEnterAtEnd}
         onBackspaceEmpty={onBackspaceEmpty}
       />
+      <StepChips step={step} context={context} number={number} hotId={hotId} onHot={setChipHot} onChange={onChips} />
     </li>
   );
 }

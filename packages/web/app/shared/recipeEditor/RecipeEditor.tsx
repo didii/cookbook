@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Form, Link, useNavigation } from 'react-router';
 import {
   addStep,
+  changeChips,
   editedStep,
   editStep,
   isDirty,
@@ -11,6 +12,7 @@ import {
   removeStep,
   restoreStep,
   startingDraft,
+  stepContexts,
   storedSteps,
   typeIngredient,
   type Content,
@@ -144,6 +146,8 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
             <StepList
               key={resets}
               steps={current.steps}
+              contexts={stepContexts(current)}
+              onChips={(id, change) => setCurrent((c) => changeChips(c, id, change))}
               onType={(id, body) => setCurrent((c) => editStep(c, id, body))}
               onEdit={(id, edit, body) => setCurrent((c) => editedStep(c, id, body, edit))}
               onAdd={(at) => setCurrent((c) => addStep(c, at))}

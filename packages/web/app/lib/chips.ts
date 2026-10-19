@@ -14,6 +14,7 @@ import {
 import type { TextEdit } from '~/lib/textEdit';
 
 export type Kind = 'ingredient' | 'oven' | 'timer';
+export type { IngredientValues, OvenValues, TimerValues };
 type ValuesOf = { ingredient: IngredientValues; oven: OvenValues; timer: TimerValues };
 export type Values = ValuesOf[Kind];
 

@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import type { Context } from '~/lib/chips';
 import type { StepRow } from '~/lib/draft';
 import type { TextEdit } from '~/lib/textEdit';
 import { Button } from '~/shared/Button';
@@ -10,6 +11,10 @@ import { useReorder } from './useReorder';
 
 type Props = {
   steps: StepRow[];
+  /** What each step's chips are read against, one per step. */
+  contexts: Context[];
+  /** Changes the chips of a step with a function of the chip logic. */
+  onChips: (id: string, change: (step: StepRow, context: Context) => StepRow) => void;
   onType: (id: string, body: string) => void;
   /** What a change of a step's text replaced; reported after the text itself (see `StepText`). */
   onEdit: (id: string, edit: TextEdit, body: string) => void;
@@ -29,7 +34,7 @@ const undoSeconds = 8;
 type Removed = { step: StepRow; at: number };
 
 /** The steps of a recipe: numbered, reorderable, with "Stap toevoegen" below. */
-export function StepList({ steps, onType, onEdit, onAdd, onRemove, onRestore, onMove }: Props) {
+export function StepList({ steps, contexts, onChips, onType, onEdit, onAdd, onRemove, onRestore, onMove }: Props) {
   const items = useRef(new Map<string, ItemHandle>());
   const undoButton = useRef<HTMLButtonElement>(null);
   // The steps as of the latest render, for focus requests that run after the next one. Declared before `useAfterRender`, so it is up to date when a request runs.
@@ -113,7 +118,9 @@ export function StepList({ steps, onType, onEdit, onAdd, onRemove, onRestore, on
                 else items.current.delete(step.id);
               }}
               number={i + 1}
-              text={step.body}
+              step={step}
+              context={contexts[i]}
+              onChips={(change) => onChips(step.id, change)}
               canUp={i > 0}
               canDown={i < steps.length - 1}
               onType={(body) => type(step.id, body)}
