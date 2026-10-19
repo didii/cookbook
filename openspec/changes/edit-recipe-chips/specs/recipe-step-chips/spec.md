@@ -290,7 +290,7 @@ The system SHALL store with each step its chips as they stand: a following chip 
 - **THEN** it still follows the text, and the name is stored and shown when the recipe is opened again
 
 ### Requirement: Stored chips are tied to their words again when editing
-The system SHALL, when a stored recipe is opened for editing, tie each stored chip to its words again: a chip equal to what its words say follows the text, any other chip is pinned, and a chip whose words cannot be found is pinned without anchor words. A timer's name SHALL NOT count in the comparison.
+The system SHALL, when a stored recipe is opened for editing, tie each stored chip to its words again: a chip equal to what its words say follows the text, any other chip is pinned, and a chip whose words cannot be found is pinned without anchor words. Words that say something no stored chip has SHALL get a ghost and not a chip. A timer's name SHALL NOT count in the comparison.
 
 #### Scenario: A stored chip that matches its text follows it
 - **WHEN** a recipe is opened whose step text says "30 minuten" and whose stored timer is 30 minutes
@@ -303,6 +303,10 @@ The system SHALL, when a stored recipe is opened for editing, tie each stored ch
 #### Scenario: A stored chip without matching words is pinned without words
 - **WHEN** a recipe is opened whose stored chip has no words in the step's text that could say it
 - **THEN** the chip is pinned and has no anchor words
+
+#### Scenario: Words without a stored chip get a ghost
+- **WHEN** a recipe is opened whose step text says "30 minuten" but whose step has no stored timer
+- **THEN** no timer chip is made, and a ghost of one is in the step's add row
 
 ### Requirement: Open proposals are counted and reachable
 The system SHALL show in the save bar the number of proposed changes and removals that are open, as a link that moves focus to the next one, and SHALL NOT show anything when there are none. Open proposals SHALL NOT stop the recipe from being saved.

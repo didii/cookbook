@@ -190,7 +190,12 @@ export function restoreGhost<S extends StepChips>(step: S, id: string, ctx: Cont
   const values = read(ghost, textOf(step.body, ghost.anchor), ctx);
   const ghosts = step.ghosts.filter((g) => g !== ghost);
   if (!values) return { ...step, ghosts };
-  return reconcile({ ...step, chips: [...step.chips, autoChip(ghost.id, ghost.kind, ghost.anchor, values, ghost.rowId)], ghosts }, ctx, undefined, false);
+  return reconcile(
+    { ...step, chips: [...step.chips, autoChip(ghost.id, ghost.kind, ghost.anchor, values, ghost.rowId)], ghosts },
+    ctx,
+    undefined,
+    false,
+  );
 }
 
 /** Whether the add row may offer this kind: an oven and a timer only once per step, counting ghosts. */

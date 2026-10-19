@@ -409,7 +409,7 @@ test('recipe-step-chips › A stored chip without matching words is pinned witho
   assert.equal(proposals(step, ctx).length, 0);
 });
 
-test('words that say something no stored chip has get a ghost when a recipe is opened', () => {
+test('recipe-step-chips › Words without a stored chip get a ghost', () => {
   const ctx = alone('250 g bloem');
   const step = classifyStored({ body: 'Zeef de bloem. Bak 30 minuten op 180 graden.', ingredients: [] }, ctx);
   assert.equal(step.chips.length, 0);
