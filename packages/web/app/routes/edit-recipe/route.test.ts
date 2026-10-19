@@ -147,3 +147,9 @@ test('an edit posts its ingredient lines and a bad row refuses it', async () => 
   assert.deepEqual(Object.keys(res.data.errors.ingredients), ['1']);
   assert.equal((await getRecipe(db, 'soep'))?.ingredients.length, 2);
 });
+
+test('an edit posted without an ingredients field keeps the stored ingredients', async () => {
+  await submit('soep', { title: 'Soep', author: 'Oma', ingredients: JSON.stringify([{ text: '2 uien' }]) });
+  await submit('soep', { title: 'Soep 2', author: 'Oma' });
+  assert.deepEqual((await getRecipe(db, 'soep'))?.ingredients, [{ quantity_text: '2', name: 'uien' }]);
+});

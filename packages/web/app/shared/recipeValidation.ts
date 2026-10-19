@@ -36,25 +36,26 @@ export function toRecipeFields(values: Values) {
 /** Field errors, plus one message per ingredient row (keyed by the row's place in the posted list). */
 export type Errors = Partial<Record<Field, string>> & { ingredients?: Record<number, string> };
 
-/** The posted ingredient lines, as typed. The form carries them as a JSON list of `{ text }`; anything else counts as no lines. */
-function readLines(form: FormData): string[] {
+/** The posted ingredient lines, as typed. The form carries them as a JSON list of `{ text }`; a missing or malformed field gives undefined, which is not the same as an empty list. */
+function readLines(form: FormData): string[] | undefined {
   try {
-    const list: unknown = JSON.parse(String(form.get('ingredients') ?? '[]'));
-    return Array.isArray(list) ? list.map((row) => String((row as { text?: unknown })?.text ?? '').trim()) : [];
+    const list: unknown = JSON.parse(String(form.get('ingredients')));
+    return Array.isArray(list) ? list.map((row) => String((row as { text?: unknown })?.text ?? '').trim()) : undefined;
   } catch {
-    return [];
+    return undefined;
   }
 }
 
-/** Parses the posted ingredient lines here, never trusting a client-side split: blank lines are dropped, a quantity without a name is an error on its row. `lines` is every posted line, to show again after a refusal. */
+/** Parses the posted ingredient lines here, never trusting a client-side split: blank lines are dropped, a quantity without a name is an error on its row. `lines` is every posted line, to show again after a refusal. `ingredients` is undefined when the form carried no (valid) list, so a submit without the field leaves the stored ingredients alone instead of clearing them; an explicit empty list does clear them. */
 export function readIngredients(form: FormData) {
-  const lines = readLines(form);
-  const ingredients: ParsedIngredient[] = [];
+  const posted = readLines(form);
+  const lines = posted ?? [];
+  const ingredients: ParsedIngredient[] | undefined = posted && [];
   const errors: Record<number, string> = {};
   lines.forEach((line, i) => {
     if (!line) return;
     const parsed = parseIngredient(line);
-    if (parsed.name) ingredients.push(parsed);
+    if (parsed.name) ingredients?.push(parsed);
     else errors[i] = `Vul bij "${parsed.quantityText}" ook een naam in.`;
   });
   return { lines, ingredients, errors };
