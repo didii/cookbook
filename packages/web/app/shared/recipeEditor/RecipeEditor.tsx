@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Form, Link, useNavigation } from 'react-router';
 import { isDirty, startingDraft, type Draft } from '~/lib/draft';
 import { AuthorInput } from '~/shared/AuthorInput';
@@ -6,6 +6,7 @@ import { cn } from '~/shared/cn';
 import { ImagePreview } from '~/shared/ImagePreview';
 import type { Field } from '~/shared/recipeValidation';
 import { SaveBar } from './SaveBar';
+import { useLeaveGuard } from './useLeaveGuard';
 
 type Props = {
   /** Visually hidden page heading. */
@@ -35,6 +36,12 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
   const [current, setCurrent] = useState(values);
   const busy = useNavigation().formMethod != null;
   const dirty = isDirty(initial, current);
+  // Set when the form is submitted, before the navigation starts, so saving never asks; cleared when the response (a refusal) is back.
+  const submitting = useRef(false);
+  useEffect(() => {
+    if (!busy) submitting.current = false;
+  }, [busy]);
+  useLeaveGuard(() => dirty && !submitting.current);
   const set = (name: Field) => (value: string) => setCurrent((c) => ({ ...c, [name]: value }));
   const text = (name: Field) => ({
     id: name,
@@ -66,7 +73,12 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
       <p className="mt-1 text-lg text-muted">
         Velden met een <span className="font-black text-red">*</span> zijn verplicht.
       </p>
-      <Form method="post" className="mt-4 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-12" noValidate>
+      <Form
+        method="post"
+        onSubmit={() => (submitting.current = true)}
+        className="mt-4 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-12"
+        noValidate
+      >
         <div className="grid gap-5">
           <div>
             <label htmlFor="title" className={labelClass}>

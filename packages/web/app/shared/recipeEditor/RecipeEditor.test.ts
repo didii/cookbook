@@ -35,3 +35,8 @@ test('recipe-form › Unsaved indicator', () => {
 test.todo('recipe-form › Reset asks first');
 // Needs a browser: answering "Nee" and pressing Esc.
 test.todo('recipe-form › Reset can be declined');
+
+// Needs a browser: following a link with unsaved changes opens a confirmation.
+test.todo('recipe-form › Leaving with unsaved changes asks first');
+// Needs a browser: following a link, or leaving after saving, must not ask.
+test.todo('recipe-form › Leaving without changes does not ask');
