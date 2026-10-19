@@ -19,3 +19,4 @@
 ## 3. Wrap-up
 
 - [ ] 3.1 Run `pnpm format:fix`, `pnpm lint:fix`, `pnpm format:check`, `pnpm lint:check`, `pnpm typecheck` and `pnpm test:ai`; verify all pass, then run the whole flow in `pnpm dev` on a new recipe and on an existing one: write, reload, edit the same recipe in a second tab and save there, return to the first tab's draft (changed-meanwhile notice), save, and confirm no draft remains.
+  - Done: `pnpm format:fix`, `lint:fix`, `format:check`, `lint:check`, `typecheck` and `test:ai` all pass. Open: the whole flow in `pnpm dev` (new and existing recipe, second tab, changed-meanwhile notice, no draft left after saving) could not be done in this session (no browser).
