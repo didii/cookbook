@@ -7,7 +7,7 @@
 
 ## 2. Text layer
 
-- [ ] 2.1 Build `StepText.tsx` (grid stack of box, mirror and textarea; auto height from the mirror; `<mark>` segments from a `marks` prop using only background and underline; Enter, Shift+Enter, paste and Backspace behaviour; edit reporting via the hook); verify with `test.todo`s (a browser is needed, reason on the line above) named `recipe-step-editing › Marks sit under their characters`, `recipe-step-editing › Marks never move the text`, `recipe-step-editing › Step field grows with its text`, `recipe-step-editing › Enter elsewhere changes nothing` and `recipe-step-editing › Pasted line breaks become spaces`, and by hand with a wrapping mark, a very long word, 200% zoom, narrow and wide widths and a hard-coded test mark in `pnpm dev`.
+- [ ] 2.1 Build `StepText.tsx` (grid stack of box, mirror and textarea; auto height from the mirror; `<mark>` segments from a `marks` prop using only background and underline; Enter, Shift+Enter, paste and Backspace behaviour; edit reporting via the hook); verify with `test.todo`s (a browser is needed, reason on the line above) named `recipe-step-editing › Marks sit under their characters`, `recipe-step-editing › Marks never move the text`, `recipe-step-editing › Step field grows with its text`, `recipe-step-editing › Enter elsewhere changes nothing` and `recipe-step-editing › Pasted line breaks become spaces`, and by hand with a wrapping mark, a very long word, 200% zoom, narrow and wide widths and a hard-coded test mark in `pnpm dev`. (Built; the by-hand check in a browser (wrapping mark, long word, 200% zoom, widths, test mark in `pnpm dev`) is still to do.)
 
 ## 3. Step list
 
