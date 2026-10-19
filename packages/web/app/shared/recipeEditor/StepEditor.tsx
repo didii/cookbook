@@ -1,4 +1,5 @@
 import { useImperativeHandle, useRef, type ComponentProps, type CSSProperties, type KeyboardEvent, type Ref } from 'react';
+import type { TextEdit } from '~/lib/textEdit';
 import type { ItemHandle } from './ItemHandle';
 import { RowGrip } from './RowGrip';
 import { RowToolbar } from './RowToolbar';
@@ -13,6 +14,8 @@ type Props = {
   canUp: boolean;
   canDown: boolean;
   onType: (text: string) => void;
+  /** What the change replaced. */
+  onEdit: (edit: TextEdit, body: string) => void;
   /** Enter was pressed at the end of a step that has text. */
   onEnterAtEnd: () => void;
   /** Backspace was pressed in an empty step. */
@@ -26,7 +29,21 @@ type Props = {
 };
 
 /** One step: its header (number, grip and buttons) above its text. */
-export function StepEditor({ ref, number, text, canUp, canDown, onType, onEnterAtEnd, onBackspaceEmpty, onRemove, onMove, gripProps, style }: Props) {
+export function StepEditor({
+  ref,
+  number,
+  text,
+  canUp,
+  canDown,
+  onType,
+  onEdit,
+  onEnterAtEnd,
+  onBackspaceEmpty,
+  onRemove,
+  onMove,
+  gripProps,
+  style,
+}: Props) {
   const field = useRef<HTMLTextAreaElement>(null);
   const item = useRef<HTMLLIElement>(null);
   const afterRender = useAfterRender();
@@ -77,6 +94,7 @@ export function StepEditor({ ref, number, text, canUp, canDown, onType, onEnterA
         value={text}
         placeholder={number === 1 ? 'Bijvoorbeeld: Kneed de bloem met de boter tot een deeg' : undefined}
         onChange={onType}
+        onEdit={onEdit}
         onKeyDown={keyDown}
         onEnterAtEnd={onEnterAtEnd}
         onBackspaceEmpty={onBackspaceEmpty}

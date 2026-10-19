@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Form, Link, useNavigation } from 'react-router';
 import {
   addStep,
+  editedStep,
   editStep,
   isDirty,
   moveIngredient,
@@ -10,6 +11,7 @@ import {
   removeStep,
   restoreStep,
   startingDraft,
+  storedSteps,
   typeIngredient,
   type Content,
 } from '~/lib/draft';
@@ -138,10 +140,12 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
               Bereiding
             </h2>
             <p className="mb-2 text-muted">Eén stap per alinea. Enter aan het eind begint de volgende stap.</p>
+            <input type="hidden" name="steps" value={JSON.stringify(storedSteps(current))} />
             <StepList
               key={resets}
               steps={current.steps}
               onType={(id, body) => setCurrent((c) => editStep(c, id, body))}
+              onEdit={(id, edit, body) => setCurrent((c) => editedStep(c, id, body, edit))}
               onAdd={(at) => setCurrent((c) => addStep(c, at))}
               onRemove={(id) => setCurrent((c) => removeStep(c, id))}
               onRestore={(step, at) => setCurrent((c) => restoreStep(c, step, at))}

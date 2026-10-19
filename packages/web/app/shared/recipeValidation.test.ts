@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import type { Step } from '~/lib/recipes';
 import { readIngredients, readSteps, validate } from './recipeValidation';
 
 const ok = { title: 'Soep', author: 'Oma', servings: '4', time: '', intro: '', image: '' };
@@ -59,15 +60,17 @@ const stepsForm = (json: string) => {
 };
 const postSteps = (bodies: unknown) => readSteps(stepsForm(JSON.stringify(bodies)));
 
+const plain = (body: string): Step => ({ body, ingredients: [] });
+
 test('recipe-step-editing › Blank steps are not stored', () => {
   const { steps } = postSteps([{ body: '' }, { body: 'kneed' }, { body: '  ' }, { body: ' bak ' }, { body: '\n' }]);
-  assert.deepEqual(steps, ['kneed', 'bak']);
+  assert.deepEqual(steps, [plain('kneed'), plain('bak')]);
 });
 
 test('the server cleans the steps itself: line breaks become spaces', () => {
   const { steps, lines } = postSteps([{ body: 'kneed\r\nen rijs\n\n bak' }, { body: '' }]);
-  assert.deepEqual(steps, ['kneed en rijs bak']);
-  assert.deepEqual(lines, ['kneed en rijs bak', '']);
+  assert.deepEqual(steps, [plain('kneed en rijs bak')]);
+  assert.deepEqual(lines, [plain('kneed en rijs bak'), plain('')]);
 });
 
 test('a missing or malformed steps field is "not given", an empty list is "none"', () => {
@@ -76,4 +79,32 @@ test('a missing or malformed steps field is "not given", an empty list is "none"
   assert.equal(postSteps('nope').steps, undefined);
   assert.deepEqual(postSteps([]).steps, []);
   assert.deepEqual(readSteps(new FormData()).lines, []);
+});
+
+test('the server reads the chips of a step and leaves out what is not valid', () => {
+  const { steps } = postSteps([
+    {
+      body: 'bak',
+      ingredients: [{ quantity_text: ' 250 g ', name: ' bloem ' }, { quantity_text: '1', name: '  ' }, { name: 'boter' }, 'x', null],
+      ovenTemperature: 40,
+      timer: { minutes: 25, label: ' Bakken ' },
+    },
+    { body: 'rust', ovenTemperature: 0, timer: { minutes: 0, label: 'Rust' } },
+    { body: 'koel', ovenTemperature: 18.5, timer: { minutes: '5' }, ingredients: 'nope' },
+    { body: 'klaar', timer: { label: 'Zonder minuten' } },
+  ]);
+  assert.deepEqual(steps, [
+    {
+      body: 'bak',
+      ingredients: [
+        { quantity_text: '250 g', name: 'bloem' },
+        { quantity_text: '', name: 'boter' },
+      ],
+      ovenTemperature: 40,
+      timer: { minutes: 25, label: 'Bakken' },
+    },
+    plain('rust'),
+    plain('koel'),
+    plain('klaar'),
+  ]);
 });
