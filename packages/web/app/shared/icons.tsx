@@ -30,3 +30,23 @@ export const Thermometer = ({ className }: Props) => (
     <circle cx="8" cy="11.5" r="1.6" fill="currentColor" />
   </svg>
 );
+
+const outline = (className?: string) =>
+  ({
+    viewBox: '0 0 24 24',
+    'aria-hidden': true,
+    className: cn('size-5 shrink-0 fill-none stroke-current stroke-2 [stroke-linejoin:round]', className),
+  }) as const;
+
+export const Camera = ({ className }: Props) => (
+  <svg {...outline(className)}>
+    <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
+    <circle cx="12" cy="13" r="3.5" />
+  </svg>
+);
+
+export const Trash = ({ className }: Props) => (
+  <svg {...outline(className)}>
+    <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
+  </svg>
+);

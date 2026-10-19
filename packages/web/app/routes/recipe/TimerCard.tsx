@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import { formatCountdown, type TimerView } from '~/lib/timers';
 import { cn } from '~/shared/cn';
-import { Alarm, Stop } from './icons';
+import { Alarm, Stop } from '~/shared/icons';
 import { TimerButton } from './TimerButton';
 import { TimersContext } from './timersContext';
 

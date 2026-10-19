@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { Button } from '~/shared/Button';
+import { Camera, Trash } from '~/shared/icons';
 import { TileBand } from '~/shared/TileBand';
 import { resizePhoto, uploadPhoto } from './photoFile';
 
@@ -17,18 +18,6 @@ type Props = {
 
 type Pending = { blob: Blob; preview: string };
 
-const icon = { viewBox: '0 0 24 24', 'aria-hidden': true, className: 'size-5 shrink-0 fill-none stroke-current stroke-2 [stroke-linejoin:round]' };
-const camera = (
-  <svg {...icon}>
-    <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
-    <circle cx="12" cy="13" r="3.5" />
-  </svg>
-);
-const trash = (
-  <svg {...icon}>
-    <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
-  </svg>
-);
 const wide = 'inline-flex items-center justify-center gap-2 px-4';
 
 /** The recipe's photo: choose from camera or gallery, shrink and upload, show in the frame the recipe page uses, replace or remove. */
@@ -99,7 +88,8 @@ export function PhotoField({ value, onChange, onStateChange, tile }: Props) {
       <div className="mt-1">
         {!src ? (
           <Button type="button" onClick={pick} className={`${wide} w-full`}>
-            {camera}Foto toevoegen
+            <Camera />
+            Foto toevoegen
           </Button>
         ) : failedSrc === src ? (
           <div className="grid gap-2">
@@ -126,10 +116,11 @@ export function PhotoField({ value, onChange, onStateChange, tile }: Props) {
               />
               <div className="absolute inset-x-2.5 bottom-3.5 flex gap-2">
                 <Button type="button" onClick={pick} className={wide}>
-                  {camera}Andere foto
+                  <Camera />
+                  Andere foto
                 </Button>
                 <Button type="button" onClick={remove} aria-label="Foto verwijderen" className="flex-none px-3 text-muted">
-                  {trash}
+                  <Trash />
                 </Button>
               </div>
             </div>

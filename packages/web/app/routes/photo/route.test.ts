@@ -48,9 +48,14 @@ test('recipe-photo › Unknown photo', async () => {
   assert.equal((await serve('00000000-0000-4000-8000-000000000000.jpg')).status, 404);
 });
 
-test('upload answers 413 and 415 through the route', async () => {
+test('upload answers 413 for a body over the limit', async () => {
   assert.equal((await upload(new Uint8Array(2 * 1024 * 1024 + 1).fill(0xff))).status, 413);
+});
+
+test('upload answers 415 for something that is not an image', async () => {
   assert.equal((await upload('plain text')).status, 415);
-  // A header that claims too much is refused before reading
+});
+
+test('upload answers 413 before reading when the header claims too much', async () => {
   assert.equal((await upload(jpeg, { 'Content-Length': String(3 * 1024 * 1024) })).status, 413);
 });
