@@ -18,4 +18,4 @@
 
 ## 4. Wrap-up
 
-- [ ] 4.1 Run `pnpm format:fix`, `pnpm lint:fix`, `pnpm format:check`, `pnpm lint:check`, `pnpm typecheck` and `pnpm test:ai`; verify all pass, then create and edit a recipe end to end in `pnpm dev` at 360px and desktop width.
+- [x] 4.1 Run `pnpm format:fix`, `pnpm lint:fix`, `pnpm format:check`, `pnpm lint:check`, `pnpm typecheck` and `pnpm test:ai`; verify all pass, then create and edit a recipe end to end in `pnpm dev` at 360px and desktop width.
