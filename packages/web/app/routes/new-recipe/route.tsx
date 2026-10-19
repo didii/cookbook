@@ -1,8 +1,9 @@
 import { data, redirect } from 'react-router';
 import { envContext, userEmailContext } from '~/.server/context';
 import { createRecipe, listAuthors } from '~/.server/recipes';
+import { emptyDraft } from '~/lib/draft';
 import { tiles } from '~/lib/tile';
-import { RecipeForm } from '~/shared/RecipeForm';
+import { RecipeEditor } from '~/shared/recipeEditor/RecipeEditor';
 import { readForm, toRecipeFields, validate } from '~/shared/recipeValidation';
 import type { Route } from './+types/route';
 
@@ -25,17 +26,16 @@ export function meta() {
   return [{ title: 'Nieuw recept · Familiekookboek' }];
 }
 
-const empty = { title: '', author: '', servings: '', time: '', intro: '', image: '' };
-
 export default function NewRecipe({ loaderData, actionData }: Route.ComponentProps) {
   return (
-    <RecipeForm
+    <RecipeEditor
       heading="Nieuw recept"
-      submitLabel="Bewaar recept"
       authors={loaderData.authors}
       tile={loaderData.tile}
-      values={actionData?.values ?? empty}
+      initial={emptyDraft}
+      values={actionData?.values ?? emptyDraft}
       errors={actionData?.errors ?? {}}
+      cancelTo="/"
     />
   );
 }

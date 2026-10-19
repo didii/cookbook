@@ -5,7 +5,7 @@ import { RouterContextProvider } from 'react-router';
 import { envContext, userEmailContext } from '~/.server/context';
 import { getRecipe } from '~/.server/recipes';
 import type { Route } from './+types/route';
-import { action } from './route';
+import { action, loader } from './route';
 
 // Action-level tests: real action, real queries against an in-memory D1.
 let db: D1Database;
@@ -58,3 +58,13 @@ test.todo('recipe-creation › Image cannot be loaded');
 // These need a browser (visible asterisk and focus), so they are checked by hand.
 test.todo('recipe-creation › Required fields are marked');
 test.todo('recipe-creation › Errors are announced and focused');
+
+// Only the action stores anything: opening the editor (the loader) leaves the database as it was.
+test('recipe-form › Nothing stored before saving', async () => {
+  const count = async () => (await db.prepare('SELECT COUNT(*) AS n FROM recipes').first<{ n: number }>())?.n;
+  const before = await count();
+  const context = new RouterContextProvider();
+  context.set(envContext, { DB: db } as Partial<Env> as Env);
+  await loader({ context } as Partial<Route.LoaderArgs> as Route.LoaderArgs);
+  assert.equal(await count(), before);
+});

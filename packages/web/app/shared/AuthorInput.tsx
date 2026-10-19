@@ -1,23 +1,29 @@
 import { Autocomplete } from '@base-ui/react/autocomplete';
 import { useState } from 'react';
 
-type Props = { authors: string[]; defaultValue?: string; invalid?: boolean; describedBy?: string; className?: string };
+type Props = {
+  authors: string[];
+  value: string;
+  onValueChange: (value: string) => void;
+  invalid?: boolean;
+  describedBy?: string;
+  className?: string;
+};
 
 /** Free-text author field that suggests the authors already on stored recipes; a name that isn't listed is submitted as typed. */
-export function AuthorInput({ authors, defaultValue, invalid, describedBy, className }: Props) {
+export function AuthorInput({ authors, value, onValueChange, invalid, describedBy, className }: Props) {
   // Ignores letter case and accents: "oma" finds "Oma".
   const { contains } = Autocomplete.useFilter({ sensitivity: 'base' });
-  const [text, setText] = useState(defaultValue ?? '');
   const [open, setOpen] = useState(false);
   // No match means nothing to pick, so the popup closes instead of showing an empty box (APG: the popup is shown only while it has options).
-  const hasMatches = authors.some((a) => contains(a, text));
+  const hasMatches = authors.some((a) => contains(a, value));
 
   return (
     <Autocomplete.Root
       items={authors}
       name="author"
-      defaultValue={defaultValue}
-      onValueChange={setText}
+      value={value}
+      onValueChange={onValueChange}
       open={open && hasMatches}
       onOpenChange={setOpen}
       filter={contains}

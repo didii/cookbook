@@ -68,11 +68,11 @@ test('route saves the edit and goes back to the recipe', async () => {
   assert.deepEqual([r?.title, r?.servings], ['Tomatensoep', null]);
 });
 
-// Both routes must render the shared form and write no fields of their own, so the UI can only differ in values, heading and button.
+// Both routes must render the shared editor and write no fields of their own, so the UI can only differ in values, heading and cancel target.
 test('recipe-editing › Same form for new and existing recipes', () => {
   for (const route of ['../edit-recipe/route.tsx', '../new-recipe/route.tsx']) {
     const source = readFileSync(new URL(route, import.meta.url), 'utf8');
-    assert.match(source, /<RecipeForm\b/, route);
+    assert.match(source, /<RecipeEditor\b/, route);
     assert.doesNotMatch(source, /<(input|textarea|label|form)\b/i, route);
   }
 });

@@ -2,7 +2,7 @@ import { data, redirect } from 'react-router';
 import { envContext } from '~/.server/context';
 import { getRecipe, listAuthors, updateRecipe } from '~/.server/recipes';
 import { tileFor } from '~/lib/tile';
-import { RecipeForm } from '~/shared/RecipeForm';
+import { RecipeEditor } from '~/shared/recipeEditor/RecipeEditor';
 import { readForm, toRecipeFields, validate } from '~/shared/recipeValidation';
 import type { Route } from './+types/route';
 
@@ -20,7 +20,7 @@ export async function loader({ params, context }: Route.LoaderArgs) {
     intro: recipe.intro,
     image: recipe.image ?? '',
   };
-  return { title: recipe.title, authors, values, tile: tileFor(recipe.id) };
+  return { slug: params.slug, title: recipe.title, authors, values, tile: tileFor(recipe.id) };
 }
 
 export async function action({ request, params, context }: Route.ActionArgs) {
@@ -39,13 +39,15 @@ export function meta({ loaderData }: Route.MetaArgs) {
 
 export default function EditRecipe({ loaderData, actionData }: Route.ComponentProps) {
   return (
-    <RecipeForm
+    <RecipeEditor
+      key={loaderData.slug}
       heading="Recept bewerken"
-      submitLabel="Bewaar wijzigingen"
       authors={loaderData.authors}
       tile={loaderData.tile}
+      initial={loaderData.values}
       values={actionData?.values ?? loaderData.values}
       errors={actionData?.errors ?? {}}
+      cancelTo={`/recepten/${loaderData.slug}`}
     />
   );
 }
