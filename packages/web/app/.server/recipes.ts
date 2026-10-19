@@ -119,9 +119,9 @@ export async function listAuthors(db: D1Database): Promise<string[]> {
   return results.map((r) => r.author);
 }
 
-export type RecipeUpdate = Pick<NewRecipe, 'title' | 'author' | 'servings' | 'time' | 'intro' | 'image' | 'seal' | 'ingredients'>;
+export type RecipeUpdate = Pick<NewRecipe, 'title' | 'author' | 'servings' | 'time' | 'intro' | 'image' | 'seal' | 'ingredients' | 'steps'>;
 
-/** Replaces the base information of a recipe; an omitted optional field is cleared, but an omitted seal is kept. When ingredients are given they replace the stored ones in the same batch (so atomically); when omitted the stored ones stay. Returns the image the recipe had before, or undefined when the recipe doesn't exist. */
+/** Replaces the base information of a recipe; an omitted optional field is cleared, but an omitted seal is kept. When ingredients or steps are given they replace the stored ones in the same batch (so atomically); when omitted the stored ones stay. Returns the image the recipe had before, or undefined when the recipe doesn't exist. */
 export async function updateRecipe(db: D1Database, slug: string, recipe: RecipeUpdate): Promise<{ previousImage: string | null } | undefined> {
   const [before, result] = await db.batch([
     db.prepare('SELECT image FROM recipes WHERE slug = ?').bind(slug),
@@ -153,6 +153,14 @@ export async function updateRecipe(db: D1Database, slug: string, recipe: RecipeU
                 'INSERT INTO ingredients (recipe_id, position, name, quantity_text, amount, unit) SELECT id, ?, ?, ?, ?, ? FROM recipes WHERE slug = ?',
               )
               .bind(i, ing.name, ing.quantityText ?? '', ing.amount ?? null, ing.unit ?? null, slug),
+          ),
+        ]
+      : []),
+    ...(recipe.steps
+      ? [
+          db.prepare('DELETE FROM steps WHERE recipe_id = (SELECT id FROM recipes WHERE slug = ?)').bind(slug),
+          ...recipe.steps.map((body, i) =>
+            db.prepare('INSERT INTO steps (recipe_id, position, body) SELECT id, ?, ? FROM recipes WHERE slug = ?').bind(i, body, slug),
           ),
         ]
       : []),

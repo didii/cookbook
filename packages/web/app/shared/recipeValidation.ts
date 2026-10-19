@@ -60,3 +60,20 @@ export function readIngredients(form: FormData) {
   });
   return { lines, ingredients, errors };
 }
+
+/** The posted steps. The form carries them as a JSON list of `{ body }`; a missing or malformed field gives undefined, which is not the same as an empty list. */
+function readBodies(form: FormData): string[] | undefined {
+  try {
+    const list: unknown = JSON.parse(String(form.get('steps')));
+    return Array.isArray(list) ? list.map((step) => String((step as { body?: unknown })?.body ?? '')) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Parses the posted steps here, never trusting the client's cleaning: each is trimmed with line breaks turned into spaces, and blank ones are dropped. `lines` is every posted step cleaned the same way, to show again after a refusal. `steps` is undefined when the form carried no (valid) list, so a submit without the field leaves the stored steps alone instead of clearing them; an explicit empty list does clear them. */
+export function readSteps(form: FormData) {
+  const posted = readBodies(form);
+  const lines = (posted ?? []).map((body) => body.replace(/\s*[\r\n]+\s*/g, ' ').trim());
+  return { lines, steps: posted && lines.filter(Boolean) };
+}

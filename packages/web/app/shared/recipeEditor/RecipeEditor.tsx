@@ -1,12 +1,25 @@
 import { useEffect, useRef, useState } from 'react';
 import { Form, Link, useNavigation } from 'react-router';
-import { isDirty, moveIngredient, removeIngredient, startingDraft, typeIngredient, type Content } from '~/lib/draft';
+import {
+  addStep,
+  editStep,
+  isDirty,
+  moveIngredient,
+  moveStep,
+  removeIngredient,
+  removeStep,
+  restoreStep,
+  startingDraft,
+  typeIngredient,
+  type Content,
+} from '~/lib/draft';
 import { AuthorInput } from '~/shared/AuthorInput';
 import { cn } from '~/shared/cn';
 import type { Errors, Field } from '~/shared/recipeValidation';
 import { IngredientList } from './IngredientList';
 import { PhotoField, type PhotoState } from './PhotoField';
 import { SaveBar } from './SaveBar';
+import { StepList } from './StepList';
 import { useLeaveGuard } from './useLeaveGuard';
 
 type Props = {
@@ -118,6 +131,21 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
               onType={(id, value) => setCurrent((c) => typeIngredient(c, id, value))}
               onRemove={(id) => setCurrent((c) => removeIngredient(c, id))}
               onMove={(id, to) => setCurrent((c) => moveIngredient(c, id, to))}
+            />
+          </section>
+          <section aria-labelledby="steps-heading">
+            <h2 id="steps-heading" className="text-2xl font-black">
+              Bereiding
+            </h2>
+            <p className="mb-2 text-muted">Eén stap per alinea. Enter aan het eind begint de volgende stap.</p>
+            <StepList
+              key={resets}
+              steps={current.steps}
+              onType={(id, body) => setCurrent((c) => editStep(c, id, body))}
+              onAdd={(at) => setCurrent((c) => addStep(c, at))}
+              onRemove={(id) => setCurrent((c) => removeStep(c, id))}
+              onRestore={(step, at) => setCurrent((c) => restoreStep(c, step, at))}
+              onMove={(id, to) => setCurrent((c) => moveStep(c, id, to))}
             />
           </section>
         </div>
