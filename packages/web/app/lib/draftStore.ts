@@ -1,4 +1,5 @@
-import { isDirty, type Draft } from '~/lib/draft';
+import type { Chip, Ghost } from '~/lib/chips';
+import { isDirty, withFreeRow, type Draft, type StepRow } from '~/lib/draft';
 
 /** The part of `Storage` the drafts need; `localStorage` fits, and so does a fake in a test. */
 export type DraftStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem' | 'key' | 'length'>;
@@ -149,4 +150,65 @@ export function purgeDrafts(storage: DraftStorage | undefined, now: Date) {
   } catch {
     // Storage that fails halfway leaves the rest for the next time.
   }
+}
+
+/** Whether the navigation that opened the editor was the "Bewerk" link, which marks itself in the history state. */
+export const isFresh = (locationState: unknown) => isObject(locationState) && locationState.fresh === true;
+
+const fits = (body: string, anchor?: { start: number; end: number }) =>
+  !anchor || (anchor.start >= 0 && anchor.start < anchor.end && anchor.end <= body.length);
+
+/** A step of a restored draft with only the chips and ghosts that still fit its text and the ingredient rows. A chip whose words or row are gone becomes an unanchored pinned chip; a ghost like that goes. */
+function fitStep(step: StepRow, rowIds: Set<string>): StepRow {
+  const chips = step.chips.map((chip): Chip => {
+    const anchored = fits(step.body, chip.anchor);
+    const linked = !chip.rowId || rowIds.has(chip.rowId);
+    if (anchored && linked) return chip;
+    return {
+      ...chip,
+      mode: 'manual',
+      anchor: anchored ? chip.anchor : undefined,
+      lost: anchored ? chip.lost : undefined,
+      rowId: linked ? chip.rowId : undefined,
+      ignored: undefined,
+    } as Chip;
+  });
+  const ghosts = step.ghosts.filter((g: Ghost) => fits(step.body, g.anchor) && (!g.rowId || rowIds.has(g.rowId)));
+  return { ...step, chips, ghosts };
+}
+
+/** The restored state with its chips checked against its own texts and ingredient rows, and the free row at the end of the list. */
+export function fitDraft(state: Draft): Draft {
+  const ingredients = withFreeRow(state.ingredients);
+  const rowIds = new Set(ingredients.map((r) => r.id));
+  return { ...state, ingredients, steps: state.steps.map((s) => fitStep(s, rowIds)) };
+}
+
+export type Start = {
+  /** What the editor shows when it opens. */
+  state: Draft;
+  /** The version of the stored recipe the state is based on. */
+  base: { updatedAt?: string };
+  /** When the restored draft was kept; none when the editor starts from the stored recipe. */
+  restoredAt?: string;
+  /** The restored draft was started from another version of the stored recipe than the current one. */
+  changedMeanwhile: boolean;
+  /** The draft on the device must be removed. */
+  discard: boolean;
+};
+
+/**
+ * How the editor opens. `shown` is what it shows without a draft, `updatedAt` the stored recipe's current version (none for a new recipe), `draft` what the device holds for it.
+ * The edit link (`fresh`) throws the draft away. Otherwise a draft is restored, and flagged when its base is not the current version.
+ */
+export function resolveStart({ draft, fresh, shown, updatedAt }: { draft?: StoredDraft; fresh: boolean; shown: Draft; updatedAt?: string }): Start {
+  if (fresh) return { state: shown, base: { updatedAt }, changedMeanwhile: false, discard: true };
+  if (!draft) return { state: shown, base: { updatedAt }, changedMeanwhile: false, discard: false };
+  return {
+    state: fitDraft(draft.state),
+    base: draft.base,
+    restoredAt: draft.savedAt,
+    changedMeanwhile: draft.base.updatedAt !== updatedAt,
+    discard: false,
+  };
 }

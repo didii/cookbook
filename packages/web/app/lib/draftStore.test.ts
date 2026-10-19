@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { addStep, editStep, emptyContent, startingDraft, typeIngredient } from './draft';
-import { clearDraft, draftKey, loadDraft, purgeDrafts, saveDraft, type DraftStorage } from './draftStore';
+import { clearDraft, draftKey, isFresh, loadDraft, purgeDrafts, resolveStart, saveDraft, type DraftStorage } from './draftStore';
 
 /** An in-memory storage that can be told to throw on reads or writes. */
 function fakeStorage(fail: { read?: boolean; write?: boolean } = {}) {
@@ -114,4 +114,105 @@ test('recipe-draft › Storage that fails does not break editing', () => {
   assert.deepEqual(saveDraft(undefined, key, keeping()), { ok: false });
   assert.equal(loadDraft(undefined, key), undefined);
   assert.doesNotThrow(() => purgeDrafts(undefined, now));
+});
+
+// Start-up: what the editor shows, from the draft, the edit link and the stored recipe's version.
+const draftOf = (state = edited, base: { updatedAt?: string } = { updatedAt: 'v1' }) => {
+  const { storage } = fakeStorage();
+  saveDraft(storage, key, { ...keeping(state), base });
+  return { storage, draft: loadDraft(storage, key) };
+};
+const start = (o: { draft?: ReturnType<typeof loadDraft>; fresh?: boolean; updatedAt?: string }) =>
+  resolveStart({ draft: o.draft, fresh: o.fresh ?? false, shown: initial, updatedAt: o.updatedAt });
+
+test('recipe-draft › A reload restores the draft', () => {
+  const s = start({ draft: draftOf().draft, updatedAt: 'v1' });
+  assert.deepEqual(s.state, edited);
+  assert.equal(s.restoredAt, now.toISOString());
+  assert.equal(s.changedMeanwhile, false);
+  assert.equal(s.discard, false);
+});
+
+test('recipe-draft › An unfinished new recipe returns', () => {
+  const s = start({ draft: draftOf(edited, {}).draft });
+  assert.deepEqual(s.state, edited);
+  assert.equal(s.changedMeanwhile, false, 'a new recipe has no version to differ from');
+  assert.equal(start({}).restoredAt, undefined);
+});
+
+test('recipe-draft › The edit link starts fresh', () => {
+  const { storage, draft } = draftOf();
+  const s = start({ draft, fresh: isFresh({ fresh: true }), updatedAt: 'v1' });
+  assert.deepEqual(s.state, initial);
+  assert.equal(s.restoredAt, undefined);
+  assert.equal(s.discard, true);
+  clearDraft(storage, key);
+  assert.equal(loadDraft(storage, key), undefined);
+});
+
+test('recipe-draft › A reload after the edit link keeps the new draft', () => {
+  // The flag is consumed by replacing the history state, so the reload carries none.
+  assert.equal(isFresh({ fresh: true }), true);
+  for (const reload of [null, undefined, {}, 'fresh']) assert.equal(isFresh(reload), false);
+  const { draft } = draftOf();
+  assert.deepEqual(start({ draft, fresh: isFresh(null), updatedAt: 'v1' }).state, edited);
+});
+
+test('recipe-draft › A recipe changed meanwhile is flagged', () => {
+  const s = start({ draft: draftOf().draft, updatedAt: 'v2' });
+  assert.equal(s.changedMeanwhile, true);
+  assert.deepEqual(s.state, edited, 'nothing is replaced without a choice');
+});
+
+test('recipe-draft › Keeping the draft after a change', () => {
+  const { storage, draft } = draftOf();
+  const asked = start({ draft, updatedAt: 'v2' });
+  // Keeping moves the base to the current version; the next write carries it and the question does not return.
+  saveDraft(storage, key, { ...keeping(asked.state), base: { updatedAt: 'v2' } });
+  const again = start({ draft: loadDraft(storage, key), updatedAt: 'v2' });
+  assert.equal(again.changedMeanwhile, false);
+  assert.deepEqual(again.state, edited);
+});
+
+test('recipe-draft › Starting over after a change', () => {
+  const { storage } = draftOf();
+  clearDraft(storage, key);
+  const s = start({ draft: loadDraft(storage, key), updatedAt: 'v2' });
+  assert.deepEqual(s.state, initial);
+  assert.equal(s.changedMeanwhile, false);
+});
+
+test('a restored draft whose anchors no longer fit is fitted to its text', () => {
+  const step = (over: object) => ({ id: 's0', body: 'Bak 20 minuten', chips: [], ghosts: [], ...over });
+  const chip = (over: object) => ({ id: 'c0', kind: 'timer', mode: 'auto', anchor: { start: 4, end: 14 }, values: { minutes: 20 }, ...over });
+  const state = {
+    ...edited,
+    ingredients: [{ id: 'i0', text: '2 el suiker' }],
+    steps: [
+      step({
+        chips: [
+          chip({}),
+          chip({ id: 'c1', anchor: { start: 4, end: 99 } }),
+          chip({ id: 'c2', kind: 'ingredient', mode: 'manual', rowId: 'i9', anchor: { start: 0, end: 3 }, values: { quantity: '', name: 'x' } }),
+          chip({ id: 'c3', kind: 'ingredient', rowId: 'i0', values: { quantity: '', name: 'suiker' } }),
+        ],
+        ghosts: [
+          { id: 'c4', kind: 'oven', anchor: { start: 0, end: 3 } },
+          { id: 'c5', kind: 'oven', anchor: { start: 10, end: 30 } },
+          { id: 'c6', kind: 'ingredient', rowId: 'i9', anchor: { start: 0, end: 3 } },
+        ],
+      }),
+    ],
+  };
+  const { draft } = draftOf(state as unknown as typeof edited);
+  const [fitted] = start({ draft, updatedAt: 'v1' }).state.steps;
+  const byId = Object.fromEntries(fitted.chips.map((c) => [c.id, c]));
+  assert.deepEqual(byId.c0, state.steps[0].chips[0], 'a fitting chip is untouched');
+  assert.deepEqual([byId.c1.mode, byId.c1.anchor], ['manual', undefined]);
+  assert.deepEqual([byId.c2.mode, byId.c2.rowId, byId.c2.anchor], ['manual', undefined, { start: 0, end: 3 }]);
+  assert.deepEqual(byId.c3, state.steps[0].chips[3], 'a chip linked to an existing row is untouched');
+  assert.deepEqual(
+    fitted.ghosts.map((g) => g.id),
+    ['c4'],
+  );
 });
