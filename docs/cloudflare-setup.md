@@ -7,11 +7,12 @@ Everything needed to stand the cookbook up from scratch on a Cloudflare account.
 1. Create a Cloudflare account and add the domain to it. The cookbook runs on a subdomain of it (currently `cookbook.rhythm-coder.dev`); no DNS record has to be created by hand.
 2. Log Wrangler in: `npx -w @cookbook/web wrangler login`.
 
-## 2. Database
+## 2. Database and photo storage
 
 1. Run `npx -w @cookbook/web wrangler d1 create cookbook`. Answer "no" if it offers to edit the config.
 2. Copy the printed `database_id` into the `d1_databases` entry.
 3. Run `pnpm db:migrate:remote`.
+4. Run `npx -w @cookbook/web wrangler r2 bucket create cookbook-photos`. Recipe photos are stored there; the name must match `bucket_name` of the `PHOTOS` binding in `wrangler.jsonc`. The bucket has to exist before the first deploy that includes photos.
 
 ## 3. Route
 

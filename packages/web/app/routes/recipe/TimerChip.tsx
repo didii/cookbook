@@ -2,7 +2,7 @@ import { useContext } from 'react';
 import { formatMinutes } from '~/lib/steps';
 import { formatCountdown } from '~/lib/timers';
 import { cn } from '~/shared/cn';
-import { Play } from './icons';
+import { Play } from '~/shared/icons';
 import { TimersContext } from './timersContext';
 
 type Props = { id: string; minutes: number; label?: string };

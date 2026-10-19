@@ -37,9 +37,10 @@ test('recipe-creation › Recipe is created', async () => {
 });
 
 test('recipe-creation › Time, intro and image are stored', async () => {
-  await submit({ title: 'Compleet', author: 'Oma', time: ' 45 min ', intro: 'Lekker', image: '/img/x.jpg' });
+  const image = '/foto/00000000-0000-4000-8000-000000000000.webp';
+  await submit({ title: 'Compleet', author: 'Oma', time: ' 45 min ', intro: 'Lekker', image });
   const r = await getRecipe(db, 'compleet');
-  assert.deepEqual([r?.time, r?.intro, r?.image], ['45 min', 'Lekker', '/img/x.jpg']);
+  assert.deepEqual([r?.time, r?.intro, r?.image], ['45 min', 'Lekker', image]);
 });
 
 test('recipe-creation › Servings left empty', async () => {
@@ -51,7 +52,7 @@ test('recipe-creation › Servings left empty', async () => {
 // The filter runs in the browser (Base UI's Autocomplete with a base-sensitivity filter), so this needs a real browser; checked by hand.
 test.todo('recipe-creation › Suggestions ignore letter case');
 
-// The preview reacts to typing and to the image failing to load, which needs a browser; checked by hand.
+// Removed by edit-recipe-picture (now recipe-photo); kept until that change is archived, because pnpm test checks these names against openspec/specs.
 test.todo('recipe-creation › Preview of the image');
 test.todo('recipe-creation › Image cannot be loaded');
 
