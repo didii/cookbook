@@ -13,6 +13,9 @@ export function browserStorage(): DraftStorage | undefined {
   }
 }
 
+/** The form field that tells a save which draft to end. */
+export const draftKeyField = 'draftKey';
+
 /** Bump when the shape of the editor's `Draft` changes: older drafts are then ignored. */
 const version = 1;
 const prefix = 'cookbook:draft:';

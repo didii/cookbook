@@ -4,6 +4,7 @@ import { acceptImage, deletePhoto } from '~/.server/photos';
 import { getRecipe, listAuthors, updateRecipe } from '~/.server/recipes';
 import { joinIngredient } from '~/lib/ingredients';
 import { tileFor } from '~/lib/tile';
+import { endDraftAfterSave } from '~/shared/recipeEditor/endDraftAfterSave';
 import { RecipeEditor } from '~/shared/recipeEditor/RecipeEditor';
 import { readForm, readIngredients, readSteps, toRecipeFields, validate, type Errors } from '~/shared/recipeValidation';
 import type { Route } from './+types/route';
@@ -47,6 +48,9 @@ export async function action({ request, params, context }: Route.ActionArgs) {
   if (updated.previousImage && updated.previousImage !== image) await deletePhoto(PHOTOS, updated.previousImage).catch(() => undefined);
   return redirect(`/recepten/${params.slug}`);
 }
+
+/** Ends the draft when the save succeeds (see `endDraftAfterSave`). */
+export const clientAction = ({ request, serverAction }: Route.ClientActionArgs) => endDraftAfterSave({ request, serverAction });
 
 export function meta({ loaderData }: Route.MetaArgs) {
   return [{ title: `${loaderData?.title ?? 'Recept'} bewerken · Familiekookboek` }];

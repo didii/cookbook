@@ -19,7 +19,17 @@ import {
   type Content,
   type Draft,
 } from '~/lib/draft';
-import { browserStorage, clearDraft, describeSavedAt, draftKey, isFresh, loadDraft, purgeDrafts, resolveStart } from '~/lib/draftStore';
+import {
+  browserStorage,
+  clearDraft,
+  describeSavedAt,
+  draftKey,
+  draftKeyField,
+  isFresh,
+  loadDraft,
+  purgeDrafts,
+  resolveStart,
+} from '~/lib/draftStore';
 import { AuthorInput } from '~/shared/AuthorInput';
 import { cn } from '~/shared/cn';
 import type { Errors, Field } from '~/shared/recipeValidation';
@@ -115,6 +125,7 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
   });
   // Puts every field back to the starting values; the draft ends with it (the editor is not dirty any more).
   const reset = () => {
+    clearDraft(browserStorage(), key);
     setCurrent(startingDraft(initial));
     setPhoto('ready');
     setResets((n) => n + 1);
@@ -190,7 +201,7 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
         className="mt-4 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-12"
         noValidate
       >
-        <input type="hidden" name="draftKey" value={key} />
+        <input type="hidden" name={draftKeyField} value={key} />
         <div className="grid gap-5">
           <div>
             <label htmlFor="title" className={labelClass}>
