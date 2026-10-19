@@ -28,6 +28,7 @@
 - [ ] 4.3b Make each step's chips and add row one roving-tabindex toolbar (arrow keys, Enter/Space opens the popup, Delete removes), with the icon buttons out of the Tab order; verify with `test.todo`s named `recipe-step-chips › Chips are one tab stop` and `recipe-step-chips › Enter opens the popup`, and by hand with the keyboard only through the whole Appeltaart.
   - Open: the by-hand check with the keyboard through the whole Appeltaart could not be done in this session (no browser). The toolbar itself is in `StepChips.tsx` (built with 4.2).
 - [ ] 4.4 Add the save-bar status ("N voorstellen open", jump to the next proposal, nothing when zero, saving never blocked) and the usage line under ingredient rows; verify with `test.todo`s named `recipe-step-chips › Suggestions are counted in the save bar` and `recipe-step-chips › The count jumps to the next suggestion`, and by hand with two open proposals.
+  - Open: the by-hand check with two open proposals could not be done in this session (no browser); the server-rendered editor shows "7 voorstellen open" and the usage lines for the Appeltaart seed.
 - [ ] 4.5 Run `pnpm test:spec edit-recipe-chips` and cover any delta scenario still without a test or `test.todo` (a scenario that cannot be shown without a browser gets a `test.todo` with its reason, never a second test of the same name); verify the command reports every delta scenario covered.
 
 ## 5. Wrap-up

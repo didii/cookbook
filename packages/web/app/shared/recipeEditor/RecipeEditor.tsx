@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Form, Link, useNavigation } from 'react-router';
+import { proposals, usedIn } from '~/lib/chips';
 import {
   addStep,
   changeChips,
@@ -21,6 +22,7 @@ import { AuthorInput } from '~/shared/AuthorInput';
 import { cn } from '~/shared/cn';
 import type { Errors, Field } from '~/shared/recipeValidation';
 import { IngredientList } from './IngredientList';
+import { OpenProposals } from './OpenProposals';
 import { PhotoField, type PhotoState } from './PhotoField';
 import { SaveBar } from './SaveBar';
 import { StepList } from './StepList';
@@ -57,6 +59,8 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
   const [resets, setResets] = useState(0);
   const busy = useNavigation().formMethod != null;
   const dirty = isDirty(startingDraft(initial), current);
+  const contexts = stepContexts(current);
+  const proposalCount = current.steps.reduce((n, step, i) => n + proposals(step, contexts[i]).length, 0);
   // Set when the form is submitted, before the navigation starts, so saving never asks; cleared when the response (a refusal) is back.
   const submitting = useRef(false);
   useEffect(() => {
@@ -131,6 +135,7 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
             <p className="mb-2 text-muted">Hoeveelheid eerst, dan de naam.</p>
             <IngredientList
               rows={current.ingredients}
+              usedIn={(id) => usedIn(current.steps, id)}
               errors={errors.ingredients}
               onType={(id, value) => setCurrent((c) => typeIngredient(c, id, value))}
               onRemove={(id) => setCurrent((c) => removeIngredient(c, id))}
@@ -146,7 +151,7 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
             <StepList
               key={resets}
               steps={current.steps}
-              contexts={stepContexts(current)}
+              contexts={contexts}
               onChips={(id, change) => setCurrent((c) => changeChips(c, id, change))}
               onType={(id, body) => setCurrent((c) => editStep(c, id, body))}
               onEdit={(id, edit, body) => setCurrent((c) => editedStep(c, id, body, edit))}
@@ -198,6 +203,7 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
             setResets((n) => n + 1);
           }}
         >
+          <OpenProposals count={proposalCount} />
           {photo === 'uploading' && <span>Foto wordt geüpload…</span>}
           {photo === 'error' && <span className="text-red">Foto is niet geüpload</span>}
         </SaveBar>
