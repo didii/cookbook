@@ -5,9 +5,11 @@ import {
   canAdd,
   derive,
   discardProposal,
+  editValues,
   proposal,
   removeChip,
   restoreGhost,
+  setLabel,
   setMode,
   type Chip,
   type Context,
@@ -22,6 +24,7 @@ import type { StepRow } from '~/lib/draft';
 import { formatMinutes } from '~/lib/steps';
 import { cn } from '~/shared/cn';
 import { Arrow, Check, Clock, Cross, Link, Pin, Plus, Thermometer, Trash } from '~/shared/icons';
+import { ChipPopup } from './ChipPopup';
 import { useAfterRender } from './useAfterRender';
 
 type Props = {
@@ -84,8 +87,13 @@ export function StepChips({ step, context, number, hotId, onHot, onChange }: Pro
   const toolbar = useRef<HTMLDivElement>(null);
   const afterRender = useAfterRender();
   const [current, setCurrent] = useState<string>();
+  // The chip whose popup is open; it closes by itself when the chip goes or gets a proposal.
+  const [openId, setOpenId] = useState<string>();
+  const wrapper = useRef<HTMLDivElement>(null);
 
   const shown = step.chips.map((chip) => ({ chip, values: derive(chip, step.body, context), suggestion: proposal(chip, step.body, context) }));
+  const open = shown.find(({ chip, suggestion }) => chip.id === openId && !suggestion);
+  if (openId && !open) setOpenId(undefined);
   const addable = (['ingredient', 'oven', 'timer'] as const).filter((kind) => canAdd(step, kind));
   const keys = [
     ...shown.flatMap(({ chip, suggestion }) => (suggestion ? [`ok:${chip.id}`, `no:${chip.id}`] : [`chip:${chip.id}`])),
@@ -121,6 +129,7 @@ export function StepChips({ step, context, number, hotId, onHot, onChange }: Pro
   };
 
   const remove = (id: string, index: number) => {
+    setOpenId(undefined);
     focusKey('', index);
     onChange((s, c) => removeChip(s, id, c));
   };
@@ -136,11 +145,21 @@ export function StepChips({ step, context, number, hotId, onHot, onChange }: Pro
     focusKey(`chip:${ghost.id}`, at(`ghost:${ghost.id}`));
     onChange((s, c) => restoreGhost(s, ghost.id, c));
   };
-  const add = (kind: Kind) => onChange((s) => addChip(s, kind));
-  /** The icon button: pins a following chip, makes a pinned chip with words follow them again. */
+  /** Adds a hand-made chip and opens its popup, to fill it in. */
+  const add = (kind: Kind) => {
+    const made = addChip(step, kind).chips.at(-1);
+    onChange((s) => addChip(s, kind));
+    setOpenId(made?.id);
+  };
+  /** The icon button: pins a following chip, makes a pinned chip with words follow them again, and opens the popup. */
   const switchMode = (chip: Chip) => {
     if (chip.mode === 'auto') onChange((s, c) => setMode(s, chip.id, 'manual', c));
     else if (chip.anchor && !chip.lost) onChange((s, c) => setMode(s, chip.id, 'auto', c));
+    setOpenId(chip.id);
+  };
+  const close = (refocus: boolean) => {
+    if (refocus && openId) focusKey(`chip:${openId}`, 0);
+    setOpenId(undefined);
   };
 
   const hover = (id: string) => ({
@@ -152,118 +171,141 @@ export function StepChips({ step, context, number, hotId, onHot, onChange }: Pro
   const hot = (chip: Chip) => hotId === chip.id && (chip.mode === 'auto' ? 'border-ink bg-yel/50' : 'border-ink bg-blu/18');
 
   return (
-    // The group itself is not focusable: its buttons are, with a roving tabindex.
-    // oxlint-disable-next-line jsx-a11y/interactive-supports-focus
-    <div
-      ref={toolbar}
-      role="toolbar"
-      aria-label={`Chips van stap ${number}`}
-      onKeyDown={keyDown}
-      className="mt-2.5 flex flex-wrap items-center gap-2"
-    >
-      {shown.map(({ chip, values, suggestion }) => {
-        if (suggestion) {
-          const removing = suggestion.type === 'remove';
-          return (
-            <span
-              key={chip.id}
-              {...hover(chip.id)}
-              className={cn(
-                chipClass,
-                'gap-2 border-dashed pr-[3px]',
-                removing ? 'border-red bg-red/10 text-red hover:border-red' : 'border-blu bg-white hover:border-blu',
-                hotId === chip.id && (removing ? 'bg-red/20' : 'bg-blu/18'),
-              )}
-            >
-              <Pin className={cn(icon, !removing && 'text-blu')} />
-              {removing ? (
-                <span className="inline-flex items-center gap-1.5 line-through decoration-2">
-                  <Face kind={chip.kind} values={chip.values} label={chip.kind === 'timer' ? chip.label : undefined} />
-                </span>
-              ) : (
-                <>
-                  <span className="inline-flex items-center gap-1.5 line-through decoration-2 opacity-65">
+    <div ref={wrapper} className="relative">
+      {/* The group itself is not focusable: its buttons are, with a roving tabindex. */}
+      {/* oxlint-disable-next-line jsx-a11y/interactive-supports-focus */}
+      <div
+        ref={toolbar}
+        role="toolbar"
+        aria-label={`Chips van stap ${number}`}
+        onKeyDown={keyDown}
+        className="mt-2.5 flex flex-wrap items-center gap-2"
+      >
+        {shown.map(({ chip, values, suggestion }) => {
+          if (suggestion) {
+            const removing = suggestion.type === 'remove';
+            return (
+              <span
+                key={chip.id}
+                {...hover(chip.id)}
+                className={cn(
+                  chipClass,
+                  'gap-2 border-dashed pr-[3px]',
+                  removing ? 'border-red bg-red/10 text-red hover:border-red' : 'border-blu bg-white hover:border-blu',
+                  hotId === chip.id && (removing ? 'bg-red/20' : 'bg-blu/18'),
+                )}
+              >
+                <Pin className={cn(icon, !removing && 'text-blu')} />
+                {removing ? (
+                  <span className="inline-flex items-center gap-1.5 line-through decoration-2">
                     <Face kind={chip.kind} values={chip.values} label={chip.kind === 'timer' ? chip.label : undefined} />
                   </span>
-                  <Arrow className={cn(icon, 'text-blu')} />
-                  <span className="inline-flex items-center gap-1.5">
-                    <Face kind={chip.kind} values={suggestion.values} label={chip.kind === 'timer' ? chip.label : undefined} />
-                  </span>
-                </>
-              )}
-              <span className="inline-flex h-6.5 overflow-hidden rounded-md border-2 border-ink bg-white text-ink">
-                <button
-                  type="button"
-                  data-proposal=""
-                  aria-label={removing ? `${kindName[chip.kind]} verwijderen` : 'Wijziging overnemen'}
-                  {...roving(`ok:${chip.id}`)}
-                  onClick={() => accept(chip.id)}
-                  className={cn(
-                    'grid w-7 cursor-pointer place-items-center border-0 bg-transparent p-0 hover:bg-ink/8',
-                    removing ? 'text-red' : 'text-jade',
-                  )}
-                >
-                  {removing ? <Trash className={icon} /> : <Check className={icon} />}
-                </button>
-                <button
-                  type="button"
-                  aria-label={removing ? `${kindName[chip.kind]} houden` : 'Oude waarde houden'}
-                  {...roving(`no:${chip.id}`)}
-                  onClick={() => discard(chip.id)}
-                  className="grid w-7 cursor-pointer place-items-center border-0 border-l-2 border-ink bg-transparent p-0 text-muted hover:bg-ink/8"
-                >
-                  <Cross className={icon} />
-                </button>
+                ) : (
+                  <>
+                    <span className="inline-flex items-center gap-1.5 line-through decoration-2 opacity-65">
+                      <Face kind={chip.kind} values={chip.values} label={chip.kind === 'timer' ? chip.label : undefined} />
+                    </span>
+                    <Arrow className={cn(icon, 'text-blu')} />
+                    <span className="inline-flex items-center gap-1.5">
+                      <Face kind={chip.kind} values={suggestion.values} label={chip.kind === 'timer' ? chip.label : undefined} />
+                    </span>
+                  </>
+                )}
+                <span className="inline-flex h-6.5 overflow-hidden rounded-md border-2 border-ink bg-white text-ink">
+                  <button
+                    type="button"
+                    data-proposal=""
+                    aria-label={removing ? `${kindName[chip.kind]} verwijderen` : 'Wijziging overnemen'}
+                    {...roving(`ok:${chip.id}`)}
+                    onClick={() => accept(chip.id)}
+                    className={cn(
+                      'grid w-7 cursor-pointer place-items-center border-0 bg-transparent p-0 hover:bg-ink/8',
+                      removing ? 'text-red' : 'text-jade',
+                    )}
+                  >
+                    {removing ? <Trash className={icon} /> : <Check className={icon} />}
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={removing ? `${kindName[chip.kind]} houden` : 'Oude waarde houden'}
+                    {...roving(`no:${chip.id}`)}
+                    onClick={() => discard(chip.id)}
+                    className="grid w-7 cursor-pointer place-items-center border-0 border-l-2 border-ink bg-transparent p-0 text-muted hover:bg-ink/8"
+                  >
+                    <Cross className={icon} />
+                  </button>
+                </span>
               </span>
+            );
+          }
+          const pinned = chip.mode === 'manual';
+          return (
+            <span key={chip.id} data-chip-id={chip.id} {...hover(chip.id)} className={cn(chipClass, pinned && 'border-ink bg-white', hot(chip))}>
+              <button
+                type="button"
+                tabIndex={-1}
+                aria-label={pinned ? (chip.anchor ? 'Laten volgen en openen' : 'Openen') : 'Vastzetten en openen'}
+                onClick={() => switchMode(chip)}
+                className={cn(modeClass, pinned && 'text-blu')}
+              >
+                {pinned ? <Pin className={icon} /> : <Link className={icon} />}
+              </button>
+              <button
+                type="button"
+                aria-haspopup="dialog"
+                aria-expanded={openId === chip.id}
+                {...roving(`chip:${chip.id}`)}
+                onClick={() => setOpenId(openId === chip.id ? undefined : chip.id)}
+                className={faceClass}
+              >
+                <Face kind={chip.kind} values={values} label={chip.kind === 'timer' ? chip.label : undefined} />
+              </button>
             </span>
           );
-        }
-        const pinned = chip.mode === 'manual';
-        return (
-          <span key={chip.id} {...hover(chip.id)} className={cn(chipClass, pinned && 'border-ink bg-white', hot(chip))}>
+        })}
+        {/* Always takes its space, so nothing moves when it shows. */}
+        <div
+          className={cn(
+            'flex min-h-9 basis-full flex-wrap gap-1.5 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100',
+            '[@media(hover:none)]:opacity-100',
+          )}
+        >
+          {addable.map((kind) => (
+            <button key={kind} type="button" {...roving(`add:${kind}`)} onClick={() => add(kind)} className={addClass}>
+              <Plus className={icon} />
+              {kindName[kind]}
+            </button>
+          ))}
+          {step.ghosts.map((ghost) => (
             <button
+              key={ghost.id}
               type="button"
-              tabIndex={-1}
-              aria-label={pinned ? (chip.anchor ? 'Laten volgen en openen' : 'Openen') : 'Vastzetten en openen'}
-              onClick={() => switchMode(chip)}
-              className={cn(modeClass, pinned && 'text-blu')}
+              title="Terugzetten"
+              aria-label={`${kindName[ghost.kind]} terugzetten: ${step.body.slice(ghost.anchor.start, ghost.anchor.end)}`}
+              {...roving(`ghost:${ghost.id}`)}
+              onClick={() => restore(ghost)}
+              className={cn(addClass, 'border-solid border-ink/30 line-through decoration-[1.5px] hover:no-underline')}
             >
-              {pinned ? <Pin className={icon} /> : <Link className={icon} />}
+              <GhostIcon kind={ghost.kind} />
+              {step.body.slice(ghost.anchor.start, ghost.anchor.end)}
             </button>
-            <button type="button" aria-haspopup="dialog" {...roving(`chip:${chip.id}`)} className={faceClass}>
-              <Face kind={chip.kind} values={values} label={chip.kind === 'timer' ? chip.label : undefined} />
-            </button>
-          </span>
-        );
-      })}
-      {/* Always takes its space, so nothing moves when it shows. */}
-      <div
-        className={cn(
-          'flex min-h-9 basis-full flex-wrap gap-1.5 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100',
-          '[@media(hover:none)]:opacity-100',
-        )}
-      >
-        {addable.map((kind) => (
-          <button key={kind} type="button" {...roving(`add:${kind}`)} onClick={() => add(kind)} className={addClass}>
-            <Plus className={icon} />
-            {kindName[kind]}
-          </button>
-        ))}
-        {step.ghosts.map((ghost) => (
-          <button
-            key={ghost.id}
-            type="button"
-            title="Terugzetten"
-            aria-label={`${kindName[ghost.kind]} terugzetten: ${step.body.slice(ghost.anchor.start, ghost.anchor.end)}`}
-            {...roving(`ghost:${ghost.id}`)}
-            onClick={() => restore(ghost)}
-            className={cn(addClass, 'border-solid border-ink/30 line-through decoration-[1.5px] hover:no-underline')}
-          >
-            <GhostIcon kind={ghost.kind} />
-            {step.body.slice(ghost.anchor.start, ghost.anchor.end)}
-          </button>
-        ))}
+          ))}
+        </div>
       </div>
+      {open && (
+        <ChipPopup
+          key={open.chip.id}
+          chip={open.chip}
+          values={open.values}
+          words={open.chip.anchor && step.body.slice(open.chip.anchor.start, open.chip.anchor.end)}
+          anchor={() => wrapper.current?.querySelector<HTMLElement>(`[data-chip-id="${open.chip.id}"]`)}
+          onValues={(patch) => onChange((s, c) => editValues(s, open.chip.id, patch, c))}
+          onLabel={(label) => onChange((s) => setLabel(s, open.chip.id, label))}
+          onMode={(mode) => onChange((s, c) => setMode(s, open.chip.id, mode, c))}
+          onRemove={() => remove(open.chip.id, at(`chip:${open.chip.id}`))}
+          onClose={close}
+        />
+      )}
     </div>
   );
 }
