@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Form, Link, useNavigation } from 'react-router';
-import { isDirty, startingDraft, type Draft } from '~/lib/draft';
+import { isDirty, moveIngredient, removeIngredient, startingDraft, typeIngredient, type Content } from '~/lib/draft';
 import { AuthorInput } from '~/shared/AuthorInput';
 import { cn } from '~/shared/cn';
-import type { Field } from '~/shared/recipeValidation';
+import type { Errors, Field } from '~/shared/recipeValidation';
+import { IngredientList } from './IngredientList';
 import { PhotoField, type PhotoState } from './PhotoField';
 import { SaveBar } from './SaveBar';
 import { useLeaveGuard } from './useLeaveGuard';
@@ -13,10 +14,10 @@ type Props = {
   heading: string;
   authors: string[];
   /** The starting values: what Reset restores and what unsaved changes are measured against. */
-  initial: Draft;
+  initial: Content;
   /** What the editor shows when it opens: the starting values, or the values of a refused submit. */
-  values: Draft;
-  errors: Partial<Record<Field, string>>;
+  values: Content;
+  errors: Errors;
   /** Index of the tile band shown under the photo. */
   tile: number;
   /** Where "Terug" leads: the recipe, or the home page for a new recipe. */
@@ -33,12 +34,12 @@ const asterisk = (
 
 /** The one page for creating and editing a recipe; the routes only differ in the values, heading and cancel target they pass. */
 export function RecipeEditor({ heading, authors, initial, values, errors, tile, cancelTo }: Props) {
-  const [current, setCurrent] = useState(values);
+  const [current, setCurrent] = useState(() => startingDraft(values));
   const [photo, setPhoto] = useState<PhotoState>('ready');
   // Bumped by Herstel so the photo field starts over: it drops a running upload and its preview.
   const [resets, setResets] = useState(0);
   const busy = useNavigation().formMethod != null;
-  const dirty = isDirty(initial, current);
+  const dirty = isDirty(startingDraft(initial), current);
   // Set when the form is submitted, before the navigation starts, so saving never asks; cleared when the response (a refusal) is back.
   const submitting = useRef(false);
   useEffect(() => {
@@ -106,6 +107,19 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
             </label>
             <textarea {...text('intro')} rows={4} className={cn(inputClass, 'py-2')} />
           </div>
+          <section aria-labelledby="ingredients-heading">
+            <h2 id="ingredients-heading" className="text-2xl font-black">
+              Ingrediënten
+            </h2>
+            <p className="mb-2 text-muted">Hoeveelheid eerst, dan de naam.</p>
+            <IngredientList
+              rows={current.ingredients}
+              errors={errors.ingredients}
+              onType={(id, value) => setCurrent((c) => typeIngredient(c, id, value))}
+              onRemove={(id) => setCurrent((c) => removeIngredient(c, id))}
+              onMove={(id, to) => setCurrent((c) => moveIngredient(c, id, to))}
+            />
+          </section>
         </div>
         <div className="order-first grid gap-5 lg:sticky lg:top-4 lg:order-none">
           <div>

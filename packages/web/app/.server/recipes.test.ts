@@ -244,3 +244,47 @@ test('updateRecipe returns the image the recipe had', async () => {
   assert.deepEqual(await updateRecipe(db, slug, { title: 'Met foto', author: 'Oma', image: '/foto/nieuw.jpg' }), { previousImage: '/foto/oud.jpg' });
   assert.deepEqual(await updateRecipe(db, slug, { title: 'Met foto', author: 'Oma' }), { previousImage: '/foto/nieuw.jpg' });
 });
+
+const storedIngredients = async (slug: string) =>
+  (
+    await db
+      .prepare(
+        'SELECT i.position, i.name, i.quantity_text, i.amount, i.unit FROM ingredients i JOIN recipes r ON r.id = i.recipe_id WHERE r.slug = ? ORDER BY i.position',
+      )
+      .bind(slug)
+      .all()
+  ).results;
+
+test('recipe-ingredient-editing › Ingredients are stored in order', async () => {
+  const slug = await createRecipe(db, {
+    title: 'Volgorde',
+    author: 'Oma',
+    ingredients: [{ name: 'bloem', quantityText: '250 g', amount: 250, unit: 'g' }, { name: 'zout' }, { name: 'ei', quantityText: '1', amount: 1 }],
+  });
+  assert.deepEqual(await storedIngredients(slug), [
+    { position: 0, name: 'bloem', quantity_text: '250 g', amount: 250, unit: 'g' },
+    { position: 1, name: 'zout', quantity_text: '', amount: null, unit: null },
+    { position: 2, name: 'ei', quantity_text: '1', amount: 1, unit: null },
+  ]);
+});
+
+test('recipe-ingredient-editing › Saved list replaces the old one', async () => {
+  const slug = await createRecipe(db, { title: 'Vervangen', author: 'Oma', ingredients: [{ name: 'ei' }, { name: 'melk' }] });
+  const base = { title: 'Vervangen', author: 'Oma' };
+  await updateRecipe(db, slug, { ...base, ingredients: [{ name: 'melk' }, { name: 'boter', quantityText: '50 g', amount: 50, unit: 'g' }] });
+  assert.deepEqual(
+    (await storedIngredients(slug)).map((i) => [i.position, i.name, i.unit]),
+    [
+      [0, 'melk', null],
+      [1, 'boter', 'g'],
+    ],
+  );
+  await updateRecipe(db, slug, base);
+  assert.equal((await storedIngredients(slug)).length, 2, 'omitting the argument leaves ingredients untouched');
+  await updateRecipe(db, slug, { ...base, ingredients: [] });
+  assert.equal((await storedIngredients(slug)).length, 0);
+});
+
+test('replacing ingredients of an unknown recipe stores nothing', async () => {
+  assert.equal(await updateRecipe(db, 'bestaat-niet', { title: 'X', author: 'Y', ingredients: [{ name: 'ei' }] }), undefined);
+});

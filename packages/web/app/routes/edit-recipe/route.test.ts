@@ -48,7 +48,16 @@ const status = async (run: Promise<unknown>) => {
 
 test('recipe-editing › Form shows the stored values', async () => {
   const { values } = await load('soep');
-  assert.deepEqual(values, { title: 'Soep', author: 'Oma', servings: '4', time: '1u', intro: 'Warm', image: '/soep.jpg' });
+  assert.deepEqual(values, { title: 'Soep', author: 'Oma', servings: '4', time: '1u', intro: 'Warm', image: '/soep.jpg', ingredients: [] });
+});
+
+test('recipe-ingredient-editing › Stored ingredients come back as lines', async () => {
+  await db.batch([
+    db.prepare("INSERT INTO recipes (slug, title, author) VALUES ('lijst', 'Lijst', 'Oma')"),
+    db.prepare("INSERT INTO ingredients (recipe_id, position, name, quantity_text) SELECT id, 1, 'zout', '' FROM recipes WHERE slug = 'lijst'"),
+    db.prepare("INSERT INTO ingredients (recipe_id, position, name, quantity_text) SELECT id, 0, 'bloem', '250 g' FROM recipes WHERE slug = 'lijst'"),
+  ]);
+  assert.deepEqual((await load('lijst')).values.ingredients, ['250 g bloem', 'zout']);
 });
 
 test('recipe-editing › Unknown recipe', async () => {
@@ -123,4 +132,24 @@ test('recipe-editing › Same form for new and existing recipes', () => {
     assert.match(source, /<RecipeEditor\b/, route);
     assert.doesNotMatch(source, /<(input|textarea|label|form)\b/i, route);
   }
+});
+
+test('an edit posts its ingredient lines and a bad row refuses it', async () => {
+  const ingredients = (...texts: string[]) => JSON.stringify(texts.map((text) => ({ text })));
+  await submit('soep', { title: 'Soep', author: 'Oma', ingredients: ingredients('250 g bloem', '', '2 grote uien') });
+  assert.deepEqual((await getRecipe(db, 'soep'))?.ingredients, [
+    { quantity_text: '250 g', name: 'bloem' },
+    { quantity_text: '2', name: 'grote uien' },
+  ]);
+  const res = (await submit('soep', { title: 'Soep', author: 'Oma', ingredients: ingredients('zout', '250 g') })) as {
+    data: { errors: { ingredients: object } };
+  };
+  assert.deepEqual(Object.keys(res.data.errors.ingredients), ['1']);
+  assert.equal((await getRecipe(db, 'soep'))?.ingredients.length, 2);
+});
+
+test('an edit posted without an ingredients field keeps the stored ingredients', async () => {
+  await submit('soep', { title: 'Soep', author: 'Oma', ingredients: JSON.stringify([{ text: '2 uien' }]) });
+  await submit('soep', { title: 'Soep 2', author: 'Oma' });
+  assert.deepEqual((await getRecipe(db, 'soep'))?.ingredients, [{ quantity_text: '2', name: 'uien' }]);
 });

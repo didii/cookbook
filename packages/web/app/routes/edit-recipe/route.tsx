@@ -2,9 +2,10 @@ import { data, redirect } from 'react-router';
 import { envContext } from '~/.server/context';
 import { acceptImage, deletePhoto } from '~/.server/photos';
 import { getRecipe, listAuthors, updateRecipe } from '~/.server/recipes';
+import { joinIngredient } from '~/lib/ingredients';
 import { tileFor } from '~/lib/tile';
 import { RecipeEditor } from '~/shared/recipeEditor/RecipeEditor';
-import { readForm, toRecipeFields, validate } from '~/shared/recipeValidation';
+import { readForm, readIngredients, toRecipeFields, validate, type Errors } from '~/shared/recipeValidation';
 import type { Route } from './+types/route';
 
 const notFound = () => data('Recept niet gevonden', { status: 404 });
@@ -20,21 +21,25 @@ export async function loader({ params, context }: Route.LoaderArgs) {
     time: recipe.time ?? '',
     intro: recipe.intro,
     image: recipe.image ?? '',
+    ingredients: recipe.ingredients.map((i) => joinIngredient({ quantityText: i.quantity_text, name: i.name })),
   };
   return { slug: params.slug, title: recipe.title, authors, values, tile: tileFor(recipe.id) };
 }
 
 export async function action({ request, params, context }: Route.ActionArgs) {
-  const values = readForm(await request.formData());
+  const form = await request.formData();
+  const values = readForm(form);
+  const { lines, ingredients, errors: ingredientErrors } = readIngredients(form);
 
-  const errors = validate(values);
-  if (Object.keys(errors).length) return data({ errors, values }, { status: 400 });
+  const errors: Errors = validate(values);
+  if (Object.keys(ingredientErrors).length) errors.ingredients = ingredientErrors;
+  if (Object.keys(errors).length) return data({ errors, values: { ...values, ingredients: lines } }, { status: 400 });
 
   const { DB, PHOTOS } = context.get(envContext);
   const fields = toRecipeFields(values);
   const stored = await getRecipe(DB, params.slug);
   const image = stored && acceptImage(fields.image, stored.image);
-  const updated = stored && (await updateRecipe(DB, params.slug, { ...fields, image }));
+  const updated = stored && (await updateRecipe(DB, params.slug, { ...fields, image, ingredients }));
   if (!updated) throw notFound();
   // After the write, so a failed delete leaves an orphan and never a recipe pointing at a missing file. The recipe is saved either way, so a failure must not turn into an error page.
   if (updated.previousImage && updated.previousImage !== image) await deletePhoto(PHOTOS, updated.previousImage).catch(() => undefined);

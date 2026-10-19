@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { emptyDraft, isDirty, startingDraft } from '~/lib/draft';
+import { emptyContent, isDirty, startingDraft } from '~/lib/draft';
 
-const stored = { ...emptyDraft, title: 'Soep', author: 'Oma' };
+const content = { ...emptyContent, title: 'Soep', author: 'Oma' };
+const stored = startingDraft(content);
 
 // Needs a browser: the layout at a wide width.
 test.todo('recipe-form › Wide screen layout');
@@ -16,12 +17,12 @@ test.todo('recipe-form › Save is busy while storing');
 test.todo('recipe-form › Cancel leaves without storing');
 
 // The bar shows "Herstel" and "Niet opgeslagen" exactly while isDirty is true.
-test('recipe-form › Reset hidden without changes', () => assert.equal(isDirty(stored, startingDraft(stored)), false));
+test('recipe-form › Reset hidden without changes', () => assert.equal(isDirty(stored, startingDraft(content)), false));
 
 test('recipe-form › Reset restores the starting values', () => {
   const edited = { ...stored, title: 'Stamppot', intro: 'x' };
   assert.equal(isDirty(stored, edited), true);
-  const reset = startingDraft(stored);
+  const reset = startingDraft(content);
   assert.deepEqual(reset, stored);
   assert.equal(isDirty(stored, reset), false);
 });
