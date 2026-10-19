@@ -72,5 +72,8 @@ test('recipe-form › Nothing stored before saving', async () => {
 
 test('a new recipe stores its non-blank steps in order', async () => {
   await submit({ title: 'Met stappen', author: 'Oma', steps: JSON.stringify([{ body: 'een' }, { body: '' }, { body: 'twee' }]) });
-  assert.deepEqual((await getRecipe(db, 'met-stappen'))?.steps, ['een', 'twee']);
+  assert.deepEqual(
+    (await getRecipe(db, 'met-stappen'))?.steps.map((s) => s.body),
+    ['een', 'twee'],
+  );
 });

@@ -17,6 +17,8 @@ type Props = {
   onChange: (value: string) => void;
   /** What each change replaced, with the new text (see `useTextEdit`). */
   onEdit?: (edit: TextEdit, value: string) => void;
+  /** Where the caret is (no selection), or undefined when there is a selection or the field lost focus. */
+  onCaret?: (caret: number | undefined) => void;
   /** Enter was pressed with the caret at the end of a step that has text. */
   onEnterAtEnd?: () => void;
   /** Backspace was pressed in an empty field. */
@@ -29,8 +31,8 @@ type Props = {
 const oneLine = (text: string) => text.replace(/[\r\n]/g, ' ');
 
 const markClass = {
-  auto: 'decoration-yel',
-  manual: 'decoration-blu',
+  auto: { line: 'decoration-yel', hot: 'bg-yel/35' },
+  manual: { line: 'decoration-blu', hot: 'bg-blu/20' },
 };
 
 /** The text cut into plain pieces and marked pieces. */
@@ -48,8 +50,8 @@ function segments(value: string, marks: Mark[]): ReactNode[] {
         key={mark.id}
         className={cn(
           'bg-transparent text-transparent underline decoration-[3px] underline-offset-4 [text-decoration-skip-ink:none]',
-          markClass[mark.kind],
-          mark.hot && 'bg-yel/35',
+          markClass[mark.kind].line,
+          mark.hot && markClass[mark.kind].hot,
         )}
       >
         {value.slice(start, end)}
@@ -69,7 +71,19 @@ const field =
  * The text of a step: a real textarea over a mirror of its own text. The mirror, not the textarea, sets the height (so the field grows without scripting) and carries the marks.
  * Enter never inserts a line break; pasted line breaks become spaces.
  */
-export function StepText({ ref, label, value, marks = [], placeholder, onChange, onEdit, onEnterAtEnd, onBackspaceEmpty, onKeyDown }: Props) {
+export function StepText({
+  ref,
+  label,
+  value,
+  marks = [],
+  placeholder,
+  onChange,
+  onEdit,
+  onCaret,
+  onEnterAtEnd,
+  onBackspaceEmpty,
+  onKeyDown,
+}: Props) {
   const textarea = useRef<HTMLTextAreaElement>(null);
   useImperativeHandle(ref, () => textarea.current!);
   const handlers = useTextEdit(textarea, { value, sanitize: oneLine, onChange, onEdit: (edit, next) => onEdit?.(edit, next) });
@@ -106,6 +120,8 @@ export function StepText({ ref, label, value, marks = [], placeholder, onChange,
         autoComplete="off"
         enterKeyHint="next"
         onKeyDown={keyDown}
+        onSelect={(e) => onCaret?.(e.currentTarget.selectionStart === e.currentTarget.selectionEnd ? e.currentTarget.selectionStart : undefined)}
+        onBlur={() => onCaret?.(undefined)}
         {...handlers}
         className={cn(
           field,

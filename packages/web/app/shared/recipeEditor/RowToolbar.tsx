@@ -1,5 +1,6 @@
 import { useRef, useState, type KeyboardEvent } from 'react';
 import { cn } from '~/shared/cn';
+import { Cross, Down, Trash, Up } from '~/shared/icons';
 import { useAfterRender } from './useAfterRender';
 
 type Props = {
@@ -19,32 +20,12 @@ type Props = {
   onDelete: () => void;
 };
 
-const icon = {
-  viewBox: '0 0 24 24',
-  'aria-hidden': true,
-  className: 'size-[1.05em] fill-none stroke-current stroke-2 [stroke-linecap:round] [stroke-linejoin:round]',
-};
+const iconClass = 'size-[1.05em]';
 const icons = {
-  up: (
-    <svg {...icon}>
-      <path d="M6 15l6-6 6 6" />
-    </svg>
-  ),
-  down: (
-    <svg {...icon}>
-      <path d="M6 9l6 6 6-6" />
-    </svg>
-  ),
-  cross: (
-    <svg {...icon}>
-      <path d="M6 6l12 12M18 6L6 18" />
-    </svg>
-  ),
-  trash: (
-    <svg {...icon}>
-      <path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />
-    </svg>
-  ),
+  up: <Up className={iconClass} />,
+  down: <Down className={iconClass} />,
+  cross: <Cross className={iconClass} />,
+  trash: <Trash className={iconClass} />,
 };
 
 const buttonClass =

@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import type { Chip } from './chips';
 import {
   addStep,
+  editedStep,
   editStep,
   emptyContent,
   emptyDraft,
@@ -12,8 +14,11 @@ import {
   removeStep,
   restoreStep,
   startingDraft,
+  storedSteps,
   typeIngredient,
+  type Draft,
 } from './draft';
+import { computeEdit } from './textEdit';
 
 const content = { ...emptyContent, title: 'Soep', author: 'Oma' };
 const stored = startingDraft(content);
@@ -81,7 +86,7 @@ test('the empty row at the end is no change, a typed row is', () => {
 });
 
 const bodies = (d: { steps: { body: string }[] }) => d.steps.map((s) => s.body);
-const withSteps = (...steps: string[]) => startingDraft({ ...content, steps });
+const withSteps = (...steps: string[]) => startingDraft({ ...content, steps: steps.map((body) => ({ body, ingredients: [] })) });
 
 test('recipe-step-editing › New recipe starts with one empty step', () => {
   assert.deepEqual(bodies(emptyDraft), ['']);
@@ -139,4 +144,57 @@ test('empty steps are no change, a typed or moved step is', () => {
   assert.equal(isDirty(draft, moveStep(draft, 's0', 1)), true);
   assert.equal(isDirty(draft, removeStep(draft, 's1')), true);
   assert.equal(isDirty(stored, addStep(stored)), false);
+});
+
+/** Types into a step the way the editor reports it: the text, then what was replaced. */
+const typeStep = (draft: Draft, id: string, body: string) => {
+  const before = draft.steps.find((s) => s.id === id)!.body;
+  return editedStep(draft, id, body, computeEdit(before, body));
+};
+
+test('recipe-step-chips › Chips travel with their step', () => {
+  const draft = typeStep(withSteps('a', 'b'), 's1', 'Laat 30 minuten rusten');
+  const timer = draft.steps[1].chips[0];
+  assert.equal(timer.kind, 'timer');
+  const moved = moveStep(draft, 's1', 0);
+  assert.deepEqual(bodies(moved), ['Laat 30 minuten rusten', 'a']);
+  assert.deepEqual(moved.steps[0].chips, draft.steps[1].chips);
+  assert.deepEqual(moved.steps[0].ghosts, draft.steps[1].ghosts);
+  assert.equal(moved.steps[0].body.slice(timer.anchor!.start, timer.anchor!.end), '30 minuten');
+});
+
+test('typing in a step and in the ingredient list changes the chips', () => {
+  let draft = startingDraft({ ...content, ingredients: ['250 g bloem'], steps: [{ body: '', ingredients: [] }] });
+  draft = typeStep(draft, 's0', 'Zeef de bloem');
+  assert.deepEqual(storedSteps(draft), [{ body: 'Zeef de bloem', ingredients: [{ quantity_text: '250 g', name: 'bloem' }] }]);
+  draft = typeIngredient(draft, 'i0', '300 g bloem');
+  assert.equal(storedSteps(draft)[0].ingredients[0].quantity_text, '300 g');
+  draft = removeIngredient(draft, 'i0');
+  assert.deepEqual(storedSteps(draft)[0].ingredients, []);
+  assert.deepEqual(bodies(draft), ['Zeef de bloem']);
+});
+
+test('stored chips come back as chips, and chips count as a change', () => {
+  const step = { body: 'Bak 30 minuten.', ingredients: [], timer: { minutes: 30, label: 'Bakken' } };
+  const draft = startingDraft({ ...content, steps: [step] });
+  assert.deepEqual(storedSteps(draft), [step]);
+  assert.equal(isDirty(draft, startingDraft({ ...content, steps: [step] })), false);
+  const pinned: Draft = {
+    ...draft,
+    steps: [{ ...draft.steps[0], chips: draft.steps[0].chips.map((c) => ({ ...c, mode: 'manual', values: { minutes: 40 } }) as Chip) }],
+  };
+  assert.equal(isDirty(draft, pinned), true);
+  assert.equal(isDirty(draft, { ...draft, steps: [{ ...draft.steps[0], chips: [], ghosts: [] }] }), true);
+});
+
+test('an open proposed removal survives typing in another step', () => {
+  const step = (body: string, ingredients = [{ quantity_text: '250 g', name: 'bloem' }]) => ({ body, ingredients });
+  let draft = startingDraft({ ...content, ingredients: ['250 g bloem'], steps: [step('Zeef de bloem'), step('a', [])] });
+  const id = draft.steps[0].chips[0].id;
+  draft = { ...draft, steps: [{ ...draft.steps[0], chips: [{ ...draft.steps[0].chips[0], mode: 'manual' }] }, draft.steps[1]] };
+  draft = typeStep(draft, 's0', 'Zeef de pasta');
+  draft = typeStep(draft, 's1', 'ab');
+  const chip = draft.steps[0].chips.find((c) => c.id === id)!;
+  assert.equal(chip.rowId, 'i0');
+  assert.notEqual(chip.anchor, undefined);
 });

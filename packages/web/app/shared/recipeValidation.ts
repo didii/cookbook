@@ -1,4 +1,5 @@
 import { parseIngredient, type ParsedIngredient } from '~/lib/ingredients';
+import type { Step } from '~/lib/recipes';
 
 export type Field = 'title' | 'author' | 'servings' | 'time' | 'intro' | 'image';
 
@@ -61,19 +62,41 @@ export function readIngredients(form: FormData) {
   return { lines, ingredients, errors };
 }
 
-/** The posted steps. The form carries them as a JSON list of `{ body }`; a missing or malformed field gives undefined, which is not the same as an empty list. */
-function readBodies(form: FormData): string[] | undefined {
+/** The posted steps. The form carries them as a JSON list of `{ body, ingredients?, ovenTemperature?, timer? }`; a missing or malformed field gives undefined, which is not the same as an empty list. */
+function readPosted(form: FormData): unknown[] | undefined {
   try {
     const list: unknown = JSON.parse(String(form.get('steps')));
-    return Array.isArray(list) ? list.map((step) => String((step as { body?: unknown })?.body ?? '')) : undefined;
+    return Array.isArray(list) ? list : undefined;
   } catch {
     return undefined;
   }
 }
 
-/** Parses the posted steps here, never trusting the client's cleaning: each is trimmed with line breaks turned into spaces, and blank ones are dropped. `lines` is every posted step cleaned the same way, to show again after a refusal. `steps` is undefined when the form carried no (valid) list, so a submit without the field leaves the stored steps alone instead of clearing them; an explicit empty list does clear them. */
+const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
+const whole = (value: unknown) => (typeof value === 'number' && Number.isInteger(value) && value > 0 ? value : undefined);
+
+/** One posted step, cleaned here and not trusted: the text trimmed with line breaks turned into spaces; ingredient chips need a name (a quantity may be empty); an oven temperature and timer minutes need to be whole numbers above zero or they are left out, and a timer name goes with its minutes. Whatever is missing is simply not there. */
+function cleanStep(posted: unknown): Step {
+  const step = isRecord(posted) ? posted : {};
+  const text = (value: unknown) => (typeof value === 'string' ? value.trim() : '');
+  const chips = Array.isArray(step.ingredients) ? step.ingredients.filter(isRecord) : [];
+  const timer = isRecord(step.timer) ? step.timer : {};
+  const minutes = whole(timer.minutes);
+  const label = text(timer.label);
+  const oven = whole(step.ovenTemperature);
+  return {
+    body: String(step.body ?? '')
+      .replace(/\s*[\r\n]+\s*/g, ' ')
+      .trim(),
+    ingredients: chips.map((c) => ({ quantity_text: text(c.quantity_text), name: text(c.name) })).filter((c) => c.name),
+    ...(oven && { ovenTemperature: oven }),
+    ...(minutes && { timer: { minutes, ...(label && { label }) } }),
+  };
+}
+
+/** Parses the posted steps here, never trusting the client's cleaning (see `cleanStep`); blank ones are dropped. `lines` is every posted step cleaned the same way, to show again after a refusal. `steps` is undefined when the form carried no (valid) list, so a submit without the field leaves the stored steps alone instead of clearing them; an explicit empty list does clear them. */
 export function readSteps(form: FormData) {
-  const posted = readBodies(form);
-  const lines = (posted ?? []).map((body) => body.replace(/\s*[\r\n]+\s*/g, ' ').trim());
-  return { lines, steps: posted && lines.filter(Boolean) };
+  const posted = readPosted(form);
+  const lines = (posted ?? []).map(cleanStep);
+  return { lines, steps: posted && lines.filter((s) => s.body) };
 }

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
+import { defined } from '~testing/defined';
 import { RouterContextProvider } from 'react-router';
 import { envContext } from '~/.server/context';
 import { getPhoto, storePhoto } from '~/.server/photos';
@@ -169,16 +170,49 @@ test('recipe-step-editing › Stored steps come back in the editor', async () =>
     db.prepare("INSERT INTO steps (recipe_id, position, body) SELECT id, 1, 'bak' FROM recipes WHERE slug = 'stappen'"),
     db.prepare("INSERT INTO steps (recipe_id, position, body) SELECT id, 0, 'kneed' FROM recipes WHERE slug = 'stappen'"),
   ]);
-  assert.deepEqual((await load('stappen')).values.steps, ['kneed', 'bak']);
+  assert.deepEqual(defined((await load('stappen')).values.steps), [
+    { body: 'kneed', ingredients: [] },
+    { body: 'bak', ingredients: [] },
+  ]);
 });
 
 test('an edit posts its steps; a submit without the field keeps them, and a refusal shows them again', async () => {
   const steps = (...bodies: string[]) => JSON.stringify(bodies.map((body) => ({ body })));
   await submit('soep', { title: 'Soep', author: 'Oma', steps: steps('snijd', '', 'kook\nzacht') });
-  assert.deepEqual((await getRecipe(db, 'soep'))?.steps, ['snijd', 'kook zacht']);
+  assert.deepEqual(
+    (await getRecipe(db, 'soep'))?.steps.map((s) => s.body),
+    ['snijd', 'kook zacht'],
+  );
   await submit('soep', { title: 'Soep 2', author: 'Oma' });
-  assert.deepEqual((await getRecipe(db, 'soep'))?.steps, ['snijd', 'kook zacht']);
-  const res = (await submit('soep', { title: '', author: 'Oma', steps: steps('a', '', 'b') })) as { data: { values: { steps: string[] } } };
-  assert.deepEqual(res.data.values.steps, ['a', '', 'b']);
-  assert.deepEqual((await getRecipe(db, 'soep'))?.steps, ['snijd', 'kook zacht']);
+  assert.deepEqual(
+    (await getRecipe(db, 'soep'))?.steps.map((s) => s.body),
+    ['snijd', 'kook zacht'],
+  );
+  const res = (await submit('soep', { title: '', author: 'Oma', steps: steps('a', '', 'b') })) as { data: { values: { steps: { body: string }[] } } };
+  assert.deepEqual(
+    res.data.values.steps.map((s) => s.body),
+    ['a', '', 'b'],
+  );
+  assert.deepEqual(
+    (await getRecipe(db, 'soep'))?.steps.map((s) => s.body),
+    ['snijd', 'kook zacht'],
+  );
+});
+
+test('a saved recipe comes back in the editor with equal chips, and a refusal shows them again', async () => {
+  const posted = [
+    {
+      body: 'Zeef de bloem. Bak 30 minuten op 180 graden.',
+      ingredients: [{ quantity_text: '250 g', name: 'bloem' }],
+      ovenTemperature: 180,
+      timer: { minutes: 30, label: 'Bakken' },
+    },
+    { body: 'Serveer.', ingredients: [] },
+  ];
+  await submit('soep', { title: 'Soep', author: 'Oma', steps: JSON.stringify(posted) });
+  assert.deepEqual(defined((await load('soep')).values.steps), posted);
+  const refused = (await submit('soep', { title: '', author: 'Oma', steps: JSON.stringify(posted) })) as unknown as {
+    data: { values: { steps: unknown } };
+  };
+  assert.deepEqual(refused.data.values.steps, posted);
 });
