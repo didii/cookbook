@@ -5,7 +5,7 @@ import { createRecipe, listAuthors } from '~/.server/recipes';
 import { emptyDraft } from '~/lib/draft';
 import { tiles } from '~/lib/tile';
 import { RecipeEditor } from '~/shared/recipeEditor/RecipeEditor';
-import { readForm, toRecipeFields, validate } from '~/shared/recipeValidation';
+import { readForm, readIngredients, toRecipeFields, validate, type Errors } from '~/shared/recipeValidation';
 import type { Route } from './+types/route';
 
 export async function loader({ context }: Route.LoaderArgs) {
@@ -14,14 +14,18 @@ export async function loader({ context }: Route.LoaderArgs) {
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
-  const values = readForm(await request.formData());
+  const form = await request.formData();
+  const values = readForm(form);
+  const { ingredients, errors: ingredientErrors } = readIngredients(form);
 
-  const errors = validate(values);
+  const errors: Errors = validate(values);
+  if (Object.keys(ingredientErrors).length) errors.ingredients = ingredientErrors;
   if (Object.keys(errors).length) return data({ errors, values }, { status: 400 });
 
   const fields = toRecipeFields(values);
   const slug = await createRecipe(context.get(envContext).DB, {
     ...fields,
+    ingredients,
     image: acceptImage(fields.image, null),
     createdBy: context.get(userEmailContext),
   });

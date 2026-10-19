@@ -3,7 +3,7 @@ import { Form, Link, useNavigation } from 'react-router';
 import { isDirty, startingDraft, type Draft } from '~/lib/draft';
 import { AuthorInput } from '~/shared/AuthorInput';
 import { cn } from '~/shared/cn';
-import type { Field } from '~/shared/recipeValidation';
+import type { Errors, Field } from '~/shared/recipeValidation';
 import { PhotoField, type PhotoState } from './PhotoField';
 import { SaveBar } from './SaveBar';
 import { useLeaveGuard } from './useLeaveGuard';
@@ -16,7 +16,7 @@ type Props = {
   initial: Draft;
   /** What the editor shows when it opens: the starting values, or the values of a refused submit. */
   values: Draft;
-  errors: Partial<Record<Field, string>>;
+  errors: Errors;
   /** Index of the tile band shown under the photo. */
   tile: number;
   /** Where "Terug" leads: the recipe, or the home page for a new recipe. */

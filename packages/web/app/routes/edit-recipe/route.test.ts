@@ -124,3 +124,17 @@ test('recipe-editing › Same form for new and existing recipes', () => {
     assert.doesNotMatch(source, /<(input|textarea|label|form)\b/i, route);
   }
 });
+
+test('an edit posts its ingredient lines and a bad row refuses it', async () => {
+  const ingredients = (...texts: string[]) => JSON.stringify(texts.map((text) => ({ text })));
+  await submit('soep', { title: 'Soep', author: 'Oma', ingredients: ingredients('250 g bloem', '', '2 grote uien') });
+  assert.deepEqual((await getRecipe(db, 'soep'))?.ingredients, [
+    { quantity_text: '250 g', name: 'bloem' },
+    { quantity_text: '2', name: 'grote uien' },
+  ]);
+  const res = (await submit('soep', { title: 'Soep', author: 'Oma', ingredients: ingredients('zout', '250 g') })) as {
+    data: { errors: { ingredients: object } };
+  };
+  assert.deepEqual(Object.keys(res.data.errors.ingredients), ['1']);
+  assert.equal((await getRecipe(db, 'soep'))?.ingredients.length, 2);
+});
