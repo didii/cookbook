@@ -8,3 +8,8 @@ test.todo('recipe-step-chips › The add row keeps its space');
 test.todo('recipe-step-chips › Following and pinned chips are marked differently');
 // Needs a browser: pointer hover and the fill of the marked words.
 test.todo('recipe-step-chips › Hovering a chip fills its words');
+
+// Needs a browser: the Tab order and arrow keys.
+test.todo('recipe-step-chips › Chips are one tab stop');
+// Needs a browser: key presses and the popup opening.
+test.todo('recipe-step-chips › Enter opens the popup');
