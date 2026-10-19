@@ -288,3 +288,46 @@ test('recipe-ingredient-editing › Saved list replaces the old one', async () =
 test('replacing ingredients of an unknown recipe stores nothing', async () => {
   assert.equal(await updateRecipe(db, 'bestaat-niet', { title: 'X', author: 'Y', ingredients: [{ name: 'ei' }] }), undefined);
 });
+
+const storedSteps = async (slug: string) =>
+  (
+    await db
+      .prepare('SELECT s.position, s.body FROM steps s JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ? ORDER BY s.position')
+      .bind(slug)
+      .all()
+  ).results;
+
+test('recipe-step-editing › Steps are stored in order', async () => {
+  const slug = await createRecipe(db, { title: 'Stappen', author: 'Oma', steps: ['kneed', 'rijs', 'bak'] });
+  assert.deepEqual(await storedSteps(slug), [
+    { position: 0, body: 'kneed' },
+    { position: 1, body: 'rijs' },
+    { position: 2, body: 'bak' },
+  ]);
+  await updateRecipe(db, slug, { title: 'Stappen', author: 'Oma', steps: ['bak', 'kneed'] });
+  assert.deepEqual(
+    (await storedSteps(slug)).map((s) => s.body),
+    ['bak', 'kneed'],
+  );
+});
+
+test('recipe-step-editing › Saved steps replace the old ones', async () => {
+  const slug = await createRecipe(db, { title: 'Stappen vervangen', author: 'Oma', steps: ['a', 'b', 'c'] });
+  const base = { title: 'Stappen vervangen', author: 'Oma' };
+  // One removed, one changed, one added.
+  await updateRecipe(db, slug, { ...base, steps: ['a', 'c aangepast', 'd'] });
+  assert.deepEqual(await storedSteps(slug), [
+    { position: 0, body: 'a' },
+    { position: 1, body: 'c aangepast' },
+    { position: 2, body: 'd' },
+  ]);
+  await updateRecipe(db, slug, base);
+  assert.equal((await storedSteps(slug)).length, 3, 'omitting the argument leaves steps untouched');
+  await updateRecipe(db, slug, { ...base, steps: [] });
+  assert.equal((await storedSteps(slug)).length, 0);
+});
+
+test('replacing steps of an unknown recipe stores nothing', async () => {
+  assert.equal(await updateRecipe(db, 'bestaat-niet', { title: 'X', author: 'Y', steps: ['a'] }), undefined);
+  assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM steps WHERE body = ?').bind('a').first())?.n, 0);
+});

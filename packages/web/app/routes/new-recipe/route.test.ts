@@ -69,3 +69,8 @@ test('recipe-form › Nothing stored before saving', async () => {
   await loader({ context } as Partial<Route.LoaderArgs> as Route.LoaderArgs);
   assert.equal(await count(), before);
 });
+
+test('a new recipe stores its non-blank steps in order', async () => {
+  await submit({ title: 'Met stappen', author: 'Oma', steps: JSON.stringify([{ body: 'een' }, { body: '' }, { body: 'twee' }]) });
+  assert.deepEqual((await getRecipe(db, 'met-stappen'))?.steps, ['een', 'twee']);
+});

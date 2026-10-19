@@ -17,7 +17,7 @@
 
 ## 4. Save
 
-- [ ] 4.1 Add `readSteps` to `shared/recipeValidation.ts` (trim, line breaks to spaces, drop blanks), extend `updateRecipe` with an optional atomic replace of the step rows, pass steps from both route actions and return stored steps from the edit loader; verify with tests named `recipe-step-editing › Steps are stored in order`, `recipe-step-editing › Blank steps are not stored`, `recipe-step-editing › Saved steps replace the old ones` and `recipe-step-editing › Stored steps come back in the editor`, and that omitting the argument leaves steps untouched.
+- [x] 4.1 Add `readSteps` to `shared/recipeValidation.ts` (trim, line breaks to spaces, drop blanks), extend `updateRecipe` with an optional atomic replace of the step rows, pass steps from both route actions and return stored steps from the edit loader; verify with tests named `recipe-step-editing › Steps are stored in order`, `recipe-step-editing › Blank steps are not stored`, `recipe-step-editing › Saved steps replace the old ones` and `recipe-step-editing › Stored steps come back in the editor`, and that omitting the argument leaves steps untouched.
 
 ## 5. Wrap-up
 

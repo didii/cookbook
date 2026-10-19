@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { readIngredients, validate } from './recipeValidation';
+import { readIngredients, readSteps, validate } from './recipeValidation';
 
 const ok = { title: 'Soep', author: 'Oma', servings: '4', time: '', intro: '', image: '' };
 
@@ -50,4 +50,30 @@ test('a missing or malformed ingredients field is "not given", an empty list is 
   assert.equal(readIngredients(formWith('{')).ingredients, undefined);
   assert.equal(post('nope').ingredients, undefined);
   assert.deepEqual(post([]).ingredients, []);
+});
+
+const stepsForm = (json: string) => {
+  const form = new FormData();
+  form.set('steps', json);
+  return form;
+};
+const postSteps = (bodies: unknown) => readSteps(stepsForm(JSON.stringify(bodies)));
+
+test('recipe-step-editing › Blank steps are not stored', () => {
+  const { steps } = postSteps([{ body: '' }, { body: 'kneed' }, { body: '  ' }, { body: ' bak ' }, { body: '\n' }]);
+  assert.deepEqual(steps, ['kneed', 'bak']);
+});
+
+test('the server cleans the steps itself: line breaks become spaces', () => {
+  const { steps, lines } = postSteps([{ body: 'kneed\r\nen rijs\n\n bak' }, { body: '' }]);
+  assert.deepEqual(steps, ['kneed en rijs bak']);
+  assert.deepEqual(lines, ['kneed en rijs bak', '']);
+});
+
+test('a missing or malformed steps field is "not given", an empty list is "none"', () => {
+  assert.equal(readSteps(new FormData()).steps, undefined);
+  assert.equal(readSteps(stepsForm('{')).steps, undefined);
+  assert.equal(postSteps('nope').steps, undefined);
+  assert.deepEqual(postSteps([]).steps, []);
+  assert.deepEqual(readSteps(new FormData()).lines, []);
 });
