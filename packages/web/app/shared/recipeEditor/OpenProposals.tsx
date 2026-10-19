@@ -1,5 +1,8 @@
 import { useRef } from 'react';
 
+/** Marks the accept button of each open proposal, so that the note can find them. */
+export const proposalAttribute = 'data-proposal';
+
 type Props = {
   /** How many proposals of pinned chips are open. */
   count: number;
@@ -10,7 +13,7 @@ export function OpenProposals({ count }: Props) {
   const next = useRef(0);
   if (!count) return null;
   const jump = () => {
-    const accept = [...document.querySelectorAll<HTMLElement>('[data-proposal]')];
+    const accept = [...document.querySelectorAll<HTMLElement>(`[${proposalAttribute}]`)];
     if (!accept.length) return;
     accept[next.current % accept.length].focus();
     next.current = (next.current + 1) % accept.length;

@@ -63,7 +63,13 @@ const fallbackOf =
     others.some((body) => findIngredients(body, [row], () => '').length) ? '' : row.quantityText;
 
 const textOf = (body: string, range?: Range) => (range ? body.slice(range.start, range.end) : '');
-const sameValues = (a: Values, b: Values) => JSON.stringify(a) === JSON.stringify(b);
+/** Whether two sets of values are the same, whatever the order of their keys. */
+const sameValues = (a: Values, b: Values) => {
+  const x = a as Record<string, unknown>;
+  const y = b as Record<string, unknown>;
+  const keys = Object.keys(x);
+  return keys.length === Object.keys(y).length && keys.every((key) => x[key] === y[key]);
+};
 
 /** What words say for a kind of chip (and a row, for an ingredient), or undefined when they say nothing of that kind. */
 function read({ kind, rowId }: { kind: Kind; rowId?: string }, words: string, ctx: Context): Values | undefined {
@@ -90,7 +96,8 @@ export function proposal(chip: Chip, body: string, ctx: Context): Proposal | und
   return sameValues(said, chip.values) || (chip.ignored && sameValues(said, chip.ignored)) ? undefined : { type: 'change', values: said };
 }
 
-const freeId = (step: Pick<StepChips, 'chips' | 'ghosts'>) =>
+/** The id the next chip or ghost of the step gets. */
+export const nextChipId = (step: Pick<StepChips, 'chips' | 'ghosts'>) =>
   `c${Math.max(-1, ...[...step.chips, ...step.ghosts].map((c) => Number(c.id.slice(1)))) + 1}`;
 
 const autoChip = (id: string, kind: Kind, anchor: Range, values: Values, rowId?: string) =>
@@ -133,7 +140,7 @@ export function reconcile<S extends StepChips>(step: S, ctx: Context, edit?: Tex
 
   const held = (kind: Kind, rowId?: string) => [...chips, ...ghosts].some((c) => c.kind === kind && (kind !== 'ingredient' || c.rowId === rowId));
   const add = (kind: Kind, found: Range & { values: Values }, rowId?: string) => {
-    if (!held(kind, rowId)) chips.push(autoChip(freeId({ chips, ghosts }), kind, range(found), found.values, rowId));
+    if (!held(kind, rowId)) chips.push(autoChip(nextChipId({ chips, ghosts }), kind, range(found), found.values, rowId));
   };
   if (timer) add('timer', timer);
   if (oven) add('oven', oven);
@@ -191,10 +198,10 @@ export const canAdd = (step: StepChips, kind: Kind) => kind === 'ingredient' || 
 
 const blankValues: ValuesOf = { ingredient: { quantity: '', name: '' }, oven: { degrees: 180 }, timer: { minutes: 15 } };
 
-/** Adds a hand-made chip: pinned, without words. It is the last chip of the result. */
-export function addChip<S extends StepChips>(step: S, kind: Kind): S {
+/** Adds a hand-made chip: pinned, without words, with the given id. */
+export function addChip<S extends StepChips>(step: S, kind: Kind, id: string): S {
   if (!canAdd(step, kind)) return step;
-  const chip = { id: freeId(step), kind, mode: 'manual', values: blankValues[kind] } as Chip;
+  const chip = { id, kind, mode: 'manual', values: blankValues[kind] } as Chip;
   return { ...step, chips: [...step.chips, chip] };
 }
 
@@ -249,7 +256,7 @@ export function classifyStored(stored: Step, ctx: Context): StepChips {
   const { body } = stored;
   const chips: Chip[] = [];
   const ghosts: Ghost[] = [];
-  const id = () => freeId({ chips, ghosts });
+  const id = () => nextChipId({ chips, ghosts });
 
   const single = <K extends 'oven' | 'timer'>(
     kind: K,

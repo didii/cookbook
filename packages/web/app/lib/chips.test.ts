@@ -193,7 +193,7 @@ test('recipe-step-chips › Editing a value pins the chip', () => {
 
 test('recipe-step-chips › Hand-made chips cannot follow the text', () => {
   const ctx = alone();
-  const step = addChip(typed('Roer goed.', ctx), 'timer');
+  const step = addChip(typed('Roer goed.', ctx), 'timer', 'h0');
   const chip = chipOf(step, 'timer');
   assert.equal(chip.mode, 'manual');
   assert.equal(chip.anchor, undefined);
@@ -268,7 +268,7 @@ test('recipe-step-chips › A ghost disappears with its words', () => {
 
 test('recipe-step-chips › Removing a hand-made chip leaves nothing', () => {
   const ctx = alone();
-  const step = addChip(typed('Roer goed.', ctx), 'oven');
+  const step = addChip(typed('Roer goed.', ctx), 'oven', 'h0');
   const removed = removeChip(step, step.chips[0].id, ctx);
   assert.equal(removed.chips.length, 0);
   assert.equal(removed.ghosts.length, 0);
@@ -276,7 +276,7 @@ test('recipe-step-chips › Removing a hand-made chip leaves nothing', () => {
 
 test('recipe-step-chips › A hand-made chip is pinned and has no words', () => {
   const ctx = alone();
-  const step = addChip(typed('Roer goed.', ctx), 'timer');
+  const step = addChip(typed('Roer goed.', ctx), 'timer', 'h0');
   const made = editValues(step, step.chips[0].id, { minutes: 15 }, ctx);
   assert.equal(made.chips.length, 1);
   assert.equal(chipOf(made, 'timer').mode, 'manual');
@@ -292,7 +292,7 @@ test('recipe-step-chips › One oven and one timer per step', () => {
   assert.equal(canAdd(step, 'oven'), false);
   assert.equal(canAdd(step, 'timer'), false);
   assert.equal(canAdd(step, 'ingredient'), true);
-  assert.equal(addChip(step, 'timer'), step);
+  assert.equal(addChip(step, 'timer', 'h0'), step);
   // A ghost counts as well.
   const ghost = removeChip(step, chipOf(step, 'timer').id, ctx);
   assert.equal(canAdd(ghost, 'timer'), false);
@@ -330,7 +330,7 @@ test("recipe-step-chips › The timer's name does not pin it", () => {
 
 test('saving leaves out what is not valid', () => {
   const ctx = alone();
-  let step = addChip(addChip(addChip(typed('Roer.', ctx), 'ingredient'), 'oven'), 'timer');
+  let step = addChip(addChip(addChip(typed('Roer.', ctx), 'ingredient', 'h0'), 'oven', 'h1'), 'timer', 'h2');
   assert.deepEqual(toStored(step, ctx).ingredients, [], 'an ingredient chip without a name is not stored');
   step = editValues(step, chipOf(step, 'oven').id, { degrees: 0 }, ctx);
   step = editValues(step, chipOf(step, 'timer').id, { minutes: 2.5 }, ctx);

@@ -37,7 +37,14 @@ function NumberField({
   first?: Ref<HTMLInputElement>;
 }) {
   const id = useId();
+  const valid = (t: string) => /^[1-9]\d*$/.test(t);
   const [text, setText] = useState(String(value));
+  // The chip took another value (it started following its words): show that, unless the text already says it.
+  const [shown, setShown] = useState(value);
+  if (shown !== value) {
+    setShown(value);
+    if (!valid(text) || Number(text) !== value) setText(String(value));
+  }
   return (
     <div>
       <label htmlFor={id} className={labelClass}>
@@ -49,10 +56,10 @@ function NumberField({
         value={text}
         inputMode="numeric"
         autoComplete="off"
-        aria-invalid={/^[1-9]\d*$/.test(text) ? undefined : true}
+        aria-invalid={valid(text) ? undefined : true}
         onChange={(e) => {
           setText(e.target.value);
-          if (/^[1-9]\d*$/.test(e.target.value)) onValue(Number(e.target.value));
+          if (valid(e.target.value)) onValue(Number(e.target.value));
         }}
         className={cn(inputClass, 'aria-invalid:border-red')}
       />

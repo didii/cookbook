@@ -6,6 +6,7 @@ import {
   derive,
   discardProposal,
   editValues,
+  nextChipId,
   proposal,
   removeChip,
   restoreGhost,
@@ -25,6 +26,7 @@ import { formatMinutes } from '~/lib/steps';
 import { cn } from '~/shared/cn';
 import { Arrow, Check, Clock, Cross, Link, Pin, Plus, Thermometer, Trash } from '~/shared/icons';
 import { ChipPopup } from './ChipPopup';
+import { proposalAttribute } from './OpenProposals';
 import { useAfterRender } from './useAfterRender';
 
 type Props = {
@@ -147,9 +149,9 @@ export function StepChips({ step, context, number, hotId, onHot, onChange }: Pro
   };
   /** Adds a hand-made chip and opens its popup, to fill it in. */
   const add = (kind: Kind) => {
-    const made = addChip(step, kind).chips.at(-1);
-    onChange((s) => addChip(s, kind));
-    setOpenId(made?.id);
+    const id = nextChipId(step);
+    onChange((s) => addChip(s, kind, id));
+    setOpenId(id);
   };
   /** The icon button: pins a following chip, makes a pinned chip with words follow them again, and opens the popup. */
   const switchMode = (chip: Chip) => {
@@ -214,7 +216,7 @@ export function StepChips({ step, context, number, hotId, onHot, onChange }: Pro
                 <span className="inline-flex h-6.5 overflow-hidden rounded-md border-2 border-ink bg-white text-ink">
                   <button
                     type="button"
-                    data-proposal=""
+                    {...{ [proposalAttribute]: '' }}
                     aria-label={removing ? `${kindName[chip.kind]} verwijderen` : 'Wijziging overnemen'}
                     {...roving(`ok:${chip.id}`)}
                     onClick={() => accept(chip.id)}
