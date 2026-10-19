@@ -21,4 +21,4 @@
 
 ## 5. Wrap-up
 
-- [ ] 5.1 Run `pnpm test:spec edit-recipe-steps` and verify every delta scenario has a test or a `test.todo`; run `pnpm format:fix`, `pnpm lint:fix`, `pnpm format:check`, `pnpm lint:check`, `pnpm typecheck` and `pnpm test:ai`; verify all pass, then write, reorder, delete and undo steps on a new and an existing recipe in `pnpm dev` at 360px and desktop width.
+- [ ] 5.1 Run `pnpm test:spec edit-recipe-steps` and verify every delta scenario has a test or a `test.todo`; run `pnpm format:fix`, `pnpm lint:fix`, `pnpm format:check`, `pnpm lint:check`, `pnpm typecheck` and `pnpm test:ai`; verify all pass, then write, reorder, delete and undo steps on a new and an existing recipe in `pnpm dev` at 360px and desktop width. (The automated checks all pass; the by-hand check in `pnpm dev` at 360px and desktop width is still to do.)
