@@ -68,7 +68,7 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
     <main id="main" className="mx-auto max-w-290 px-[max(1rem,4vw)] pt-6 pb-32">
       <h1 className="sr-only">{heading}</h1>
       <Link to={cancelTo} className="inline-flex min-h-11 items-center gap-1.5 font-extrabold text-muted">
-        <span aria-hidden="true">←</span> Terug naar het recept
+        <span aria-hidden="true">←</span> Terug
       </Link>
       <p className="mt-1 text-lg text-muted">
         Velden met een <span className="font-black text-red">*</span> zijn verplicht.
