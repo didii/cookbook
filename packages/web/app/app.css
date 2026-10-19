@@ -15,6 +15,8 @@
   --shadow-hard: 5px 5px 0 var(--color-ink);
   --shadow-hard-lg: 7px 7px 0 var(--color-ink);
   --shadow-hard-red: 6px 6px 0 var(--color-red);
+  /* Focus ring of the editor's fields: solid, so it keeps its contrast. Pair with a transparent outline, which forced-colors mode still draws. */
+  --shadow-focus: 0 0 0 3px var(--color-blu);
 
   /* A finished timer pulses; a newly shown timer pops in. Both are switched off with motion-reduce. */
   --animate-ring: ring 1s ease-in-out infinite;
@@ -69,9 +71,12 @@ body {
   background: var(--color-yel);
   color: var(--color-ink);
 }
-:focus-visible {
-  outline: 4px solid var(--color-blu);
-  outline-offset: 3px;
+/* In the base layer, so a utility such as `focus:outline-transparent` can replace it. */
+@layer base {
+  :focus-visible {
+    outline: 4px solid var(--color-blu);
+    outline-offset: 3px;
+  }
 }
 a {
   color: inherit;

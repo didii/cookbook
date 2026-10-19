@@ -43,8 +43,8 @@ export type Ghost = { id: string; kind: Kind; anchor: Range; rowId?: string };
 /** What the chip logic needs of a step. */
 export type StepChips = { body: string; chips: Chip[]; ghosts: Ghost[] };
 
-/** What a step's chips are read against: the ingredient rows of the recipe and the texts of the other steps. */
-export type Context = { rows: Row[]; others: string[] };
+/** What a step's chips are read against: the ingredient rows of the recipe. */
+export type Context = { rows: Row[] };
 
 /** The rows of the ingredient list that have a name, in the form the finders take. */
 export const rowsOf = (lines: { id: string; text: string }[]): Row[] =>
@@ -53,14 +53,8 @@ export const rowsOf = (lines: { id: string; text: string }[]): Row[] =>
     return name ? [{ id, quantityText, name }] : [];
   });
 
-/** The context of step `index` among steps with these texts. */
-export const contextFor = (rows: Row[], bodies: string[], index: number): Context => ({ rows, others: bodies.filter((_, i) => i !== index) });
-
-/** The amount of a row when no written one is there: its own quantity if no other step mentions it, else none. */
-const fallbackOf =
-  ({ others }: Context) =>
-  (row: Row) =>
-    others.some((body) => findIngredients(body, [row], () => '').length) ? '' : row.quantityText;
+/** The amount of a row when no written one is there: its own quantity, whatever number of steps mention it. */
+const quantityOf = (row: Row) => row.quantityText;
 
 const textOf = (body: string, range?: Range) => (range ? body.slice(range.start, range.end) : '');
 /** Whether two sets of values are the same, whatever the order of their keys. */
@@ -76,7 +70,7 @@ function read({ kind, rowId }: { kind: Kind; rowId?: string }, words: string, ct
   if (kind === 'timer') return findTimer(words)?.values;
   if (kind === 'oven') return findOven(words)?.values;
   const row = ctx.rows.find((r) => r.id === rowId);
-  return row && findIngredients(words, [row], fallbackOf(ctx))[0]?.values;
+  return row && findIngredients(words, [row], quantityOf)[0]?.values;
 }
 
 /** The values a chip shows: a following chip reads its words (and keeps its last values if they say nothing), a pinned chip has its own. */
@@ -113,7 +107,7 @@ export function reconcile<S extends StepChips>(step: S, ctx: Context, edit?: Tex
   const { body } = step;
   const timer = findTimer(body);
   const oven = findOven(body);
-  const ingredients = findIngredients(body, ctx.rows, fallbackOf(ctx));
+  const ingredients = findIngredients(body, ctx.rows, quantityOf);
   const mapped = (anchor?: Range) => anchor && (edit ? mapRange(anchor, edit) : anchor);
 
   const chips: Chip[] = [];
@@ -285,7 +279,7 @@ export function classifyStored(stored: Step, ctx: Context): StepChips {
   single('oven', stored.ovenTemperature ? { degrees: stored.ovenTemperature } : undefined, findOven(body));
   single('timer', stored.timer ? { minutes: stored.timer.minutes } : undefined, findTimer(body), stored.timer?.label);
 
-  const mentions = findIngredients(body, ctx.rows, fallbackOf(ctx));
+  const mentions = findIngredients(body, ctx.rows, quantityOf);
   const linked = new Set<string>();
   for (const { quantity_text, name } of stored.ingredients) {
     const free = ctx.rows.filter((r) => !linked.has(r.id));

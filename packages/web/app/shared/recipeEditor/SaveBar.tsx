@@ -44,12 +44,13 @@ export function SaveBar({ cancelTo, busy, saveBlocked, dirty, kept, onReset, chi
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-10 border-t-3 border-ink bg-por pb-[env(safe-area-inset-bottom)]">
-      <div className="mx-auto flex max-w-290 items-center gap-3 px-[max(1rem,4vw)] py-2.5">
-        <div className="mr-auto flex flex-wrap items-center gap-x-3 text-sm font-extrabold sm:text-base">
+      <div className="mx-auto flex max-w-290 items-center gap-3 px-[max(1rem,4vw)] py-2.5 max-sm:flex-wrap max-sm:gap-y-0">
+        {/* On a phone the status gets a row of its own above the buttons. */}
+        <div className="mr-auto flex flex-wrap items-center gap-x-3 text-sm font-extrabold empty:hidden max-sm:basis-full sm:text-base">
           {dirty && (
             <span className="flex items-center gap-2">
               <span aria-hidden="true" className="size-2.5 rounded-full border-2 border-ink bg-yel" />
-              Niet opgeslagen{kept && ' · Concept bewaard op dit apparaat'}
+              Niet opgeslagen{kept && ' · Concept bewaard'}
             </span>
           )}
           {children}

@@ -161,11 +161,6 @@ test('recipe-step-chips › Amount from the list when only this step uses the in
   assert.equal(found('Zeef de bloem.', rows, (r) => r.quantityText)[0].quantity, '250 g');
 });
 
-test('recipe-step-chips › No amount when several steps use the ingredient', () => {
-  // The caller knows which steps mention a row and passes an empty fallback when there are several.
-  assert.equal(found('Zeef de bloem.', [row('a', '250 g bloem')], none)[0].quantity, '');
-});
-
 test('plural forms of ingredients', () => {
   const words = (text: string, line: string) => found(text, [row('x', line)]).map((f) => f.words);
   assert.deepEqual(words('Was de bessen.', 'bes'), ['bessen']);

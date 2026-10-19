@@ -72,7 +72,7 @@ The system SHALL give a step an ingredient chip for each ingredient of the recip
 - **THEN** the step has one chip for it, tied to the first mention
 
 ### Requirement: An ingredient chip shows the amount that belongs to the step
-The system SHALL show on an ingredient chip, in this order of preference, the amount written in the step directly before the name ("100 g boter"), else the quantity of the ingredient's row in the list when no other step mentions that ingredient, else the name alone, and SHALL keep the chip following the list when a row is renamed or its quantity changes, and SHALL drop a following chip whose row is removed.
+The system SHALL show on an ingredient chip, in this order of preference, the amount written in the step directly before the name ("100 g boter"), else the quantity of the ingredient's row in the list however many steps mention that ingredient, else the name alone, and SHALL keep the chip following the list when a row is renamed or its quantity changes, and SHALL drop a following chip whose row is removed.
 
 #### Scenario: Amount written before the name
 - **WHEN** a step's text contains "100 g boter" and the ingredient list has "150 g boter"
@@ -82,9 +82,9 @@ The system SHALL show on an ingredient chip, in this order of preference, the am
 - **WHEN** only one step mentions "bloem" and the list has "250 g zelfrijzende bloem"
 - **THEN** that step's chip shows "250 g zelfrijzende bloem"
 
-#### Scenario: No amount when several steps use the ingredient
-- **WHEN** two steps mention "boter" without an amount
-- **THEN** both chips show "boter" without an amount
+#### Scenario: Full amount when several steps use the ingredient
+- **WHEN** the list has "150 g boter" and two steps mention "boter" without writing an amount, or one writes "50 g boter" and the other writes none
+- **THEN** each step without a written amount shows "150 g boter", and the step that writes "50 g boter" shows that
 
 #### Scenario: A changed list amount updates the chips
 - **WHEN** a family member changes "250 g bloem" to "300 g bloem" in the list and a following chip uses that amount

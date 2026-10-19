@@ -109,7 +109,7 @@ export function StepEditor({
         label={`Stap ${number}`}
         value={step.body}
         marks={marks}
-        placeholder={number === 1 ? 'Bijvoorbeeld: Kneed de bloem met de boter tot een deeg' : undefined}
+        placeholder={number === 1 ? 'Kneed de bloem met de boter tot een deeg' : 'Wat doe je in deze stap?'}
         onChange={onType}
         onEdit={onEdit}
         onCaret={setCaret}

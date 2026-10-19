@@ -25,7 +25,15 @@ export async function loader({ params, context }: Route.LoaderArgs) {
     ingredients: recipe.ingredients.map((i) => joinIngredient({ quantityText: i.quantity_text, name: i.name })),
     steps: recipe.steps,
   };
-  return { slug: params.slug, title: recipe.title, authors, values, tile: tileFor(recipe.id), updatedAt: recipe.updated_at };
+  return {
+    slug: params.slug,
+    title: recipe.title,
+    authors,
+    values,
+    tile: tileFor(recipe.id),
+    seal: recipe.seal ?? undefined,
+    updatedAt: recipe.updated_at,
+  };
 }
 
 export async function action({ request, params, context }: Route.ActionArgs) {
@@ -65,6 +73,7 @@ export default function EditRecipe({ loaderData, actionData }: Route.ComponentPr
       heading="Recept bewerken"
       authors={loaderData.authors}
       tile={loaderData.tile}
+      seal={loaderData.seal}
       initial={loaderData.values}
       values={actionData?.values ?? loaderData.values}
       errors={actionData?.errors ?? {}}

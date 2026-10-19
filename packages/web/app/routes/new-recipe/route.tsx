@@ -1,8 +1,9 @@
 import { data, redirect } from 'react-router';
 import { envContext, userEmailContext } from '~/.server/context';
 import { acceptImage } from '~/.server/photos';
-import { createRecipe, listAuthors } from '~/.server/recipes';
+import { chooseSeal, createRecipe, listAuthors } from '~/.server/recipes';
 import { emptyContent } from '~/lib/draft';
+import { seals } from '~/lib/seals';
 import { tiles } from '~/lib/tile';
 import { endDraftAfterSave } from '~/shared/recipeEditor/endDraftAfterSave';
 import { RecipeEditor } from '~/shared/recipeEditor/RecipeEditor';
@@ -10,8 +11,9 @@ import { readForm, readIngredients, readSteps, toRecipeFields, validate, type Er
 import type { Route } from './+types/route';
 
 export async function loader({ context }: Route.LoaderArgs) {
-  // The tile is picked here rather than while rendering, so the server and the browser agree.
-  return { authors: await listAuthors(context.get(envContext).DB), tile: Math.floor(Math.random() * tiles.length) };
+  const db = context.get(envContext).DB;
+  // The tile is picked here rather than while rendering, so the server and the browser agree. The seal is posted back, so the recipe gets the one the editor showed.
+  return { authors: await listAuthors(db), tile: Math.floor(Math.random() * tiles.length), seal: await chooseSeal(db) };
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
@@ -30,6 +32,7 @@ export async function action({ request, context }: Route.ActionArgs) {
     ingredients,
     steps,
     image: acceptImage(fields.image, null),
+    seal: seals.find((s) => s === form.get('seal')),
     createdBy: context.get(userEmailContext),
   });
   return redirect(`/recepten/${slug}`);
@@ -48,6 +51,7 @@ export default function NewRecipe({ loaderData, actionData }: Route.ComponentPro
       heading="Nieuw recept"
       authors={loaderData.authors}
       tile={loaderData.tile}
+      seal={loaderData.seal}
       initial={emptyContent}
       values={actionData?.values ?? emptyContent}
       errors={actionData?.errors ?? {}}

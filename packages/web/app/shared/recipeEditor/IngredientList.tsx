@@ -77,7 +77,7 @@ export function IngredientList({ rows, errors = noErrors, usedIn = () => none, o
               label={`Ingrediënt ${i + 1}`}
               toolbarLabel={`Acties voor ingrediënt ${i + 1}`}
               text={row.text}
-              placeholder={free ? 'Bijvoorbeeld 250 g bloem' : undefined}
+              placeholder={free ? '250 g bloem' : undefined}
               free={free}
               canUp={!free && i > 0}
               canDown={i < rows.length - 2}
