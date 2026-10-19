@@ -29,11 +29,11 @@ export async function loader({ params, context }: Route.LoaderArgs) {
 export async function action({ request, params, context }: Route.ActionArgs) {
   const form = await request.formData();
   const values = readForm(form);
-  const { ingredients, errors: ingredientErrors } = readIngredients(form);
+  const { lines, ingredients, errors: ingredientErrors } = readIngredients(form);
 
   const errors: Errors = validate(values);
   if (Object.keys(ingredientErrors).length) errors.ingredients = ingredientErrors;
-  if (Object.keys(errors).length) return data({ errors, values }, { status: 400 });
+  if (Object.keys(errors).length) return data({ errors, values: { ...values, ingredients: lines } }, { status: 400 });
 
   const { DB, PHOTOS } = context.get(envContext);
   const fields = toRecipeFields(values);

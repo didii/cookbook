@@ -2,7 +2,7 @@ import { data, redirect } from 'react-router';
 import { envContext, userEmailContext } from '~/.server/context';
 import { acceptImage } from '~/.server/photos';
 import { createRecipe, listAuthors } from '~/.server/recipes';
-import { emptyDraft } from '~/lib/draft';
+import { emptyContent } from '~/lib/draft';
 import { tiles } from '~/lib/tile';
 import { RecipeEditor } from '~/shared/recipeEditor/RecipeEditor';
 import { readForm, readIngredients, toRecipeFields, validate, type Errors } from '~/shared/recipeValidation';
@@ -16,11 +16,11 @@ export async function loader({ context }: Route.LoaderArgs) {
 export async function action({ request, context }: Route.ActionArgs) {
   const form = await request.formData();
   const values = readForm(form);
-  const { ingredients, errors: ingredientErrors } = readIngredients(form);
+  const { lines, ingredients, errors: ingredientErrors } = readIngredients(form);
 
   const errors: Errors = validate(values);
   if (Object.keys(ingredientErrors).length) errors.ingredients = ingredientErrors;
-  if (Object.keys(errors).length) return data({ errors, values }, { status: 400 });
+  if (Object.keys(errors).length) return data({ errors, values: { ...values, ingredients: lines } }, { status: 400 });
 
   const fields = toRecipeFields(values);
   const slug = await createRecipe(context.get(envContext).DB, {
@@ -42,8 +42,8 @@ export default function NewRecipe({ loaderData, actionData }: Route.ComponentPro
       heading="Nieuw recept"
       authors={loaderData.authors}
       tile={loaderData.tile}
-      initial={emptyDraft}
-      values={actionData?.values ?? emptyDraft}
+      initial={emptyContent}
+      values={actionData?.values ?? emptyContent}
       errors={actionData?.errors ?? {}}
       cancelTo="/"
     />
