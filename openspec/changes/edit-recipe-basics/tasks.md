@@ -2,7 +2,7 @@
 
 ## 1. Draft and dirty check
 
-- [ ] 1.1 Add `app/lib/draft.ts` (`Draft`, `isDirty`, a helper that builds the starting draft from stored values or empty) with `draft.test.ts`; verify the tests pass for: equal drafts, a changed field, whitespace-only difference (not dirty), and reverting a change (not dirty again).
+- [x] 1.1 Add `app/lib/draft.ts` (`Draft`, `isDirty`, a helper that builds the starting draft from stored values or empty) with `draft.test.ts`; verify the tests pass for: equal drafts, a changed field, whitespace-only difference (not dirty), and reverting a change (not dirty again).
 
 ## 2. The editor shell
 
