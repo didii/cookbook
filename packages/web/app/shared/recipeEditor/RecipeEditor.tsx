@@ -121,9 +121,7 @@ export function RecipeEditor({ heading, authors, values, errors, tile, cancelTo 
             <ImagePreview src={current.image.trim()} tile={tile} />
           </div>
         </div>
-        <Button type="submit" main className="lg:col-span-2">
-          Opslaan
-        </Button>
+        <SaveBar cancelTo={cancelTo} busy={busy} dirty={dirty} onReset={() => setCurrent(startingDraft(initial))} />
       </Form>
     </main>
   );
