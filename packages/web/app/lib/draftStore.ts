@@ -226,3 +226,7 @@ export function describeSavedAt(savedAt: string, now: Date): string {
   if (sameDay(at, new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1))) return `gisteren ${time}`;
   return at.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' });
 }
+
+/** Whether leaving the page must be confirmed: only for unsaved changes that are not on the device. `keepNow` writes the draft and tells whether that worked, and is only called when it matters. */
+export const asksBeforeLeaving = ({ dirty, submitting }: { dirty: boolean; submitting: boolean }, keepNow: () => boolean) =>
+  dirty && !submitting && !keepNow();

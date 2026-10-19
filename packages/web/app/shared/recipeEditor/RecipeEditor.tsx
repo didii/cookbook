@@ -20,6 +20,7 @@ import {
   type Draft,
 } from '~/lib/draft';
 import {
+  asksBeforeLeaving,
   browserStorage,
   clearDraft,
   describeSavedAt,
@@ -84,7 +85,6 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
   useEffect(() => {
     if (!busy) submitting.current = false;
   }, [busy]);
-  useLeaveGuard(() => dirty && !submitting.current);
   const key = draftKey(useRouteLoaderData<{ email: string }>('root')?.email ?? '', slug);
   const location = useLocation();
   const navigate = useNavigate();
@@ -114,7 +114,7 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
     // Once, on mount.
     // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const { keepNow } = useDraftPersistence({
+  const { kept, keepNow } = useDraftPersistence({
     key,
     state: current,
     initial: startingValues,
@@ -123,6 +123,8 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
     ready,
     isSaving: () => submitting.current,
   });
+  // Writes the draft as the page is left, so the answer is true to that moment and not to the last write.
+  useLeaveGuard(() => asksBeforeLeaving({ dirty, submitting: submitting.current }, keepNow));
   // Puts every field back to the starting values; the draft ends with it (the editor is not dirty any more).
   const reset = () => {
     clearDraft(browserStorage(), key);
@@ -286,7 +288,7 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
           </div>
           <PhotoField key={resets} value={current.image} onChange={set('image')} onStateChange={setPhoto} tile={tile} />
         </div>
-        <SaveBar cancelTo={cancelTo} busy={busy} saveBlocked={photo !== 'ready'} dirty={dirty} onReset={reset}>
+        <SaveBar cancelTo={cancelTo} busy={busy} saveBlocked={photo !== 'ready'} dirty={dirty} kept={kept} onReset={reset}>
           {restored && restored.draft === current && <span>Concept van {describeSavedAt(restored.at, new Date())} hersteld</span>}
           <OpenProposals count={proposalCount} />
           {photo === 'uploading' && <span>Foto wordt geüpload…</span>}

@@ -11,6 +11,8 @@ type Props = {
   saveBlocked?: boolean;
   /** Whether the editor differs from its starting values: shows the status and "Herstel". */
   dirty: boolean;
+  /** Whether the unsaved changes are kept on this device (see `useDraftPersistence`). */
+  kept: boolean;
   /** Puts every field back to its starting values. */
   onReset: () => void;
   /** Extra status next to "Niet opgeslagen" (used by later changes). */
@@ -18,7 +20,7 @@ type Props = {
 };
 
 /** The bar fixed to the bottom of the editor: status, Herstel, Annuleren and Opslaan. */
-export function SaveBar({ cancelTo, busy, saveBlocked, dirty, onReset, children }: Props) {
+export function SaveBar({ cancelTo, busy, saveBlocked, dirty, kept, onReset, children }: Props) {
   const [asking, setAsking] = useState(false);
   // The question only exists while there is something to reset.
   const question = asking && dirty;
@@ -47,7 +49,7 @@ export function SaveBar({ cancelTo, busy, saveBlocked, dirty, onReset, children 
           {dirty && (
             <span className="flex items-center gap-2">
               <span aria-hidden="true" className="size-2.5 rounded-full border-2 border-ink bg-yel" />
-              Niet opgeslagen
+              Niet opgeslagen{kept && ' · Concept bewaard op dit apparaat'}
             </span>
           )}
           {children}
