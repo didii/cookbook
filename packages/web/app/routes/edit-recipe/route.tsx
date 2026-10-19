@@ -36,8 +36,8 @@ export async function action({ request, params, context }: Route.ActionArgs) {
   const image = stored && acceptImage(fields.image, stored.image);
   const updated = stored && (await updateRecipe(DB, params.slug, { ...fields, image }));
   if (!updated) throw notFound();
-  // After the write, so a failed delete leaves an orphan and never a recipe pointing at a missing file.
-  if (updated.previousImage && updated.previousImage !== image) await deletePhoto(PHOTOS, updated.previousImage);
+  // After the write, so a failed delete leaves an orphan and never a recipe pointing at a missing file. The recipe is saved either way, so a failure must not turn into an error page.
+  if (updated.previousImage && updated.previousImage !== image) await deletePhoto(PHOTOS, updated.previousImage).catch(() => undefined);
   return redirect(`/recepten/${params.slug}`);
 }
 
