@@ -3,7 +3,7 @@
 ## 1. Text edit reporting
 
 - [x] 1.1 Add `app/lib/textEdit.ts` (`computeEdit` with selection hint and prefix/suffix fallback, snapping to whole code points) with `textEdit.test.ts`; verify tests named `recipe-step-editing › Typing is a one-character insertion`, `recipe-step-editing › Pasting over a selection`, `recipe-step-editing › Cutting removes a range`, `recipe-step-editing › Emoji are never split` (astral characters, ZWJ sequences, a range that would start between surrogates) and `recipe-step-editing › Undo and redo are reported` (no hint, repeated characters) pass.
-- [ ] 1.2 Add a `useTextEdit` hook (captures the selection in `beforeinput`, handles `compositionstart`/`compositionend`, calls `onEdit(edit, nextValue)` with `onChange`); verify with the pure parts covered by 1.1 and a `test.todo` named `recipe-step-editing › Input method input is reported when it completes` (a browser and an input method are needed, reason on the line above), and by hand with Windows Japanese or Chinese IME and a phone dictation if available.
+- [ ] 1.2 Add a `useTextEdit` hook (captures the selection in `beforeinput`, handles `compositionstart`/`compositionend`, calls `onEdit(edit, nextValue)` with `onChange`); verify with the pure parts covered by 1.1 and a `test.todo` named `recipe-step-editing › Input method input is reported when it completes` (a browser and an input method are needed, reason on the line above), and by hand with Windows Japanese or Chinese IME and a phone dictation if available. (Built; the IME and dictation check by hand in a browser is still to do.)
 
 ## 2. Text layer
 
