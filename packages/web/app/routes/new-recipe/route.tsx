@@ -4,6 +4,7 @@ import { acceptImage } from '~/.server/photos';
 import { createRecipe, listAuthors } from '~/.server/recipes';
 import { emptyContent } from '~/lib/draft';
 import { tiles } from '~/lib/tile';
+import { endDraftAfterSave } from '~/shared/recipeEditor/endDraftAfterSave';
 import { RecipeEditor } from '~/shared/recipeEditor/RecipeEditor';
 import { readForm, readIngredients, readSteps, toRecipeFields, validate, type Errors } from '~/shared/recipeValidation';
 import type { Route } from './+types/route';
@@ -33,6 +34,9 @@ export async function action({ request, context }: Route.ActionArgs) {
   });
   return redirect(`/recepten/${slug}`);
 }
+
+/** Ends the draft when the save succeeds (see `endDraftAfterSave`). */
+export const clientAction = ({ request, serverAction }: Route.ClientActionArgs) => endDraftAfterSave({ request, serverAction });
 
 export function meta() {
   return [{ title: 'Nieuw recept · Familiekookboek' }];

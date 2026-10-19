@@ -120,7 +120,11 @@ export function RecipePage({ recipe: r, tile, steps }: Props) {
           <Link to="/" className="inline-flex min-h-11 items-center font-extrabold underline-offset-[0.25em]">
             ← Alle recepten
           </Link>
-          <Link to={`/recepten/${r.slug}/bewerken`} className="inline-flex min-h-11 items-center font-extrabold underline-offset-[0.25em]">
+          <Link
+            to={`/recepten/${r.slug}/bewerken`}
+            state={{ fresh: true }}
+            className="inline-flex min-h-11 items-center font-extrabold underline-offset-[0.25em]"
+          >
             Bewerk
           </Link>
         </div>

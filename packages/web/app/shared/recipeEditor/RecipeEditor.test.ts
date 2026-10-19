@@ -1,9 +1,21 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { emptyContent, isDirty, startingDraft } from '~/lib/draft';
+import { asksBeforeLeaving, draftKey, saveDraft, type DraftStorage } from '~/lib/draftStore';
 
 const content = { ...emptyContent, title: 'Soep', author: 'Oma' };
 const stored = startingDraft(content);
+const key = draftKey('oma@example.com', 'soep');
+/** A storage that refuses every write, as a full one does. */
+const fakeFullStorage: DraftStorage = {
+  length: 0,
+  key: () => null,
+  getItem: () => null,
+  setItem: () => {
+    throw new Error('full');
+  },
+  removeItem: () => undefined,
+};
 
 // Needs a browser: the layout at a wide width.
 test.todo('recipe-form › Wide screen layout');
@@ -37,7 +49,32 @@ test.todo('recipe-form › Reset asks first');
 // Needs a browser: answering "Nee" and pressing Esc.
 test.todo('recipe-form › Reset can be declined');
 
-// Needs a browser: following a link with unsaved changes opens a confirmation.
-test.todo('recipe-form › Leaving with unsaved changes asks first');
-// Needs a browser: following a link, or leaving after saving, must not ask.
-test.todo('recipe-form › Leaving without changes does not ask');
+// The confirmation itself (following a link) needs a browser; whether it is asked is decided by asksBeforeLeaving.
+test('recipe-form › Leaving when the draft could not be kept asks first', () => {
+  const full = (state: typeof stored) =>
+    saveDraft(fakeFullStorage, key, { state, initial: stored, base: {}, uploading: false, settledImage: '', now: new Date() });
+  const edited = { ...stored, title: 'Stamppot' };
+  assert.equal(
+    asksBeforeLeaving({ dirty: true, submitting: false }, () => full(edited).ok),
+    true,
+  );
+  assert.equal(
+    asksBeforeLeaving({ dirty: true, submitting: false }, () => false),
+    true,
+  );
+});
+
+test('recipe-form › Leaving with a kept draft does not ask', () => {
+  let storedValue = '';
+  const storage = { ...fakeFullStorage, setItem: (_: string, v: string) => void (storedValue = v) };
+  const edited = { ...stored, title: 'Stamppot' };
+  const keep = () => saveDraft(storage, key, { state: edited, initial: stored, base: {}, uploading: false, settledImage: '', now: new Date() }).ok;
+  assert.equal(asksBeforeLeaving({ dirty: true, submitting: false }, keep), false);
+  assert.ok(storedValue, 'the changes are on the device when the page is left');
+});
+test('recipe-form › Leaving without changes does not ask', () => {
+  const never = () => assert.fail('nothing to keep');
+  assert.equal(asksBeforeLeaving({ dirty: false, submitting: false }, never), false);
+  // Saving: the form is submitted, so nothing is asked even though the editor still differs from the stored recipe.
+  assert.equal(asksBeforeLeaving({ dirty: true, submitting: true }, never), false);
+});

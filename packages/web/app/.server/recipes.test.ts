@@ -57,8 +57,9 @@ test('recipe-viewing › Existing recipe', async () => {
 
 test('maps every recipe column', async () => {
   const r = await getRecipe(db, 'full');
-  assert.deepEqual(defined({ ...r, id: 0 }), {
+  assert.deepEqual(defined({ ...r, id: 0, updated_at: '' }), {
     id: 0,
+    updated_at: '',
     slug: 'full',
     title: 'Full',
     author: 'Papa',
@@ -70,6 +71,10 @@ test('maps every recipe column', async () => {
     ingredients: [],
     steps: [],
   });
+});
+
+test('getRecipe returns when the recipe was last saved', async () => {
+  assert.match((await getRecipe(db, 'full'))?.updated_at ?? '', /^\d{4}-\d\d-\d\dT/);
 });
 
 test('recipe-creation › Slug from title', async () => {
@@ -105,8 +110,9 @@ test('createRecipe stores every property, ingredient and step so getRecipe reads
     steps: plain('mengen', 'bakken'),
   });
   const r = await getRecipe(db, slug);
-  assert.deepEqual(defined({ ...r, id: 0 }), {
+  assert.deepEqual(defined({ ...r, id: 0, updated_at: '' }), {
     id: 0,
+    updated_at: '',
     slug: 'alles',
     title: 'Alles',
     author: 'Tante An',

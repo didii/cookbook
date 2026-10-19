@@ -4,6 +4,7 @@ import { acceptImage, deletePhoto } from '~/.server/photos';
 import { getRecipe, listAuthors, updateRecipe } from '~/.server/recipes';
 import { joinIngredient } from '~/lib/ingredients';
 import { tileFor } from '~/lib/tile';
+import { endDraftAfterSave } from '~/shared/recipeEditor/endDraftAfterSave';
 import { RecipeEditor } from '~/shared/recipeEditor/RecipeEditor';
 import { readForm, readIngredients, readSteps, toRecipeFields, validate, type Errors } from '~/shared/recipeValidation';
 import type { Route } from './+types/route';
@@ -24,7 +25,7 @@ export async function loader({ params, context }: Route.LoaderArgs) {
     ingredients: recipe.ingredients.map((i) => joinIngredient({ quantityText: i.quantity_text, name: i.name })),
     steps: recipe.steps,
   };
-  return { slug: params.slug, title: recipe.title, authors, values, tile: tileFor(recipe.id) };
+  return { slug: params.slug, title: recipe.title, authors, values, tile: tileFor(recipe.id), updatedAt: recipe.updated_at };
 }
 
 export async function action({ request, params, context }: Route.ActionArgs) {
@@ -48,6 +49,9 @@ export async function action({ request, params, context }: Route.ActionArgs) {
   return redirect(`/recepten/${params.slug}`);
 }
 
+/** Ends the draft when the save succeeds (see `endDraftAfterSave`). */
+export const clientAction = ({ request, serverAction }: Route.ClientActionArgs) => endDraftAfterSave({ request, serverAction });
+
 export function meta({ loaderData }: Route.MetaArgs) {
   return [{ title: `${loaderData?.title ?? 'Recept'} bewerken · Familiekookboek` }];
 }
@@ -56,6 +60,8 @@ export default function EditRecipe({ loaderData, actionData }: Route.ComponentPr
   return (
     <RecipeEditor
       key={loaderData.slug}
+      slug={loaderData.slug}
+      updatedAt={loaderData.updatedAt}
       heading="Recept bewerken"
       authors={loaderData.authors}
       tile={loaderData.tile}
