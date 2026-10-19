@@ -36,3 +36,7 @@ export const getPhoto = (bucket: R2Bucket, file: string) => (fileName.test(file)
 export async function deletePhoto(bucket: R2Bucket, path: string) {
   if (isPhotoPath(path)) await bucket.delete(keyOf(path.slice('/foto/'.length)));
 }
+
+/** The image value to store for a submitted form: empty, unchanged from what is stored, or an uploaded photo's path. Anything else is dropped, so nobody can plant an arbitrary link. */
+export const acceptImage = (submitted: string | undefined, stored: string | null) =>
+  submitted && (submitted === stored || isPhotoPath(submitted)) ? submitted : undefined;

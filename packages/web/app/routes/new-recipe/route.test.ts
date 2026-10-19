@@ -37,9 +37,10 @@ test('recipe-creation › Recipe is created', async () => {
 });
 
 test('recipe-creation › Time, intro and image are stored', async () => {
-  await submit({ title: 'Compleet', author: 'Oma', time: ' 45 min ', intro: 'Lekker', image: '/img/x.jpg' });
+  const image = '/foto/00000000-0000-4000-8000-000000000000.webp';
+  await submit({ title: 'Compleet', author: 'Oma', time: ' 45 min ', intro: 'Lekker', image });
   const r = await getRecipe(db, 'compleet');
-  assert.deepEqual([r?.time, r?.intro, r?.image], ['45 min', 'Lekker', '/img/x.jpg']);
+  assert.deepEqual([r?.time, r?.intro, r?.image], ['45 min', 'Lekker', image]);
 });
 
 test('recipe-creation › Servings left empty', async () => {

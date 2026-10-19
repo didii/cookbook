@@ -1,5 +1,6 @@
 import { data, redirect } from 'react-router';
 import { envContext, userEmailContext } from '~/.server/context';
+import { acceptImage } from '~/.server/photos';
 import { createRecipe, listAuthors } from '~/.server/recipes';
 import { emptyDraft } from '~/lib/draft';
 import { tiles } from '~/lib/tile';
@@ -18,7 +19,12 @@ export async function action({ request, context }: Route.ActionArgs) {
   const errors = validate(values);
   if (Object.keys(errors).length) return data({ errors, values }, { status: 400 });
 
-  const slug = await createRecipe(context.get(envContext).DB, { ...toRecipeFields(values), createdBy: context.get(userEmailContext) });
+  const fields = toRecipeFields(values);
+  const slug = await createRecipe(context.get(envContext).DB, {
+    ...fields,
+    image: acceptImage(fields.image, null),
+    createdBy: context.get(userEmailContext),
+  });
   return redirect(`/recepten/${slug}`);
 }
 

@@ -121,27 +121,29 @@ export async function listAuthors(db: D1Database): Promise<string[]> {
 
 export type RecipeUpdate = Pick<NewRecipe, 'title' | 'author' | 'servings' | 'time' | 'intro' | 'image' | 'seal'>;
 
-/** Replaces the base information of a recipe; an omitted optional field is cleared, but an omitted seal is kept. Returns whether the recipe exists. */
-export async function updateRecipe(db: D1Database, slug: string, recipe: RecipeUpdate): Promise<boolean> {
-  const result = await db
-    .prepare(
-      // Another recipe's spelling of the author wins; the recipe's own doesn't, or "Oma" could never become "oma".
-      `UPDATE recipes SET title = ?, author = COALESCE((SELECT author FROM recipes WHERE author = ? COLLATE NOCASE AND slug != ? LIMIT 1), ?),
+/** Replaces the base information of a recipe; an omitted optional field is cleared, but an omitted seal is kept. Returns the image the recipe had before, or undefined when the recipe doesn't exist. */
+export async function updateRecipe(db: D1Database, slug: string, recipe: RecipeUpdate): Promise<{ previousImage: string | null } | undefined> {
+  const [before, result] = await db.batch([
+    db.prepare('SELECT image FROM recipes WHERE slug = ?').bind(slug),
+    db
+      .prepare(
+        // Another recipe's spelling of the author wins; the recipe's own doesn't, or "Oma" could never become "oma".
+        `UPDATE recipes SET title = ?, author = COALESCE((SELECT author FROM recipes WHERE author = ? COLLATE NOCASE AND slug != ? LIMIT 1), ?),
         servings = ?, time = ?, intro = ?, image = ?, seal = COALESCE(?, seal), updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now')
       WHERE slug = ?`,
-    )
-    .bind(
-      recipe.title,
-      recipe.author,
-      slug,
-      recipe.author,
-      recipe.servings ?? null,
-      recipe.time ?? null,
-      recipe.intro ?? '',
-      recipe.image ?? null,
-      recipe.seal ?? null,
-      slug,
-    )
-    .run();
-  return result.meta.changes > 0;
+      )
+      .bind(
+        recipe.title,
+        recipe.author,
+        slug,
+        recipe.author,
+        recipe.servings ?? null,
+        recipe.time ?? null,
+        recipe.intro ?? '',
+        recipe.image ?? null,
+        recipe.seal ?? null,
+        slug,
+      ),
+  ]);
+  return result.meta.changes > 0 ? { previousImage: (before.results[0] as { image: string | null }).image } : undefined;
 }

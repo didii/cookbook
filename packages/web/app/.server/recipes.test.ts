@@ -191,7 +191,7 @@ test('recipe-editing › Recipe is updated', async () => {
   const slug = await createRecipe(db, { ...original, ingredients: [{ name: 'ei' }], steps: ['kook'] });
   await db.prepare("UPDATE recipes SET updated_at = '2000-01-01T00:00:00Z' WHERE slug = ?").bind(slug).run();
   const changed = { title: 'Nieuw', author: 'Mama', servings: 6, time: '2u', intro: 'nieuw', image: '/nieuw.jpg' };
-  assert.equal(await updateRecipe(db, slug, changed), true);
+  assert.ok(await updateRecipe(db, slug, changed));
   const r = await getRecipe(db, slug);
   assert.deepEqual([r?.slug, r?.title, r?.author, r?.servings, r?.time, r?.intro, r?.image], [slug, 'Nieuw', 'Mama', 6, '2u', 'nieuw', '/nieuw.jpg']);
   assert.deepEqual([r?.ingredients.length, r?.steps], [1, ['kook']]);
@@ -236,5 +236,11 @@ test('recipe-editing › Own author can be respelled', async () => {
 });
 
 test('updateRecipe reports an unknown slug', async () => {
-  assert.equal(await updateRecipe(db, 'bestaat-niet', { title: 'X', author: 'Y' }), false);
+  assert.equal(await updateRecipe(db, 'bestaat-niet', { title: 'X', author: 'Y' }), undefined);
+});
+
+test('updateRecipe returns the image the recipe had', async () => {
+  const slug = await createRecipe(db, { title: 'Met foto', author: 'Oma', image: '/foto/oud.jpg' });
+  assert.deepEqual(await updateRecipe(db, slug, { title: 'Met foto', author: 'Oma', image: '/foto/nieuw.jpg' }), { previousImage: '/foto/oud.jpg' });
+  assert.deepEqual(await updateRecipe(db, slug, { title: 'Met foto', author: 'Oma' }), { previousImage: '/foto/nieuw.jpg' });
 });

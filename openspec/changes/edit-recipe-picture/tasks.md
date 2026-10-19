@@ -5,7 +5,7 @@
 - [x] 1.1 Add the R2 bucket binding `PHOTOS` to `wrangler.jsonc`, run `pnpm cf-typegen`, and extend `testing/db.ts` with an in-memory R2 bucket; verify `pnpm typecheck` passes and a smoke test can put and get an object through the test helper.
 - [x] 1.2 Add `app/.server/photos.ts` (`storePhoto` with size check, magic-byte sniffing and uuid naming; `getPhoto`; `deletePhoto`) with `photos.test.ts`; verify tests named `recipe-photo › Acceptable photo is stored`, `recipe-photo › Oversized file refused`, `recipe-photo › Other file types refused` (including a text file named `.jpg`) and `recipe-photo › Unknown photo` pass.
 - [x] 1.3 Add the resource routes `POST /foto` and `GET /foto/:file` (headers: immutable cache, `nosniff`, ETag; only `<uuid>.<ext>` keys) in `routes.ts` and `routes/photo/`; verify with route tests named `recipe-photo › Photo is served` and a status check for 413 and 415 through the route.
-- [ ] 1.4 Make `updateRecipe` return the previous image and have the edit action delete the old uploaded photo after a successful write, and drop an `image` value that is neither empty, unchanged nor a `/foto/` path; verify with tests named `recipe-photo › Replaced photo is deleted` and `recipe-photo › Non-upload images are never deleted`, and that a forged external link is dropped.
+- [x] 1.4 Make `updateRecipe` return the previous image and have the edit action delete the old uploaded photo after a successful write, and drop an `image` value that is neither empty, unchanged nor a `/foto/` path; verify with tests named `recipe-photo › Replaced photo is deleted` and `recipe-photo › Non-upload images are never deleted`, and that a forged external link is dropped.
 
 ## 2. Browser side
 
