@@ -11,6 +11,8 @@ export type RecipeRow = {
   intro: string;
   image: string | null;
   seal: string | null;
+  /** When the recipe was last saved; the editor compares it to the version a draft started from. */
+  updated_at: string;
 };
 
 export type IngredientRow = { quantity_text: string; name: string };
@@ -25,7 +27,7 @@ type StepRow = { id: number; body: string; oven_temperature: number | null; time
 /** One round trip (a single batch): the recipe plus its ingredients and steps (with their chips) in stored order. */
 export async function getRecipe(db: D1Database, slug: string): Promise<StoredRecipe | undefined> {
   const [recipe, ingredients, steps, chips] = await db.batch([
-    db.prepare('SELECT id, slug, title, author, time, servings, intro, image, seal FROM recipes WHERE slug = ?').bind(slug),
+    db.prepare('SELECT id, slug, title, author, time, servings, intro, image, seal, updated_at FROM recipes WHERE slug = ?').bind(slug),
     db
       .prepare('SELECT i.quantity_text, i.name FROM ingredients i JOIN recipes r ON r.id = i.recipe_id WHERE r.slug = ? ORDER BY i.position')
       .bind(slug),

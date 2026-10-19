@@ -212,3 +212,14 @@ export function resolveStart({ draft, fresh, shown, updatedAt }: { draft?: Store
     discard: false,
   };
 }
+
+const sameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
+
+/** When a draft was kept, for the save bar: "vandaag 14:32", "gisteren 09:10", else the date. */
+export function describeSavedAt(savedAt: string, now: Date): string {
+  const at = new Date(savedAt);
+  const time = at.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+  if (sameDay(at, now)) return `vandaag ${time}`;
+  if (sameDay(at, new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1))) return `gisteren ${time}`;
+  return at.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' });
+}

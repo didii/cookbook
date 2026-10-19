@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { addStep, editStep, emptyContent, startingDraft, typeIngredient } from './draft';
-import { clearDraft, draftKey, isFresh, loadDraft, purgeDrafts, resolveStart, saveDraft, type DraftStorage } from './draftStore';
+import { clearDraft, describeSavedAt, draftKey, isFresh, loadDraft, purgeDrafts, resolveStart, saveDraft, type DraftStorage } from './draftStore';
 
 /** An in-memory storage that can be told to throw on reads or writes. */
 function fakeStorage(fail: { read?: boolean; write?: boolean } = {}) {
@@ -215,4 +215,12 @@ test('a restored draft whose anchors no longer fit is fitted to its text', () =>
     fitted.ghosts.map((g) => g.id),
     ['c4'],
   );
+});
+
+test('a draft is described by when it was kept', () => {
+  const at = (d: Date) => d.toISOString();
+  const noon = new Date(2026, 9, 19, 12, 0);
+  assert.equal(describeSavedAt(at(new Date(2026, 9, 19, 14, 32)), noon), 'vandaag 14:32');
+  assert.equal(describeSavedAt(at(new Date(2026, 9, 18, 9, 10)), noon), 'gisteren 09:10');
+  assert.equal(describeSavedAt(at(new Date(2026, 9, 12, 9, 10)), noon), '12 oktober');
 });

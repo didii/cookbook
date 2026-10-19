@@ -18,6 +18,7 @@ const steps: Step[] = [
 const recipe: Omit<StoredRecipe, 'steps'> = {
   id: 1,
   slug: 'appeltaart',
+  updated_at: '2026-01-01T00:00:00Z',
   title: 'Appeltaart',
   author: 'Oma',
   time: null,
