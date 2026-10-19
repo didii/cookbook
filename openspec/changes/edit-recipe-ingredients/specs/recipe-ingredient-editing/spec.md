@@ -87,8 +87,8 @@ The system SHALL give each filled row a delete button and always-visible up and 
 The system SHALL group the up, down and delete buttons of a row into one toolbar that is a single Tab stop, with the left and right arrow keys moving between its buttons, and SHALL move the row up or down with Alt and the up or down arrow key while focus stays in its field, without taking over Tab.
 
 #### Scenario: Row buttons are one tab stop
-- **WHEN** a family member presses Tab in an ingredient field
-- **THEN** focus moves to the row's button group as one stop, the left and right arrow keys move between its buttons, and the next Tab moves to the next row's field
+- **WHEN** a family member tabs through the ingredient list
+- **THEN** each row's button group (placed before its field) is one tab stop, the left and right arrow keys move between its buttons, and the next Tab moves to the row's field
 
 #### Scenario: Alt and arrow move the row
 - **WHEN** a family member presses Alt and the up or down arrow key in an ingredient field
