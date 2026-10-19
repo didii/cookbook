@@ -1,4 +1,4 @@
-import { useImperativeHandle, useLayoutEffect, useRef, useState, type KeyboardEvent, type Ref } from 'react';
+import { useImperativeHandle, useLayoutEffect, useRef, useState, type ComponentProps, type CSSProperties, type KeyboardEvent, type Ref } from 'react';
 import { parseIngredient } from '~/lib/ingredients';
 import { cn } from '~/shared/cn';
 
@@ -6,6 +6,8 @@ import { cn } from '~/shared/cn';
 export type ItemHandle = {
   /** Focus the field with the caret at the start or end of its text. */
   focusField: (caret: 'start' | 'end') => void;
+  /** Where the row is on the page, for dragging. */
+  rect: () => DOMRect | undefined;
 };
 
 type Props = {
@@ -30,6 +32,9 @@ type Props = {
   onMove: (direction: -1 | 1) => void;
   /** Ask for focus on the row below (1) or above (-1). */
   onStep: (direction: -1 | 1) => void;
+  /** Pointer handlers for the grip, and the style the row gets while it is dragged or shifted aside. */
+  gripProps: ComponentProps<'span'>;
+  style?: CSSProperties;
   /** Backspace was pressed in an empty field. */
   onBackspaceEmpty: () => void;
 };
@@ -86,9 +91,12 @@ export function IngredientItem({
   onMove,
   onStep,
   onBackspaceEmpty,
+  gripProps,
+  style,
 }: Props) {
   const input = useRef<HTMLInputElement>(null);
   const mirror = useRef<HTMLDivElement>(null);
+  const item = useRef<HTMLLIElement>(null);
   const syncScroll = () => {
     if (mirror.current && input.current) mirror.current.scrollLeft = input.current.scrollLeft;
   };
@@ -135,6 +143,7 @@ export function IngredientItem({
   };
 
   useImperativeHandle(ref, () => ({
+    rect: () => item.current?.getBoundingClientRect(),
     focusField: (caret) => {
       const el = input.current;
       if (!el) return;
@@ -169,11 +178,12 @@ export function IngredientItem({
   const errorId = `${id}-error`;
 
   return (
-    <li className="grid grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-x-1">
+    <li ref={item} style={style} className="relative grid grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-x-1">
       <span
         aria-hidden="true"
+        {...gripProps}
         className={cn(
-          'col-start-1 row-start-1 grid min-h-11 w-6 cursor-grab place-items-center text-ink/40 [@media(hover:none)]:hidden',
+          'col-start-1 row-start-1 grid min-h-11 w-6 cursor-grab touch-none place-items-center select-none text-ink/40 [@media(hover:none)]:hidden',
           free && 'invisible',
         )}
       >
