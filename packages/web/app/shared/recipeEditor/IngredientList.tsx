@@ -73,10 +73,11 @@ export function IngredientList({ rows, errors = noErrors, usedIn = () => none, o
               }}
               id={`ingredient-${row.id}`}
               label={`Ingrediënt ${i + 1}`}
+              toolbarLabel={`Acties voor ingrediënt ${i + 1}`}
               text={row.text}
               placeholder={free ? 'Bijvoorbeeld 250 g bloem' : undefined}
               free={free}
-              canUp={i > 0}
+              canUp={!free && i > 0}
               canDown={i < rows.length - 2}
               error={errors[i]}
               usedIn={usedIn(row.id)}
