@@ -19,4 +19,4 @@
 
 ## 4. Wrap-up
 
-- [ ] 4.1 Run `pnpm test:spec edit-recipe-ingredients` and verify every delta scenario has a test or a `test.todo`; run `pnpm format:fix`, `pnpm lint:fix`, `pnpm format:check`, `pnpm lint:check`, `pnpm typecheck` and `pnpm test:ai`; verify all pass, then add, reorder and remove ingredients on a new and an existing recipe in `pnpm dev`.
+- [x] 4.1 Run `pnpm test:spec edit-recipe-ingredients` and verify every delta scenario has a test or a `test.todo`; run `pnpm format:fix`, `pnpm lint:fix`, `pnpm format:check`, `pnpm lint:check`, `pnpm typecheck` and `pnpm test:ai`; verify all pass, then add, reorder and remove ingredients on a new and an existing recipe in `pnpm dev`.
