@@ -203,3 +203,77 @@ test('recipe-storage › Ingredient deleted', async () => {
   assert.equal(await count('SELECT id FROM steps WHERE id = ?', step), 1);
   assert.equal(await count('SELECT step_id FROM step_ingredients WHERE step_id = ?', step), 0);
 });
+
+const addStepWith = (recipe: number, position: number, oven: number | null, minutes: number | null, label: string | null = null) =>
+  db
+    .prepare('INSERT INTO steps (recipe_id, position, body, oven_temperature, timer_minutes, timer_label) VALUES (?, ?, ?, ?, ?, ?) RETURNING id')
+    .bind(recipe, position, 'x', oven, minutes, label)
+    .first<{ id: number }>();
+const addChip = (step: number, position: number, name: string, quantity = '') =>
+  db
+    .prepare('INSERT INTO step_ingredient_chips (step_id, position, quantity_text, name) VALUES (?, ?, ?, ?)')
+    .bind(step, position, quantity, name)
+    .run();
+
+test('recipe-storage › Step with oven temperature and timer', async () => {
+  const step = (await addStepWith(await addRecipe('oven-timer'), 1, 180, 50, 'Bakken'))!.id;
+  assert.deepEqual(await db.prepare('SELECT oven_temperature, timer_minutes, timer_label FROM steps WHERE id = ?').bind(step).first(), {
+    oven_temperature: 180,
+    timer_minutes: 50,
+    timer_label: 'Bakken',
+  });
+});
+
+test('recipe-storage › Step without oven or timer', async () => {
+  const step = await addStep(await addRecipe('no-oven-timer'), 1);
+  assert.deepEqual(await db.prepare('SELECT oven_temperature, timer_minutes, timer_label FROM steps WHERE id = ?').bind(step).first(), {
+    oven_temperature: null,
+    timer_minutes: null,
+    timer_label: null,
+  });
+});
+
+test('recipe-storage › Non-positive oven temperature or timer refused', async () => {
+  const r = await addRecipe('bad-oven-timer');
+  await assert.rejects(addStepWith(r, 1, 0, null));
+  await assert.rejects(addStepWith(r, 2, -5, null));
+  await assert.rejects(addStepWith(r, 3, null, 0));
+  await assert.rejects(addStepWith(r, 4, null, -1));
+});
+
+test('recipe-storage › Timer name needs minutes', async () => {
+  await assert.rejects(addStepWith(await addRecipe('label-only'), 1, null, null, 'Bakken'));
+});
+
+test('recipe-storage › Chips keep their order', async () => {
+  const step = await addStep(await addRecipe('chip-order'), 1);
+  await addChip(step, 2, 'boter');
+  await addChip(step, 1, 'bloem');
+  const { results } = await db.prepare('SELECT name FROM step_ingredient_chips WHERE step_id = ? ORDER BY position').bind(step).all();
+  assert.deepEqual(
+    results.map((row) => row.name),
+    ['bloem', 'boter'],
+  );
+});
+
+test('recipe-storage › Chip without a quantity', async () => {
+  const step = await addStep(await addRecipe('chip-no-quantity'), 1);
+  await addChip(step, 1, 'boter');
+  assert.deepEqual(await db.prepare('SELECT quantity_text, name FROM step_ingredient_chips WHERE step_id = ?').bind(step).first(), {
+    quantity_text: '',
+    name: 'boter',
+  });
+});
+
+test('recipe-storage › Chip needs a name and a step', async () => {
+  const step = await addStep(await addRecipe('chip-invalid'), 1);
+  await assert.rejects(addChip(step, 1, ''));
+  await assert.rejects(addChip(9999, 1, 'boter'));
+});
+
+test('recipe-storage › Chips are removed with their step', async () => {
+  const step = await addStep(await addRecipe('chip-cascade'), 1);
+  await addChip(step, 1, 'boter');
+  await db.prepare('DELETE FROM steps WHERE id = ?').bind(step).run();
+  assert.equal(await count('SELECT step_id FROM step_ingredient_chips WHERE step_id = ?', step), 0);
+});
