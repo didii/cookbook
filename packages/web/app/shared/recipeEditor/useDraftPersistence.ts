@@ -15,7 +15,7 @@ type Keeping = {
   uploading: boolean;
   /** Nothing is written before the draft on the device has been read and restored, or it would be overwritten by the stored values. */
   ready: boolean;
-  /** Whether a save is in progress. Closing the editor then must not write the draft again: a successful save has just removed it. */
+  /** Whether a save is in progress. Nothing is written then (not by the timer, not when the page is hidden or the editor closes): a successful save has just removed the draft and must not see it come back. */
   isSaving: () => boolean;
 };
 
@@ -35,8 +35,8 @@ export function useDraftPersistence(keeping: Keeping) {
   const [kept, setKept] = useState(() => browserStorage() !== undefined);
 
   const keepNow = useCallback(() => {
-    const { key, state, initial, base, uploading, ready } = latest.current;
-    if (!ready) return true;
+    const { key, state, initial, base, uploading, ready, isSaving } = latest.current;
+    if (!ready || isSaving()) return true;
     const { ok } = saveDraft(browserStorage(), key, { state, initial, base, uploading, settledImage: settledImage.current, now: new Date() });
     setKept(ok);
     return ok;
@@ -62,7 +62,7 @@ export function useDraftPersistence(keeping: Keeping) {
     return () => {
       document.removeEventListener('visibilitychange', onHidden);
       window.removeEventListener('pagehide', keepNow);
-      if (!latest.current.isSaving()) keepNow();
+      keepNow();
     };
   }, [keepNow]);
 

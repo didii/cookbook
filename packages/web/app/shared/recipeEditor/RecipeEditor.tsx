@@ -196,9 +196,9 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
         onSubmit={(e) => {
           // Enter in a field can submit while the save button is disabled; the photo must be settled first.
           if (photo !== 'ready') return e.preventDefault();
-          submitting.current = true;
-          // The latest state is on the device before the save starts, whatever happens to it.
+          // The latest state is on the device before the save starts, whatever happens to it; once the save runs nothing is written any more.
           keepNow();
+          submitting.current = true;
         }}
         className="mt-4 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-12"
         noValidate
