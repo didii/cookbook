@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Form, Link } from 'react-router';
-import { type Draft } from '~/lib/draft';
+import { Form, Link, useNavigation } from 'react-router';
+import { isDirty, startingDraft, type Draft } from '~/lib/draft';
 import { AuthorInput } from '~/shared/AuthorInput';
-import { Button } from '~/shared/Button';
 import { cn } from '~/shared/cn';
 import { ImagePreview } from '~/shared/ImagePreview';
 import type { Field } from '~/shared/recipeValidation';
+import { SaveBar } from './SaveBar';
 
 type Props = {
   /** Visually hidden page heading. */
