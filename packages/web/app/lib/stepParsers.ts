@@ -1,7 +1,5 @@
+import type { Range } from '~/lib/anchors';
 import { parseIngredient } from '~/lib/ingredients';
-
-/** A range of a step's text: UTF-16 indexes, `end` exclusive. */
-export type Range = { start: number; end: number };
 
 /** What the words of a chip say, per kind of chip. */
 export type IngredientValues = { quantity: string; name: string };
