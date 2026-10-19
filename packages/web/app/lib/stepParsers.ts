@@ -59,7 +59,7 @@ function forms(word: string): Set<string> {
   for (const f of [...all]) all.add(f.replace(/([aeou])\1/g, '$1'));
   return new Set([...all].filter((f) => f.length >= 2));
 }
-const same = (a: string, b: string) => [...forms(a)].some((f) => forms(b).has(f));
+export const sameWord = (a: string, b: string) => [...forms(a)].some((f) => forms(b).has(f));
 
 type Token = Range & { word: string };
 const tokens = (text: string): Token[] => [...text.matchAll(wordPattern)].map((m) => ({ word: m[0], start: m.index, end: m.index + m[0].length }));
@@ -73,13 +73,13 @@ function mentions(row: Row, words: Token[], text: string): Range[] {
   if (name.length > 1) {
     for (let i = 0; i + name.length <= words.length; i++) {
       const run = name.every(
-        (n, k) => same(n.word, words[i + k].word) && (k === 0 || /^\s+$/.test(text.slice(words[i + k - 1].end, words[i + k].start))),
+        (n, k) => sameWord(n.word, words[i + k].word) && (k === 0 || /^\s+$/.test(text.slice(words[i + k - 1].end, words[i + k].start))),
       );
       if (run) whole.push({ start: words[i].start, end: words[i + name.length - 1].end });
     }
   }
   const head = name[name.length - 1].word;
-  return [...whole, ...words.filter((w) => same(head, w.word))];
+  return [...whole, ...words.filter((w) => sameWord(head, w.word))];
 }
 
 /** The amount written right before the name ("100 g", "2"), as a range, when the text before the name ends in one. */
