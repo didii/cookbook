@@ -30,6 +30,10 @@ test('returns undefined for an unknown slug', async () => {
   assert.equal(await getRecipe(db, 'nope'), undefined);
 });
 
+test('recipe-viewing › Order is kept', async () => {
+  assert.deepEqual((await getRecipe(db, 'ordering'))?.steps, ['een', 'twee']);
+});
+
 test('returns ingredients and steps in position order, and leaves optional fields null', async () => {
   const r = await getRecipe(db, 'ordering');
   assert.equal(r?.author, 'Oma');
@@ -40,6 +44,10 @@ test('returns ingredients and steps in position order, and leaves optional field
     { quantity_text: '', name: 'zout' },
   ]);
   assert.deepEqual(r?.steps, ['een', 'twee']);
+});
+
+test('recipe-viewing › Existing recipe', async () => {
+  assert.equal((await getRecipe(db, 'full'))?.title, 'Full');
 });
 
 test('maps every recipe column', async () => {

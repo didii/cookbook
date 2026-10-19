@@ -20,7 +20,7 @@ The system SHALL let a family member start a timer chip of a step, see its remai
 - **THEN** both count down independently
 
 ### Requirement: A running timer is shown at its step
-The system SHALL show a running timer at its step. On a narrow screen it is a card on its own line below the step label with the countdown, the label and the controls (add one minute, add five minutes, hand over to the clock app where available, stop). On a wide screen the chip stays in place at its normal size and only shows the countdown instead of the duration (and "Klaar" when finished); the controls are in the sidebar.
+The system SHALL show a running timer at its step. On a narrow screen it is a card on its own line below the step label with the countdown, the label and the controls (add one minute, add five minutes, hand over to the app where available, stop). On a wide screen the chip stays in place at its normal size and only shows the countdown instead of the duration (and "Klaar" when finished); the controls are in the sidebar.
 
 #### Scenario: Timer card on a narrow screen
 - **WHEN** a timer runs on a narrow screen and its step is in view
@@ -31,7 +31,7 @@ The system SHALL show a running timer at its step. On a narrow screen it is a ca
 - **THEN** its chip stays the same size and shows the countdown where the duration was
 
 ### Requirement: Running timers stay in view
-The system SHALL keep running and finished timers in view while scrolling. On a screen narrower than 52rem a timer whose step is out of view is shown in a row directly under the tab bar, on both tabs, with the number of its step and its remaining time (and its label when there is room); the row exists only while it has a timer and scrolls sideways when the timers do not fit. On a wider screen all running and finished timers are listed in a block above the ingredient list, whether or not their step is in view, each with its step number, label, remaining time, add one minute, add five minutes, stop (or mark done when finished) and a control to go to its step. In both places timers SHALL be ordered as their steps appear in the recipe (and by position within a step), not by when they were started, and a timer that is added or changes SHALL NOT make the others move or animate again; only a newly added timer animates in.
+The system SHALL keep running and finished timers in view while scrolling. On a screen narrower than 52rem a timer whose step is less than half in view below the tab bar is shown in a row directly under the tab bar, on both tabs, with the number of its step and its remaining time (and its label when there is room); the row exists only while it has a timer and scrolls sideways when the timers do not fit. On a wider screen all running and finished timers are listed in a block above the ingredient list, whether or not their step is in view, each with its step number, label, remaining time, add one minute, add five minutes, stop (or mark done when finished) and a control to go to its step. In both places timers SHALL be ordered as their steps appear in the recipe (and by position within a step), not by when they were started, and a timer that is added or changes SHALL NOT make the others move or animate again; only a newly added timer animates in.
 
 #### Scenario: Timer docks when its step leaves the screen
 - **WHEN** a timer is running and its step scrolls out of view on a narrow screen
@@ -77,11 +77,15 @@ The system SHALL, when a timer reaches zero, mark it as finished with more than 
 - **THEN** it shows its start state again and the page title is restored
 
 ### Requirement: A timer can be handed to the clock app
-The system SHALL, on devices where it can start a timer in the phone's clock app, let a family member choose per timer to hand it over: a running timer has a "Klok-app" control that starts a timer in the clock app with the time that is left, and replaces the page timer with a note showing what was handed over. A setting, kept in the browser and off by default, SHALL hand every timer over as soon as it is started. A handed-over timer is not counted down, docked or signalled by the page, and removing its note does not cancel the clock app's timer. Where the clock app cannot be started, neither the control nor the setting is offered.
+The system SHALL, on devices where it can start a timer in the phone's clock app, let a family member choose per timer to hand it over: a running timer has an "App" control that starts a timer in the clock app with the time that is left, and replaces the page timer with a note showing what was handed over. The note SHALL offer to take the timer back, and the timer then continues here as if it had never been handed over, and to remove the note, which ends the timer on the page. A setting, kept in the browser and off by default, SHALL hand every timer over as soon as it is started. A handed-over timer is not counted down, docked or signalled by the page, and removing its note does not cancel the clock app's timer. Where the clock app cannot be started, neither the control nor the setting is offered.
 
 #### Scenario: Hand over a running timer
 - **WHEN** a family member chooses the clock app control of a timer with 14:32 left
 - **THEN** a timer of 14:32 is started in the clock app and the page shows a note that it was handed over with that time, instead of a countdown
+
+#### Scenario: Handover is undone
+- **WHEN** a family member hands a timer over to the app by mistake and chooses to take it back
+- **THEN** the timer runs on the page again, counting from its original start, and finishes at the time it would have without the hand-over
 
 #### Scenario: Timers handed over automatically
 - **WHEN** the setting to use the clock app is on and a family member starts a timer

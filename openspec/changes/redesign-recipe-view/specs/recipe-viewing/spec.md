@@ -23,15 +23,23 @@ The system SHALL, on a narrow screen, make each tab's content at least as tall a
 - **THEN** the screen shows only the tab bar, the timers (if any) and that tab's content
 
 ### Requirement: Each tab remembers its scroll position
-The system SHALL, on a narrow screen, return to the position a tab was left at when that tab is opened again. A tab that has not been visited yet SHALL open with its heading just below the tab bar.
+The system SHALL, on a narrow screen, remember for each tab the last position the page had while the tab bar was stuck to the top of the screen, that is, while the page was scrolled into the tab's content. Scrolling back up out of that state SHALL keep the remembered position. When switching tabs the system SHALL scroll as follows: to the position remembered for the new tab if there is one; otherwise, if only the tab being left has one, to the uppermost position with the tab bar stuck, which shows the new tab's heading just below the tab bar; otherwise not at all, so the tabs swap in place.
 
 #### Scenario: Position is remembered
-- **WHEN** a family member scrolls down the steps, switches to Ingrediënten and back
-- **THEN** the steps are shown at the position they were left at
+- **WHEN** a family member scrolls down the steps, switches to Ingrediënten, scrolls down there and switches back
+- **THEN** the steps are shown at the position they were left at, and the same for Ingrediënten when switching again
+
+#### Scenario: Position survives scrolling up
+- **WHEN** a family member scrolls down in both tabs, scrolls back up in the open tab until the tab bar is no longer stuck, and switches tabs
+- **THEN** the other tab is shown at its remembered position
 
 #### Scenario: First visit of a tab
-- **WHEN** a family member switches to a tab for the first time after scrolling in the other
+- **WHEN** a family member scrolls into one tab with the tab bar stuck and switches to the other tab, which has no remembered position
 - **THEN** the heading of that tab is shown just below the tab bar
+
+#### Scenario: Tabs swap in place
+- **WHEN** a family member switches tabs before scrolling into either tab's content
+- **THEN** the page does not scroll
 
 #### Scenario: Ticked ingredients are kept
 - **WHEN** a family member ticks ingredients, switches to Bereiding and back
