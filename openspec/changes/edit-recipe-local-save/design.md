@@ -2,6 +2,8 @@
 
 ## Context
 
+**Design reference:** the approved mockup is `docs/design/recipe-editor.html` (static, open it in a browser; see `docs/design/README.md`). It shows the layout, every chip state and the keyboard toolbars; the app's own tokens in `packages/web/app/app.css` win where the two differ.
+
 After the other five changes the editor has one client-side state object: the `Draft` of `edit-recipe-basics` extended with `photo` path (`image`), `ingredients` rows, and `steps` with `chips`, `ghosts` and their anchor ranges. Everything in it is plain JSON. Both routes render `RecipeEditor` with the starting values from their loaders; `isDirty` compares the state to the starting values; `edit-recipe-basics` guards leaving with `useBlocker` and `beforeunload`. The recipe page links to the edit route with a plain link. The identity (email) is available to routes through the root loader. See proposal.md for scope.
 
 ## Goals / Non-Goals

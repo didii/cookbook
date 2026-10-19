@@ -2,6 +2,8 @@
 
 ## Context
 
+**Design reference:** the approved mockup is `docs/design/recipe-editor.html` (static, open it in a browser; see `docs/design/README.md`). It shows the layout, every chip state and the keyboard toolbars; the app's own tokens in `packages/web/app/app.css` win where the two differ.
+
 `getRecipe` returns steps as plain strings, `createRecipe` stores them, nothing updates them. The editor shell and `Draft` come from `edit-recipe-basics`; `edit-recipe-ingredients` built the always-visible stacked arrows, the pointer-event drag on a grip and the move announcements for the ingredient rows. The mockup fixes the step: a header (grip, "STAP N", ↑ ↓, trash), a white bordered text box that grows, and later the chips under it. `edit-recipe-chips` needs two things from the text field that no plain `<textarea>` gives: marks under exact character ranges, and the exact range each edit replaced. This change provides both and nothing chip-specific.
 
 ## Goals / Non-Goals

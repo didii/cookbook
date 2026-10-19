@@ -2,6 +2,8 @@
 
 ## Context
 
+**Design reference:** the approved mockup is `docs/design/recipe-editor.html` (static, open it in a browser; see `docs/design/README.md`). It shows the layout, every chip state and the keyboard toolbars; the app's own tokens in `packages/web/app/app.css` win where the two differ.
+
 `recipes.image` is a nullable text column; the form has a text field for it with an `ImagePreview` (frame, `aspect-2/1`, `TileBand`). Seed and sample images are static files under `public/img/`. The Worker (`workers/app.ts` via `createFetch`) wraps every request in the identity check, so any new route is behind Cloudflare Access like the rest. There is no object storage yet. Tests run D1 through Miniflare (`testing/db.ts`) without a browser. See proposal.md for why.
 
 ## Goals / Non-Goals

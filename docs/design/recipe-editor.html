@@ -1,0 +1,1775 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Recipe editor mockup</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;700;800;900&display=swap" />
+    <style>
+      :root {
+        --red: #9c2419;
+        --yel: #c9a04a;
+        --jade: #2f6f5e;
+        --blu: #1f4e79;
+        --ink: #1c1512;
+        --por: #f4eee0;
+        --muted: #5c4f48;
+        --shadow-sm: 3px 3px 0 var(--ink);
+        --r: 0.625rem;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        background: var(--por);
+      }
+      body {
+        margin: 0;
+        font-family: Mulish, system-ui, sans-serif;
+        color: var(--ink);
+        line-height: 1.45;
+        font-size: 1.0625rem;
+        padding-bottom: 7rem;
+      }
+      ::selection {
+        background: var(--yel);
+        color: var(--ink);
+      }
+      :focus-visible {
+        outline: 4px solid var(--blu);
+        outline-offset: 3px;
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        cursor: pointer;
+      }
+      svg.i {
+        width: 1.1em;
+        height: 1.1em;
+        flex: none;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2.2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .top {
+        background: var(--red);
+        color: #fff;
+      }
+      .top div {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem max(1rem, 4vw);
+      }
+      .top b {
+        font-size: 1.5rem;
+        font-weight: 900;
+        letter-spacing: -0.01em;
+      }
+      .top span {
+        font-weight: 700;
+        font-size: 0.9rem;
+      }
+
+      main {
+        max-width: 1160px;
+        margin: 0 auto;
+        padding: 1.5rem max(1rem, 4vw) 0;
+      }
+      .back {
+        display: inline-flex;
+        gap: 0.4rem;
+        align-items: center;
+        font-weight: 800;
+        color: var(--muted);
+        text-decoration: none;
+        min-height: 2.75rem;
+      }
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 20rem;
+        gap: 3rem;
+        margin-top: 0.5rem;
+        align-items: start;
+      }
+      .rail {
+        position: sticky;
+        top: 1rem;
+        display: grid;
+        gap: 1.25rem;
+      }
+      @media (max-width: 60rem) {
+        .layout {
+          grid-template-columns: minmax(0, 1fr);
+          gap: 1.5rem;
+        }
+        .rail {
+          position: static;
+          order: -1;
+        }
+      }
+
+      .title {
+        width: 100%;
+        border: 0;
+        border-bottom: 3px dashed color-mix(in srgb, var(--ink) 35%, transparent);
+        background: transparent;
+        font: 900 clamp(2.25rem, 6vw, 3.75rem)/1.05 Mulish;
+        letter-spacing: -0.03em;
+        padding: 0.1em 0 0.15em;
+        color: var(--ink);
+      }
+      .title:focus {
+        outline: none;
+        border-bottom-color: var(--blu);
+        border-bottom-style: solid;
+      }
+      .intro {
+        margin-top: 1rem;
+      }
+      h2 {
+        font-size: 1.5rem;
+        font-weight: 900;
+        margin: 0;
+        letter-spacing: -0.01em;
+      }
+      section {
+        margin-top: 2.75rem;
+      }
+      .sh {
+        display: flex;
+        align-items: baseline;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+        flex-wrap: wrap;
+      }
+      .sh small {
+        color: var(--muted);
+        font-weight: 700;
+      }
+
+      label.l {
+        font-weight: 800;
+        display: block;
+      }
+      .in,
+      .ta {
+        display: block;
+        width: 100%;
+        min-height: 3.25rem;
+        margin-top: 0.25rem;
+        border: 3px solid var(--ink);
+        border-radius: var(--r);
+        background: #fff;
+        padding: 0.5rem 0.75rem;
+        font: 700 1.125rem/1.4 Mulish;
+        color: var(--ink);
+      }
+      .ta {
+        resize: vertical;
+      }
+      .pair {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+      }
+      .hint {
+        color: var(--muted);
+        font-size: 0.9rem;
+        font-weight: 700;
+        margin: 0.5rem 0 0;
+      }
+
+      .photo {
+        position: relative;
+        border: 3px solid var(--ink);
+        border-radius: var(--r);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        background: #fff;
+      }
+      .photo img {
+        display: block;
+        width: 100%;
+        aspect-ratio: 2/1;
+        object-fit: cover;
+        border-bottom: 3px solid var(--ink);
+      }
+      .photo .shot {
+        position: relative;
+      }
+      .photo .band {
+        display: block;
+        width: 100%;
+      }
+      .photo .acts {
+        position: absolute;
+        inset: auto 0.6rem 0.85rem 0.6rem;
+        display: flex;
+        gap: 0.5rem;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        min-height: 3rem;
+        padding: 0 1rem;
+        border: 3px solid var(--ink);
+        border-radius: var(--r);
+        background: #fff;
+        font-weight: 900;
+        box-shadow: var(--shadow-sm);
+      }
+      .btn:active {
+        transform: translate(2px, 2px);
+        box-shadow: 1px 1px 0 var(--ink);
+      }
+      .btn.main {
+        background: var(--blu);
+        color: #fff;
+      }
+      .btn.flat {
+        box-shadow: none;
+        border-color: color-mix(in srgb, var(--ink) 45%, transparent);
+        color: var(--muted);
+      }
+      .photo .btn {
+        flex: 1;
+      }
+      .photo .btn.flat {
+        flex: none;
+        background: #fff;
+      }
+
+      /* overlay editor: mirror paints the marks, textarea on top shows text + caret */
+      .ov {
+        display: grid;
+        position: relative;
+      }
+      .ov > * {
+        grid-area: 1/1;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+      .ov .box {
+        background: #fff;
+        border-radius: var(--r);
+        margin-top: 0.25rem;
+      }
+      .ov .mirror {
+        pointer-events: none;
+        color: transparent;
+        border: 3px solid transparent;
+        padding: 0.5rem 0.75rem;
+        margin-top: 0.25rem;
+        font: 700 1.25rem/1.4 Mulish;
+      }
+      .ov .mirror::after {
+        content: '\200b';
+      }
+      .ov textarea,
+      .ov input {
+        background: transparent;
+        color: var(--ink);
+        caret-color: var(--ink);
+        resize: none;
+        overflow: hidden;
+        border: 3px solid var(--ink);
+        border-radius: var(--r);
+        padding: 0.5rem 0.75rem;
+        font: 700 1.25rem/1.4 Mulish;
+        width: 100%;
+        margin: 0.25rem 0 0;
+      }
+      .ov.step textarea:focus {
+        outline: none;
+        border-color: var(--blu);
+        box-shadow: var(--shadow-sm);
+      }
+      mark {
+        background: none;
+        color: transparent;
+        border-radius: 0.2rem;
+        transition: background 0.12s;
+      }
+      mark {
+        text-decoration: underline 3px;
+        text-underline-offset: 4px;
+        text-decoration-skip-ink: none;
+      }
+      mark.auto {
+        text-decoration-color: var(--yel);
+      }
+      mark.man {
+        text-decoration-color: var(--blu);
+      }
+      mark.auto.hot {
+        background: color-mix(in srgb, var(--yel) 50%, transparent);
+      }
+      mark.man.hot {
+        background: color-mix(in srgb, var(--blu) 18%, transparent);
+      }
+
+      /* ingredient rows */
+      .rows {
+        display: grid;
+        gap: 0.4rem;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: auto auto minmax(0, 1fr) 2.75rem;
+        align-items: center;
+        column-gap: 0.25rem;
+      }
+      .row .grip {
+        grid-area: 1/1;
+        width: 1.5rem;
+      }
+      .row .mv {
+        grid-area: 1/2;
+      }
+      .row .ov {
+        grid-area: 1/3;
+      }
+      .row > .x {
+        grid-area: 1/4;
+      }
+      .row .used {
+        grid-area: 2/3;
+      }
+      .row .mv {
+        flex-direction: column;
+      }
+      .row .mv .x {
+        min-width: 1.75rem;
+        min-height: 1.625rem;
+        height: 1.625rem;
+        border-radius: 0.4rem;
+      }
+      .row .mv .i {
+        width: 1.05em;
+        height: 1.05em;
+      }
+      .mv {
+        display: inline-flex;
+      }
+      .mv .x {
+        min-width: 2.25rem;
+        min-height: 2.25rem;
+      }
+      .x:disabled {
+        cursor: default;
+        background: none;
+        color: var(--muted);
+      }
+      .x:disabled svg {
+        opacity: 0.3;
+      }
+      @media (hover: none) {
+        .row .mv {
+          opacity: 1;
+        }
+        .row .grip,
+        .lab .grip {
+          display: none;
+        }
+      }
+      .grip {
+        color: color-mix(in srgb, var(--ink) 40%, transparent);
+        display: grid;
+        place-items: center;
+        min-height: 2.75rem;
+        cursor: grab;
+      }
+      .ing .box,
+      .ing .mirror,
+      .ing input {
+        margin-top: 0;
+      }
+      .ing .mirror {
+        font-size: 1.125rem;
+        color: var(--ink);
+        white-space: pre;
+        overflow: hidden;
+        line-height: 1.4;
+      }
+      .ing .mirror b {
+        color: var(--blu);
+        font-weight: 700;
+      }
+      .ing input {
+        font-size: 1.125rem;
+        color: transparent;
+        min-height: 3.25rem;
+      }
+      .ing input::placeholder {
+        color: color-mix(in srgb, var(--ink) 50%, transparent);
+      }
+      .ing input:focus {
+        outline: none;
+        border-color: var(--blu);
+      }
+      .used {
+        font-size: 0.8125rem;
+        font-weight: 700;
+        color: var(--muted);
+        margin: 0.2rem 0 0.1rem 0.25rem;
+      }
+      .x {
+        display: grid;
+        place-items: center;
+        min-width: 2.75rem;
+        min-height: 2.75rem;
+        border: 0;
+        background: transparent;
+        border-radius: var(--r);
+        color: var(--muted);
+      }
+      .x:hover {
+        background: color-mix(in srgb, var(--red) 12%, transparent);
+        color: var(--red);
+      }
+      .row.empty .x,
+      .row.empty .used,
+      .row.empty .grip,
+      .row.empty .mv {
+        visibility: hidden;
+      }
+      .hintrow {
+        margin: 0.6rem 0 0 2.25rem;
+        color: var(--muted);
+        font-weight: 700;
+        font-size: 0.9rem;
+      }
+      kbd {
+        font: 800 0.8rem Mulish;
+        border: 2px solid color-mix(in srgb, var(--ink) 45%, transparent);
+        border-radius: 0.3rem;
+        padding: 0 0.35rem;
+        background: #fff;
+      }
+
+      /* steps */
+      .steps {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .step {
+        border-top: 2px dashed color-mix(in srgb, var(--ink) 28%, transparent);
+        padding: 1.1rem 0 1.25rem;
+      }
+      .step:first-child {
+        border-top: 0;
+        padding-top: 0;
+      }
+      .sh2 {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .lab {
+        font-size: 0.8125rem;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--red);
+        margin-right: auto;
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+      }
+      .step.focus .lab {
+        color: var(--blu);
+      }
+      .step .sh2 .x {
+        min-width: 2.5rem;
+        min-height: 2.5rem;
+        opacity: 0;
+      }
+      .step:hover .sh2 .x,
+      .step.focus .sh2 .x,
+      .step .sh2 .mv .x {
+        opacity: 1;
+      }
+      @media (hover: none) {
+        .step .sh2 .x {
+          opacity: 1;
+        }
+      }
+
+      /* chips */
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin: 0.6rem 0 0;
+        padding: 0;
+        list-style: none;
+        align-items: center;
+      }
+      .chip {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        min-height: 2.25rem;
+        padding: 0 0.6rem;
+        border-radius: 0.5rem;
+        background: color-mix(in srgb, var(--ink) 8%, transparent);
+        font-size: 0.9375rem;
+        font-weight: 700;
+        color: var(--muted);
+        border: 2px solid transparent;
+      }
+      .chip .q {
+        font-weight: 900;
+        color: var(--blu);
+      }
+      .chip .t {
+        font-weight: 900;
+        color: var(--red);
+      }
+      .chip.man {
+        background: #fff;
+        border-color: var(--ink);
+      }
+      .chip:hover,
+      .chip.hot {
+        border-color: var(--ink);
+      }
+      .chip.hot {
+        background: color-mix(in srgb, var(--yel) 50%, transparent);
+      }
+      .chip.man.hot,
+      .chip.pend.hot {
+        background: color-mix(in srgb, var(--blu) 18%, transparent);
+      }
+      .chip .mode {
+        all: unset;
+        display: grid;
+        place-items: center;
+        width: 1.625rem;
+        height: 1.625rem;
+        margin-left: -0.35rem;
+        border-radius: 0.3rem;
+        color: var(--muted);
+        cursor: pointer;
+      }
+      .chip .mode:hover {
+        background: color-mix(in srgb, var(--ink) 12%, transparent);
+        color: var(--ink);
+      }
+      .chip.man .mode {
+        color: var(--blu);
+      }
+      .chip .mode:focus-visible {
+        outline: 4px solid var(--blu);
+        outline-offset: 1px;
+      }
+      .chip button.core {
+        all: unset;
+        display: inline-flex;
+        gap: 0.4rem;
+        align-items: center;
+        cursor: pointer;
+        min-height: 2.25rem;
+      }
+      .chip button.core:focus-visible {
+        outline: 4px solid var(--blu);
+        outline-offset: 2px;
+        border-radius: 0.3rem;
+      }
+
+      /* pending changes */
+      .chip.pend {
+        background: #fff;
+        border: 2px dashed var(--blu);
+        padding-right: 3px;
+        gap: 0.5rem;
+      }
+      .chip.pend .old {
+        text-decoration: line-through;
+        text-decoration-thickness: 2px;
+        opacity: 0.65;
+      }
+      .chip.del {
+        background: color-mix(in srgb, var(--red) 10%, #fff);
+        border: 2px dashed var(--red);
+        color: var(--red);
+        padding-right: 3px;
+        gap: 0.5rem;
+      }
+      .chip.del .strike {
+        text-decoration: line-through;
+        text-decoration-thickness: 2px;
+      }
+      .chip.del .q,
+      .chip.del .t {
+        color: var(--red);
+      }
+      .dec {
+        display: inline-flex;
+        height: 1.625rem;
+        border: 2px solid var(--ink);
+        border-radius: 0.4rem;
+        overflow: hidden;
+        background: #fff;
+      }
+      .dec button {
+        display: grid;
+        place-items: center;
+        width: 1.9rem;
+        border: 0;
+        background: transparent;
+        padding: 0;
+      }
+      .dec button + button {
+        border-left: 2px solid var(--ink);
+      }
+      .dec button:hover {
+        background: color-mix(in srgb, var(--ink) 8%, transparent);
+      }
+      .dec .ok {
+        color: var(--jade);
+      }
+      .dec .ok.red {
+        color: var(--red);
+      }
+      .dec .no {
+        color: var(--muted);
+      }
+      .dec .i {
+        width: 0.95em;
+        height: 0.95em;
+      }
+
+      .adds {
+        display: flex;
+        flex-wrap: wrap;
+        flex-basis: 100%;
+        gap: 0.35rem;
+        opacity: 0;
+        transition: opacity 0.15s;
+      }
+      .step.peek .adds {
+        opacity: 1;
+      }
+      .add {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        min-height: 2.25rem;
+        padding: 0 0.6rem;
+        border-radius: 0.5rem;
+        border: 2px dashed color-mix(in srgb, var(--ink) 40%, transparent);
+        background: transparent;
+        font-size: 0.875rem;
+        font-weight: 800;
+        color: var(--muted);
+      }
+      .add.ghost {
+        border-style: solid;
+        border-color: color-mix(in srgb, var(--ink) 30%, transparent);
+        text-decoration: line-through;
+        text-decoration-thickness: 1.5px;
+      }
+      .add.ghost .i:last-child {
+        display: none;
+      }
+      .add.ghost:hover {
+        text-decoration: none;
+      }
+      .add:hover {
+        border-style: solid;
+        border-color: var(--ink);
+        color: var(--ink);
+      }
+      .step:hover .adds,
+      .step.focus .adds,
+      .step:focus-within .adds {
+        opacity: 1;
+      }
+      @media (hover: none) {
+        .adds {
+          opacity: 1;
+        }
+      }
+
+      /* popover */
+      .pop {
+        position: absolute;
+        z-index: 5;
+        top: calc(100% + 0.7rem);
+        left: 0;
+        width: 20rem;
+        background: #fff;
+        border: 3px solid var(--ink);
+        border-radius: var(--r);
+        box-shadow: 5px 5px 0 var(--ink);
+        padding: 0.9rem;
+        display: grid;
+        gap: 0.75rem;
+        color: var(--ink);
+        font-weight: 700;
+      }
+      .pop .pair {
+        gap: 0.5rem;
+      }
+      .pop .in {
+        min-height: 2.75rem;
+        font-size: 1rem;
+        margin-top: 0.15rem;
+        border-width: 2px;
+      }
+      .pop label {
+        font-size: 0.8125rem;
+        font-weight: 900;
+        color: var(--muted);
+      }
+      .seg {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border: 2px solid var(--ink);
+        border-radius: 0.5rem;
+        overflow: hidden;
+      }
+      .seg button {
+        display: flex;
+        gap: 0.4rem;
+        align-items: center;
+        justify-content: center;
+        min-height: 2.5rem;
+        border: 0;
+        background: #fff;
+        font-weight: 900;
+        font-size: 0.875rem;
+      }
+      .seg button[aria-pressed='true'] {
+        background: var(--ink);
+        color: #fff;
+      }
+      .pop .rm {
+        display: flex;
+        gap: 0.4rem;
+        align-items: center;
+        border: 0;
+        background: none;
+        color: var(--red);
+        font-weight: 900;
+        padding: 0;
+        min-height: 2.25rem;
+      }
+      .pop p {
+        margin: 0;
+        font-size: 0.8125rem;
+        color: var(--muted);
+        line-height: 1.4;
+      }
+      .pop p b {
+        color: var(--ink);
+      }
+      .pop.side {
+        top: -0.4rem;
+        left: 17rem;
+      }
+      .pop.side .tip {
+        display: none;
+      }
+      .pop .tip {
+        position: absolute;
+        top: -0.65rem;
+        left: 2.5rem;
+        width: 1rem;
+        height: 1rem;
+        background: #fff;
+        border-left: 3px solid var(--ink);
+        border-top: 3px solid var(--ink);
+        transform: rotate(45deg);
+      }
+
+      .addstep {
+        margin-top: 1rem;
+        width: 100%;
+        border-style: dashed;
+        box-shadow: none;
+        background: transparent;
+        min-height: 3.5rem;
+      }
+
+      .save {
+        position: fixed;
+        inset: auto 0 0 0;
+        background: var(--por);
+        border-top: 3px solid var(--ink);
+        z-index: 10;
+      }
+      .save > div {
+        max-width: 1160px;
+        margin: 0 auto;
+        padding: 0.7rem max(1rem, 4vw);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+      .save .st {
+        margin-right: auto;
+        font-weight: 800;
+        display: flex;
+        gap: 0.6rem;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .dot {
+        width: 0.7rem;
+        height: 0.7rem;
+        border-radius: 50%;
+        background: var(--yel);
+        border: 2px solid var(--ink);
+      }
+      .save a {
+        color: var(--blu);
+        font-weight: 900;
+      }
+      .save .btn {
+        min-width: 8rem;
+      }
+      @media (max-width: 40rem) {
+        .save .st {
+          font-size: 0.9rem;
+        }
+        .save .btn.flat {
+          display: none;
+        }
+        .save .btn {
+          flex: 1;
+        }
+      }
+      .note {
+        margin: 3rem 0 0;
+        max-width: 40rem;
+        font-size: 0.9rem;
+        color: var(--muted);
+        font-weight: 700;
+      }
+
+      /* ---- preview controls (not part of the app) ---- */
+      .pv {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        background: #1c1512;
+        color: #fff;
+        font:
+          700 0.9rem Mulish,
+          sans-serif;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem 1.25rem;
+        align-items: center;
+        padding: 0.55rem max(1rem, 4vw);
+      }
+      .pv .seg2 {
+        display: inline-flex;
+        border: 2px solid #fff;
+        border-radius: 0.5rem;
+        overflow: hidden;
+      }
+      .pv .seg2 button {
+        border: 0;
+        background: transparent;
+        color: #fff;
+        padding: 0.35rem 0.9rem;
+        font-weight: 900;
+      }
+      .pv .seg2 button[aria-pressed='true'] {
+        background: #fff;
+        color: #1c1512;
+      }
+      .pv label {
+        display: inline-flex;
+        gap: 0.4rem;
+        align-items: center;
+        cursor: pointer;
+      }
+      .pv output {
+        margin-left: auto;
+        font-weight: 900;
+        color: var(--yel);
+      }
+      .badge {
+        position: absolute;
+        z-index: 25;
+        min-width: 1.15rem;
+        height: 1.15rem;
+        padding: 0 0.2rem;
+        border-radius: 0.6rem;
+        background: var(--red);
+        color: #fff;
+        font:
+          900 0.65rem/1.15rem Mulish,
+          sans-serif;
+        text-align: center;
+        pointer-events: none;
+        box-shadow: 0 0 0 2px #fff;
+      }
+      #badges {
+        position: absolute;
+        inset: 0 auto auto 0;
+        width: 0;
+        height: 0;
+      }
+
+      /* ---- "na": toolbars ---- */
+      .after .row {
+        grid-template-columns: auto auto minmax(0, 1fr);
+      }
+      .after .row .mv {
+        grid-area: 1/2;
+        display: grid;
+        grid-template-columns: 1.75rem 2rem;
+        grid-template-rows: 1.625rem 1.625rem;
+        align-items: center;
+        justify-items: center;
+        margin-right: 0.35rem;
+        padding: 0 2px;
+        border: 2px solid transparent;
+        border-radius: 0.55rem;
+        background: color-mix(in srgb, var(--ink) 7%, transparent);
+      }
+      .after .row .mv > .x:nth-child(1) {
+        grid-area: 1/1;
+      }
+      .after .row .mv > .x:nth-child(2) {
+        grid-area: 2/1;
+      }
+      .after .row .mv > .x:nth-child(3) {
+        grid-area: 1/2/3/3;
+        min-height: 2rem;
+        height: 2rem;
+        min-width: 2rem;
+        border-left: 2px solid color-mix(in srgb, var(--ink) 10%, transparent);
+        border-radius: 0 0.4rem 0.4rem 0;
+        margin-left: 2px;
+      }
+      .after .row .ov {
+        grid-area: 1/3;
+      }
+      .after .row .used {
+        grid-area: 2/3;
+      }
+      .after .row.empty .mv {
+        visibility: hidden;
+      }
+      .after .step .sh2 .mv {
+        display: inline-flex;
+        align-items: center;
+        border: 2px solid transparent;
+        border-radius: 0.55rem;
+        background: color-mix(in srgb, var(--ink) 7%, transparent);
+        padding: 0 2px;
+      }
+      .after .step .sh2 .mv .x {
+        opacity: 1;
+        min-width: 2.25rem;
+        min-height: 2.25rem;
+      }
+      .after .step .sh2 .mv .x:nth-child(3) {
+        border-left: 2px solid color-mix(in srgb, var(--ink) 10%, transparent);
+        border-radius: 0 0.4rem 0.4rem 0;
+        margin-left: 2px;
+      }
+      .after .step .sh2 .mv .x:nth-child(3):hover {
+        background: color-mix(in srgb, var(--red) 12%, transparent);
+      }
+      .after .chips[role='toolbar'] .chip .mode {
+        outline: none;
+      }
+      .after .mv .x:not(:disabled):hover {
+        background: color-mix(in srgb, var(--ink) 10%, transparent);
+        color: var(--ink);
+      }
+      .after .chips[role='toolbar'] {
+        padding: 2px;
+        margin-left: -2px;
+      }
+      @media (hover: none) {
+        .after .row .grip {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="pv" role="region" aria-label="Voorbeeldinstellingen">
+      <span>Knoppen per rij en stap:</span>
+      <span class="seg2" role="group" aria-label="Voor of na"
+        ><button id="b-before" aria-pressed="false">Voor</button><button id="b-after" aria-pressed="true">Na (toolbar)</button></span
+      >
+      <label><input type="checkbox" id="showstops" /> Tab-volgorde tonen</label>
+      <span
+        >Probeer het: klik in een veld en druk op Tab; in "Na" werken ← → ↑ ↓ binnen een groep (Alt+pijl en verplaatsen zijn hier niet
+        uitgewerkt).</span
+      >
+      <output id="count" aria-live="polite"></output>
+    </div>
+    <div id="badges"></div>
+
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <symbol id="link" viewBox="0 0 24 24">
+        <path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1" />
+        <path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1" />
+      </symbol>
+      <symbol id="pin" viewBox="0 0 24 24">
+        <path d="M12 17v5" />
+        <path d="M8 3h8l-1 7 3 4H6l3-4z" />
+      </symbol>
+      <symbol id="trash" viewBox="0 0 24 24">
+        <path d="M4 7h16" />
+        <path d="M9 7V4h6v3" />
+        <path d="M6 7l1 13h10l1-13" />
+      </symbol>
+      <symbol id="check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7" /></symbol>
+      <symbol id="close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" /></symbol>
+      <symbol id="grip" viewBox="0 0 24 24"><path d="M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01" stroke-width="3.2" /></symbol>
+      <symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></symbol>
+      <symbol id="clock" viewBox="0 0 24 24">
+        <circle cx="12" cy="13" r="8" />
+        <path d="M12 9v4l2.5 2M9.5 2h5" />
+      </symbol>
+      <symbol id="therm" viewBox="0 0 24 24"><path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0z" /></symbol>
+      <symbol id="cam" viewBox="0 0 24 24">
+        <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
+        <circle cx="12" cy="13" r="3.5" />
+      </symbol>
+      <symbol id="up" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6" /></symbol>
+      <symbol id="down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" /></symbol>
+      <symbol id="back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" /></symbol>
+      <symbol id="arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></symbol>
+    </svg>
+
+    <header class="top">
+      <div><b>Familiekookboek</b><span>dieter.vbroeck@gmail.com</span></div>
+    </header>
+
+    <main>
+      <a class="back" href="#"
+        ><svg class="i"><use href="#back" /></svg>Terug naar het recept</a
+      >
+
+      <div class="layout">
+        <div>
+          <input class="title" value="Appeltaart" aria-label="Titel" autocomplete="off" />
+          <div class="intro">
+            <label class="l" for="intro">Inleiding</label>
+            <textarea class="ta" id="intro" rows="2">Met een dikke laag zure appels en een rooster van deeg bovenop.</textarea>
+          </div>
+
+          <section>
+            <div class="sh">
+              <h2>Ingrediënten</h2>
+              <small>Hoeveelheid eerst, dan de naam</small>
+            </div>
+            <ul class="rows ing">
+              <li class="row">
+                <span class="grip"
+                  ><svg class="i"><use href="#grip" /></svg></span
+                ><span class="mv"
+                  ><button class="x" aria-label="Omhoog" disabled>
+                    <svg class="i"><use href="#up" /></svg></button
+                  ><button class="x" aria-label="Omlaag">
+                    <svg class="i"><use href="#down" /></svg></button
+                ></span>
+                <div class="ov">
+                  <span class="box"></span>
+                  <div class="mirror"><b>250 g</b> zelfrijzende bloem</div>
+                  <input value="250 g zelfrijzende bloem" aria-label="Ingrediënt 1" />
+                </div>
+                <span class="used">Gebruikt in stap 1</span
+                ><button class="x" aria-label="Verwijder">
+                  <svg class="i"><use href="#close" /></svg>
+                </button>
+              </li>
+              <li class="row peek">
+                <span class="grip"
+                  ><svg class="i"><use href="#grip" /></svg></span
+                ><span class="mv"
+                  ><button class="x" aria-label="Omhoog">
+                    <svg class="i"><use href="#up" /></svg></button
+                  ><button class="x" aria-label="Omlaag">
+                    <svg class="i"><use href="#down" /></svg></button
+                ></span>
+                <div class="ov">
+                  <span class="box"></span>
+                  <div class="mirror"><b>150 g</b> koude boter</div>
+                  <input value="150 g koude boter" aria-label="Ingrediënt 2" />
+                </div>
+                <span class="used">Gebruikt in stap 1</span
+                ><button class="x" aria-label="Verwijder">
+                  <svg class="i"><use href="#close" /></svg>
+                </button>
+              </li>
+              <li class="row">
+                <span class="grip"
+                  ><svg class="i"><use href="#grip" /></svg></span
+                ><span class="mv"
+                  ><button class="x" aria-label="Omhoog">
+                    <svg class="i"><use href="#up" /></svg></button
+                  ><button class="x" aria-label="Omlaag">
+                    <svg class="i"><use href="#down" /></svg></button
+                ></span>
+                <div class="ov">
+                  <span class="box"></span>
+                  <div class="mirror"><b>100 g</b> basterdsuiker</div>
+                  <input value="100 g basterdsuiker" aria-label="Ingrediënt 3" />
+                </div>
+                <span class="used">Gebruikt in stap 1</span
+                ><button class="x" aria-label="Verwijder">
+                  <svg class="i"><use href="#close" /></svg>
+                </button>
+              </li>
+              <li class="row">
+                <span class="grip"
+                  ><svg class="i"><use href="#grip" /></svg></span
+                ><span class="mv"
+                  ><button class="x" aria-label="Omhoog">
+                    <svg class="i"><use href="#up" /></svg></button
+                  ><button class="x" aria-label="Omlaag">
+                    <svg class="i"><use href="#down" /></svg></button
+                ></span>
+                <div class="ov">
+                  <span class="box"></span>
+                  <div class="mirror"><b>1</b> ei</div>
+                  <input value="1 ei" aria-label="Ingrediënt 4" />
+                </div>
+                <span class="used">Gebruikt in stap 1</span
+                ><button class="x" aria-label="Verwijder">
+                  <svg class="i"><use href="#close" /></svg>
+                </button>
+              </li>
+              <li class="row">
+                <span class="grip"
+                  ><svg class="i"><use href="#grip" /></svg></span
+                ><span class="mv"
+                  ><button class="x" aria-label="Omhoog">
+                    <svg class="i"><use href="#up" /></svg></button
+                  ><button class="x" aria-label="Omlaag">
+                    <svg class="i"><use href="#down" /></svg></button
+                ></span>
+                <div class="ov">
+                  <span class="box"></span>
+                  <div class="mirror"><b>½ tl</b> zout</div>
+                  <input value="½ tl zout" aria-label="Ingrediënt 5" />
+                </div>
+                <span class="used">Gebruikt in stap 1, 5</span
+                ><button class="x" aria-label="Verwijder">
+                  <svg class="i"><use href="#close" /></svg>
+                </button>
+              </li>
+              <li class="row">
+                <span class="grip"
+                  ><svg class="i"><use href="#grip" /></svg></span
+                ><span class="mv"
+                  ><button class="x" aria-label="Omhoog">
+                    <svg class="i"><use href="#up" /></svg></button
+                  ><button class="x" aria-label="Omlaag">
+                    <svg class="i"><use href="#down" /></svg></button
+                ></span>
+                <div class="ov">
+                  <span class="box"></span>
+                  <div class="mirror"><b>1 kg</b> zure appels</div>
+                  <input value="1 kg zure appels" aria-label="Ingrediënt 6" />
+                </div>
+                <span class="used">Gebruikt in stap 4</span
+                ><button class="x" aria-label="Verwijder">
+                  <svg class="i"><use href="#close" /></svg>
+                </button>
+              </li>
+              <li class="row">
+                <span class="grip"
+                  ><svg class="i"><use href="#grip" /></svg></span
+                ><span class="mv"
+                  ><button class="x" aria-label="Omhoog">
+                    <svg class="i"><use href="#up" /></svg></button
+                  ><button class="x" aria-label="Omlaag" disabled>
+                    <svg class="i"><use href="#down" /></svg></button
+                ></span>
+                <div class="ov">
+                  <span class="box"></span>
+                  <div class="mirror"><b>¾ tl</b> kaneel</div>
+                  <input value="¾ tl kaneel" aria-label="Ingrediënt 7" />
+                </div>
+                <span class="used">Gebruikt in stap 4</span
+                ><button class="x" aria-label="Verwijder">
+                  <svg class="i"><use href="#close" /></svg>
+                </button>
+              </li>
+              <li class="row empty">
+                <span class="grip"
+                  ><svg class="i"><use href="#grip" /></svg></span
+                ><span class="mv" style="visibility: hidden"
+                  ><button class="x" tabindex="-1" aria-hidden="true">
+                    <svg class="i"><use href="#up" /></svg></button
+                  ><button class="x" tabindex="-1" aria-hidden="true">
+                    <svg class="i"><use href="#down" /></svg></button
+                ></span>
+                <div class="ov">
+                  <span class="box"></span>
+                  <div class="mirror"></div>
+                  <input placeholder="bv. 2 el poedersuiker" aria-label="Nieuw ingrediënt" />
+                </div>
+                <button class="x" aria-label="Verwijder">
+                  <svg class="i"><use href="#close" /></svg>
+                </button>
+              </li>
+            </ul>
+            <p class="hintrow"><kbd>Tab</kbd> voor de volgende regel</p>
+          </section>
+
+          <section>
+            <div class="sh">
+              <h2>Bereiding</h2>
+              <small>Typ de stap, de rest vult zich vanzelf</small>
+            </div>
+            <ol class="steps">
+              <li class="step">
+                <div class="sh2">
+                  <span class="lab"
+                    ><span class="grip" style="min-height: 0"
+                      ><svg class="i"><use href="#grip" /></svg></span
+                    >Stap 1</span
+                  ><span class="mv"
+                    ><button class="x" aria-label="Omhoog" disabled>
+                      <svg class="i"><use href="#up" /></svg></button
+                    ><button class="x" aria-label="Omlaag">
+                      <svg class="i"><use href="#down" /></svg></button></span
+                  ><button class="x" aria-label="Verwijder stap">
+                    <svg class="i"><use href="#trash" /></svg>
+                  </button>
+                </div>
+                <div class="ov step">
+                  <span class="box"></span>
+                  <div class="mirror">
+                    Kneed <mark class="auto" data-a="a1">bloem</mark>, <mark class="auto" data-a="a2">boter</mark>,
+                    <mark class="auto" data-a="a3">suiker</mark>, <mark class="auto" data-a="a4">ei</mark> en
+                    <mark class="auto" data-a="a5">zout</mark> snel tot een deeg.
+                  </div>
+                  <textarea aria-label="Stap 1" rows="2">Kneed bloem, boter, suiker, ei en zout snel tot een deeg.</textarea>
+                </div>
+                <ul class="chips">
+                  <li class="chip" data-a="a1">
+                    <button class="mode" aria-label="Vastzetten en openen">
+                      <svg class="i"><use href="#link" /></svg></button
+                    ><button class="core">
+                      <span><span class="q">250 g</span> zelfrijzende bloem</span>
+                    </button>
+                  </li>
+                  <li class="chip" data-a="a2">
+                    <button class="mode" aria-label="Vastzetten en openen">
+                      <svg class="i"><use href="#link" /></svg></button
+                    ><button class="core">
+                      <span><span class="q">150 g</span> koude boter</span>
+                    </button>
+                  </li>
+                  <li class="chip" data-a="a3">
+                    <button class="mode" aria-label="Vastzetten en openen">
+                      <svg class="i"><use href="#link" /></svg></button
+                    ><button class="core">
+                      <span><span class="q">100 g</span> basterdsuiker</span>
+                    </button>
+                  </li>
+                  <li class="chip" data-a="a4">
+                    <button class="mode" aria-label="Vastzetten en openen">
+                      <svg class="i"><use href="#link" /></svg></button
+                    ><button class="core">
+                      <span><span class="q">1</span> ei</span>
+                    </button>
+                  </li>
+                  <li class="chip" data-a="a5">
+                    <button class="mode" aria-label="Vastzetten en openen">
+                      <svg class="i"><use href="#link" /></svg></button
+                    ><button class="core">
+                      <span><span class="q">½ tl</span> zout</span>
+                    </button>
+                  </li>
+                  <li class="adds">
+                    <button class="add">
+                      <svg class="i"><use href="#plus" /></svg>Ingrediënt</button
+                    ><button class="add">
+                      <svg class="i"><use href="#plus" /></svg>Oven</button
+                    ><button class="add">
+                      <svg class="i"><use href="#plus" /></svg>Timer
+                    </button>
+                  </li>
+                </ul>
+              </li>
+
+              <li class="step">
+                <div class="sh2">
+                  <span class="lab"
+                    ><span class="grip" style="min-height: 0"
+                      ><svg class="i"><use href="#grip" /></svg></span
+                    >Stap 2</span
+                  ><span class="mv"
+                    ><button class="x" aria-label="Omhoog">
+                      <svg class="i"><use href="#up" /></svg></button
+                    ><button class="x" aria-label="Omlaag">
+                      <svg class="i"><use href="#down" /></svg></button></span
+                  ><button class="x" aria-label="Verwijder stap">
+                    <svg class="i"><use href="#trash" /></svg>
+                  </button>
+                </div>
+                <div class="ov step">
+                  <span class="box"></span>
+                  <div class="mirror">
+                    Wikkel het deeg in folie en laat het <mark class="auto" data-a="b1">30 minuten</mark> rusten in de koelkast.
+                  </div>
+                  <textarea aria-label="Stap 2" rows="2">Wikkel het deeg in folie en laat het 30 minuten rusten in de koelkast.</textarea>
+                </div>
+                <ul class="chips">
+                  <li class="chip" data-a="b1">
+                    <button class="mode" aria-label="Vastzetten en openen">
+                      <svg class="i"><use href="#link" /></svg></button
+                    ><button class="core">
+                      <svg class="i"><use href="#clock" /></svg><span><span class="t">30 min</span> · Deeg rust</span>
+                    </button>
+                  </li>
+                </ul>
+              </li>
+
+              <li class="step focus">
+                <div class="sh2">
+                  <span class="lab"
+                    ><span class="grip" style="min-height: 0"
+                      ><svg class="i"><use href="#grip" /></svg></span
+                    >Stap 3</span
+                  ><span class="mv"
+                    ><button class="x" aria-label="Omhoog">
+                      <svg class="i"><use href="#up" /></svg></button
+                    ><button class="x" aria-label="Omlaag">
+                      <svg class="i"><use href="#down" /></svg></button></span
+                  ><button class="x" aria-label="Verwijder stap">
+                    <svg class="i"><use href="#trash" /></svg>
+                  </button>
+                </div>
+                <div class="ov step">
+                  <span class="box"></span>
+                  <div class="mirror">
+                    Verwarm de oven voor op <mark class="auto" data-a="c1">180 graden</mark>. Vet een springvorm in met een
+                    <mark class="man" data-a="c2">flinke klont boter</mark>.
+                  </div>
+                  <textarea aria-label="Stap 3" rows="2">
+Verwarm de oven voor op 180 graden. Vet een springvorm in met een flinke klont boter.</textarea>
+                </div>
+                <ul class="chips">
+                  <li class="chip" data-a="c1">
+                    <button class="mode" aria-label="Vastzetten en openen">
+                      <svg class="i"><use href="#link" /></svg></button
+                    ><button class="core">
+                      <svg class="i"><use href="#therm" /></svg><span><span class="t">180 °C</span> oven</span>
+                    </button>
+                  </li>
+                  <li class="chip pend" data-a="c2">
+                    <svg class="i" style="color: var(--blu)"><use href="#pin" /></svg>
+                    <span class="old"><span class="q">1 klontje</span> boter</span><svg class="i" style="color: var(--blu)"><use href="#arrow" /></svg
+                    ><span><span class="q">1 klont</span> boter</span>
+                    <span class="dec"
+                      ><button class="ok" aria-label="Wijziging overnemen">
+                        <svg class="i"><use href="#check" /></svg></button
+                      ><button class="no" aria-label="Oude waarde houden">
+                        <svg class="i"><use href="#close" /></svg></button
+                    ></span>
+                  </li>
+                  <li class="adds">
+                    <button class="add">
+                      <svg class="i"><use href="#plus" /></svg>Ingrediënt</button
+                    ><button class="add">
+                      <svg class="i"><use href="#plus" /></svg>Timer
+                    </button>
+                  </li>
+                </ul>
+              </li>
+
+              <li class="step">
+                <div class="sh2">
+                  <span class="lab"
+                    ><span class="grip" style="min-height: 0"
+                      ><svg class="i"><use href="#grip" /></svg></span
+                    >Stap 4</span
+                  ><span class="mv"
+                    ><button class="x" aria-label="Omhoog">
+                      <svg class="i"><use href="#up" /></svg></button
+                    ><button class="x" aria-label="Omlaag">
+                      <svg class="i"><use href="#down" /></svg></button></span
+                  ><button class="x" aria-label="Verwijder stap">
+                    <svg class="i"><use href="#trash" /></svg>
+                  </button>
+                </div>
+                <div class="ov step">
+                  <span class="box"></span>
+                  <div class="mirror">
+                    Schil de <mark class="auto" data-a="d1">appels</mark>, snijd ze in blokjes en meng ze met de
+                    <mark class="auto" data-a="d2">kaneel</mark> en een <mark class="man" data-a="d3">scheutje citroensap</mark>.
+                  </div>
+                  <textarea aria-label="Stap 4" rows="2">
+Schil de appels, snijd ze in blokjes en meng ze met de kaneel en een scheutje citroensap.</textarea>
+                </div>
+                <ul class="chips">
+                  <li class="chip" data-a="d1">
+                    <button class="mode" aria-label="Vastzetten en openen">
+                      <svg class="i"><use href="#link" /></svg></button
+                    ><button class="core">
+                      <span><span class="q">1 kg</span> zure appels</span>
+                    </button>
+                  </li>
+                  <li class="chip" data-a="d2">
+                    <button class="mode" aria-label="Vastzetten en openen">
+                      <svg class="i"><use href="#link" /></svg></button
+                    ><button class="core">
+                      <span><span class="q">¾ tl</span> kaneel</span>
+                    </button>
+                  </li>
+                  <li class="chip man" data-a="d3">
+                    <button class="mode" aria-label="Laat de tekst volgen">
+                      <svg class="i"><use href="#pin" /></svg></button
+                    ><button class="core">
+                      <span><span class="q">1 scheutje</span> citroensap</span>
+                    </button>
+                  </li>
+                  <li class="adds">
+                    <button class="add">
+                      <svg class="i"><use href="#plus" /></svg>Ingrediënt</button
+                    ><button class="add">
+                      <svg class="i"><use href="#plus" /></svg>Oven</button
+                    ><button class="add">
+                      <svg class="i"><use href="#plus" /></svg>Timer
+                    </button>
+                  </li>
+                </ul>
+              </li>
+
+              <li class="step">
+                <div class="sh2">
+                  <span class="lab"
+                    ><span class="grip" style="min-height: 0"
+                      ><svg class="i"><use href="#grip" /></svg></span
+                    >Stap 5</span
+                  ><span class="mv"
+                    ><button class="x" aria-label="Omhoog">
+                      <svg class="i"><use href="#up" /></svg></button
+                    ><button class="x" aria-label="Omlaag">
+                      <svg class="i"><use href="#down" /></svg></button></span
+                  ><button class="x" aria-label="Verwijder stap">
+                    <svg class="i"><use href="#trash" /></svg>
+                  </button>
+                </div>
+                <div class="ov step">
+                  <span class="box"></span>
+                  <div class="mirror">
+                    Smoor de appelblokjes zachtjes in een pan met een snuifje <mark class="auto" data-a="e1">zout</mark> tot ze net zacht zijn.
+                  </div>
+                  <textarea aria-label="Stap 5" rows="2">
+Smoor de appelblokjes zachtjes in een pan met een snuifje zout tot ze net zacht zijn.</textarea>
+                </div>
+                <ul class="chips">
+                  <li class="chip" data-a="e1">
+                    <button class="mode" aria-label="Vastzetten en openen">
+                      <svg class="i"><use href="#link" /></svg></button
+                    ><button class="core">
+                      <span><span class="q">1 snuf</span> zout</span>
+                    </button>
+                  </li>
+                  <li class="chip del">
+                    <svg class="i"><use href="#pin" /></svg><svg class="i"><use href="#clock" /></svg>
+                    <span class="strike"><span class="t">20 min</span> · Appels smoren</span>
+                    <span class="dec"
+                      ><button class="ok red" aria-label="Timer verwijderen">
+                        <svg class="i"><use href="#trash" /></svg></button
+                      ><button class="no" aria-label="Timer houden">
+                        <svg class="i"><use href="#close" /></svg></button
+                    ></span>
+                  </li>
+                  <li class="adds">
+                    <button class="add">
+                      <svg class="i"><use href="#plus" /></svg>Ingrediënt</button
+                    ><button class="add">
+                      <svg class="i"><use href="#plus" /></svg>Oven
+                    </button>
+                  </li>
+                </ul>
+              </li>
+
+              <li class="step peek">
+                <div class="sh2">
+                  <span class="lab"
+                    ><span class="grip" style="min-height: 0"
+                      ><svg class="i"><use href="#grip" /></svg></span
+                    >Stap 10</span
+                  ><span class="mv"
+                    ><button class="x" aria-label="Omhoog">
+                      <svg class="i"><use href="#up" /></svg></button
+                    ><button class="x" aria-label="Omlaag">
+                      <svg class="i"><use href="#down" /></svg></button></span
+                  ><button class="x" aria-label="Verwijder stap">
+                    <svg class="i"><use href="#trash" /></svg>
+                  </button>
+                </div>
+                <div class="ov step">
+                  <span class="box"></span>
+                  <div class="mirror">
+                    Bak de taart in het midden van de oven op 180 graden in <mark class="auto hot" data-a="f2">50 minuten</mark> goudbruin.
+                  </div>
+                  <textarea aria-label="Stap 10" rows="2">Bak de taart in het midden van de oven op 180 graden in 50 minuten goudbruin.</textarea>
+                </div>
+                <ul class="chips">
+                  <li class="chip hot" data-a="f2">
+                    <button class="mode" aria-label="Vastzetten en openen">
+                      <svg class="i"><use href="#link" /></svg></button
+                    ><button class="core">
+                      <svg class="i"><use href="#clock" /></svg><span><span class="t">50 min</span> · Bakken</span>
+                    </button>
+                    <div class="pop side" role="dialog" aria-label="Timer aanpassen">
+                      <span class="tip"></span>
+                      <div class="pair">
+                        <div><label>Minuten</label><input class="in" value="50" inputmode="numeric" /></div>
+                        <div><label>Naam</label><input class="in" value="Bakken" /></div>
+                      </div>
+                      <div class="seg" role="group" aria-label="Volgt dit de tekst">
+                        <button aria-pressed="true">
+                          <svg class="i"><use href="#link" /></svg>Volgt tekst</button
+                        ><button aria-pressed="false">
+                          <svg class="i"><use href="#pin" /></svg>Vast
+                        </button>
+                      </div>
+                      <p>
+                        <b>Volgt tekst:</b> verandert mee met "50 minuten" in de stap. <b>Vast:</b> blijft zoals hij is; de tekst stelt alleen een
+                        wijziging voor. Haal je de tekst weg, dan kun je de timer houden of weggooien.
+                      </p>
+                      <button class="rm">
+                        <svg class="i"><use href="#trash" /></svg>Timer verwijderen
+                      </button>
+                    </div>
+                  </li>
+                  <li class="adds">
+                    <button class="add">
+                      <svg class="i"><use href="#plus" /></svg>Ingrediënt</button
+                    ><button class="add ghost" title="Terugzetten">
+                      <svg class="i"><use href="#therm" /></svg>180 °C oven<svg class="i"><use href="#plus" /></svg>
+                    </button>
+                  </li>
+                </ul>
+              </li>
+            </ol>
+            <button class="btn addstep">
+              <svg class="i"><use href="#plus" /></svg>Stap toevoegen
+            </button>
+          </section>
+          <p class="note" style="margin-bottom: 22rem">
+            Preview: stappen 6 t/m 9 en 11 t/m 13 zijn weggelaten. Gele streep = anker van een chip die de tekst volgt, blauwe streep = anker van een
+            vaste chip. Zweef over een chip om zijn plek in de tekst te zien. In stap 10 is de oven-chip weggehaald (doorgestreept, terug te zetten)
+            en staat de timer-popup open.
+          </p>
+        </div>
+
+        <aside class="rail">
+          <div>
+            <div class="photo">
+              <div class="shot">
+                <img src="../../packages/web/public/img/appeltaart.jpg" alt="Foto van de appeltaart" />
+                <div class="acts">
+                  <button class="btn">
+                    <svg class="i"><use href="#cam" /></svg>Andere foto</button
+                  ><button class="btn flat" aria-label="Foto verwijderen">
+                    <svg class="i"><use href="#trash" /></svg>
+                  </button>
+                </div>
+              </div>
+              <svg viewBox="0 0 6 1" class="band" aria-hidden="true">
+                <pattern id="tp" width="1" height="1" patternUnits="userSpaceOnUse">
+                  <image href="../../packages/web/public/img/tile/tile10-blue.svg" width="1" height="1" />
+                </pattern>
+                <rect width="6" height="1" fill="url(#tp)" />
+              </svg>
+            </div>
+            <p class="hint">Wordt automatisch verkleind. Op je telefoon kies je uit camera of galerij.</p>
+          </div>
+          <div>
+            <label class="l" for="author">Van wie is het recept?</label>
+            <input class="in" id="author" value="Oma" />
+          </div>
+          <div class="pair">
+            <div><label class="l" for="serv">Personen</label><input class="in" id="serv" value="8" inputmode="numeric" /></div>
+            <div><label class="l" for="time">Tijd</label><input class="in" id="time" value="1u 20" /></div>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <div class="save">
+      <div>
+        <span class="st"><span class="dot"></span>Niet opgeslagen<span style="color: var(--muted)">·</span><a href="#">2 voorstellen open</a></span>
+        <button class="btn flat">Annuleren</button>
+        <button class="btn main">Opslaan</button>
+      </div>
+    </div>
+
+    <script>
+      document.querySelectorAll('[data-a]').forEach((el) => {
+        const id = el.dataset.a;
+        const set = (on) => document.querySelectorAll('[data-a="' + id + '"]').forEach((x) => x.classList.toggle('hot', on));
+        el.addEventListener('mouseenter', () => set(true));
+        el.addEventListener('mouseleave', () => set(false));
+      });
+
+      (function () {
+        const body = document.body;
+        const q = (sel, root = document) => [...root.querySelectorAll(sel)];
+        const home = new WeakMap();
+
+        function items(tb) {
+          if (tb.classList.contains('chips')) return q('button.core, .add', tb).filter((b) => !b.disabled);
+          return q('button', tb).filter((b) => !b.disabled);
+        }
+        function rove(tb, active) {
+          const its = items(tb);
+          if (!its.length) return;
+          const a = active && its.includes(active) ? active : its[0];
+          its.forEach((b) => (b.tabIndex = b === a ? 0 : -1));
+        }
+        function toolbarOn(tb, label) {
+          tb.setAttribute('role', 'toolbar');
+          tb.setAttribute('aria-label', label);
+          rove(tb);
+        }
+        function toolbarOff(tb) {
+          tb.removeAttribute('role');
+          tb.removeAttribute('aria-label');
+          q('button', tb).forEach((b) => b.removeAttribute('tabindex'));
+        }
+
+        function setMode(after) {
+          body.classList.toggle('after', after);
+          document.getElementById('b-before').setAttribute('aria-pressed', String(!after));
+          document.getElementById('b-after').setAttribute('aria-pressed', String(after));
+          // ingredient rows
+          q('.row').forEach((row, i) => {
+            const mv = row.querySelector('.mv');
+            if (row.classList.contains('empty')) {
+              return;
+            }
+            const xBtn = after ? row.querySelector(':scope > .x') : row.querySelector('.mv > .x:nth-child(3)');
+            if (after && xBtn) {
+              mv.appendChild(xBtn);
+            }
+            if (!after && xBtn) {
+              row.insertBefore(xBtn, row.querySelector('.ov').nextSibling);
+            }
+            if (after) toolbarOn(mv, 'Acties voor ingrediënt ' + (i + 1));
+            else toolbarOff(mv);
+          });
+          // steps
+          q('.step').forEach((st, i) => {
+            const sh = st.querySelector('.sh2');
+            const mv = sh.querySelector('.mv');
+            const xBtn = after ? sh.querySelector(':scope > .x') : mv.querySelector('.x:nth-child(3)');
+            if (after && xBtn) mv.appendChild(xBtn);
+            if (!after && xBtn) sh.appendChild(xBtn);
+            if (after) toolbarOn(mv, 'Acties voor stap ' + (i + 1));
+            else toolbarOff(mv);
+            const ch = st.querySelector('.chips');
+            if (ch) {
+              if (after) toolbarOn(ch, 'Chips van stap ' + (i + 1));
+              else toolbarOff(ch);
+              q('.mode', ch).forEach((m) => {
+                if (after) m.tabIndex = -1;
+                else m.removeAttribute('tabindex');
+              });
+              q('.pop input, .pop button', ch).forEach((el) => {
+                el.removeAttribute('tabindex');
+              });
+            }
+          });
+          stops();
+        }
+
+        document.addEventListener('keydown', (e) => {
+          if (!body.classList.contains('after')) return;
+          const tb = e.target.closest && e.target.closest('[role=toolbar]');
+          if (
+            tb &&
+            !e.target.closest('.pop') &&
+            ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key) &&
+            e.target.tagName === 'BUTTON'
+          ) {
+            const its = items(tb);
+            const i = its.indexOf(e.target);
+            if (i < 0) return;
+            let n = i;
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') n = (i + 1) % its.length;
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') n = (i - 1 + its.length) % its.length;
+            if (e.key === 'Home') n = 0;
+            if (e.key === 'End') n = its.length - 1;
+            e.preventDefault();
+            rove(tb, its[n]);
+            its[n].focus();
+          }
+        });
+        document.addEventListener('focusin', (e) => {
+          if (!body.classList.contains('after')) return;
+          const tb = e.target.closest && e.target.closest('[role=toolbar]');
+          if (tb && e.target.tagName === 'BUTTON' && !e.target.closest('.pop') && items(tb).includes(e.target)) rove(tb, e.target);
+        });
+
+        // tab stops: number them, count them
+        function focusables() {
+          return q('button,input,textarea,a[href]').filter(
+            (el) =>
+              !el.disabled &&
+              el.getAttribute('tabindex') !== '-1' &&
+              !el.closest('[aria-hidden=true]') &&
+              !el.closest('.pv') &&
+              !el.closest('svg') &&
+              el.getClientRects().length &&
+              getComputedStyle(el).visibility !== 'hidden',
+          );
+        }
+        function stops() {
+          const f = focusables();
+          document.getElementById('count').textContent = f.length + ' Tab-stops in dit voorbeeld';
+          const host = document.getElementById('badges');
+          host.innerHTML = '';
+          if (!document.getElementById('showstops').checked) return;
+          f.forEach((el, i) => {
+            const r = el.getBoundingClientRect();
+            const b = document.createElement('span');
+            b.className = 'badge';
+            b.textContent = i + 1;
+            b.style.left = r.left + scrollX - 6 + 'px';
+            b.style.top = r.top + scrollY - 6 + 'px';
+            host.appendChild(b);
+          });
+        }
+        document.getElementById('showstops').addEventListener('change', stops);
+        document.getElementById('b-before').addEventListener('click', () => setMode(false));
+        document.getElementById('b-after').addEventListener('click', () => setMode(true));
+        addEventListener('resize', stops);
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(stops);
+        if (location.hash.includes('stops')) document.getElementById('showstops').checked = true;
+        if (location.hash.includes('before')) stops();
+        else setMode(true);
+        window.__setMode = setMode;
+        window.__stops = stops;
+      })();
+    </script>
+  </body>
+</html>

@@ -2,7 +2,9 @@
 
 ## Context
 
-`shared/RecipeForm.tsx` renders every field in one `max-w-xl` column with a single submit `Button`, posting a plain `<Form method="post">` to the current route; both routes' actions validate with `shared/recipeValidation.ts` and answer 400 with `{errors, values}`. The approved mockup (a static HTML preview, not in the repo) fixes the look: the existing world (rice paper, `border-3 border-ink`, hard shadows, Mulish, red/jade/blu/yel), a large inline title, a main column plus a 20rem sticky rail, a sticky bottom bar. This change builds the shell and the base fields. The other five changes add sections to it and must not need to restructure it: see "Seams" below.
+**Design reference:** the approved mockup is `docs/design/recipe-editor.html` (static, open it in a browser; see `docs/design/README.md`). It shows the layout, every chip state and the keyboard toolbars; the app's own tokens in `packages/web/app/app.css` win where the two differ.
+
+`shared/RecipeForm.tsx` renders every field in one `max-w-xl` column with a single submit `Button`, posting a plain `<Form method="post">` to the current route; both routes' actions validate with `shared/recipeValidation.ts` and answer 400 with `{errors, values}`. The approved mockup (`docs/design/recipe-editor.html`) fixes the look: the existing world (rice paper, `border-3 border-ink`, hard shadows, Mulish, red/jade/blu/yel), a large inline title, a main column plus a 20rem sticky rail, a sticky bottom bar. This change builds the shell and the base fields. The other five changes add sections to it and must not need to restructure it: see "Seams" below.
 
 ## Goals / Non-Goals
 

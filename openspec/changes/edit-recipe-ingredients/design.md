@@ -2,6 +2,8 @@
 
 ## Context
 
+**Design reference:** the approved mockup is `docs/design/recipe-editor.html` (static, open it in a browser; see `docs/design/README.md`). It shows the layout, every chip state and the keyboard toolbars; the app's own tokens in `packages/web/app/app.css` win where the two differ.
+
 `recipe-storage` already holds an ingredient as `quantity_text` (as typed), optional `amount` and `unit`, `name` and a `position`; `getRecipe` returns only `quantity_text` and `name`; `createRecipe` accepts `{name, quantityText, amount, unit}[]`; there is no `updateRecipe` path for ingredients. The editor shell and its `Draft` come from `edit-recipe-basics`: a section receives its slice and `onChange`, and lists post as a hidden JSON input. The approved mockup fixes the row: grip, a soft toolbar group (stacked ↑ ↓ pair with the delete button beside it), the field, and a small "Gebruikt in stap N" line below the field.
 
 ## Goals / Non-Goals

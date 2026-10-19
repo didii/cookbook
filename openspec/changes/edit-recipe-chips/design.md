@@ -2,6 +2,8 @@
 
 ## Context
 
+**Design reference:** the approved mockup is `docs/design/recipe-editor.html` (static, open it in a browser; see `docs/design/README.md`). It shows the layout, every chip state and the keyboard toolbars; the app's own tokens in `packages/web/app/app.css` win where the two differ.
+
 The recipe view's `Step` is `{ body, ingredients: {quantity_text, name}[], ovenTemperature?, timer?: {minutes, label?} }` (`app/lib/recipes.ts`, "meant to become" the stored type) and is rendered from hardcoded sample recipes; the database holds only `steps.body`, and `step_ingredients` links a step to a row of the recipe's ingredient list with an optional amount and unit (no free text, so it cannot hold a chip like "1 scheutje citroensap"; the decision, confirmed with the user, is to store free-text chips and leave that table unused). Already built by earlier changes: the editor shell and `Draft`, the ingredient rows (`Draft.ingredients` with client ids, `parseIngredient`), the step list with `StepText` (a mirror layer taking `marks`, and `onEdit` reporting the replaced range of every edit, code-point safe) and the atomic replace of steps in `updateRecipe`. See proposal.md for scope.
 
 ## Goals / Non-Goals
