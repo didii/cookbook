@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Form, Link, useNavigation } from 'react-router';
-import { isDirty, startingDraft, type Content } from '~/lib/draft';
+import { isDirty, moveIngredient, removeIngredient, startingDraft, typeIngredient, type Content } from '~/lib/draft';
 import { AuthorInput } from '~/shared/AuthorInput';
 import { cn } from '~/shared/cn';
 import type { Errors, Field } from '~/shared/recipeValidation';
+import { IngredientList } from './IngredientList';
 import { PhotoField, type PhotoState } from './PhotoField';
 import { SaveBar } from './SaveBar';
 import { useLeaveGuard } from './useLeaveGuard';
@@ -106,6 +107,19 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
             </label>
             <textarea {...text('intro')} rows={4} className={cn(inputClass, 'py-2')} />
           </div>
+          <section aria-labelledby="ingredients-heading">
+            <h2 id="ingredients-heading" className="text-2xl font-black">
+              Ingrediënten
+            </h2>
+            <p className="mb-2 text-muted">Hoeveelheid eerst, dan de naam.</p>
+            <IngredientList
+              rows={current.ingredients}
+              errors={errors.ingredients}
+              onType={(id, value) => setCurrent((c) => typeIngredient(c, id, value))}
+              onRemove={(id) => setCurrent((c) => removeIngredient(c, id))}
+              onMove={(id, to) => setCurrent((c) => moveIngredient(c, id, to))}
+            />
+          </section>
         </div>
         <div className="order-first grid gap-5 lg:sticky lg:top-4 lg:order-none">
           <div>
