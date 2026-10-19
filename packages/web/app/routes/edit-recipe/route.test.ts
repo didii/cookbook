@@ -216,3 +216,7 @@ test('a saved recipe comes back in the editor with equal chips, and a refusal sh
   };
   assert.deepEqual(refused.data.values.steps, posted);
 });
+
+test('the edit loader returns when the recipe was last saved, for flagging a draft that started from an older version', async () => {
+  assert.match((await load('soep')).updatedAt, /^\d{4}-\d\d-\d\dT/);
+});

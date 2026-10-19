@@ -31,7 +31,8 @@ export function useDraftPersistence(keeping: Keeping) {
     latest.current = keeping;
     if (!keeping.uploading) settledImage.current = keeping.state.image;
   });
-  const [kept, setKept] = useState(true);
+  // Storage that is blocked outright is known from the start; a full one shows on the first write.
+  const [kept, setKept] = useState(() => browserStorage() !== undefined);
 
   const keepNow = useCallback(() => {
     const { key, state, initial, base, uploading, ready } = latest.current;
