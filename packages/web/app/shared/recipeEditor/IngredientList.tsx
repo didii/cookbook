@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
 import type { IngredientRow } from '~/lib/draft';
 import { Announcement } from './Announcement';
-import { IngredientItem, type ItemHandle } from './IngredientItem';
+import { IngredientItem } from './IngredientItem';
+import type { ItemHandle } from './ItemHandle';
 import { useReorder } from './useReorder';
 
 type Props = {

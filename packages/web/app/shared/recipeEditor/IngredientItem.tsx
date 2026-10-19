@@ -1,17 +1,10 @@
 import { useImperativeHandle, useLayoutEffect, useRef, type ComponentProps, type CSSProperties, type KeyboardEvent, type Ref } from 'react';
 import { parseIngredient } from '~/lib/ingredients';
 import { cn } from '~/shared/cn';
+import type { ItemHandle } from './ItemHandle';
 import { RowGrip } from './RowGrip';
 import { RowToolbar } from './RowToolbar';
 import { useAfterRender } from './useAfterRender';
-
-/** What the list can ask of a row it renders. */
-export type ItemHandle = {
-  /** Focus the field with the caret at the start or end of its text. */
-  focusField: (caret: 'start' | 'end') => void;
-  /** Where the row is on the page, for dragging. */
-  rect: () => DOMRect | undefined;
-};
 
 type Props = {
   ref?: Ref<ItemHandle>;
