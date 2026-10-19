@@ -139,6 +139,7 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
             </h2>
             <p className="mb-2 text-muted">Eén stap per alinea. Enter aan het eind begint de volgende stap.</p>
             <StepList
+              key={resets}
               steps={current.steps}
               onType={(id, body) => setCurrent((c) => editStep(c, id, body))}
               onAdd={(at) => setCurrent((c) => addStep(c, at))}
