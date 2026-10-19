@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
+import { defined } from '~testing/defined';
 import { RouterContextProvider } from 'react-router';
 import { envContext } from '~/.server/context';
 import { getPhoto, storePhoto } from '~/.server/photos';
@@ -169,7 +170,7 @@ test('recipe-step-editing › Stored steps come back in the editor', async () =>
     db.prepare("INSERT INTO steps (recipe_id, position, body) SELECT id, 1, 'bak' FROM recipes WHERE slug = 'stappen'"),
     db.prepare("INSERT INTO steps (recipe_id, position, body) SELECT id, 0, 'kneed' FROM recipes WHERE slug = 'stappen'"),
   ]);
-  assert.deepEqual((await load('stappen')).values.steps, [
+  assert.deepEqual(defined((await load('stappen')).values.steps), [
     { body: 'kneed', ingredients: [] },
     { body: 'bak', ingredients: [] },
   ]);
@@ -209,7 +210,7 @@ test('a saved recipe comes back in the editor with equal chips, and a refusal sh
     { body: 'Serveer.', ingredients: [] },
   ];
   await submit('soep', { title: 'Soep', author: 'Oma', steps: JSON.stringify(posted) });
-  assert.deepEqual((await load('soep')).values.steps, posted);
+  assert.deepEqual(defined((await load('soep')).values.steps), posted);
   const refused = (await submit('soep', { title: '', author: 'Oma', steps: JSON.stringify(posted) })) as unknown as {
     data: { values: { steps: unknown } };
   };

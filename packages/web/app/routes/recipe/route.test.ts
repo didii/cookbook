@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
+import { defined } from '~testing/defined';
 import { RouterContextProvider } from 'react-router';
 import { envContext } from '~/.server/context';
 import { createRecipe } from '~/.server/recipes';
@@ -35,7 +36,7 @@ test('the page gets the steps of the database with their chips', async () => {
   const slug = await createRecipe(db, { title: 'Uit de database', author: 'Oma', steps });
   const { recipe, steps: loaded } = await load(slug);
   assert.equal(recipe.title, 'Uit de database');
-  assert.deepEqual(loaded, steps);
+  assert.deepEqual(defined(loaded), steps);
 });
 
 // Not automated: rendering needs component tests.

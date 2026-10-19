@@ -49,8 +49,8 @@ export async function getRecipe(db: D1Database, slug: string): Promise<StoredRec
     steps: (steps.results as StepRow[]).map((s) => ({
       body: s.body,
       ingredients: chipRows.filter((c) => c.step_id === s.id).map((c) => ({ quantity_text: c.quantity_text, name: c.name })),
-      ...(s.oven_temperature !== null && { ovenTemperature: s.oven_temperature }),
-      ...(s.timer_minutes !== null && { timer: { minutes: s.timer_minutes, ...(s.timer_label !== null && { label: s.timer_label }) } }),
+      ovenTemperature: s.oven_temperature ?? undefined,
+      timer: s.timer_minutes === null ? undefined : { minutes: s.timer_minutes, label: s.timer_label ?? undefined },
     })),
   };
 }
