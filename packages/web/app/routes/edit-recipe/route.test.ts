@@ -48,7 +48,16 @@ const status = async (run: Promise<unknown>) => {
 
 test('recipe-editing › Form shows the stored values', async () => {
   const { values } = await load('soep');
-  assert.deepEqual(values, { title: 'Soep', author: 'Oma', servings: '4', time: '1u', intro: 'Warm', image: '/soep.jpg' });
+  assert.deepEqual(values, { title: 'Soep', author: 'Oma', servings: '4', time: '1u', intro: 'Warm', image: '/soep.jpg', ingredients: [] });
+});
+
+test('recipe-ingredient-editing › Stored ingredients come back as lines', async () => {
+  await db.batch([
+    db.prepare("INSERT INTO recipes (slug, title, author) VALUES ('lijst', 'Lijst', 'Oma')"),
+    db.prepare("INSERT INTO ingredients (recipe_id, position, name, quantity_text) SELECT id, 1, 'zout', '' FROM recipes WHERE slug = 'lijst'"),
+    db.prepare("INSERT INTO ingredients (recipe_id, position, name, quantity_text) SELECT id, 0, 'bloem', '250 g' FROM recipes WHERE slug = 'lijst'"),
+  ]);
+  assert.deepEqual((await load('lijst')).values.ingredients, ['250 g bloem', 'zout']);
 });
 
 test('recipe-editing › Unknown recipe', async () => {

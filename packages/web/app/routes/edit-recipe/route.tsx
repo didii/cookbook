@@ -2,6 +2,7 @@ import { data, redirect } from 'react-router';
 import { envContext } from '~/.server/context';
 import { acceptImage, deletePhoto } from '~/.server/photos';
 import { getRecipe, listAuthors, updateRecipe } from '~/.server/recipes';
+import { joinIngredient } from '~/lib/ingredients';
 import { tileFor } from '~/lib/tile';
 import { RecipeEditor } from '~/shared/recipeEditor/RecipeEditor';
 import { readForm, readIngredients, toRecipeFields, validate, type Errors } from '~/shared/recipeValidation';
@@ -20,6 +21,7 @@ export async function loader({ params, context }: Route.LoaderArgs) {
     time: recipe.time ?? '',
     intro: recipe.intro,
     image: recipe.image ?? '',
+    ingredients: recipe.ingredients.map((i) => joinIngredient({ quantityText: i.quantity_text, name: i.name })),
   };
   return { slug: params.slug, title: recipe.title, authors, values, tile: tileFor(recipe.id) };
 }

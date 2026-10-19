@@ -8,7 +8,7 @@
 
 - [x] 2.1 Add `readIngredients` and per-row validation to `shared/recipeValidation.ts` (blank rows dropped, quantity without name refused, server-side parse) with tests; verify `recipe-ingredient-editing › Blank rows are not stored` and `recipe-ingredient-editing › Quantity without a name is refused` pass.
 - [x] 2.2 Extend `updateRecipe` with an optional atomic replace of the ingredient rows (same batch as the update) and make both route actions pass the parsed ingredients to `createRecipe` / `updateRecipe`; verify with tests in `recipes.test.ts` named `recipe-ingredient-editing › Ingredients are stored in order` and `recipe-ingredient-editing › Saved list replaces the old one`, and that omitting the argument leaves ingredients untouched.
-- [ ] 2.3 Return stored ingredients as editor lines from the edit loader; verify with a loader test named `recipe-ingredient-editing › Stored ingredients come back as lines` (an ingredient with an empty quantity comes back as just its name).
+- [x] 2.3 Return stored ingredients as editor lines from the edit loader; verify with a loader test named `recipe-ingredient-editing › Stored ingredients come back as lines` (an ingredient with an empty quantity comes back as just its name).
 
 ## 3. Editor section
 
