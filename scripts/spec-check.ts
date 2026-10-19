@@ -29,10 +29,13 @@ function parseSpec(markdown: string) {
   return { scenarios, removed };
 }
 
-/** Scenario keys of the main specs and delta specs. A removed requirement drops its main scenarios; a title repeated within one spec file is reported. */
-export function parseScenarios(specs: Spec[]) {
+/**
+ * Scenario keys of the main specs and delta specs. A title repeated within one spec file is reported.
+ * A requirement removed by a delta drops its main scenarios, unless `honorRemoved` is false.
+ */
+export function parseScenarios(specs: Spec[], honorRemoved = true) {
   const parsed = specs.map((spec) => ({ ...spec, ...parseSpec(spec.markdown) }));
-  const removed = new Set(parsed.flatMap((p) => p.removed.map((r) => key(p.capability, r))));
+  const removed = new Set(honorRemoved ? parsed.flatMap((p) => p.removed.map((r) => key(p.capability, r))) : []);
   const keys = new Set<string>();
   const duplicates = new Set<string>();
   for (const p of parsed) {
@@ -71,6 +74,7 @@ export function check(scenarios: { keys: Set<string>; duplicates: Set<string> },
  * Checks the repo's specs against its tests and returns one line per violation (empty when clean).
  * Every scenario of `openspec/specs` needs a test; with `change`, the scenarios of that change's delta specs do too.
  * A test may name a scenario of any change, so a change can be built before it is merged into the main specs.
+ * Pending changes never take names away: a scenario that a change removes or renames keeps its test valid until the change is merged.
  */
 export function checkRepo(root = join(import.meta.dirname, '..'), change?: string) {
   const read = (f: string) => readFileSync(join(root, f), 'utf8');
@@ -88,7 +92,8 @@ export function checkRepo(root = join(import.meta.dirname, '..'), change?: strin
   });
   const tests = findTests(testFiles.map((f) => ({ path: norm(f), text: read(f) })));
   const { missing, duplicates } = check(parseScenarios(required), tests);
-  const { unknown } = check(parseScenarios(all), tests);
+  // A change only adds names a test may use: its removals must not make the tests of the main specs unknown before it is merged.
+  const { unknown } = check(parseScenarios(all, false), tests);
   return [
     ...missing.map((k) => `no test: ${k}`),
     ...unknown.map((t) => `unknown scenario: ${t.name} (${t.file}:${t.line})`),
