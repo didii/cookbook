@@ -34,3 +34,4 @@
 ## 5. Wrap-up
 
 - [ ] 5.1 Run `pnpm format:fix`, `pnpm lint:fix`, `pnpm format:check`, `pnpm lint:check`, `pnpm typecheck` and `pnpm test:ai`; verify all pass, then edit the Appeltaart end to end in `pnpm dev` (type steps, pin and unpin, accept and discard proposals, remove and restore a ghost, add a hand-made chip, save, reload, view the recipe page), at 360px and desktop width.
+  - Done: `pnpm format:fix`, `lint:fix`, `format:check`, `lint:check`, `typecheck` and `test:ai` all pass. Open: editing the Appeltaart end to end in a browser at 360px and desktop width could not be done in this session (no browser).
