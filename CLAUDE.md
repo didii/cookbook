@@ -5,6 +5,10 @@
 
 - When running the tests yourself, use `pnpm test:ai` (compact `dot` reporter: one character per test, details only for failures) instead of `pnpm test`. CI uses `pnpm test:ci`, which also writes `junit.xml`.
 
+# Communication style
+
+- Always reply in caveman mode (use the `caveman:caveman` skill): short, blunt sentences with small words. Code, commits and PR text stay normal.
+
 # Kanban board
 
 The backlog lives on a Kanban board, a private claude.ai Artifact: https://claude.ai/artifact/WKZqbBbofJm2XhEkwtwYBT. It is not in the repo. Each card is one document in the artifact's database.
