@@ -1,13 +1,12 @@
 import { data } from 'react-router';
-import { findRecipe } from '~/lib/recipes';
+import { envContext } from '~/.server/context';
+import { getRecipe } from '~/.server/recipes';
 import { tileFor } from '~/lib/tile';
 import type { Route } from './+types/route';
 import { RecipePage } from './RecipePage';
 
-// Hardcoded sample recipes for now, so the redesigned page can be seen with chips, timers and an oven temperature.
-// Back to the database (`getRecipe` in ~/.server/recipes) once StoredRecipe holds the same step data as Recipe.
-export function loader({ params }: Route.LoaderArgs) {
-  const found = findRecipe(params.slug);
+export async function loader({ params, context }: Route.LoaderArgs) {
+  const found = await getRecipe(context.get(envContext).DB, params.slug);
   if (!found) throw data('Recept niet gevonden', { status: 404 });
   const { steps, ...recipe } = found;
   return { recipe, steps, tile: tileFor(recipe.id) };

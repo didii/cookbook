@@ -1,3 +1,4 @@
+import type { Step } from '~/lib/recipes';
 import { pickSeal } from '~/lib/seals';
 
 export type RecipeRow = {
@@ -14,23 +15,43 @@ export type RecipeRow = {
 
 export type IngredientRow = { quantity_text: string; name: string };
 
-export type StoredRecipe = RecipeRow & { ingredients: IngredientRow[]; steps: string[] };
+export type StoredRecipe = RecipeRow & { ingredients: IngredientRow[]; steps: Step[] };
 
-/** One round trip (a single batch): the recipe plus its ingredients and steps in stored order. */
+/** A step to store: its text, and any ingredient chips, oven temperature and timer. */
+export type NewStep = Pick<Step, 'body'> & Partial<Step>;
+
+type StepRow = { id: number; body: string; oven_temperature: number | null; timer_minutes: number | null; timer_label: string | null };
+
+/** One round trip (a single batch): the recipe plus its ingredients and steps (with their chips) in stored order. */
 export async function getRecipe(db: D1Database, slug: string): Promise<StoredRecipe | undefined> {
-  const [recipe, ingredients, steps] = await db.batch([
+  const [recipe, ingredients, steps, chips] = await db.batch([
     db.prepare('SELECT id, slug, title, author, time, servings, intro, image, seal FROM recipes WHERE slug = ?').bind(slug),
     db
       .prepare('SELECT i.quantity_text, i.name FROM ingredients i JOIN recipes r ON r.id = i.recipe_id WHERE r.slug = ? ORDER BY i.position')
       .bind(slug),
-    db.prepare('SELECT s.body FROM steps s JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ? ORDER BY s.position').bind(slug),
+    db
+      .prepare(
+        'SELECT s.id, s.body, s.oven_temperature, s.timer_minutes, s.timer_label FROM steps s JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ? ORDER BY s.position',
+      )
+      .bind(slug),
+    db
+      .prepare(
+        'SELECT c.step_id, c.quantity_text, c.name FROM step_ingredient_chips c JOIN steps s ON s.id = c.step_id JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ? ORDER BY s.position, c.position',
+      )
+      .bind(slug),
   ]);
   const row = (recipe.results as RecipeRow[])[0];
   if (!row) return undefined;
+  const chipRows = chips.results as (IngredientRow & { step_id: number })[];
   return {
     ...row,
     ingredients: ingredients.results as IngredientRow[],
-    steps: (steps.results as { body: string }[]).map((s) => s.body),
+    steps: (steps.results as StepRow[]).map((s) => ({
+      body: s.body,
+      ingredients: chipRows.filter((c) => c.step_id === s.id).map((c) => ({ quantity_text: c.quantity_text, name: c.name })),
+      ...(s.oven_temperature !== null && { ovenTemperature: s.oven_temperature }),
+      ...(s.timer_minutes !== null && { timer: { minutes: s.timer_minutes, ...(s.timer_label !== null && { label: s.timer_label }) } }),
+    })),
   };
 }
 
@@ -44,7 +65,7 @@ export type NewRecipe = {
   seal?: string;
   createdBy?: string;
   ingredients?: { name: string; quantityText?: string; amount?: number; unit?: string }[];
-  steps?: string[];
+  steps?: NewStep[];
 };
 
 /** Addresses that are routes of their own and so can't be a recipe slug. */
@@ -78,6 +99,24 @@ async function chooseSeal(db: D1Database): Promise<string> {
   return pickSeal(results);
 }
 
+/** Statements that store the steps (and their chips) of the recipe with this slug, at the places 0, 1, …; none if there is no such recipe. */
+function insertSteps(db: D1Database, slug: string, steps: NewStep[]) {
+  return steps.flatMap((step, i) => [
+    db
+      .prepare(
+        'INSERT INTO steps (recipe_id, position, body, oven_temperature, timer_minutes, timer_label) SELECT id, ?, ?, ?, ?, ? FROM recipes WHERE slug = ?',
+      )
+      .bind(i, step.body, step.ovenTemperature ?? null, step.timer?.minutes ?? null, step.timer?.label ?? null, slug),
+    ...(step.ingredients ?? []).map((chip, j) =>
+      db
+        .prepare(
+          'INSERT INTO step_ingredient_chips (step_id, position, quantity_text, name) SELECT s.id, ?, ?, ? FROM steps s JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ? AND s.position = ?',
+        )
+        .bind(j, chip.quantity_text, chip.name, slug, i),
+    ),
+  ]);
+}
+
 /** Stores a recipe with its ingredients and steps in one batch and returns its slug. */
 export async function createRecipe(db: D1Database, recipe: NewRecipe): Promise<string> {
   const slug = await freeSlug(db, recipe.title);
@@ -106,7 +145,7 @@ export async function createRecipe(db: D1Database, recipe: NewRecipe): Promise<s
         .prepare(`INSERT INTO ingredients (recipe_id, position, name, quantity_text, amount, unit) VALUES (${idOf}, ?, ?, ?, ?, ?)`)
         .bind(slug, i, ing.name, ing.quantityText ?? '', ing.amount ?? null, ing.unit ?? null),
     ),
-    ...(recipe.steps ?? []).map((body, i) => db.prepare(`INSERT INTO steps (recipe_id, position, body) VALUES (${idOf}, ?, ?)`).bind(slug, i, body)),
+    ...insertSteps(db, slug, recipe.steps ?? []),
   ]);
   return slug;
 }
@@ -157,12 +196,7 @@ export async function updateRecipe(db: D1Database, slug: string, recipe: RecipeU
         ]
       : []),
     ...(recipe.steps
-      ? [
-          db.prepare('DELETE FROM steps WHERE recipe_id = (SELECT id FROM recipes WHERE slug = ?)').bind(slug),
-          ...recipe.steps.map((body, i) =>
-            db.prepare('INSERT INTO steps (recipe_id, position, body) SELECT id, ?, ? FROM recipes WHERE slug = ?').bind(i, body, slug),
-          ),
-        ]
+      ? [db.prepare('DELETE FROM steps WHERE recipe_id = (SELECT id FROM recipes WHERE slug = ?)').bind(slug), ...insertSteps(db, slug, recipe.steps)]
       : []),
   ]);
   return result.meta.changes > 0 ? { previousImage: (before.results[0] as { image: string | null }).image } : undefined;

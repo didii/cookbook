@@ -175,10 +175,19 @@ test('recipe-step-editing › Stored steps come back in the editor', async () =>
 test('an edit posts its steps; a submit without the field keeps them, and a refusal shows them again', async () => {
   const steps = (...bodies: string[]) => JSON.stringify(bodies.map((body) => ({ body })));
   await submit('soep', { title: 'Soep', author: 'Oma', steps: steps('snijd', '', 'kook\nzacht') });
-  assert.deepEqual((await getRecipe(db, 'soep'))?.steps, ['snijd', 'kook zacht']);
+  assert.deepEqual(
+    (await getRecipe(db, 'soep'))?.steps.map((s) => s.body),
+    ['snijd', 'kook zacht'],
+  );
   await submit('soep', { title: 'Soep 2', author: 'Oma' });
-  assert.deepEqual((await getRecipe(db, 'soep'))?.steps, ['snijd', 'kook zacht']);
+  assert.deepEqual(
+    (await getRecipe(db, 'soep'))?.steps.map((s) => s.body),
+    ['snijd', 'kook zacht'],
+  );
   const res = (await submit('soep', { title: '', author: 'Oma', steps: steps('a', '', 'b') })) as { data: { values: { steps: string[] } } };
   assert.deepEqual(res.data.values.steps, ['a', '', 'b']);
-  assert.deepEqual((await getRecipe(db, 'soep'))?.steps, ['snijd', 'kook zacht']);
+  assert.deepEqual(
+    (await getRecipe(db, 'soep'))?.steps.map((s) => s.body),
+    ['snijd', 'kook zacht'],
+  );
 });

@@ -22,7 +22,7 @@ export async function loader({ params, context }: Route.LoaderArgs) {
     intro: recipe.intro,
     image: recipe.image ?? '',
     ingredients: recipe.ingredients.map((i) => joinIngredient({ quantityText: i.quantity_text, name: i.name })),
-    steps: recipe.steps,
+    steps: recipe.steps.map((s) => s.body),
   };
   return { slug: params.slug, title: recipe.title, authors, values, tile: tileFor(recipe.id) };
 }
@@ -41,7 +41,7 @@ export async function action({ request, params, context }: Route.ActionArgs) {
   const fields = toRecipeFields(values);
   const stored = await getRecipe(DB, params.slug);
   const image = stored && acceptImage(fields.image, stored.image);
-  const updated = stored && (await updateRecipe(DB, params.slug, { ...fields, image, ingredients, steps }));
+  const updated = stored && (await updateRecipe(DB, params.slug, { ...fields, image, ingredients, steps: steps?.map((body) => ({ body })) }));
   if (!updated) throw notFound();
   // After the write, so a failed delete leaves an orphan and never a recipe pointing at a missing file. The recipe is saved either way, so a failure must not turn into an error page.
   if (updated.previousImage && updated.previousImage !== image) await deletePhoto(PHOTOS, updated.previousImage).catch(() => undefined);

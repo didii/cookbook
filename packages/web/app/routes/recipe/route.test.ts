@@ -1,18 +1,41 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { test } from 'node:test';
+import { after, before, test } from 'node:test';
+import { createTestDb } from '~testing/db';
 import { RouterContextProvider } from 'react-router';
+import { envContext } from '~/.server/context';
+import { createRecipe } from '~/.server/recipes';
 import type { Route } from './+types/route';
 import { loader } from './route';
 
-// The loader serves hardcoded recipes for now (see route.tsx); reading from the database is tested in .server/recipes.test.ts.
-const load = (slug: string) => loader({ params: { slug }, context: new RouterContextProvider() } as Partial<Route.LoaderArgs> as Route.LoaderArgs);
+// Real loader against an in-memory D1 holding a recipe the test inserted.
+let db: D1Database;
+let dispose: () => Promise<void>;
 
-test('recipe-viewing › Unknown slug', () => {
-  assert.throws(
-    () => load('does-not-exist'),
-    (thrown: { init?: { status?: number } }) => thrown.init?.status === 404,
-  );
+before(async () => {
+  ({ db, dispose } = await createTestDb());
+});
+
+after(() => dispose());
+
+const load = (slug: string) => {
+  const context = new RouterContextProvider();
+  context.set(envContext, { DB: db } as Partial<Env> as Env);
+  return loader({ params: { slug }, context } as Partial<Route.LoaderArgs> as Route.LoaderArgs);
+};
+
+test('recipe-viewing › Unknown slug', async () => {
+  await assert.rejects(load('does-not-exist'), (thrown: { init?: { status?: number } }) => thrown.init?.status === 404);
+});
+
+test('the page gets the steps of the database with their chips', async () => {
+  const steps = [
+    { body: 'Bak 30 minuten op 180 graden.', ingredients: [{ quantity_text: '', name: 'boter' }], ovenTemperature: 180, timer: { minutes: 30 } },
+  ];
+  const slug = await createRecipe(db, { title: 'Uit de database', author: 'Oma', steps });
+  const { recipe, steps: loaded } = await load(slug);
+  assert.equal(recipe.title, 'Uit de database');
+  assert.deepEqual(loaded, steps);
 });
 
 // Not automated: rendering needs component tests.

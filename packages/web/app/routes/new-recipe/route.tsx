@@ -27,7 +27,7 @@ export async function action({ request, context }: Route.ActionArgs) {
   const slug = await createRecipe(context.get(envContext).DB, {
     ...fields,
     ingredients,
-    steps,
+    steps: steps?.map((body) => ({ body })),
     image: acceptImage(fields.image, null),
     createdBy: context.get(userEmailContext),
   });

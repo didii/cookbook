@@ -2,7 +2,11 @@ import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
 import { seals } from '~/lib/seals';
-import { createRecipe, getRecipe, listAuthors, slugify, updateRecipe } from './recipes';
+import { createRecipe, getRecipe, listAuthors, slugify, updateRecipe, type NewStep } from './recipes';
+
+/** Steps with only a text, as they are stored and as they come back. */
+const plain = (...bodies: string[]): NewStep[] => bodies.map((body) => ({ body }));
+const loaded = (...bodies: string[]) => bodies.map((body) => ({ body, ingredients: [] }));
 
 let db: D1Database;
 let dispose: () => Promise<void>;
@@ -31,7 +35,7 @@ test('returns undefined for an unknown slug', async () => {
 });
 
 test('recipe-viewing › Order is kept', async () => {
-  assert.deepEqual((await getRecipe(db, 'ordering'))?.steps, ['een', 'twee']);
+  assert.deepEqual((await getRecipe(db, 'ordering'))?.steps, loaded('een', 'twee'));
 });
 
 test('returns ingredients and steps in position order, and leaves optional fields null', async () => {
@@ -43,7 +47,7 @@ test('returns ingredients and steps in position order, and leaves optional field
     { quantity_text: '1', name: 'ei' },
     { quantity_text: '', name: 'zout' },
   ]);
-  assert.deepEqual(r?.steps, ['een', 'twee']);
+  assert.deepEqual(r?.steps, loaded('een', 'twee'));
 });
 
 test('recipe-viewing › Existing recipe', async () => {
@@ -100,7 +104,7 @@ test('createRecipe stores every property, ingredient and step so getRecipe reads
     seal: 'fu',
     createdBy: 'iemand@example.com',
     ingredients: [{ name: 'bloem', quantityText: '250 g', amount: 250, unit: 'g' }, { name: 'zout' }],
-    steps: ['mengen', 'bakken'],
+    steps: plain('mengen', 'bakken'),
   });
   const r = await getRecipe(db, slug);
   assert.deepEqual(
@@ -119,7 +123,7 @@ test('createRecipe stores every property, ingredient and step so getRecipe reads
         { quantity_text: '250 g', name: 'bloem' },
         { quantity_text: '', name: 'zout' },
       ],
-      steps: ['mengen', 'bakken'],
+      steps: loaded('mengen', 'bakken'),
     },
   );
   const row = await db
@@ -188,13 +192,13 @@ test('recipe-creation › Provided seal is used', async () => {
 const original = { title: 'Origineel', author: 'Papa', servings: 4, time: '1u', intro: 'oud', image: '/oud.jpg', seal: 'fu' };
 
 test('recipe-editing › Recipe is updated', async () => {
-  const slug = await createRecipe(db, { ...original, ingredients: [{ name: 'ei' }], steps: ['kook'] });
+  const slug = await createRecipe(db, { ...original, ingredients: [{ name: 'ei' }], steps: plain('kook') });
   await db.prepare("UPDATE recipes SET updated_at = '2000-01-01T00:00:00Z' WHERE slug = ?").bind(slug).run();
   const changed = { title: 'Nieuw', author: 'Mama', servings: 6, time: '2u', intro: 'nieuw', image: '/nieuw.jpg' };
   assert.ok(await updateRecipe(db, slug, changed));
   const r = await getRecipe(db, slug);
   assert.deepEqual([r?.slug, r?.title, r?.author, r?.servings, r?.time, r?.intro, r?.image], [slug, 'Nieuw', 'Mama', 6, '2u', 'nieuw', '/nieuw.jpg']);
-  assert.deepEqual([r?.ingredients.length, r?.steps], [1, ['kook']]);
+  assert.deepEqual([r?.ingredients.length, r?.steps], [1, loaded('kook')]);
   assert.notEqual((await db.prepare('SELECT updated_at FROM recipes WHERE slug = ?').bind(slug).first())?.updated_at, '2000-01-01T00:00:00Z');
 });
 
@@ -298,13 +302,13 @@ const storedSteps = async (slug: string) =>
   ).results;
 
 test('recipe-step-editing › Steps are stored in order', async () => {
-  const slug = await createRecipe(db, { title: 'Stappen', author: 'Oma', steps: ['kneed', 'rijs', 'bak'] });
+  const slug = await createRecipe(db, { title: 'Stappen', author: 'Oma', steps: plain('kneed', 'rijs', 'bak') });
   assert.deepEqual(await storedSteps(slug), [
     { position: 0, body: 'kneed' },
     { position: 1, body: 'rijs' },
     { position: 2, body: 'bak' },
   ]);
-  await updateRecipe(db, slug, { title: 'Stappen', author: 'Oma', steps: ['bak', 'kneed'] });
+  await updateRecipe(db, slug, { title: 'Stappen', author: 'Oma', steps: plain('bak', 'kneed') });
   assert.deepEqual(
     (await storedSteps(slug)).map((s) => s.body),
     ['bak', 'kneed'],
@@ -312,10 +316,10 @@ test('recipe-step-editing › Steps are stored in order', async () => {
 });
 
 test('recipe-step-editing › Saved steps replace the old ones', async () => {
-  const slug = await createRecipe(db, { title: 'Stappen vervangen', author: 'Oma', steps: ['a', 'b', 'c'] });
+  const slug = await createRecipe(db, { title: 'Stappen vervangen', author: 'Oma', steps: plain('a', 'b', 'c') });
   const base = { title: 'Stappen vervangen', author: 'Oma' };
   // One removed, one changed, one added.
-  await updateRecipe(db, slug, { ...base, steps: ['a', 'c aangepast', 'd'] });
+  await updateRecipe(db, slug, { ...base, steps: plain('a', 'c aangepast', 'd') });
   assert.deepEqual(await storedSteps(slug), [
     { position: 0, body: 'a' },
     { position: 1, body: 'c aangepast' },
@@ -328,6 +332,39 @@ test('recipe-step-editing › Saved steps replace the old ones', async () => {
 });
 
 test('replacing steps of an unknown recipe stores nothing', async () => {
-  assert.equal(await updateRecipe(db, 'bestaat-niet', { title: 'X', author: 'Y', steps: ['a'] }), undefined);
+  assert.equal(await updateRecipe(db, 'bestaat-niet', { title: 'X', author: 'Y', steps: plain('a') }), undefined);
   assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM steps WHERE body = ?').bind('a').first())?.n, 0);
+});
+
+const withChips: NewStep[] = [
+  {
+    body: 'Kneed bloem en boter. Laat 30 minuten rusten.',
+    ingredients: [
+      { quantity_text: '250 g', name: 'bloem' },
+      { quantity_text: '', name: 'boter' },
+    ],
+    timer: { minutes: 30, label: 'Deeg rust' },
+  },
+  { body: 'Bak op 180 graden.', ingredients: [], ovenTemperature: 180, timer: { minutes: 50 } },
+  { body: 'Eet smakelijk.', ingredients: [] },
+];
+
+test('recipe-step-chips › Chips are stored with their step', async () => {
+  const slug = await createRecipe(db, { title: 'Met chips', author: 'Oma', steps: withChips });
+  assert.deepEqual((await getRecipe(db, slug))?.steps, withChips);
+  // Saving again replaces the chips of the old steps instead of adding to them.
+  const fewer: NewStep[] = [{ body: 'Kneed.', ingredients: [{ quantity_text: '1', name: 'ei' }] }];
+  await updateRecipe(db, slug, { title: 'Met chips', author: 'Oma', steps: fewer });
+  assert.deepEqual((await getRecipe(db, slug))?.steps, fewer);
+  assert.equal(
+    (
+      await db
+        .prepare(
+          'SELECT COUNT(*) AS n FROM step_ingredient_chips c JOIN steps s ON s.id = c.step_id JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ?',
+        )
+        .bind(slug)
+        .first()
+    )?.n,
+    1,
+  );
 });
