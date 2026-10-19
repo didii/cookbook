@@ -13,8 +13,8 @@
 
 ## 3. Routes
 
-- [ ] 3.1 Switch `routes/new-recipe` and `routes/edit-recipe` to `RecipeEditor` (props: values, errors, authors, tile, cancelTo, heading), delete `RecipeForm.tsx`, change the button label to "Opslaan"; verify that the existing `recipe-creation` and `recipe-editing` route tests still pass, and add a test named `recipe-form › Nothing stored before saving` (loading the editor and changing state does not call the action; the route test asserts the database is unchanged).
-- [ ] 3.2 Update the wording of the `recipe-editing` tests for the modified requirement (scenario titles are unchanged; `recipe-editing › Optional field emptied` covers servings, time and intro); verify `pnpm test:spec edit-recipe-basics` reports every delta scenario covered or `test.todo`.
+- [x] 3.1 Switch `routes/new-recipe` and `routes/edit-recipe` to `RecipeEditor` (props: values, errors, authors, tile, cancelTo, heading), delete `RecipeForm.tsx`, change the button label to "Opslaan"; verify that the existing `recipe-creation` and `recipe-editing` route tests still pass, and add a test named `recipe-form › Nothing stored before saving` (loading the editor and changing state does not call the action; the route test asserts the database is unchanged).
+- [x] 3.2 Update the wording of the `recipe-editing` tests for the modified requirement (scenario titles are unchanged; `recipe-editing › Optional field emptied` covers servings, time and intro); verify `pnpm test:spec edit-recipe-basics` reports every delta scenario covered or `test.todo`.
 
 ## 4. Wrap-up
 
