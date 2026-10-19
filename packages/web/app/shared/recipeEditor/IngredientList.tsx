@@ -63,9 +63,14 @@ export function IngredientList({ rows, errors = noErrors, usedIn = () => none, o
   const focus = (id: string | undefined, caret: 'start' | 'end') => id && items.current.get(id)?.focusField(caret);
   const index = (id: string) => rows.findIndex((r) => r.id === id);
 
+  // Runs a move and announces where the row ended up. A move that changes nothing is not announced, and does not leave the request behind for a later render.
+  const announceMove = (id: string, from: number, run: () => void) => {
+    moved.current = { id, from };
+    run();
+    setTimeout(() => (moved.current = undefined));
+  };
   const move = (id: string, direction: -1 | 1) => {
-    moved.current = { id, from: index(id) };
-    onMove(id, index(id) + direction);
+    announceMove(id, index(id), () => onMove(id, index(id) + direction));
   };
   const startDrag = (e: PointerEvent<HTMLElement>, from: number) => {
     // The grip is for mouse and pen; touch scrolls the page and reorders with the buttons.
@@ -84,8 +89,7 @@ export function IngredientList({ rows, errors = noErrors, usedIn = () => none, o
   };
   const drop = () => {
     if (drag && drag.to !== drag.from) {
-      moved.current = { id: drag.id, from: drag.from };
-      onMove(drag.id, drag.to);
+      announceMove(drag.id, drag.from, () => onMove(drag.id, drag.to));
     }
     setDrag(undefined);
   };

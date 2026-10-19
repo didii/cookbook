@@ -137,10 +137,13 @@ export function IngredientItem({
     e.preventDefault();
     focusButton(next);
   };
-  const press = (button: number, direction: -1 | 1) => {
-    refocus.current = { button };
+  // Asks for a move and for focus afterwards. Should the move not happen (and so no render follow), the request is dropped rather than left for a later render.
+  const moveAndRefocus = (direction: -1 | 1, target: NonNullable<typeof refocus.current>) => {
+    refocus.current = target;
     onMove(direction);
+    setTimeout(() => (refocus.current = undefined));
   };
+  const press = (button: number, direction: -1 | 1) => moveAndRefocus(direction, { button });
 
   useImperativeHandle(ref, () => ({
     rect: () => item.current?.getBoundingClientRect(),
@@ -159,8 +162,7 @@ export function IngredientItem({
       e.preventDefault();
       const direction = e.key === 'ArrowDown' ? 1 : -1;
       if (!(direction === 1 ? canDown : canUp)) return;
-      refocus.current = { field: [e.currentTarget.selectionStart ?? 0, e.currentTarget.selectionEnd ?? 0] };
-      onMove(direction);
+      moveAndRefocus(direction, { field: [e.currentTarget.selectionStart ?? 0, e.currentTarget.selectionEnd ?? 0] });
     } else if (e.key === 'Enter') {
       e.preventDefault();
       onStep(1);
