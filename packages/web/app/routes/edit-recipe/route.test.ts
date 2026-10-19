@@ -79,7 +79,7 @@ const isStored = async (path: string) => (await getPhoto(photos, path.slice('/fo
 const addRecipe = (slug: string, image: string | null) =>
   db.prepare("INSERT INTO recipes (slug, title, author, image) VALUES (?, 'T', 'Oma', ?)").bind(slug, image).run();
 
-test('recipe-photo � Replaced photo is deleted', async () => {
+test('recipe-photo › Replaced photo is deleted', async () => {
   const [old, next] = [await upload(), await upload()];
   await addRecipe('vervangen', old);
   await submit('vervangen', { title: 'T', author: 'Oma', image: next });
@@ -92,7 +92,7 @@ test('recipe-photo � Replaced photo is deleted', async () => {
   assert.equal(await isStored(next), false);
 });
 
-test('recipe-photo � Non-upload images are never deleted', async () => {
+test('recipe-photo › Non-upload images are never deleted', async () => {
   await addRecipe('voorbeeld', '/img/appeltaart.jpg');
   await photos.put('photos/other', 'x');
   await submit('voorbeeld', { title: 'T', author: 'Oma', image: await upload() });

@@ -7,6 +7,8 @@ type Props = {
   cancelTo: string;
   /** Whether "Opslaan" has been used and the answer has not arrived yet. */
   busy: boolean;
+  /** Whether "Opslaan" must wait for something else (a photo that is uploading or failed). */
+  saveBlocked?: boolean;
   /** Whether the editor differs from its starting values: shows the status and "Herstel". */
   dirty: boolean;
   /** Puts every field back to its starting values. */
@@ -16,7 +18,7 @@ type Props = {
 };
 
 /** The bar fixed to the bottom of the editor: status, Herstel, Annuleren and Opslaan. */
-export function SaveBar({ cancelTo, busy, dirty, onReset, children }: Props) {
+export function SaveBar({ cancelTo, busy, saveBlocked, dirty, onReset, children }: Props) {
   const [asking, setAsking] = useState(false);
   // The question only exists while there is something to reset.
   const question = asking && dirty;
@@ -82,7 +84,7 @@ export function SaveBar({ cancelTo, busy, dirty, onReset, children }: Props) {
         <Link to={cancelTo} className="inline-flex min-h-13 items-center px-2 font-black text-blu">
           Annuleren
         </Link>
-        <Button type="submit" main disabled={busy} className="max-w-none min-w-32 flex-none px-4 max-sm:flex-1">
+        <Button type="submit" main disabled={busy || saveBlocked} className="max-w-none min-w-32 flex-none px-4 max-sm:flex-1">
           Opslaan
         </Button>
       </div>

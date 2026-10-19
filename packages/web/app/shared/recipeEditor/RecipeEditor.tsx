@@ -3,8 +3,8 @@ import { Form, Link, useNavigation } from 'react-router';
 import { isDirty, startingDraft, type Draft } from '~/lib/draft';
 import { AuthorInput } from '~/shared/AuthorInput';
 import { cn } from '~/shared/cn';
-import { ImagePreview } from '~/shared/ImagePreview';
 import type { Field } from '~/shared/recipeValidation';
+import { PhotoField, type PhotoState } from './PhotoField';
 import { SaveBar } from './SaveBar';
 import { useLeaveGuard } from './useLeaveGuard';
 
@@ -17,7 +17,7 @@ type Props = {
   /** What the editor shows when it opens: the starting values, or the values of a refused submit. */
   values: Draft;
   errors: Partial<Record<Field, string>>;
-  /** Index of the tile band shown under the image preview. */
+  /** Index of the tile band shown under the photo. */
   tile: number;
   /** Where "Terug" leads: the recipe, or the home page for a new recipe. */
   cancelTo: string;
@@ -34,6 +34,9 @@ const asterisk = (
 /** The one page for creating and editing a recipe; the routes only differ in the values, heading and cancel target they pass. */
 export function RecipeEditor({ heading, authors, initial, values, errors, tile, cancelTo }: Props) {
   const [current, setCurrent] = useState(values);
+  const [photo, setPhoto] = useState<PhotoState>('ready');
+  // Bumped by Herstel so the photo field starts over: it drops a running upload and its preview.
+  const [resets, setResets] = useState(0);
   const busy = useNavigation().formMethod != null;
   const dirty = isDirty(initial, current);
   // Set when the form is submitted, before the navigation starts, so saving never asks; cleared when the response (a refusal) is back.
@@ -75,7 +78,11 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
       </p>
       <Form
         method="post"
-        onSubmit={() => (submitting.current = true)}
+        onSubmit={(e) => {
+          // Enter in a field can submit while the save button is disabled; the photo must be settled first.
+          if (photo !== 'ready') return e.preventDefault();
+          submitting.current = true;
+        }}
         className="mt-4 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-12"
         noValidate
       >
@@ -128,16 +135,22 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
             </label>
             <input {...text('time')} type="text" autoComplete="off" className={inputClass} />
           </div>
-          {/* The image field stays here until edit-recipe-picture replaces it. */}
-          <div>
-            <label htmlFor="image" className={labelClass}>
-              Afbeelding (link)
-            </label>
-            <input {...text('image')} type="text" inputMode="url" autoComplete="off" className={inputClass} />
-            <ImagePreview src={current.image.trim()} tile={tile} />
-          </div>
+          <PhotoField key={resets} value={current.image} onChange={set('image')} onStateChange={setPhoto} tile={tile} />
         </div>
-        <SaveBar cancelTo={cancelTo} busy={busy} dirty={dirty} onReset={() => setCurrent(startingDraft(initial))} />
+        <SaveBar
+          cancelTo={cancelTo}
+          busy={busy}
+          saveBlocked={photo !== 'ready'}
+          dirty={dirty}
+          onReset={() => {
+            setCurrent(startingDraft(initial));
+            setPhoto('ready');
+            setResets((n) => n + 1);
+          }}
+        >
+          {photo === 'uploading' && <span>Foto wordt geüpload…</span>}
+          {photo === 'error' && <span className="text-red">Foto is niet geüpload</span>}
+        </SaveBar>
       </Form>
     </main>
   );
