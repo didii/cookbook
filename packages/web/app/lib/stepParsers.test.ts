@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { findOven, findTimer } from './stepParsers';
+import { parseIngredient } from '~/lib/ingredients';
+import { findIngredients, findOven, findTimer, type Row } from './stepParsers';
 
 const minutes = (text: string) => findTimer(text)?.values.minutes;
 const degrees = (text: string) => findOven(text)?.values.degrees;
@@ -76,4 +77,105 @@ test('recipe-step-chips › Only the first temperature counts', () => {
   assert.equal(words(text, findOven(text)), '180 graden');
   // An implausible first number does not hide a later plausible one.
   assert.equal(degrees('3 graden warmer, 200 graden'), 200);
+});
+
+const row = (id: string, line: string): Row => {
+  const { quantityText, name } = parseIngredient(line);
+  return { id, quantityText, name };
+};
+const none = () => '';
+const found = (text: string, rows: Row[], fallback: (r: Row) => string = none) =>
+  findIngredients(text, rows, fallback).map((f) => ({ row: f.rowId, words: text.slice(f.start, f.end), ...f.values }));
+
+test('recipe-step-chips › Name in the text creates an ingredient chip', () => {
+  const rows = [row('a', '250 g zelfrijzende bloem')];
+  assert.deepEqual(found('Meng de bloem met water.', rows), [{ row: 'a', words: 'bloem', quantity: '', name: 'zelfrijzende bloem' }]);
+  assert.deepEqual(
+    found('Meng de BLOEM met water.', rows).map((f) => f.words),
+    ['BLOEM'],
+  );
+});
+
+test('recipe-step-chips › Plurals match', () => {
+  const rows = [row('ei', '2 ei'), row('ui', '1 ui')];
+  assert.deepEqual(
+    found('Klop de eieren en snijd de uien.', rows).map((f) => [f.row, f.words]),
+    [
+      ['ei', 'eieren'],
+      ['ui', 'uien'],
+    ],
+  );
+});
+
+test('recipe-step-chips › The longest name wins', () => {
+  const rows = [row('b', '100 g boter'), row('k', '150 g koude boter')];
+  assert.deepEqual(
+    found('Snijd de koude boter in blokjes.', rows).map((f) => [f.row, f.words]),
+    [['k', 'koude boter']],
+  );
+  // Without the longer name written out, the shorter row matches again.
+  assert.deepEqual(
+    found('Snijd de boter in blokjes.', rows).map((f) => [f.row, f.words]),
+    [['b', 'boter']],
+  );
+});
+
+test('recipe-step-chips › Other words create nothing', () => {
+  assert.deepEqual(found('Roer goed en laat rusten.', [row('a', '250 g bloem'), row('b', 'boter')]), []);
+  assert.deepEqual(found('Alles roeren', [row('a', '250 g bloem')]), []);
+  assert.deepEqual(found('bloem', [row('a', '250 g')]), []);
+});
+
+test('recipe-step-chips › An ingredient is chipped once per step', () => {
+  const text = 'Voeg bloem toe en daarna nog meer bloem.';
+  assert.deepEqual(
+    found(text, [row('a', 'bloem')]).map((f) => f.words),
+    ['bloem'],
+  );
+  assert.equal(findIngredients(text, [row('a', 'bloem')], none)[0].start, text.indexOf('bloem'));
+});
+
+test('recipe-step-chips › Amount written before the name', () => {
+  const text = 'Smelt 100 g boter in een pan.';
+  assert.deepEqual(
+    found(text, [row('b', '150 g boter')], () => '150 g'),
+    [{ row: 'b', words: '100 g boter', quantity: '100 g', name: 'boter' }],
+  );
+  assert.deepEqual(
+    found('Klop 2 eieren.', [row('e', 'ei')]).map((f) => [f.words, f.quantity]),
+    [['2 eieren', '2']],
+  );
+  assert.deepEqual(
+    found('Wel 100g boter.', [row('b', 'boter')]).map((f) => f.words),
+    ['100g boter'],
+  );
+  // A duration is not an amount.
+  assert.deepEqual(
+    found('Na 10 minuten boter toevoegen.', [row('b', 'boter')]).map((f) => f.words),
+    ['boter'],
+  );
+});
+
+test('recipe-step-chips › Amount from the list when only this step uses the ingredient', () => {
+  const rows = [row('a', '250 g zelfrijzende bloem')];
+  assert.equal(found('Zeef de bloem.', rows, (r) => r.quantityText)[0].quantity, '250 g');
+});
+
+test('recipe-step-chips › No amount when several steps use the ingredient', () => {
+  // The caller knows which steps mention a row and passes an empty fallback when there are several.
+  assert.equal(found('Zeef de bloem.', [row('a', '250 g bloem')], none)[0].quantity, '');
+});
+
+test('plural forms of ingredients', () => {
+  const words = (text: string, line: string) => found(text, [row('x', line)]).map((f) => f.words);
+  assert.deepEqual(words('Was de bessen.', 'bes'), ['bessen']);
+  assert.deepEqual(words('Was de bes.', 'bessen'), ['bes']);
+  assert.deepEqual(words('Snijd de tomaten.', 'tomaat'), ['tomaten']);
+  assert.deepEqual(words('Schil de appels.', 'appel'), ['appels']);
+  assert.deepEqual(words('Hak de ui fijn.', 'uien'), ['ui']);
+  assert.deepEqual(words("Bak de paddestoelen en de auto's.", 'auto'), ["auto's"]);
+  assert.deepEqual(words('Schil de Peren.', 'peer'), ['Peren']);
+  assert.deepEqual(words('Voeg crème toe.', 'creme'), ['crème']);
+  assert.deepEqual(words('Voeg bloemen toe.', 'bloem'), ['bloemen']);
+  assert.deepEqual(words('Voeg bakstenen toe.', 'bloem'), []);
 });
