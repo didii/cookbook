@@ -48,7 +48,16 @@ const status = async (run: Promise<unknown>) => {
 
 test('recipe-editing › Form shows the stored values', async () => {
   const { values } = await load('soep');
-  assert.deepEqual(values, { title: 'Soep', author: 'Oma', servings: '4', time: '1u', intro: 'Warm', image: '/soep.jpg', ingredients: [] });
+  assert.deepEqual(values, {
+    title: 'Soep',
+    author: 'Oma',
+    servings: '4',
+    time: '1u',
+    intro: 'Warm',
+    image: '/soep.jpg',
+    ingredients: [],
+    steps: [],
+  });
 });
 
 test('recipe-ingredient-editing › Stored ingredients come back as lines', async () => {

@@ -20,7 +20,7 @@ export async function action({ request, context }: Route.ActionArgs) {
 
   const errors: Errors = validate(values);
   if (Object.keys(ingredientErrors).length) errors.ingredients = ingredientErrors;
-  if (Object.keys(errors).length) return data({ errors, values: { ...values, ingredients: lines } }, { status: 400 });
+  if (Object.keys(errors).length) return data({ errors, values: { ...values, ingredients: lines, steps: [] } }, { status: 400 });
 
   const fields = toRecipeFields(values);
   const slug = await createRecipe(context.get(envContext).DB, {

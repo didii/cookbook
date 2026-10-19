@@ -22,6 +22,7 @@ export async function loader({ params, context }: Route.LoaderArgs) {
     intro: recipe.intro,
     image: recipe.image ?? '',
     ingredients: recipe.ingredients.map((i) => joinIngredient({ quantityText: i.quantity_text, name: i.name })),
+    steps: recipe.steps,
   };
   return { slug: params.slug, title: recipe.title, authors, values, tile: tileFor(recipe.id) };
 }
@@ -33,7 +34,7 @@ export async function action({ request, params, context }: Route.ActionArgs) {
 
   const errors: Errors = validate(values);
   if (Object.keys(ingredientErrors).length) errors.ingredients = ingredientErrors;
-  if (Object.keys(errors).length) return data({ errors, values: { ...values, ingredients: lines } }, { status: 400 });
+  if (Object.keys(errors).length) return data({ errors, values: { ...values, ingredients: lines, steps: [] } }, { status: 400 });
 
   const { DB, PHOTOS } = context.get(envContext);
   const fields = toRecipeFields(values);
