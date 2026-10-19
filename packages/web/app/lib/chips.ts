@@ -107,9 +107,9 @@ const range = ({ start, end }: Range): Range => ({ start, end });
 /**
  * Brings the chips of a step in line with its text and the ingredient list. `step.body` is the new text; when `edit` is given, the anchors are still where they were before that edit.
  * Following chips take the first match of their kind (and row) in the text, so the finder has the last word, and go when there is none. Pinned chips keep their anchors and never change by themselves. Ghosts go with their words. Words that say something no chip or ghost holds yet get a new following chip.
- * Called without an edit it handles a change of the ingredient list: pinned chips linked to a row that is gone, or that no longer matches their words, stop following the list.
+ * With `rowsChanged` (the default when there is no edit) it handles a change of the ingredient list: pinned chips linked to a row that is gone, or that no longer matches their words, stop following the list. Any other call leaves them alone, so a proposed removal stays open until the user answers it.
  */
-export function reconcile<S extends StepChips>(step: S, ctx: Context, edit?: TextEdit): S {
+export function reconcile<S extends StepChips>(step: S, ctx: Context, edit?: TextEdit, rowsChanged = !edit): S {
   const { body } = step;
   const timer = findTimer(body);
   const oven = findOven(body);
@@ -126,7 +126,7 @@ export function reconcile<S extends StepChips>(step: S, ctx: Context, edit?: Tex
     const anchor = mapped(chip.anchor);
     const lost = chip.lost || (chip.anchor && !anchor ? true : undefined);
     let next = { ...chip, anchor, lost } as Chip;
-    if (!edit && chip.rowId && !lost) {
+    if (rowsChanged && chip.rowId && !lost) {
       const unreadable = anchor && !read(chip, textOf(body, anchor), ctx);
       if (!ctx.rows.some((r) => r.id === chip.rowId) || unreadable) next = { ...chip, rowId: undefined, anchor: undefined, ignored: undefined };
     }
@@ -158,7 +158,7 @@ export function setMode<S extends StepChips>(step: S, id: string, mode: 'auto' |
   if (!chip || chip.mode === mode) return step;
   if (mode === 'manual') return replace(step, { ...chip, mode, values: derive(chip, step.body, ctx), ignored: undefined } as Chip);
   if (!chip.anchor || chip.lost || !read(chip, textOf(step.body, chip.anchor), ctx)) return step;
-  return reconcile(replace(step, { ...chip, mode, ignored: undefined }), ctx);
+  return reconcile(replace(step, { ...chip, mode, ignored: undefined }), ctx, undefined, false);
 }
 
 /** Changes values of a chip by hand, which pins it. What its words say now is not proposed back as a change. */
@@ -180,7 +180,7 @@ export function removeChip<S extends StepChips>(step: S, id: string, ctx: Contex
   const chip = find(step, id);
   if (!chip) return step;
   const ghosts = chip.anchor && !chip.lost ? [...step.ghosts, { id: chip.id, kind: chip.kind, anchor: chip.anchor, rowId: chip.rowId }] : step.ghosts;
-  return reconcile({ ...step, chips: step.chips.filter((c) => c !== chip), ghosts }, ctx);
+  return reconcile({ ...step, chips: step.chips.filter((c) => c !== chip), ghosts }, ctx, undefined, false);
 }
 
 /** Brings a ghost back as a following chip. */
@@ -190,7 +190,7 @@ export function restoreGhost<S extends StepChips>(step: S, id: string, ctx: Cont
   const values = read(ghost, textOf(step.body, ghost.anchor), ctx);
   const ghosts = step.ghosts.filter((g) => g !== ghost);
   if (!values) return { ...step, ghosts };
-  return reconcile({ ...step, chips: [...step.chips, autoChip(ghost.id, ghost.kind, ghost.anchor, values, ghost.rowId)], ghosts }, ctx);
+  return reconcile({ ...step, chips: [...step.chips, autoChip(ghost.id, ghost.kind, ghost.anchor, values, ghost.rowId)], ghosts }, ctx, undefined, false);
 }
 
 /** Whether the add row may offer this kind: an oven and a timer only once per step, counting ghosts. */
@@ -210,7 +210,7 @@ export function acceptProposal<S extends StepChips>(step: S, id: string, ctx: Co
   const chip = find(step, id);
   const suggestion = chip && proposal(chip, step.body, ctx);
   if (!chip || !suggestion) return step;
-  if (suggestion.type === 'remove') return reconcile({ ...step, chips: step.chips.filter((c) => c !== chip) }, ctx);
+  if (suggestion.type === 'remove') return reconcile({ ...step, chips: step.chips.filter((c) => c !== chip) }, ctx, undefined, false);
   return replace(step, { ...chip, values: suggestion.values, ignored: undefined } as Chip);
 }
 

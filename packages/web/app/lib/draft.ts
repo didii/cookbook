@@ -35,12 +35,12 @@ export function withFreeRow(rows: IngredientRow[]): IngredientRow[] {
 const freeId = (rows: IngredientRow[]) => `i${Math.max(-1, ...rows.map((r) => Number(r.id.slice(1)))) + 1}`;
 
 /** Brings the chips of every step in line with the texts of all steps and the ingredient list; `edited` is the step whose text was just edited, with the edit that its anchors have not followed yet. */
-function reconcileSteps(draft: Draft, edited?: { id: string; edit: TextEdit }): Draft {
+function reconcileSteps(draft: Draft, edited?: { id: string; edit: TextEdit }, rowsChanged = false): Draft {
   const contexts = stepContexts(draft);
-  return { ...draft, steps: draft.steps.map((s, i) => reconcile(s, contexts[i], edited?.id === s.id ? edited.edit : undefined)) };
+  return { ...draft, steps: draft.steps.map((s, i) => reconcile(s, contexts[i], edited?.id === s.id ? edited.edit : undefined, rowsChanged)) };
 }
 
-const setRows = (draft: Draft, rows: IngredientRow[]): Draft => reconcileSteps({ ...draft, ingredients: withFreeRow(rows) });
+const setRows = (draft: Draft, rows: IngredientRow[]): Draft => reconcileSteps({ ...draft, ingredients: withFreeRow(rows) }, undefined, true);
 
 /** The starting draft: the stored content when there is any, otherwise empty. Stored chips are tied to their words again. */
 export function startingDraft(stored: Content = emptyContent): Draft {

@@ -186,3 +186,15 @@ test('stored chips come back as chips, and chips count as a change', () => {
   assert.equal(isDirty(draft, pinned), true);
   assert.equal(isDirty(draft, { ...draft, steps: [{ ...draft.steps[0], chips: [], ghosts: [] }] }), true);
 });
+
+test('an open proposed removal survives typing in another step', () => {
+  const step = (body: string, ingredients = [{ quantity_text: '250 g', name: 'bloem' }]) => ({ body, ingredients });
+  let draft = startingDraft({ ...content, ingredients: ['250 g bloem'], steps: [step('Zeef de bloem'), step('a', [])] });
+  const id = draft.steps[0].chips[0].id;
+  draft = { ...draft, steps: [{ ...draft.steps[0], chips: [{ ...draft.steps[0].chips[0], mode: 'manual' }] }, draft.steps[1]] };
+  draft = typeStep(draft, 's0', 'Zeef de pasta');
+  draft = typeStep(draft, 's1', 'ab');
+  const chip = draft.steps[0].chips.find((c) => c.id === id)!;
+  assert.equal(chip.rowId, 'i0');
+  assert.notEqual(chip.anchor, undefined);
+});
