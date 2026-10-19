@@ -53,6 +53,8 @@ type Props = {
   errors: Errors;
   /** Index of the tile band shown under the photo. */
   tile: number;
+  /** The recipe's seal, shown on the photo; a new recipe gets one chosen up front and posts it, so it is the one that gets saved. */
+  seal?: string;
   /** Where "Terug" leads: the recipe, or the home page for a new recipe. */
   cancelTo: string;
   /** The recipe's slug, or none for a new recipe: what its draft on the device belongs to. */
@@ -61,7 +63,8 @@ type Props = {
   updatedAt?: string;
 };
 
-const inputClass = 'mt-1 block min-h-13 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-lg text-ink aria-invalid:border-red';
+const inputClass =
+  'mt-1 block min-h-13 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-lg text-ink focus:shadow-focus focus:outline-transparent aria-invalid:border-red';
 const labelClass = 'font-extrabold';
 const asterisk = (
   <span aria-hidden="true" className="ml-1 font-black text-red">
@@ -70,7 +73,7 @@ const asterisk = (
 );
 
 /** The one page for creating and editing a recipe; the routes only differ in the values, heading and cancel target they pass. */
-export function RecipeEditor({ heading, authors, initial, values, errors, tile, cancelTo, slug, updatedAt }: Props) {
+export function RecipeEditor({ heading, authors, initial, values, errors, tile, seal, cancelTo, slug, updatedAt }: Props) {
   const [current, setCurrent] = useState(() => startingDraft(values));
   const [photo, setPhoto] = useState<PhotoState>('ready');
   // Bumped by Herstel so the photo field starts over: it drops a running upload and its preview.
@@ -214,7 +217,8 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
               type="text"
               autoComplete="off"
               required
-              className="block w-full border-0 border-b-3 border-dashed border-ink/35 bg-transparent pt-[0.1em] pb-[0.15em] text-[clamp(2.25rem,6vw,3.75rem)] leading-[1.05] font-black tracking-[-0.03em] text-ink focus:border-solid focus:border-blu focus:outline-none aria-invalid:border-red"
+              placeholder="Naam van het gerecht"
+              className="block w-full border-0 border-b-3 border-dashed border-ink/35 bg-transparent pt-[0.1em] pb-[0.15em] text-[clamp(2.25rem,6vw,3.75rem)] leading-[1.05] font-black tracking-[-0.03em] text-ink placeholder:text-ink/35 focus:border-solid focus:border-blu focus:outline-transparent aria-invalid:border-red"
             />
             {error('title')}
           </div>
@@ -284,9 +288,10 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
             <label htmlFor="time" className={labelClass}>
               Bereidingstijd
             </label>
-            <input {...text('time')} type="text" autoComplete="off" className={inputClass} />
+            <input {...text('time')} type="text" autoComplete="off" placeholder="1u30" className={inputClass} />
           </div>
-          <PhotoField key={resets} value={current.image} onChange={set('image')} onStateChange={setPhoto} tile={tile} />
+          <PhotoField key={resets} value={current.image} onChange={set('image')} onStateChange={setPhoto} tile={tile} seal={seal} />
+          {seal && <input type="hidden" name="seal" value={seal} />}
         </div>
         <SaveBar cancelTo={cancelTo} busy={busy} saveBlocked={photo !== 'ready'} dirty={dirty} kept={kept} onReset={reset}>
           {restored && restored.draft === current && <span>Concept van {describeSavedAt(restored.at, new Date())} hersteld</span>}

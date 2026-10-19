@@ -1,4 +1,4 @@
-import { classifyStored, contextFor, reconcile, rowsOf, toStored, type Context, type StepChips } from '~/lib/chips';
+import { classifyStored, reconcile, rowsOf, toStored, type Context, type StepChips } from '~/lib/chips';
 import type { Step } from '~/lib/recipes';
 import type { TextEdit } from '~/lib/textEdit';
 import type { Values } from '~/shared/recipeValidation';
@@ -45,9 +45,8 @@ const setRows = (draft: Draft, rows: IngredientRow[]): Draft => reconcileSteps({
 /** The starting draft: the stored content when there is any, otherwise empty. Stored chips are tied to their words again. */
 export function startingDraft(stored: Content = emptyContent): Draft {
   const ingredients = withFreeRow(stored.ingredients.map((text, i) => ({ id: `i${i}`, text })));
-  const rows = rowsOf(ingredients);
-  const bodies = stored.steps.map((s) => s.body);
-  const steps = stored.steps.map((step, i) => ({ id: `s${i}`, ...classifyStored(step, contextFor(rows, bodies, i)) }));
+  const ctx = { rows: rowsOf(ingredients) };
+  const steps = stored.steps.map((step, i) => ({ id: `s${i}`, ...classifyStored(step, ctx) }));
   return { ...stored, ingredients, steps: withOneStep(steps) };
 }
 
@@ -95,7 +94,7 @@ export const editStep = (draft: Draft, id: string, body: string): Draft => ({
   steps: draft.steps.map((s) => (s.id === id ? { ...s, body } : s)),
 });
 
-/** A step's text became `body` by an edit: its chips follow the words by the edit, and the chips of the other steps are read again, since they show an amount only while no other step mentions the ingredient. */
+/** A step's text became `body` by an edit: its chips follow the words by the edit. */
 export const editedStep = (draft: Draft, id: string, body: string, edit: TextEdit): Draft => reconcileSteps(editStep(draft, id, body), { id, edit });
 
 /** Removes a step; the last one is replaced by an empty step. */
@@ -121,9 +120,8 @@ export function restoreStep(draft: Draft, step: StepRow, at: number): Draft {
 
 /** What each step's chips are read against (see `lib/chips`). */
 export function stepContexts(draft: Draft): Context[] {
-  const rows = rowsOf(draft.ingredients);
-  const bodies = draft.steps.map((s) => s.body);
-  return draft.steps.map((_, i) => contextFor(rows, bodies, i));
+  const ctx = { rows: rowsOf(draft.ingredients) };
+  return draft.steps.map(() => ctx);
 }
 
 /** The steps as they are posted and stored: their text and the chips as they stand (see `toStored`). */

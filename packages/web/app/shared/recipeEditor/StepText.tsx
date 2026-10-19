@@ -125,7 +125,7 @@ export function StepText({
         {...handlers}
         className={cn(
           field,
-          'h-full w-full resize-none self-stretch overflow-hidden border-ink bg-transparent text-ink caret-ink placeholder:text-ink/50 focus:border-blu focus:outline-none',
+          'h-full w-full resize-none self-stretch overflow-hidden border-ink bg-transparent text-ink caret-ink placeholder:text-ink/50 focus:shadow-focus focus:outline-transparent',
         )}
       />
     </div>

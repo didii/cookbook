@@ -109,14 +109,15 @@ export function IngredientItem({
 
   return (
     <li ref={item} style={style} className="relative grid grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-x-1">
-      <RowGrip {...gripProps} className={cn('col-start-1 row-start-1 min-h-11 w-6', free && 'invisible')} />
+      <RowGrip {...gripProps} className={cn('col-start-1 row-start-1 min-h-11 w-6', free && 'cursor-default opacity-50')} />
       <RowToolbar
         label={toolbarLabel}
         deleteLabel="Verwijder"
         canUp={canUp}
         canDown={canDown}
+        disabled={free}
         stacked
-        className={cn('col-start-2 row-start-1 mr-1', free && 'invisible')}
+        className="col-start-2 row-start-1 mr-1"
         onMove={onMove}
         onDelete={onRemove}
       />
@@ -150,20 +151,19 @@ export function IngredientItem({
           onKeyDown={keyDown}
           className={cn(
             field,
-            'w-full border-ink bg-transparent text-transparent caret-ink placeholder:text-ink/50 focus:border-blu focus:outline-none aria-invalid:border-red',
+            'w-full border-ink bg-transparent text-transparent caret-ink placeholder:text-ink/50 focus:shadow-focus focus:outline-transparent aria-invalid:border-red',
           )}
         />
       </div>
-      {(error || usedIn.length > 0) && (
-        <div className="col-start-3 row-start-2">
-          {error && (
-            <p id={errorId} className="mt-1 font-bold text-red">
-              {error}
-            </p>
-          )}
-          {usedIn.length > 0 && <p className="mt-0.5 ml-1 text-[0.8125rem] font-bold text-muted">Gebruikt in stap {usedIn.join(', ')}</p>}
-        </div>
-      )}
+      <div className="col-start-3 row-start-2">
+        {error && (
+          <p id={errorId} className="mt-1 font-bold text-red">
+            {error}
+          </p>
+        )}
+        {/* Always there, so the rows below don't jump when a step starts to use this ingredient. */}
+        <p className="mt-0.5 ml-1 min-h-5 text-[0.8125rem] font-bold text-muted">{usedIn.length > 0 && `Gebruikt in stap ${usedIn.join(', ')}`}</p>
+      </div>
     </li>
   );
 }

@@ -5,7 +5,6 @@ import {
   addChip,
   canAdd,
   classifyStored,
-  contextFor,
   derive,
   discardProposal,
   editValues,
@@ -25,7 +24,7 @@ import {
 } from './chips';
 
 const rowsFor = (...lines: string[]) => rowsOf(lines.map((text, i) => ({ id: `r${i}`, text })));
-const alone = (...lines: string[]): Context => ({ rows: rowsFor(...lines), others: [] });
+const alone = (...lines: string[]): Context => ({ rows: rowsFor(...lines) });
 
 /** A step as the editor has it after the text was typed in one go. */
 const typed = (body: string, ctx: Context): StepChips => reconcile({ body, chips: [], ghosts: [] }, ctx);
@@ -209,13 +208,14 @@ test('timer names never pin and are not read from the text', () => {
   assert.equal(chipOf(setLabel(named, step.chips[0].id, ''), 'timer').label, undefined);
 });
 
-test('an ingredient written in two steps shows no amount in either', () => {
-  const rows = rowsFor('150 g boter');
-  const bodies = ['Smelt de boter.', 'Voeg boter toe.'];
-  const steps = bodies.map((body, i) => typed(body, contextFor(rows, bodies, i)));
-  steps.forEach((s, i) => assert.deepEqual(shown(s, contextFor(rows, bodies, i), 'ingredient'), { quantity: '', name: 'boter' }));
-  const only = typed(bodies[0], contextFor(rows, [bodies[0], 'Bak.'], 0));
-  assert.deepEqual(shown(only, contextFor(rows, [bodies[0], 'Bak.'], 0), 'ingredient'), { quantity: '150 g', name: 'boter' });
+test('recipe-step-chips › Full amount when several steps use the ingredient', () => {
+  const ctx = alone('150 g boter');
+  for (const body of ['Smelt de boter.', 'Voeg boter toe.']) {
+    assert.deepEqual(shown(typed(body, ctx), ctx, 'ingredient'), { quantity: '150 g', name: 'boter' });
+  }
+  // A step that writes an amount does not take the full amount away from the one that doesn't.
+  assert.deepEqual(shown(typed('Voeg 50 g boter toe.', ctx), ctx, 'ingredient'), { quantity: '50 g', name: 'boter' });
+  assert.deepEqual(shown(typed('Smelt de boter.', ctx), ctx, 'ingredient'), { quantity: '150 g', name: 'boter' });
 });
 
 // Ghosts
@@ -439,15 +439,15 @@ test('a stored ingredient is linked by name, by its last word, and to a row only
 });
 
 test('recipe-step-chips › Usage line lists the steps', () => {
-  const rows = rowsFor('1 tl zout', '1 ei');
+  const ctx = alone('1 tl zout', '1 ei');
   const bodies = ['Voeg zout toe.', 'Roer.', 'Bak.', 'Wacht.', 'Strooi zout.'];
-  const steps = bodies.map((body, i) => typed(body, contextFor(rows, bodies, i)));
+  const steps = bodies.map((body) => typed(body, ctx));
   assert.deepEqual(usedIn(steps, 'r0'), [1, 5]);
 });
 
 test('recipe-step-chips › Unused ingredient has no usage line', () => {
-  const rows = rowsFor('1 tl zout', '1 ei');
+  const ctx = alone('1 tl zout', '1 ei');
   const bodies = ['Voeg zout toe.', 'Roer.'];
-  const steps = bodies.map((body, i) => typed(body, contextFor(rows, bodies, i)));
+  const steps = bodies.map((body) => typed(body, ctx));
   assert.deepEqual(usedIn(steps, 'r1'), []);
 });

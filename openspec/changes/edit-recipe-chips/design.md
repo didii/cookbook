@@ -92,7 +92,7 @@ Following chips and ghosts of a row that no longer exists, or no longer matches 
 ## Risks / Trade-offs
 
 - Heuristics will sometimes be wrong (a word that looks like an ingredient, an unlisted plural) → every chip can be removed, and a removed chip leaves a ghost so the text does not recreate it; the finders are small, tested and easy to extend.
-- A following ingredient chip's amount depends on how many steps mention it, so adding a mention in a second step removes the amount from the first step's following chip → intentional (a full amount in both steps would be wrong); pin the chip to keep an amount.
+- A following ingredient chip without a written amount shows the list's full quantity in every step that mentions it, so a recipe that splits an ingredient over steps shows the whole amount twice → write the part amount in the step ("50 g boter"), or pin the chip.
 - A pinned chip whose words are cut and pasted elsewhere shows a proposed removal while a new following chip appears for the pasted words → the user accepts the removal; the pinned chip held the slot, so no duplicate appears until then.
 - Hover from text to chip is not possible with a textarea on top → caret and chip-hover highlighting cover the need.
 

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { Button } from '~/shared/Button';
 import { Camera, Trash } from '~/shared/icons';
+import { Seal } from '~/shared/Seal';
 import { TileBand } from '~/shared/TileBand';
 import { resizePhoto, uploadPhoto } from './photoFile';
 
@@ -14,6 +15,8 @@ type Props = {
   onStateChange: (state: PhotoState) => void;
   /** Index of the tile band beneath the photo. */
   tile: number;
+  /** Seal stamped on the photo, as on the recipe page. */
+  seal?: string;
 };
 
 type Pending = { blob: Blob; preview: string };
@@ -21,7 +24,7 @@ type Pending = { blob: Blob; preview: string };
 const wide = 'inline-flex items-center justify-center gap-2 px-4';
 
 /** The recipe's photo: choose from camera or gallery, shrink and upload, show in the frame the recipe page uses, replace or remove. */
-export function PhotoField({ value, onChange, onStateChange, tile }: Props) {
+export function PhotoField({ value, onChange, onStateChange, tile, seal }: Props) {
   const input = useRef<HTMLInputElement>(null);
   const [pending, setPending] = useState<Pending>();
   const [state, setState] = useState<PhotoState>('ready');
@@ -106,26 +109,29 @@ export function PhotoField({ value, onChange, onStateChange, tile }: Props) {
             </div>
           </div>
         ) : (
-          <div className="@container overflow-hidden rounded-xl border-3 border-ink bg-white shadow-hard-sm">
-            <div className="relative">
-              <img
-                src={src}
-                alt="Foto van het recept"
-                onError={() => setFailedSrc(src)}
-                className="block aspect-2/1 w-full border-b-3 border-ink object-cover"
-              />
-              <div className="absolute inset-x-2.5 bottom-3.5 flex gap-2">
-                <Button type="button" onClick={pick} className={wide}>
-                  <Camera />
-                  Andere foto
-                </Button>
-                <Button type="button" onClick={remove} aria-label="Foto verwijderen" className="flex-none px-3 text-muted">
-                  <Trash />
-                </Button>
-              </div>
+          <>
+            <div className="mb-2 flex gap-2">
+              <Button type="button" onClick={pick} className={wide}>
+                <Camera />
+                Andere foto
+              </Button>
+              <Button type="button" onClick={remove} aria-label="Foto verwijderen" className="flex-none px-3 text-muted">
+                <Trash />
+              </Button>
             </div>
-            <TileBand first={tile} responsive className="border-b-0" />
-          </div>
+            <div className="@container overflow-hidden rounded-xl border-3 border-ink bg-white shadow-hard-sm">
+              <div className="relative">
+                <img
+                  src={src}
+                  alt="Foto van het recept"
+                  onError={() => setFailedSrc(src)}
+                  className="block aspect-2/1 w-full border-b-3 border-ink object-cover"
+                />
+                {seal && <Seal id={seal} className="h-13" />}
+              </div>
+              <TileBand first={tile} responsive className="border-b-0" />
+            </div>
+          </>
         )}
       </div>
       <div aria-live="polite">

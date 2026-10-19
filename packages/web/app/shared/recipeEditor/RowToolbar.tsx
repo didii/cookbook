@@ -14,6 +14,8 @@ type Props = {
   stacked?: boolean;
   /** A bin instead of a cross on the delete button. */
   trash?: boolean;
+  /** Shown but inert: the row has nothing to act on yet. */
+  disabled?: boolean;
   className?: string;
   /** Move one place up (-1) or down (1). */
   onMove: (direction: -1 | 1) => void;
@@ -32,11 +34,11 @@ const buttonClass =
   'grid cursor-pointer place-items-center rounded-md text-muted not-disabled:hover:bg-ink/10 not-disabled:hover:text-ink disabled:cursor-default disabled:opacity-30';
 
 /** The up, down and delete buttons of a row as one toolbar: a single Tab stop, with the arrow keys (and Home and End) moving between the buttons. After a move, focus stays on the button that was used. */
-export function RowToolbar({ label, deleteLabel, canUp, canDown, stacked, trash, className, onMove, onDelete }: Props) {
+export function RowToolbar({ label, deleteLabel, canUp, canDown, stacked, trash, disabled, className, onMove, onDelete }: Props) {
   const buttons = useRef<(HTMLButtonElement | null)[]>([]);
   const afterRender = useAfterRender();
   // The one button that is in the Tab order: the last one used, or the first enabled one when that is disabled.
-  const enabled = [canUp, canDown, true];
+  const enabled = disabled ? [false, false, false] : [canUp, canDown, true];
   const [remembered, setRemembered] = useState(0);
   const stop = enabled[remembered] ? remembered : enabled.indexOf(true);
 
