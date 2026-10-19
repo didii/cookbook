@@ -11,6 +11,8 @@ type Props = {
   /** Visually hidden page heading. */
   heading: string;
   authors: string[];
+  /** The starting values: what Reset restores and what unsaved changes are measured against. */
+  initial: Draft;
   /** What the editor shows when it opens: the starting values, or the values of a refused submit. */
   values: Draft;
   errors: Partial<Record<Field, string>>;
@@ -29,8 +31,10 @@ const asterisk = (
 );
 
 /** The one page for creating and editing a recipe; the routes only differ in the values, heading and cancel target they pass. */
-export function RecipeEditor({ heading, authors, values, errors, tile, cancelTo }: Props) {
+export function RecipeEditor({ heading, authors, initial, values, errors, tile, cancelTo }: Props) {
   const [current, setCurrent] = useState(values);
+  const busy = useNavigation().formMethod != null;
+  const dirty = isDirty(initial, current);
   const set = (name: Field) => (value: string) => setCurrent((c) => ({ ...c, [name]: value }));
   const text = (name: Field) => ({
     id: name,
