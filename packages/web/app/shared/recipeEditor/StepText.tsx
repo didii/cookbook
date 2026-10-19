@@ -76,7 +76,8 @@ export function StepText({ ref, label, value, marks = [], placeholder, onChange,
 
   const keyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     onKeyDown?.(e);
-    if (e.defaultPrevented || e.nativeEvent.isComposing) return;
+    // Safari reports the Enter that confirms a composition after the composition ended, with key code 229.
+    if (e.defaultPrevented || e.nativeEvent.isComposing || e.keyCode === 229) return;
     const el = e.currentTarget;
     if (e.key === 'Enter') {
       e.preventDefault();

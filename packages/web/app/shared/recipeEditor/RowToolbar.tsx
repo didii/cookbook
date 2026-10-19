@@ -78,7 +78,8 @@ export function RowToolbar({ label, deleteLabel, canUp, canDown, stacked, trash,
   };
   const press = (button: number, direction: -1 | 1) => {
     // The move may disable the button; then the first enabled one gets focus.
-    afterRender(() => buttons.current[enabled[button] ? button : enabled.indexOf(true)]?.focus());
+    // Read the buttons as they are after the render: `enabled` here is as of the render that was pressed.
+    afterRender(() => (buttons.current[button]?.disabled ? buttons.current.find((b) => b && !b.disabled) : buttons.current[button])?.focus());
     onMove(direction);
   };
 

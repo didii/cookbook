@@ -7,7 +7,7 @@ export type Selection = { start: number; end: number };
 const isHigh = (text: string, i: number) => i >= 0 && i < text.length && text.charCodeAt(i) >= 0xd800 && text.charCodeAt(i) <= 0xdbff;
 const isLow = (text: string, i: number) => i >= 0 && i < text.length && text.charCodeAt(i) >= 0xdc00 && text.charCodeAt(i) <= 0xdfff;
 
-/** The edit by comparing the texts: everything before the first and after the last difference is unchanged. When the change is ambiguous (one of three equal letters deleted), the earliest place is chosen. */
+/** The edit by comparing the texts: everything before the first and after the last difference is unchanged. When the change is ambiguous (one of three equal letters deleted), the latest place is chosen, because the common prefix is taken first. */
 function diff(prev: string, next: string): TextEdit {
   let start = 0;
   const shortest = Math.min(prev.length, next.length);
