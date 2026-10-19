@@ -25,6 +25,7 @@
       "migrations_dir": "migrations",
     },
   ],
+  "r2_buckets": [{ "binding": "PHOTOS", "bucket_name": "cookbook-photos" }],
   "observability": {
     "enabled": true,
   },
