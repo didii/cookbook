@@ -2,7 +2,7 @@
 
 ## 1. Parser
 
-- [ ] 1.1 Add `app/lib/ingredients.ts` (`parseIngredient`, `joinIngredient`, the unit list) with `ingredients.test.ts`; verify tests named `recipe-ingredient-editing › Quantity with unit and name`, `recipe-ingredient-editing › Quantity without unit`, `recipe-ingredient-editing › Fraction and decimal comma`, `recipe-ingredient-editing › Unknown word after the number is part of the name` and `recipe-ingredient-editing › No quantity` pass, plus ranges (`2-3`), `1 ½`, a trailing dot (`2 el.`), leading spaces and an input that is only a number.
+- [x] 1.1 Add `app/lib/ingredients.ts` (`parseIngredient`, `joinIngredient`, the unit list) with `ingredients.test.ts`; verify tests named `recipe-ingredient-editing › Quantity with unit and name`, `recipe-ingredient-editing › Quantity without unit`, `recipe-ingredient-editing › Fraction and decimal comma`, `recipe-ingredient-editing › Unknown word after the number is part of the name` and `recipe-ingredient-editing › No quantity` pass, plus ranges (`2-3`), `1 ½`, a trailing dot (`2 el.`), leading spaces and an input that is only a number.
 
 ## 2. Server: validate and store
 
