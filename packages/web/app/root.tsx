@@ -2,7 +2,7 @@ import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration, 
 import type { Route } from './+types/root';
 import './app.css';
 import { envContext, userEmailContext } from '~/.server/context';
-import { redirectToWelcome } from '~/.server/users';
+import { redirectToWelcome } from '~/.server/welcome';
 import { welcomePath } from '~/lib/returnUrl';
 import { Header } from '~/shared/Header';
 import { SkipLink } from '~/shared/SkipLink';

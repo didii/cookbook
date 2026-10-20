@@ -1,6 +1,12 @@
 /** The welcome screen's own address, which is never a place to return to. */
 export const welcomePath = '/welkom';
 
+/** Routes match letter case loosely, so `/Welkom` is the welcome screen too. */
+export const isWelcomePath = (pathname: string) => {
+  const p = pathname.toLowerCase();
+  return p === welcomePath || p.startsWith(`${welcomePath}/`);
+};
+
 const origin = 'http://cookbook.invalid';
 
 /**
@@ -16,6 +22,6 @@ export function safeReturnUrl(value: string | null | undefined): string {
   } catch {
     return '/';
   }
-  if (url.origin !== origin || url.pathname === welcomePath || url.pathname.startsWith(`${welcomePath}/`)) return '/';
+  if (url.origin !== origin || isWelcomePath(url.pathname)) return '/';
   return value;
 }

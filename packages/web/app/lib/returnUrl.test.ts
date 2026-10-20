@@ -32,5 +32,6 @@ test('the welcome screen is never a place to return to', () => {
   assert.equal(safeReturnUrl('/welkom'), '/');
   assert.equal(safeReturnUrl('/welkom?returnUrl=%2F'), '/');
   assert.equal(safeReturnUrl('/welkom/'), '/');
+  assert.equal(safeReturnUrl('/Welkom'), '/');
   assert.equal(safeReturnUrl('/welkomst'), '/welkomst');
 });

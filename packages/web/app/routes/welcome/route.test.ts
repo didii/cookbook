@@ -125,4 +125,8 @@ test('family-access › First visit by a new family member', async () => {
   assert.equal(fields.length, 1);
   assert.match(fields[0], /name="callingName"/);
   assert.doesNotMatch(html, /type="(password|email)"/);
+  // Nothing but the calling name is needed to be taken in.
+  const res = (await submit('nieuw@example.com', { callingName: 'Nel' })) as Response;
+  assert.equal(res.status, 302);
+  assert.equal((await getUser(db, 'nieuw@example.com'))?.callingName, 'Nel');
 });
