@@ -1,7 +1,7 @@
-import type { StoredRecipe } from '~/.server/recipes';
+import type { Recipe } from '~/lib/recipe';
 import { cn } from '~/shared/cn';
 
-type Props = { ingredients: StoredRecipe['ingredients']; ticked: ReadonlySet<number>; onToggle: (index: number) => void; className?: string };
+type Props = { ingredients: Recipe['ingredients']; ticked: ReadonlySet<number>; onToggle: (index: number) => void; className?: string };
 
 export function IngredientList({ ingredients, ticked, onToggle, className }: Props) {
   return (

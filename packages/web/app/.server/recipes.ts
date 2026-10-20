@@ -1,4 +1,4 @@
-import type { Step } from '~/lib/recipe';
+import type { Recipe, Step } from '~/lib/recipe';
 import { pickSeal } from '~/lib/seals';
 
 export type RecipeRow = {
@@ -20,15 +20,13 @@ export type RecipeSummary = Pick<RecipeRow, 'slug' | 'title' | 'author' | 'time'
 
 export type IngredientRow = { quantity_text: string; name: string };
 
-export type StoredRecipe = RecipeRow & { ingredients: IngredientRow[]; steps: Step[] };
-
 /** A step to store: its text, and any ingredient chips, oven temperature and timer. */
 export type NewStep = Pick<Step, 'body'> & Partial<Step>;
 
 type StepRow = { id: number; body: string; oven_temperature: number | null; timer_minutes: number | null; timer_label: string | null };
 
 /** One round trip (a single batch): the recipe plus its ingredients and steps (with their chips) in stored order. */
-export async function getRecipe(db: D1Database, slug: string): Promise<StoredRecipe | undefined> {
+export async function getRecipe(db: D1Database, slug: string): Promise<Recipe | undefined> {
   const [recipe, ingredients, steps, chips] = await db.batch([
     db.prepare('SELECT id, slug, title, author, time, servings, intro, image, seal, updated_at FROM recipes WHERE slug = ?').bind(slug),
     db

@@ -10,3 +10,20 @@ export type Step = {
   ovenTemperature?: number;
   timer?: { minutes: number; label?: string };
 };
+
+/** A stored recipe with its ingredients and steps in stored order. */
+export type Recipe = {
+  id: number;
+  slug: string;
+  title: string;
+  author: string;
+  time: string | null;
+  servings: number | null;
+  intro: string;
+  image: string | null;
+  seal: string | null;
+  /** When the recipe was last saved; the editor compares it to the version a draft started from. */
+  updated_at: string;
+  ingredients: Ingredient[];
+  steps: Step[];
+};

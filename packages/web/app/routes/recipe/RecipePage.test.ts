@@ -4,8 +4,7 @@ import { test } from 'node:test';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
-import type { StoredRecipe } from '~/.server/recipes';
-import type { Step } from '~/lib/recipe';
+import type { Recipe, Step } from '~/lib/recipe';
 import { arrive, type Positions, type TabId } from '~/lib/tabs';
 import { IngredientList } from './IngredientList';
 import { RecipePage } from './RecipePage';
@@ -15,7 +14,7 @@ const steps: Step[] = [
   { body: 'bakken', ingredients: [], timer: { minutes: 50 } },
 ];
 
-const recipe: Omit<StoredRecipe, 'steps'> = {
+const recipe: Omit<Recipe, 'steps'> = {
   id: 1,
   slug: 'appeltaart',
   updated_at: '2026-01-01T00:00:00Z',
