@@ -1,5 +1,5 @@
 import { classifyStored, reconcile, rowsOf, toStored, type Context, type StepChips } from '~/lib/chips';
-import type { Step } from '~/lib/recipes';
+import type { Step } from '~/lib/recipe';
 import type { TextEdit } from '~/lib/textEdit';
 import type { Values } from '~/shared/recipeValidation';
 

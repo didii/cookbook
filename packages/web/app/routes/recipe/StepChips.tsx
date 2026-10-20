@@ -1,4 +1,4 @@
-import type { Step } from '~/lib/recipes';
+import type { Step } from '~/lib/recipe';
 import { cn } from '~/shared/cn';
 import { Thermometer } from '~/shared/icons';
 import { TimerChip } from './TimerChip';

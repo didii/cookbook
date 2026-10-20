@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import type { StoredRecipe } from '~/.server/recipes';
 import { initialCook, observe, setByHand, wantsCookMode } from '~/lib/cookMode';
-import type { Step } from '~/lib/recipes';
+import type { Step } from '~/lib/recipe';
 import { arrive, tabFromHash, type Positions, type TabId } from '~/lib/tabs';
 import { toggled } from '~/lib/toggled';
 import { cn } from '~/shared/cn';

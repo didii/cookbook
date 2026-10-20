@@ -1,6 +1,6 @@
 import { mapRange, type Range } from '~/lib/anchors';
 import { parseIngredient } from '~/lib/ingredients';
-import type { Step } from '~/lib/recipes';
+import type { Step } from '~/lib/recipe';
 import {
   findIngredients,
   findOven,

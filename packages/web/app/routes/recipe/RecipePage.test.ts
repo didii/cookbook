@@ -5,7 +5,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import type { StoredRecipe } from '~/.server/recipes';
-import type { Step } from '~/lib/recipes';
+import type { Step } from '~/lib/recipe';
 import { arrive, type Positions, type TabId } from '~/lib/tabs';
 import { IngredientList } from './IngredientList';
 import { RecipePage } from './RecipePage';

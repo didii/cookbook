@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import type { Step } from '~/lib/recipes';
+import type { Step } from '~/lib/recipe';
 import { cn } from '~/shared/cn';
 import { StepChips } from './StepChips';
 import { TimerCard } from './TimerCard';

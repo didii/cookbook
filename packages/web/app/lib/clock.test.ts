@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { clockAvailable, clockIntentUrl, readClockSetting, writeClockSetting } from './clock';
-import type { Step } from './recipes';
+import type { Step } from './recipe';
 import { formatCountdown, handOver, restore, serialize, start, startTimer, stop, timerDefs, timerView, undoHandOver } from './timers';
 
 const steps: Step[] = [{ body: 'Laat het deeg rusten.', ingredients: [], timer: { minutes: 30, label: 'Deeg rust' } }];

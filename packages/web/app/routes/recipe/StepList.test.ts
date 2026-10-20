@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import type { Step } from '~/lib/recipes';
+import type { Step } from '~/lib/recipe';
 import { toggled } from '~/lib/toggled';
 import { StepItem } from './StepItem';
 import { StepList } from './StepList';

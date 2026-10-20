@@ -1,5 +1,5 @@
 import { parseIngredient, type ParsedIngredient } from '~/lib/ingredients';
-import type { Step } from '~/lib/recipes';
+import type { Step } from '~/lib/recipe';
 
 export type Field = 'title' | 'author' | 'servings' | 'time' | 'intro' | 'image';
 

@@ -1,4 +1,4 @@
-import type { Step } from '~/lib/recipes';
+import type { Step } from '~/lib/recipe';
 
 /** The timer of a step. The id is the index of the step, so the order of the definitions is the order the recipe has. */
 export type TimerDef = { id: string; step: number; minutes: number; label?: string };

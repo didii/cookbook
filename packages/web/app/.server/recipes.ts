@@ -1,4 +1,4 @@
-import type { Step } from '~/lib/recipes';
+import type { Step } from '~/lib/recipe';
 import { pickSeal } from '~/lib/seals';
 
 export type RecipeRow = {
