@@ -1,6 +1,6 @@
 import { useRef, useState, type KeyboardEvent } from 'react';
 import { cn } from '~/shared/cn';
-import { Cross, Down, Trash, Up } from '~/shared/icons';
+import { Cross, Down, Plus, Trash, Up } from '~/shared/icons';
 import { useAfterRender } from './useAfterRender';
 
 type Props = {
@@ -8,6 +8,8 @@ type Props = {
   label: string;
   /** Accessible name of the delete button. */
   deleteLabel: string;
+  /** Accessible name of the insert button. */
+  insertLabel?: string;
   canUp: boolean;
   canDown: boolean;
   /** Two small arrows above each other next to the delete button, or all three buttons in a row. */
@@ -20,10 +22,13 @@ type Props = {
   /** Move one place up (-1) or down (1). */
   onMove: (direction: -1 | 1) => void;
   onDelete: () => void;
+  /** When given, a first button that inserts a row above this one. */
+  onInsert?: () => void;
 };
 
 const iconClass = 'size-[1.05em]';
 const icons = {
+  insert: <Plus className={iconClass} />,
   up: <Up className={iconClass} />,
   down: <Down className={iconClass} />,
   cross: <Cross className={iconClass} />,
@@ -33,12 +38,26 @@ const icons = {
 const buttonClass =
   'grid cursor-pointer place-items-center text-muted not-disabled:hover:bg-ink/10 not-disabled:hover:text-ink disabled:cursor-default disabled:opacity-30';
 
-/** The up, down and delete buttons of a row as one toolbar: a single Tab stop, with the arrow keys (and Home and End) moving between the buttons. After a move, focus stays on the button that was used. */
-export function RowToolbar({ label, deleteLabel, canUp, canDown, stacked, trash, disabled, className, onMove, onDelete }: Props) {
+/** The (insert,) up, down and delete buttons of a row as one toolbar: a single Tab stop, with the arrow keys (and Home and End) moving between the buttons. After a move, focus stays on the button that was used. */
+export function RowToolbar({
+  label,
+  deleteLabel,
+  insertLabel,
+  canUp,
+  canDown,
+  stacked,
+  trash,
+  disabled,
+  className,
+  onMove,
+  onDelete,
+  onInsert,
+}: Props) {
   const buttons = useRef<(HTMLButtonElement | null)[]>([]);
   const afterRender = useAfterRender();
   // The one button that is in the Tab order: the last one used, or the first enabled one when that is disabled.
-  const enabled = disabled ? [false, false, false] : [canUp, canDown, true];
+  const actions = onInsert ? (['insert', 'up', 'down', 'delete'] as const) : (['up', 'down', 'delete'] as const);
+  const enabled = disabled ? actions.map(() => false) : actions.map((a) => (a === 'up' ? canUp : a === 'down' ? canDown : true));
   const [remembered, setRemembered] = useState(0);
   const stop = enabled[remembered] ? remembered : enabled.indexOf(true);
 
@@ -47,7 +66,7 @@ export function RowToolbar({ label, deleteLabel, canUp, canDown, stacked, trash,
     buttons.current[i]?.focus();
   };
   const keyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    const open = [0, 1, 2].filter((i) => enabled[i]);
+    const open = actions.map((_, i) => i).filter((i) => enabled[i]);
     const at = open.indexOf(stop);
     const next = {
       ArrowRight: open[(at + 1) % open.length],
@@ -79,27 +98,28 @@ export function RowToolbar({ label, deleteLabel, canUp, canDown, stacked, trash,
         className,
       )}
     >
-      {(['up', 'down', 'delete'] as const).map((action, i) => (
+      {actions.map((action, i) => (
         <button
           key={action}
           ref={(el) => {
             buttons.current[i] = el;
           }}
           type="button"
-          aria-label={i === 2 ? deleteLabel : ['Omhoog', 'Omlaag'][i]}
+          aria-label={{ insert: insertLabel, up: 'Omhoog', down: 'Omlaag', delete: deleteLabel }[action]}
           disabled={!enabled[i]}
           tabIndex={i === stop ? 0 : -1}
           onFocus={() => setRemembered(i)}
-          onClick={i === 2 ? onDelete : () => press(i, i === 0 ? -1 : 1)}
+          onClick={{ insert: onInsert, delete: onDelete, up: () => press(i, -1), down: () => press(i, 1) }[action]}
           className={cn(
             buttonClass,
-            i < 2 && (stacked ? 'h-[1.625rem] w-7 text-[0.95rem]' : 'size-9'),
-            i === 2 && 'border-l-2 border-ink/10 hover:not-disabled:bg-red/10 hover:not-disabled:text-red',
-            i === 2 && (stacked ? 'col-start-2 row-span-2 row-start-1 h-full w-full' : 'size-9'),
-            stacked && i === 1 && 'row-start-2',
+            action === 'delete' ? 'border-l-2 border-ink/10 hover:not-disabled:bg-red/10 hover:not-disabled:text-red' : '',
+            action === 'delete' && (stacked ? 'col-start-2 row-span-2 row-start-1 h-full w-full' : 'size-9'),
+            (action === 'up' || action === 'down') && (stacked ? 'h-[1.625rem] w-7 text-[0.95rem]' : 'size-9'),
+            action === 'insert' && 'size-9',
+            stacked && action === 'down' && 'row-start-2',
           )}
         >
-          {i === 2 ? icons[trash ? 'trash' : 'cross'] : icons[action as 'up' | 'down']}
+          {action === 'delete' ? icons[trash ? 'trash' : 'cross'] : icons[action]}
         </button>
       ))}
     </div>
