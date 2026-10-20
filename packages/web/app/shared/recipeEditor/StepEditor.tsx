@@ -23,11 +23,15 @@ type Props = {
   onChips: (change: (step: StepDraft, context: Context) => StepDraft) => void;
   /** What the change replaced. */
   onEdit: (edit: TextEdit, body: string) => void;
-  /** Enter was pressed at the end of a step that has text. */
-  onEnterAtEnd: () => void;
+  /** Enter was pressed. */
+  onEnter: () => void;
+  /** The empty step at the end: its buttons are shown but inert. */
+  free: boolean;
   /** Backspace was pressed in an empty step. */
   onBackspaceEmpty: () => void;
   onRemove: () => void;
+  /** Insert an empty step above this one. */
+  onInsert: () => void;
   /** Move one place up (-1) or down (1). */
   onMove: (direction: -1 | 1) => void;
   /** Pointer handlers for the grip, and the style the step gets while it is dragged or shifted aside. */
@@ -46,9 +50,11 @@ export function StepEditor({
   onType,
   onChips,
   onEdit,
-  onEnterAtEnd,
+  onEnter,
+  free,
   onBackspaceEmpty,
   onRemove,
+  onInsert,
   onMove,
   gripProps,
   style,
@@ -97,9 +103,12 @@ export function StepEditor({
         <RowToolbar
           label={`Acties voor stap ${number}`}
           deleteLabel="Verwijder stap"
+          insertLabel="Voeg stap toe boven"
+          onInsert={onInsert}
           canUp={canUp}
           canDown={canDown}
           trash
+          disabled={free}
           onMove={onMove}
           onDelete={onRemove}
         />
@@ -114,7 +123,7 @@ export function StepEditor({
         onEdit={onEdit}
         onCaret={setCaret}
         onKeyDown={keyDown}
-        onEnterAtEnd={onEnterAtEnd}
+        onEnter={onEnter}
         onBackspaceEmpty={onBackspaceEmpty}
       />
       <StepChips step={step} context={context} number={number} hotId={hotId} onHot={setChipHot} onChange={onChips} />

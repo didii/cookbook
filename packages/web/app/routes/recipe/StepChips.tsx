@@ -20,7 +20,7 @@ export function StepChips({ step, index, done }: Props) {
       ))}
       {step.ovenTemperature !== undefined && (
         <li className={cn(chip, done && 'opacity-60')}>
-          <Thermometer />
+          <Thermometer className="size-4" />
           <b className="font-black text-red">{step.ovenTemperature} °C</b> oven
         </li>
       )}

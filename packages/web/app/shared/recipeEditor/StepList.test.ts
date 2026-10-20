@@ -1,7 +1,13 @@
 import { test } from 'node:test';
 
 // Needs a browser: key presses and focus.
-test.todo('recipe-step-editing › Enter at the end starts the next step');
+test.todo('recipe-step-editing › Enter moves to the next step');
+// Needs a browser: key presses and focus.
+test.todo('recipe-step-editing › Enter in the last step changes nothing');
+// Needs a browser: the disabled state of the buttons.
+test.todo('recipe-step-editing › Buttons of the empty step are inert');
+// Needs a browser: the disabled state of the buttons.
+test.todo('recipe-step-editing › Insert is inert on the empty last step');
 // Needs a browser: key presses and focus.
 test.todo('recipe-step-editing › Backspace removes an empty step');
 // Needs a browser: the disabled state of the buttons.

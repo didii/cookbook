@@ -5,8 +5,8 @@ How a family member writes, reorders, removes and saves the steps of a recipe, a
 
 ## Requirements
 
-### Requirement: Steps are numbered text fields that grow with their text
-The system SHALL show the steps of a recipe in order, each with its number in a header and a text field that grows with its text instead of scrolling, SHALL start a new recipe with one empty step, and SHALL offer a "Stap toevoegen" button below the list.
+### Requirement: Steps are numbered text fields
+The system SHALL show the steps of a recipe in order, each with its number in a header and a text field that grows with its text instead of scrolling, and SHALL start a new recipe with one empty step.
 
 #### Scenario: New recipe starts with one empty step
 - **WHEN** a family member opens the editor of a new recipe
@@ -16,28 +16,43 @@ The system SHALL show the steps of a recipe in order, each with its number in a 
 - **WHEN** a family member types a text longer than one line in a step
 - **THEN** the field becomes taller to show all of it without an inner scrollbar
 
-#### Scenario: Step can be added with the button
-- **WHEN** a family member uses "Stap toevoegen"
-- **THEN** a new empty step is added at the end, numbered after the last, and receives focus
+### Requirement: Enter moves to the next step
+The system SHALL, when Enter is pressed in a step, move focus to the next step, wherever the cursor is, and SHALL NOT insert a line break or add a step. It SHALL turn line breaks in pasted text into spaces, and SHALL remove an empty step that is not the last, moving focus to the end of the step above, when Backspace is pressed in it.
 
-### Requirement: Enter continues with the next step
-The system SHALL, when Enter is pressed with the cursor at the end of a step that has text, add a new empty step directly below it and move focus there. It SHALL NOT insert a line break anywhere else, SHALL turn line breaks in pasted text into spaces, and SHALL remove an empty step, moving focus to the end of the step above, when Backspace is pressed in it.
+#### Scenario: Enter moves to the next step
+- **WHEN** a family member presses Enter in a step that is not the last
+- **THEN** focus moves to the next step and no line break is inserted
 
-#### Scenario: Enter at the end starts the next step
-- **WHEN** a family member presses Enter at the end of a step that has text
-- **THEN** a new empty step appears below it and has focus
-
-#### Scenario: Enter elsewhere changes nothing
-- **WHEN** a family member presses Enter in the middle of a step's text, or in an empty step
-- **THEN** no line break is inserted and no step is added
+#### Scenario: Enter in the last step changes nothing
+- **WHEN** a family member presses Enter in the empty last step
+- **THEN** no line break is inserted, no step is added and focus stays
 
 #### Scenario: Pasted line breaks become spaces
 - **WHEN** a family member pastes text with line breaks into a step
 - **THEN** each line break appears as a space and the step stays one paragraph
 
 #### Scenario: Backspace removes an empty step
-- **WHEN** a family member presses Backspace in an empty step that is not the only step
+- **WHEN** a family member presses Backspace in an empty step that is not the last
 - **THEN** the step is removed and focus moves to the end of the step above
+
+### Requirement: The step list always has a free step and is filled by typing
+The system SHALL keep exactly one empty step at the end of the list, SHALL add a new empty step when the family member types in it, and SHALL show the buttons of that empty step but inert. It SHALL NOT offer a button to add a step at the end.
+
+#### Scenario: Empty step at the end
+- **WHEN** a family member opens the editor of a new recipe or one with steps
+- **THEN** the step list ends with one empty step and has no "Stap toevoegen" button
+
+#### Scenario: Typing adds the next step
+- **WHEN** a family member types in the empty last step
+- **THEN** a new empty step appears below it
+
+#### Scenario: Deleting the last step with text leaves the empty step
+- **WHEN** a family member deletes the only step that has text
+- **THEN** one empty step remains and the undo offer is shown
+
+#### Scenario: Buttons of the empty step are inert
+- **WHEN** a family member looks at the empty last step
+- **THEN** its up, down and delete buttons are shown but cannot be used
 
 ### Requirement: Steps can be reordered
 The system SHALL give each step always-visible up and down buttons in its header, SHALL disable "up" on the first step and "down" on the last, SHALL let a step be dragged by its grip with a mouse or pen, SHALL hide the grip on screens without hover so the buttons are the only way to reorder there, SHALL keep the text of a step when it moves, and SHALL announce each move to assistive technology.
@@ -59,7 +74,7 @@ The system SHALL give each step always-visible up and down buttons in its header
 - **THEN** assistive technology is told its new number
 
 ### Requirement: Steps can be operated from the keyboard
-The system SHALL group the up, down and delete buttons of a step's header into one toolbar that is a single Tab stop, with the left and right arrow keys moving between its buttons, and SHALL move the step up or down with Alt and the up or down arrow key while focus stays in its text, without taking over Tab or the plain arrow keys, which keep moving the cursor.
+The system SHALL group the insert, up, down and delete buttons of a step's header into one toolbar that is a single Tab stop, with the left and right arrow keys moving between its buttons, and SHALL move the step up or down with Alt and the up or down arrow key while focus stays in its text, without taking over Tab or the plain arrow keys, which keep moving the cursor.
 
 #### Scenario: Step buttons are one tab stop
 - **WHEN** a family member tabs through a step
@@ -136,3 +151,18 @@ The system SHALL know, for every change to the text of a step, which characters 
 #### Scenario: Input method input is reported when it completes
 - **WHEN** a family member composes text with an input method editor
 - **THEN** the change is reported once, when the composition ends, as the range the composition replaced
+
+### Requirement: A step can be inserted above another
+The system SHALL give each step with text an insert button in its toolbar that adds an empty step directly above it, renumbers the steps, and moves focus to the new step. The button SHALL be shown but inert on the empty last step.
+
+#### Scenario: Insert above a step
+- **WHEN** a family member uses the insert button of the second step
+- **THEN** a new empty step is the second step, the former second step is third, and the new step has focus
+
+#### Scenario: Insert before the first step
+- **WHEN** a family member uses the insert button of the first step
+- **THEN** a new empty step is the first step and has focus
+
+#### Scenario: Insert is inert on the empty last step
+- **WHEN** a family member looks at the empty last step
+- **THEN** its insert button is shown but cannot be used

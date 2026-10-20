@@ -2,7 +2,6 @@ import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { Context } from '~/lib/chips';
 import type { StepDraft } from '~/lib/draft';
 import type { TextEdit } from '~/lib/textEdit';
-import { Button } from '~/shared/Button';
 import { Announcement } from './Announcement';
 import type { ItemHandle } from './ItemHandle';
 import { StepEditor } from './StepEditor';
@@ -15,11 +14,11 @@ type Props = {
   contexts: Context[];
   /** Changes the chips of a step with a function of the chip logic. */
   onChips: (id: string, change: (step: StepDraft, context: Context) => StepDraft) => void;
+  /** Insert an empty step at a place. */
+  onAdd: (at: number) => void;
   onType: (id: string, body: string) => void;
   /** What a change of a step's text replaced; reported after the text itself (see `StepText`). */
   onEdit: (id: string, edit: TextEdit, body: string) => void;
-  /** Add an empty step at a place. */
-  onAdd: (at: number) => void;
   onRemove: (id: string) => void;
   /** Put a removed step back at the place it had. */
   onRestore: (step: StepDraft, at: number) => void;
@@ -33,7 +32,7 @@ const undoSeconds = 8;
 /** A step that was removed and can still be restored, with the place it had. */
 type Removed = { step: StepDraft; at: number };
 
-/** The steps of a recipe: numbered, reorderable, with "Stap toevoegen" below. */
+/** The steps of a recipe: numbered and reorderable, ending with an empty step that typing fills. */
 export function StepList({ steps, contexts, onChips, onType, onEdit, onAdd, onRemove, onRestore, onMove }: Props) {
   const items = useRef(new Map<string, ItemHandle>());
   const undoButton = useRef<HTMLButtonElement>(null);
@@ -62,7 +61,7 @@ export function StepList({ steps, contexts, onChips, onType, onEdit, onAdd, onRe
 
   const focusStep = (index: number, caret: 'start' | 'end') => afterRender(() => items.current.get(latest.current[index]?.id)?.focusField(caret));
 
-  const add = (at: number) => {
+  const insert = (at: number) => {
     setRemoved(undefined);
     focusStep(at, 'start');
     onAdd(at);
@@ -125,8 +124,10 @@ export function StepList({ steps, contexts, onChips, onType, onEdit, onAdd, onRe
               canDown={i < steps.length - 1}
               onType={(body) => type(step.id, body)}
               onEdit={(edit, body) => onEdit(step.id, edit, body)}
-              onEnterAtEnd={() => add(i + 1)}
-              onBackspaceEmpty={() => steps.length > 1 && remove(step.id)}
+              onInsert={() => insert(i)}
+              onEnter={() => items.current.get(steps[i + 1]?.id)?.focusField('start')}
+              free={i === steps.length - 1 && !step.body.trim()}
+              onBackspaceEmpty={() => i < steps.length - 1 && remove(step.id)}
               onRemove={() => remove(step.id)}
               onMove={(direction) => move(step.id, direction)}
               gripProps={reorder.gripProps(i)}
@@ -136,9 +137,6 @@ export function StepList({ steps, contexts, onChips, onType, onEdit, onAdd, onRe
         ))}
         {removed && removed.at >= steps.length && offer}
       </ol>
-      <Button type="button" onClick={() => add(steps.length)} className="mt-4 w-full border-dashed bg-transparent shadow-none">
-        Stap toevoegen
-      </Button>
       <Announcement text={reorder.announcement} />
     </div>
   );

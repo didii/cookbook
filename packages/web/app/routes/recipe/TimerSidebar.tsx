@@ -68,7 +68,7 @@ function SidebarCard({ timer: t, onJump, onPeek }: { timer: TimerView; onJump: (
           </TimerButton>
         ) : (
           <TimerButton onClick={() => controls.stop(t.id)} aria-label="Stop timer" className="hover:bg-red hover:text-white">
-            <Stop />
+            <Stop className="size-4" />
             Stop
           </TimerButton>
         )}
