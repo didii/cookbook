@@ -277,3 +277,23 @@ test('recipe-storage › Chips are removed with their step', async () => {
   await db.prepare('DELETE FROM steps WHERE id = ?').bind(step).run();
   assert.equal(await count('SELECT step_id FROM step_ingredient_chips WHERE step_id = ?', step), 0);
 });
+
+const addUser = (email: string, name: string) => db.prepare('INSERT INTO users (email, calling_name) VALUES (?, ?)').bind(email, name).run();
+
+test('an email address is one user whatever its letter case', async () => {
+  await addUser('Jos@Example.com', 'Jos');
+  await assert.rejects(addUser('jos@example.com', 'Josje'));
+  assert.equal(await count("SELECT id FROM users WHERE email = 'JOS@EXAMPLE.COM'"), 1);
+});
+
+test('a user needs a calling name that is not blank', async () => {
+  await assert.rejects(addUser('blank@example.com', ''));
+  await assert.rejects(addUser('spaces@example.com', '   '));
+  assert.equal(await count("SELECT id FROM users WHERE email IN ('blank@example.com', 'spaces@example.com')"), 0);
+});
+
+test('a user gets a creation time in the same format as a recipe', async () => {
+  await addUser('time@example.com', 'Tim');
+  const row = await db.prepare("SELECT created_at FROM users WHERE email = 'time@example.com'").first<{ created_at: string }>();
+  assert.match(row!.created_at, /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/);
+});
