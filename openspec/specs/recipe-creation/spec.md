@@ -6,7 +6,7 @@ Lets a family member add a new recipe to the cookbook, so recipes can be shared 
 ## Requirements
 
 ### Requirement: A new recipe can be added from the app
-The system SHALL offer, from every page, a link to a form at `/recepten/nieuw` where a family member provides a title and an author, and optionally a number of servings, a preparation time, an intro and an image link, and SHALL save the recipe when the form is submitted.
+The system SHALL offer, from every page, a link to a form at `/recepten/nieuw` where a family member provides a title and an author, and optionally a number of servings, a preparation time, an intro and a photo, and SHALL save the recipe when the form is submitted.
 
 #### Scenario: Link to the form
 - **WHEN** a family member looks at any page
@@ -25,7 +25,7 @@ The system SHALL offer, from every page, a link to a form at `/recepten/nieuw` w
 - **THEN** the recipe is stored without servings and they are taken to its page
 
 #### Scenario: Time, intro and image are stored
-- **WHEN** a family member also fills in a preparation time, an intro and an image link
+- **WHEN** a family member also fills in a preparation time and an intro and adds a photo
 - **THEN** the recipe is stored with those values
 
 ### Requirement: A new recipe gets a unique address
@@ -98,14 +98,3 @@ The system SHALL give each created recipe a seal chosen automatically and at ran
 #### Scenario: Provided seal is used
 - **WHEN** a recipe is created with a seal given
 - **THEN** it is stored with that seal
-
-### Requirement: The image is previewed in the form
-The system SHALL show in the form, for new and existing recipes alike, a preview of the image link as it is typed, framed like the image on the recipe page (same border, shadow, proportions and a tile band beneath), show nothing while the field is empty, and tell the family member in text when the image cannot be loaded.
-
-#### Scenario: Preview of the image
-- **WHEN** a family member fills in or changes the image link, or opens the form of a recipe that has an image
-- **THEN** the form shows that image in the same frame as on the recipe page, with a tile band beneath it
-
-#### Scenario: Image cannot be loaded
-- **WHEN** the image link does not lead to a loadable image
-- **THEN** the form shows a text saying the image cannot be shown instead of a broken picture
