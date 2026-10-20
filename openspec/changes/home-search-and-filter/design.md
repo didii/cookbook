@@ -5,7 +5,7 @@
 - Home (`routes/home/route.tsx`) is a server loader (`listRecipes`, newest first by `id DESC`) rendering `RecipeCard`s. No client state.
 - Identity: `workers/handler.ts` verifies the Access token and puts the email in `userEmailContext`. Nothing is stored about members; `recipes.created_by` is only a plain email.
 - Buttons: `shared/Button.tsx` and `routes/recipe/TimerChip.tsx` each press differently (2px move + 1px shadow). `TabBar` selected tabs and some cards use `shadow-hard-sm` but are not pressed controls.
-- Mockup (authoritative for look and behaviour): https://claude.ai/artifact/DL2Yngucy4nyzfPqaLV1Vp
+- Mockup (authoritative for look and behaviour): `docs/design/home.html`, also at https://claude.ai/artifact/DL2Yngucy4nyzfPqaLV1Vp
 - Delivery: five stacked PRs, in the order of the task sections. Each PR is shippable alone: after PR 3 the home page works without users; after PR 4 users exist but nothing reads them; PR 5 adds the marker.
 
 ## Goals / Non-Goals

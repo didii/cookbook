@@ -1,6 +1,6 @@
 # Tasks
 
-Five stacked PRs, one per group, in this order. Group 1 branches from `main`; each next group branches from the previous group's branch and its PR targets that branch. Commit after every task. Before each PR: `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check` and `pnpm test:ai` pass, and `pnpm test:spec home-search-and-filter` shows no missing test for that group's capabilities. Mockup: https://claude.ai/artifact/DL2Yngucy4nyzfPqaLV1Vp
+Five stacked PRs, one per group, in this order. Group 1 branches from `main`; each next group branches from the previous group's branch and its PR targets that branch. Commit after every task. Before each PR: `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check` and `pnpm test:ai` pass, and `pnpm test:spec home-search-and-filter` shows no missing test for that group's capabilities. Mockup: `docs/design/home.html`
 
 ## 1. Button press (branch `home-1-button-press`, PR against `main`)
 
