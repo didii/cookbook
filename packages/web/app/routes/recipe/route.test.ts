@@ -37,7 +37,7 @@ const viewCount = async (slug: string) =>
     .bind(slug)
     .first<{ n: number }>())!.n;
 
-test('recipe-new-marker � Opening twice', async () => {
+test('recipe-new-marker › Opening twice', async () => {
   await createUser(db, 'oma@example.com', 'Oma');
   const slug = await createRecipe(db, { title: 'Twee keer', author: 'Oma' });
   await load(slug);

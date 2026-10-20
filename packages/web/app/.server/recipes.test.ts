@@ -396,7 +396,7 @@ const open = (email: string, slug: string) =>
     .bind(email, slug)
     .run();
 
-test('recipe-new-marker � Recent recipe never opened', async () => {
+test('recipe-new-marker › Recent recipe never opened', async () => {
   const slug = await createRecipe(db, { title: 'Vorige week', author: 'Oma', createdBy: 'oma@example.com' });
   await addedAt(slug, '2026-03-08T12:00:00Z');
   assert.equal(await newFor('kind@example.com', slug), true);
@@ -407,7 +407,7 @@ test('recipe-new-marker � Recent recipe never opened', async () => {
   assert.equal(await newFor('kind@example.com', slug), false);
 });
 
-test('recipe-new-marker � Marker is per member', async () => {
+test('recipe-new-marker › Marker is per member', async () => {
   await createUser(db, 'een@example.com', 'Een');
   await createUser(db, 'twee@example.com', 'Twee');
   const slug = await createRecipe(db, { title: 'Per lid', author: 'Oma', createdBy: 'oma@example.com' });
@@ -418,13 +418,13 @@ test('recipe-new-marker � Marker is per member', async () => {
   assert.equal(await newFor('twee@example.com', slug), true);
 });
 
-test('recipe-new-marker � Recipe older than a month', async () => {
+test('recipe-new-marker › Recipe older than a month', async () => {
   const slug = await createRecipe(db, { title: 'Oud', author: 'Oma', createdBy: 'oma@example.com' });
   await addedAt(slug, '2026-02-01T12:00:00Z');
   assert.equal(await newFor('kind@example.com', slug), false);
 });
 
-test('recipe-new-marker � Viewing your own recent recipe', async () => {
+test('recipe-new-marker › Viewing your own recent recipe', async () => {
   const slug = await createRecipe(db, { title: 'Eigen', author: 'Oma', createdBy: 'Mama@Example.com' });
   await addedAt(slug, '2026-03-14T12:00:00Z');
   assert.equal(await newFor('mama@example.com', slug), false);
