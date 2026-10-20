@@ -58,6 +58,3 @@ test('button-press › Disabled button', async () => {
 test('button-press › Reduced motion preference', async () => {
   assert.match(await cssFor(press), /@media \(prefers-reduced-motion: reduce\)\s*\{[^@]*transition-property: none/);
 });
-
-// A real browser is needed: there are no filter chips yet, and a chip is shadowless so it never gets the press class.
-test.todo('button-press › Pressing a chip');
