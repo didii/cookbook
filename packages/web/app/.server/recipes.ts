@@ -1,4 +1,4 @@
-import type { Recipe, Step } from '~/lib/recipe';
+import type { Recipe, RecipeSummary, Step } from '~/lib/recipe';
 import { pickSeal } from '~/lib/seals';
 
 export type RecipeRow = {
@@ -14,9 +14,6 @@ export type RecipeRow = {
   /** When the recipe was last saved; the editor compares it to the version a draft started from. */
   updated_at: string;
 };
-
-/** What a recipe card shows. */
-export type RecipeSummary = Pick<RecipeRow, 'slug' | 'title' | 'author' | 'time' | 'image' | 'seal'>;
 
 export type IngredientRow = { quantity_text: string; name: string };
 

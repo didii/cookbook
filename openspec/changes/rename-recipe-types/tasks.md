@@ -6,7 +6,7 @@ Precondition: `home-recipes-from-db` is merged. Each task is a rename only; veri
 
 - [x] 1.1 `git mv lib/recipes.ts lib/recipe.ts`, update all imports; verify type check and `pnpm test:ai` pass
 - [x] 1.2 Add `Recipe` to `lib/recipe.ts` (replaces `StoredRecipe`; rename all users incl. `getRecipe`, `RecipePage`, `IngredientList`, tests); verify no `StoredRecipe` remains (`grep`) and tests pass
-- [ ] 1.2b Move `RecipeSummary` from `.server/recipes.ts` to `lib/recipe.ts` as a standalone type (not a `Pick` of `Recipe`); point `RecipeCard`, `home/route.tsx` and `listRecipes` at it; verify home tests pass
+- [x] 1.2b Move `RecipeSummary` from `.server/recipes.ts` to `lib/recipe.ts` as a standalone type (not a `Pick` of `Recipe`); point `RecipeCard`, `home/route.tsx` and `listRecipes` at it; verify home tests pass
 - [ ] 1.3 Make `.server/recipes.ts` hold only rows, queries and the row-to-`Recipe` mapping; verify `RecipeCard` and other browser code import nothing type-wise from `.server`
 
 ## 2. Write input

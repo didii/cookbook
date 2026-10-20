@@ -27,3 +27,13 @@ export type Recipe = {
   ingredients: Ingredient[];
   steps: Step[];
 };
+
+/** What a recipe card shows. */
+export type RecipeSummary = {
+  slug: string;
+  title: string;
+  author: string;
+  time: string | null;
+  image: string | null;
+  seal: string | null;
+};
