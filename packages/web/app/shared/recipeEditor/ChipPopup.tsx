@@ -164,7 +164,7 @@ export function ChipPopup({ chip, values, words, anchor, onValues, onLabel, onMo
       )}
       {canFollow ? (
         <>
-          <fieldset className="m-0 grid min-w-0 grid-cols-2 overflow-hidden rounded-lg border-2 border-ink p-0">
+          <fieldset className="m-0 grid min-w-0 grid-cols-2 border-0 p-0">
             <legend className="sr-only">Volgt dit de tekst</legend>
             {(
               [
@@ -177,7 +177,7 @@ export function ChipPopup({ chip, values, words, anchor, onValues, onLabel, onMo
                 type="button"
                 aria-pressed={follows === (mode === 'auto')}
                 onClick={() => onMode(mode)}
-                className="flex min-h-10 cursor-pointer items-center justify-center gap-1.5 border-0 bg-white text-sm font-black aria-pressed:bg-ink aria-pressed:text-white"
+                className="flex min-h-10 cursor-pointer items-center justify-center gap-1.5 border-2 border-ink bg-white text-sm font-black first-of-type:rounded-l-lg last:-ml-0.5 last:rounded-r-lg aria-pressed:bg-ink aria-pressed:text-white"
               >
                 {icon}
                 {text}
