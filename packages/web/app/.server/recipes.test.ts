@@ -3,7 +3,7 @@ import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
 import { defined } from '~testing/defined';
 import { seals } from '~/lib/seals';
-import { createRecipe, getRecipe, listAuthors, slugify, updateRecipe, type NewStep } from './recipes';
+import { createRecipe, getRecipe, listAuthors, listRecipes, slugify, updateRecipe, type NewStep } from './recipes';
 
 /** Steps with only a text, as they are stored and as they come back. */
 const plain = (...bodies: string[]): NewStep[] => bodies.map((body) => ({ body }));
@@ -142,6 +142,21 @@ test('recipe-creation › Existing authors are suggested', async () => {
     await createRecipe(fresh.db, { title: 'B', author: 'Oma', servings: 1 });
     await fresh.db.prepare("INSERT INTO recipes (slug, title, author, servings) VALUES ('c', 'C', 'OMA', 1)").run();
     assert.deepEqual(await listAuthors(fresh.db), ['Oma', 'Papa']);
+  } finally {
+    await fresh.dispose();
+  }
+});
+
+test('lists every recipe with its card fields, the most recently added first', async () => {
+  const fresh = await createTestDb();
+  try {
+    assert.deepEqual(await listRecipes(fresh.db), []);
+    await createRecipe(fresh.db, { title: 'Eerst', author: 'Oma', time: '30 min', image: '/a.jpg', seal: 'fu' });
+    await createRecipe(fresh.db, { title: 'Daarna', author: 'Papa', seal: 'fu' });
+    assert.deepEqual(await listRecipes(fresh.db), [
+      { slug: 'daarna', title: 'Daarna', author: 'Papa', time: null, image: null, seal: 'fu' },
+      { slug: 'eerst', title: 'Eerst', author: 'Oma', time: '30 min', image: '/a.jpg', seal: 'fu' },
+    ]);
   } finally {
     await fresh.dispose();
   }
