@@ -24,7 +24,7 @@ export function TimerChip({ id, minutes, label }: Props) {
           aria-label={`Start timer van ${formatMinutes(minutes)}${label ? `, ${label}` : ''}`}
           className="group inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-lg border-3 border-ink bg-jade pr-3 pl-2 text-[0.9375rem] font-black text-white shadow-hard-sm transition-[translate,box-shadow,background-color] duration-100 hover:bg-[color-mix(in_srgb,var(--color-jade),white_14%)] motion-safe:hover:-translate-y-px motion-safe:hover:shadow-[4px_4px_0_var(--color-ink)] motion-safe:active:translate-x-0.5 motion-safe:active:translate-y-0.5 motion-safe:active:shadow-[1px_1px_0_var(--color-ink)]"
         >
-          <Play className="transition-transform group-hover:motion-safe:translate-x-px" />
+          <Play className="size-5 transition-transform group-hover:motion-safe:translate-x-px" />
           {formatMinutes(minutes)}
         </button>
       </li>

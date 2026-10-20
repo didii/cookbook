@@ -58,7 +58,7 @@ export function TimerCard({ view }: Props) {
         </TimerButton>
         {!finished && timers.clock.available && (
           <TimerButton onClick={() => timers.handOver(view.id)} aria-label="Geef de resterende tijd aan je klok-app">
-            <Alarm />
+            <Alarm className="size-4" />
             App
           </TimerButton>
         )}
@@ -68,7 +68,7 @@ export function TimerCard({ view }: Props) {
           </TimerButton>
         ) : (
           <TimerButton onClick={() => timers.stop(view.id)} aria-label="Stop timer" className="hover:bg-red hover:text-white">
-            <Stop />
+            <Stop className="size-4" />
             Stop
           </TimerButton>
         )}

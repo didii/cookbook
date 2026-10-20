@@ -57,7 +57,7 @@ function Face({ kind, values, label }: { kind: Kind; values: ChipValues; label?:
   if (kind === 'oven')
     return (
       <>
-        <Thermometer />
+        <Thermometer className="size-4" />
         <span>
           <b className="font-black text-red">{(values as OvenValues).degrees} °C</b> oven
         </span>

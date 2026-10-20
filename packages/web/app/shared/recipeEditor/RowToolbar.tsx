@@ -1,6 +1,6 @@
 import { useRef, useState, type KeyboardEvent } from 'react';
 import { cn } from '~/shared/cn';
-import { Cross, Down, Plus, Trash, Up } from '~/shared/icons';
+import { ChevronDown, ChevronUp, Cross, Plus, Trash } from '~/shared/icons';
 import { useAfterRender } from './useAfterRender';
 
 type Props = {
@@ -29,8 +29,8 @@ type Props = {
 const iconClass = 'size-[1.05em]';
 const icons = {
   insert: <Plus className={iconClass} />,
-  up: <Up className={iconClass} />,
-  down: <Down className={iconClass} />,
+  up: <ChevronUp className={iconClass} />,
+  down: <ChevronDown className={iconClass} />,
   cross: <Cross className={iconClass} />,
   trash: <Trash className={iconClass} />,
 };
