@@ -2,12 +2,12 @@ import { data, redirect } from 'react-router';
 import { envContext, userEmailContext } from '~/.server/context';
 import { acceptImage } from '~/.server/photos';
 import { chooseSeal, createRecipe, listAuthors } from '~/.server/recipes';
-import { emptyContent } from '~/lib/draft';
+import { emptyDraftSeed } from '~/lib/draft';
 import { seals } from '~/lib/seals';
 import { tiles } from '~/lib/tile';
 import { endDraftAfterSave } from '~/shared/recipeEditor/endDraftAfterSave';
 import { RecipeEditor } from '~/shared/recipeEditor/RecipeEditor';
-import { readForm, readIngredients, readSteps, toRecipeFields, validate, type Errors } from '~/shared/recipeValidation';
+import { readForm, readIngredients, readSteps, toRecipeFields, validate, type RecipeFormErrors } from '~/shared/recipeValidation';
 import type { Route } from './+types/route';
 
 export async function loader({ context }: Route.LoaderArgs) {
@@ -22,7 +22,7 @@ export async function action({ request, context }: Route.ActionArgs) {
   const { lines, ingredients, errors: ingredientErrors } = readIngredients(form);
   const { lines: stepLines, steps } = readSteps(form);
 
-  const errors: Errors = validate(values);
+  const errors: RecipeFormErrors = validate(values);
   if (Object.keys(ingredientErrors).length) errors.ingredients = ingredientErrors;
   if (Object.keys(errors).length) return data({ errors, values: { ...values, ingredients: lines, steps: stepLines } }, { status: 400 });
 
@@ -52,8 +52,8 @@ export default function NewRecipe({ loaderData, actionData }: Route.ComponentPro
       authors={loaderData.authors}
       tile={loaderData.tile}
       seal={loaderData.seal}
-      initial={emptyContent}
-      values={actionData?.values ?? emptyContent}
+      initial={emptyDraftSeed}
+      values={actionData?.values ?? emptyDraftSeed}
       errors={actionData?.errors ?? {}}
       cancelTo="/"
     />

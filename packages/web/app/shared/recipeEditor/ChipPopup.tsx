@@ -1,12 +1,12 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent, type Ref } from 'react';
-import type { Chip, IngredientValues, OvenValues, TimerValues, Values } from '~/lib/chips';
+import type { Chip, ChipValues, IngredientValues, OvenValues, TimerValues } from '~/lib/chips';
 import { cn } from '~/shared/cn';
 import { Link, Pin, Trash } from '~/shared/icons';
 
 type Props = {
   chip: Chip;
   /** What the chip shows now. */
-  values: Values;
+  values: ChipValues;
   /** The chip the popup belongs to, to place the popup under it and to ignore clicks on it. */
   anchor: () => HTMLElement | null | undefined;
   /** Changing a value pins the chip. */

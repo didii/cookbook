@@ -3,10 +3,10 @@ import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
 import { defined } from '~testing/defined';
 import { seals } from '~/lib/seals';
-import { createRecipe, getRecipe, listAuthors, listRecipes, slugify, updateRecipe, type NewStep } from './recipes';
+import { createRecipe, getRecipe, listAuthors, listRecipes, slugify, updateRecipe, type StepInput } from './recipes';
 
 /** Steps with only a text, as they are stored and as they come back. */
-const plain = (...bodies: string[]): NewStep[] => bodies.map((body) => ({ body }));
+const plain = (...bodies: string[]): StepInput[] => bodies.map((body) => ({ body }));
 const loaded = (...bodies: string[]) => bodies.map((body) => ({ body, ingredients: [] }));
 
 let db: D1Database;
@@ -45,8 +45,8 @@ test('returns ingredients and steps in position order, and leaves optional field
   assert.equal(r?.time, null);
   assert.equal(r?.image, null);
   assert.deepEqual(r?.ingredients, [
-    { quantity_text: '1', name: 'ei' },
-    { quantity_text: '', name: 'zout' },
+    { quantityText: '1', name: 'ei' },
+    { quantityText: '', name: 'zout' },
   ]);
   assert.deepEqual(defined(r?.steps), loaded('een', 'twee'));
 });
@@ -122,8 +122,8 @@ test('createRecipe stores every property, ingredient and step so getRecipe reads
     image: '/alles.jpg',
     seal: 'fu',
     ingredients: [
-      { quantity_text: '250 g', name: 'bloem' },
-      { quantity_text: '', name: 'zout' },
+      { quantityText: '250 g', name: 'bloem' },
+      { quantityText: '', name: 'zout' },
     ],
     steps: loaded('mengen', 'bakken'),
   });
@@ -352,12 +352,12 @@ test('replacing steps of an unknown recipe stores nothing', async () => {
   assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM steps WHERE body = ?').bind('a').first())?.n, 0);
 });
 
-const withChips: NewStep[] = [
+const withChips: StepInput[] = [
   {
     body: 'Kneed bloem en boter. Laat 30 minuten rusten.',
     ingredients: [
-      { quantity_text: '250 g', name: 'bloem' },
-      { quantity_text: '', name: 'boter' },
+      { quantityText: '250 g', name: 'bloem' },
+      { quantityText: '', name: 'boter' },
     ],
     timer: { minutes: 30, label: 'Deeg rust' },
   },
@@ -369,7 +369,7 @@ test('recipe-step-chips › Chips are stored with their step', async () => {
   const slug = await createRecipe(db, { title: 'Met chips', author: 'Oma', steps: withChips });
   assert.deepEqual(defined((await getRecipe(db, slug))?.steps), withChips);
   // Saving again replaces the chips of the old steps instead of adding to them.
-  const fewer: NewStep[] = [{ body: 'Kneed.', ingredients: [{ quantity_text: '1', name: 'ei' }] }];
+  const fewer: StepInput[] = [{ body: 'Kneed.', ingredients: [{ quantityText: '1', name: 'ei' }] }];
   await updateRecipe(db, slug, { title: 'Met chips', author: 'Oma', steps: fewer });
   assert.deepEqual(defined((await getRecipe(db, slug))?.steps), fewer);
   assert.equal(

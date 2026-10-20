@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { soundAlarm } from './alarm';
-import type { Step } from './recipes';
+import type { Step } from './recipe';
 import { activeTimers, add, finishTitle, formatCountdown, newlyFinished, restore, serialize, start, stop, timerDefs, timerView } from './timers';
 
 // Eleven steps; the ones with a timer are 2, 5, 6, 10 and 11.

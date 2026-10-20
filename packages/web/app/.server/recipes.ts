@@ -1,4 +1,4 @@
-import type { Step } from '~/lib/recipes';
+import type { Recipe, RecipeSummary, Step } from '~/lib/recipe';
 import { pickSeal } from '~/lib/seals';
 
 export type RecipeRow = {
@@ -15,24 +15,21 @@ export type RecipeRow = {
   updated_at: string;
 };
 
-/** What a recipe card shows. */
-export type RecipeSummary = Pick<RecipeRow, 'slug' | 'title' | 'author' | 'time' | 'image' | 'seal'>;
-
-export type IngredientRow = { quantity_text: string; name: string };
-
-export type StoredRecipe = RecipeRow & { ingredients: IngredientRow[]; steps: Step[] };
+export type IngredientRow = { quantityText: string; name: string };
 
 /** A step to store: its text, and any ingredient chips, oven temperature and timer. */
-export type NewStep = Pick<Step, 'body'> & Partial<Step>;
+export type StepInput = Pick<Step, 'body'> & Partial<Step>;
 
 type StepRow = { id: number; body: string; oven_temperature: number | null; timer_minutes: number | null; timer_label: string | null };
 
 /** One round trip (a single batch): the recipe plus its ingredients and steps (with their chips) in stored order. */
-export async function getRecipe(db: D1Database, slug: string): Promise<StoredRecipe | undefined> {
+export async function getRecipe(db: D1Database, slug: string): Promise<Recipe | undefined> {
   const [recipe, ingredients, steps, chips] = await db.batch([
     db.prepare('SELECT id, slug, title, author, time, servings, intro, image, seal, updated_at FROM recipes WHERE slug = ?').bind(slug),
     db
-      .prepare('SELECT i.quantity_text, i.name FROM ingredients i JOIN recipes r ON r.id = i.recipe_id WHERE r.slug = ? ORDER BY i.position')
+      .prepare(
+        'SELECT i.quantity_text AS quantityText, i.name FROM ingredients i JOIN recipes r ON r.id = i.recipe_id WHERE r.slug = ? ORDER BY i.position',
+      )
       .bind(slug),
     db
       .prepare(
@@ -41,7 +38,7 @@ export async function getRecipe(db: D1Database, slug: string): Promise<StoredRec
       .bind(slug),
     db
       .prepare(
-        'SELECT c.step_id, c.quantity_text, c.name FROM step_ingredient_chips c JOIN steps s ON s.id = c.step_id JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ? ORDER BY s.position, c.position',
+        'SELECT c.step_id, c.quantity_text AS quantityText, c.name FROM step_ingredient_chips c JOIN steps s ON s.id = c.step_id JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ? ORDER BY s.position, c.position',
       )
       .bind(slug),
   ]);
@@ -53,14 +50,14 @@ export async function getRecipe(db: D1Database, slug: string): Promise<StoredRec
     ingredients: ingredients.results as IngredientRow[],
     steps: (steps.results as StepRow[]).map((s) => ({
       body: s.body,
-      ingredients: chipRows.filter((c) => c.step_id === s.id).map((c) => ({ quantity_text: c.quantity_text, name: c.name })),
+      ingredients: chipRows.filter((c) => c.step_id === s.id).map((c) => ({ quantityText: c.quantityText, name: c.name })),
       ovenTemperature: s.oven_temperature ?? undefined,
       timer: s.timer_minutes === null ? undefined : { minutes: s.timer_minutes, label: s.timer_label ?? undefined },
     })),
   };
 }
 
-export type NewRecipe = {
+export type RecipeInput = {
   title: string;
   author: string;
   servings?: number;
@@ -70,7 +67,7 @@ export type NewRecipe = {
   seal?: string;
   createdBy?: string;
   ingredients?: { name: string; quantityText?: string; amount?: number; unit?: string }[];
-  steps?: NewStep[];
+  steps?: StepInput[];
 };
 
 /** Addresses that are routes of their own and so can't be a recipe slug. */
@@ -105,7 +102,7 @@ export async function chooseSeal(db: D1Database): Promise<string> {
 }
 
 /** Statements that store the steps (and their chips) of the recipe with this slug, at the places 0, 1, …; none if there is no such recipe. */
-function insertSteps(db: D1Database, slug: string, steps: NewStep[]) {
+function insertSteps(db: D1Database, slug: string, steps: StepInput[]) {
   return steps.flatMap((step, i) => [
     db
       .prepare(
@@ -117,13 +114,13 @@ function insertSteps(db: D1Database, slug: string, steps: NewStep[]) {
         .prepare(
           'INSERT INTO step_ingredient_chips (step_id, position, quantity_text, name) SELECT s.id, ?, ?, ? FROM steps s JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ? AND s.position = ?',
         )
-        .bind(j, chip.quantity_text, chip.name, slug, i),
+        .bind(j, chip.quantityText, chip.name, slug, i),
     ),
   ]);
 }
 
 /** Stores a recipe with its ingredients and steps in one batch and returns its slug. */
-export async function createRecipe(db: D1Database, recipe: NewRecipe): Promise<string> {
+export async function createRecipe(db: D1Database, recipe: RecipeInput): Promise<string> {
   const slug = await freeSlug(db, recipe.title);
   const seal = recipe.seal ?? (await chooseSeal(db));
   const idOf = '(SELECT id FROM recipes WHERE slug = ?)';
@@ -169,10 +166,12 @@ export async function listAuthors(db: D1Database): Promise<string[]> {
   return results.map((r) => r.author);
 }
 
-export type RecipeUpdate = Pick<NewRecipe, 'title' | 'author' | 'servings' | 'time' | 'intro' | 'image' | 'seal' | 'ingredients' | 'steps'>;
-
 /** Replaces the base information of a recipe; an omitted optional field is cleared, but an omitted seal is kept. When ingredients or steps are given they replace the stored ones in the same batch (so atomically); when omitted the stored ones stay. Returns the image the recipe had before, or undefined when the recipe doesn't exist. */
-export async function updateRecipe(db: D1Database, slug: string, recipe: RecipeUpdate): Promise<{ previousImage: string | null } | undefined> {
+export async function updateRecipe(
+  db: D1Database,
+  slug: string,
+  recipe: Pick<RecipeInput, 'title' | 'author' | 'servings' | 'time' | 'intro' | 'image' | 'seal' | 'ingredients' | 'steps'>,
+): Promise<{ previousImage: string | null } | undefined> {
   const [before, result] = await db.batch([
     db.prepare('SELECT image FROM recipes WHERE slug = ?').bind(slug),
     db

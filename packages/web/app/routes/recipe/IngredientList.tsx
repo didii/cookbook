@@ -1,7 +1,7 @@
-import type { StoredRecipe } from '~/.server/recipes';
+import type { Recipe } from '~/lib/recipe';
 import { cn } from '~/shared/cn';
 
-type Props = { ingredients: StoredRecipe['ingredients']; ticked: ReadonlySet<number>; onToggle: (index: number) => void; className?: string };
+type Props = { ingredients: Recipe['ingredients']; ticked: ReadonlySet<number>; onToggle: (index: number) => void; className?: string };
 
 export function IngredientList({ ingredients, ticked, onToggle, className }: Props) {
   return (
@@ -15,7 +15,7 @@ export function IngredientList({ ingredients, ticked, onToggle, className }: Pro
               onChange={() => onToggle(i)}
               className="m-0 size-6 shrink-0 cursor-pointer appearance-none rounded-full border-3 border-ink bg-white checked:bg-jade checked:shadow-[inset_0_0_0_3px_#fff]"
             />
-            <b className="min-w-14 font-black text-blu tabular-nums">{x.quantity_text}</b>
+            <b className="min-w-14 font-black text-blu tabular-nums">{x.quantityText}</b>
             <span>{x.name}</span>
           </label>
         </li>

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { emptyContent, startingDraft } from '~/lib/draft';
+import { emptyDraftSeed, startingDraft } from '~/lib/draft';
 import { draftKey, draftKeyField, loadDraft, saveDraft, type DraftStorage } from '~/lib/draftStore';
 import { endDraftAfterSave } from './endDraftAfterSave';
 
@@ -15,7 +15,7 @@ const storage: DraftStorage = {
   removeItem: (k) => void items.delete(k),
 };
 const key = draftKey('oma@example.com', 'soep');
-const initial = startingDraft({ ...emptyContent, title: 'Soep' });
+const initial = startingDraft({ ...emptyDraftSeed, title: 'Soep' });
 const keep = () =>
   saveDraft(storage, key, { state: { ...initial, title: 'Stamppot' }, initial, base: {}, uploading: false, settledImage: '', now: new Date() });
 const save = (serverAction: () => Promise<unknown>) =>
@@ -49,7 +49,7 @@ test('recipe-draft › Reset ends the draft', () => {
   keep();
   // Herstel puts the starting values back: the editor equals the stored recipe, so keeping it removes the draft.
   saveDraft(storage, key, {
-    state: startingDraft({ ...emptyContent, title: 'Soep' }),
+    state: startingDraft({ ...emptyDraftSeed, title: 'Soep' }),
     initial,
     base: {},
     uploading: false,

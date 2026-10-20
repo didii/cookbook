@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import type { Step } from '~/lib/recipes';
+import type { Step } from '~/lib/recipe';
 import { toggled } from '~/lib/toggled';
 import { StepItem } from './StepItem';
 import { StepList } from './StepList';
@@ -11,7 +11,7 @@ const plain = (body: string): Step => ({ body, ingredients: [] });
 const steps: Step[] = [
   plain('Kneed het deeg.'),
   { body: 'Laat het deeg 30 minuten rusten.', ingredients: [], timer: { minutes: 30, label: 'Deeg rust' } },
-  { body: 'Bak de taart.', ingredients: [{ quantity_text: '1', name: 'ei' }], ovenTemperature: 180, timer: { minutes: 50, label: 'Bakken' } },
+  { body: 'Bak de taart.', ingredients: [{ quantityText: '1', name: 'ei' }], ovenTemperature: 180, timer: { minutes: 50, label: 'Bakken' } },
   plain('Laat afkoelen.'),
 ];
 
@@ -63,7 +63,7 @@ test('recipe-viewing › Chips beside the label', () => {
 });
 
 test('recipe-viewing › Chip without a matching ingredient row', () => {
-  const step = { body: 'kruid', ingredients: [{ quantity_text: '1 snuf', name: 'zout' }] };
+  const step = { body: 'kruid', ingredients: [{ quantityText: '1 snuf', name: 'zout' }] };
   assert.ok(renderStep(step).includes('1 snuf</b> zout'));
 });
 

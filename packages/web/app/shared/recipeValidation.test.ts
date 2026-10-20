@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import type { Step } from '~/lib/recipes';
+import type { Step } from '~/lib/recipe';
 import { readIngredients, readSteps, validate } from './recipeValidation';
 
 const ok = { title: 'Soep', author: 'Oma', servings: '4', time: '', intro: '', image: '' };
@@ -85,7 +85,7 @@ test('the server reads the chips of a step and leaves out what is not valid', ()
   const { steps } = postSteps([
     {
       body: 'bak',
-      ingredients: [{ quantity_text: ' 250 g ', name: ' bloem ' }, { quantity_text: '1', name: '  ' }, { name: 'boter' }, 'x', null],
+      ingredients: [{ quantityText: ' 250 g ', name: ' bloem ' }, { quantityText: '1', name: '  ' }, { name: 'boter' }, 'x', null],
       ovenTemperature: 40,
       timer: { minutes: 25, label: ' Bakken ' },
     },
@@ -97,8 +97,8 @@ test('the server reads the chips of a step and leaves out what is not valid', ()
     {
       body: 'bak',
       ingredients: [
-        { quantity_text: '250 g', name: 'bloem' },
-        { quantity_text: '', name: 'boter' },
+        { quantityText: '250 g', name: 'bloem' },
+        { quantityText: '', name: 'boter' },
       ],
       ovenTemperature: 40,
       timer: { minutes: 25, label: 'Bakken' },

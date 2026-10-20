@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import type { Step } from '~/lib/recipes';
+import type { Step } from '~/lib/recipe';
 import { activeTimers, start, timerDefs } from '~/lib/timers';
 import { TimerDock } from './TimerDock';
 import { TimerSidebar } from './TimerSidebar';

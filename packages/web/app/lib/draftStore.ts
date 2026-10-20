@@ -1,5 +1,5 @@
 import type { Chip, Ghost } from '~/lib/chips';
-import { isDirty, withFreeRow, type Draft, type StepRow } from '~/lib/draft';
+import { isDirty, withFreeRow, type RecipeDraft, type StepDraft } from '~/lib/draft';
 
 /** The part of `Storage` the drafts need; `localStorage` fits, and so does a fake in a test. */
 export type DraftStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem' | 'key' | 'length'>;
@@ -16,14 +16,14 @@ export function browserStorage(): DraftStorage | undefined {
 /** The form field that tells a save which draft to end. */
 export const draftKeyField = 'draftKey';
 
-/** Bump when the shape of the editor's `Draft` changes: older drafts are then ignored. */
+/** Bump when the shape of the editor's `RecipeDraft` changes: older drafts are then ignored. */
 const version = 1;
 const prefix = 'cookbook:draft:';
 const maxAgeMs = 30 * 24 * 60 * 60 * 1000;
 const maxDrafts = 20;
 
 /** What is kept: the editor's state and what it started from. `base.updatedAt` is the stored recipe's `updated_at` when the draft was started (none for a new recipe). */
-export type StoredDraft = { v: typeof version; savedAt: string; base: { updatedAt?: string }; state: Draft };
+export type StoredDraft = { v: typeof version; savedAt: string; base: { updatedAt?: string }; state: RecipeDraft };
 
 /** The key of one family member's draft of a recipe, or of a new recipe when there is no slug. The prefix on the slug keeps a recipe called "new" apart from a new recipe. */
 export const draftKey = (email: string, slug?: string) => `${prefix}${email.trim().toLowerCase()}:${slug === undefined ? 'new' : `r:${slug}`}`;
@@ -40,9 +40,9 @@ function attempt(action: () => void): boolean {
 
 export type Keeping = {
   /** The editor's state now. */
-  state: Draft;
+  state: RecipeDraft;
   /** The state the editor started from; a draft equal to it is not kept. */
-  initial: Draft;
+  initial: RecipeDraft;
   base: { updatedAt?: string };
   /** Whether a photo is still going up. Then the draft holds `settledImage` instead of the photo field's value. */
   uploading: boolean;
@@ -162,7 +162,7 @@ const fits = (body: string, anchor?: { start: number; end: number }) =>
   !anchor || (anchor.start >= 0 && anchor.start < anchor.end && anchor.end <= body.length);
 
 /** A step of a restored draft with only the chips and ghosts that still fit its text and the ingredient rows. A chip whose words or row are gone becomes an unanchored pinned chip; a ghost like that goes. */
-function fitStep(step: StepRow, rowIds: Set<string>): StepRow {
+function fitStep(step: StepDraft, rowIds: Set<string>): StepDraft {
   const chips = step.chips.map((chip): Chip => {
     const anchored = fits(step.body, chip.anchor);
     const linked = !chip.rowId || rowIds.has(chip.rowId);
@@ -181,7 +181,7 @@ function fitStep(step: StepRow, rowIds: Set<string>): StepRow {
 }
 
 /** The restored state with its chips checked against its own texts and ingredient rows, and the free row at the end of the list. */
-export function fitDraft(state: Draft): Draft {
+export function fitDraft(state: RecipeDraft): RecipeDraft {
   const ingredients = withFreeRow(state.ingredients);
   const rowIds = new Set(ingredients.map((r) => r.id));
   return { ...state, ingredients, steps: state.steps.map((s) => fitStep(s, rowIds)) };
@@ -189,7 +189,7 @@ export function fitDraft(state: Draft): Draft {
 
 export type Start = {
   /** What the editor shows when it opens. */
-  state: Draft;
+  state: RecipeDraft;
   /** The version of the stored recipe the state is based on. */
   base: { updatedAt?: string };
   /** When the restored draft was kept; none when the editor starts from the stored recipe. */
@@ -204,7 +204,17 @@ export type Start = {
  * How the editor opens. `shown` is what it shows without a draft, `updatedAt` the stored recipe's current version (none for a new recipe), `draft` what the device holds for it.
  * The edit link (`fresh`) throws the draft away. Otherwise a draft is restored, and flagged when its base is not the current version.
  */
-export function resolveStart({ draft, fresh, shown, updatedAt }: { draft?: StoredDraft; fresh: boolean; shown: Draft; updatedAt?: string }): Start {
+export function resolveStart({
+  draft,
+  fresh,
+  shown,
+  updatedAt,
+}: {
+  draft?: StoredDraft;
+  fresh: boolean;
+  shown: RecipeDraft;
+  updatedAt?: string;
+}): Start {
   if (fresh) return { state: shown, base: { updatedAt }, changedMeanwhile: false, discard: true };
   if (!draft) return { state: shown, base: { updatedAt }, changedMeanwhile: false, discard: false };
   return {

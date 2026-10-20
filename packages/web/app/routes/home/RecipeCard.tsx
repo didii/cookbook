@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import type { RecipeSummary } from '~/.server/recipes';
+import type { RecipeSummary } from '~/lib/recipe';
 import { Seal } from '~/shared/Seal';
 import { TileBand } from '~/shared/TileBand';
 

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { Draft } from '~/lib/draft';
+import type { RecipeDraft } from '~/lib/draft';
 import { browserStorage, saveDraft } from '~/lib/draftStore';
 
 const delayMs = 400;
@@ -7,8 +7,8 @@ const delayMs = 400;
 type Keeping = {
   key: string;
   /** The editor's state, and the state it started from (a draft equal to it is not kept). */
-  state: Draft;
-  initial: Draft;
+  state: RecipeDraft;
+  initial: RecipeDraft;
   /** The version of the stored recipe the draft is based on. */
   base: { updatedAt?: string };
   /** Whether a photo is still going up. */

@@ -13,15 +13,15 @@ import {
   setLabel,
   setMode,
   type Chip,
+  type ChipValues,
   type Context,
   type Ghost,
   type IngredientValues,
   type Kind,
   type OvenValues,
   type TimerValues,
-  type Values,
 } from '~/lib/chips';
-import type { StepRow } from '~/lib/draft';
+import type { StepDraft } from '~/lib/draft';
 import { formatMinutes } from '~/lib/steps';
 import { cn } from '~/shared/cn';
 import { Arrow, Check, Clock, Cross, Ingredient, Link, Pin, Plus, Thermometer, Trash } from '~/shared/icons';
@@ -30,7 +30,7 @@ import { proposalAttribute } from './OpenProposals';
 import { useAfterRender } from './useAfterRender';
 
 type Props = {
-  step: StepRow;
+  step: StepDraft;
   context: Context;
   /** The step's number, counting from 1. */
   number: number;
@@ -38,7 +38,7 @@ type Props = {
   hotId?: string;
   onHot: (id: string | undefined) => void;
   /** Changes the step's chips with a function of the chip logic. */
-  onChange: (change: (step: StepRow, context: Context) => StepRow) => void;
+  onChange: (change: (step: StepDraft, context: Context) => StepDraft) => void;
 };
 
 const chipClass =
@@ -53,7 +53,7 @@ const icon = 'size-[1.1em]';
 const kindName: Record<Kind, string> = { ingredient: 'Ingrediënt', oven: 'Oven', timer: 'Timer' };
 
 /** What a chip looks like: its icon, its values and, for a timer, its name. */
-function Face({ kind, values, label }: { kind: Kind; values: Values; label?: string }): ReactNode {
+function Face({ kind, values, label }: { kind: Kind; values: ChipValues; label?: string }): ReactNode {
   if (kind === 'oven')
     return (
       <>

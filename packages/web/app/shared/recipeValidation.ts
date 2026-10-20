@@ -1,14 +1,14 @@
 import { parseIngredient, type ParsedIngredient } from '~/lib/ingredients';
-import type { Step } from '~/lib/recipes';
+import type { Step } from '~/lib/recipe';
 
-export type Field = 'title' | 'author' | 'servings' | 'time' | 'intro' | 'image';
+export type RecipeFormField = 'title' | 'author' | 'servings' | 'time' | 'intro' | 'image';
 
 /** The trimmed form values; servings stays text because it can be empty. Time, intro and image are free text, so they have no validation. */
-export type Values = Record<Field, string>;
+export type RecipeForm = Record<RecipeFormField, string>;
 
 /** One message per invalid field. Servings may be empty, but when filled in it must be a whole number of at least 1. */
-export function validate(values: Values): Partial<Record<Field, string>> {
-  const errors: Partial<Record<Field, string>> = {};
+export function validate(values: RecipeForm): Partial<Record<RecipeFormField, string>> {
+  const errors: Partial<Record<RecipeFormField, string>> = {};
   if (!values.title) errors.title = 'Geef het recept een titel.';
   if (!values.author) errors.author = 'Vul in van wie het recept is.';
   if (values.servings && (!/^\d+$/.test(values.servings) || Number(values.servings) < 1))
@@ -17,13 +17,13 @@ export function validate(values: Values): Partial<Record<Field, string>> {
 }
 
 /** The trimmed values of a submitted form. */
-export function readForm(form: FormData): Values {
-  const text = (name: Field) => String(form.get(name) ?? '').trim();
+export function readForm(form: FormData): RecipeForm {
+  const text = (name: RecipeFormField) => String(form.get(name) ?? '').trim();
   return { title: text('title'), author: text('author'), servings: text('servings'), time: text('time'), intro: text('intro'), image: text('image') };
 }
 
 /** Valid form values as recipe fields: empty optional ones become undefined. */
-export function toRecipeFields(values: Values) {
+export function toRecipeFields(values: RecipeForm) {
   return {
     title: values.title,
     author: values.author,
@@ -35,7 +35,7 @@ export function toRecipeFields(values: Values) {
 }
 
 /** Field errors, plus one message per ingredient row (keyed by the row's place in the posted list). */
-export type Errors = Partial<Record<Field, string>> & { ingredients?: Record<number, string> };
+export type RecipeFormErrors = Partial<Record<RecipeFormField, string>> & { ingredients?: Record<number, string> };
 
 /** The posted ingredient lines, as typed. The form carries them as a JSON list of `{ text }`; a missing or malformed field gives undefined, which is not the same as an empty list. */
 function readLines(form: FormData): string[] | undefined {
@@ -88,7 +88,7 @@ function cleanStep(posted: unknown): Step {
     body: String(step.body ?? '')
       .replace(/\s*[\r\n]+\s*/g, ' ')
       .trim(),
-    ingredients: chips.map((c) => ({ quantity_text: text(c.quantity_text), name: text(c.name) })).filter((c) => c.name),
+    ingredients: chips.map((c) => ({ quantityText: text(c.quantityText), name: text(c.name) })).filter((c) => c.name),
     ...(oven && { ovenTemperature: oven }),
     ...(minutes && { timer: { minutes, ...(label && { label }) } }),
   };
