@@ -19,7 +19,7 @@ import {
   type Kind,
   type OvenValues,
   type TimerValues,
-  type Values,
+  type ChipValues,
 } from '~/lib/chips';
 import type { StepRow } from '~/lib/draft';
 import { formatMinutes } from '~/lib/steps';
@@ -53,7 +53,7 @@ const icon = 'size-[1.1em]';
 const kindName: Record<Kind, string> = { ingredient: 'Ingrediënt', oven: 'Oven', timer: 'Timer' };
 
 /** What a chip looks like: its icon, its values and, for a timer, its name. */
-function Face({ kind, values, label }: { kind: Kind; values: Values; label?: string }): ReactNode {
+function Face({ kind, values, label }: { kind: Kind; values: ChipValues; label?: string }): ReactNode {
   if (kind === 'oven')
     return (
       <>

@@ -16,7 +16,7 @@ import type { TextEdit } from '~/lib/textEdit';
 export type Kind = 'ingredient' | 'oven' | 'timer';
 export type { IngredientValues, OvenValues, TimerValues };
 type ValuesOf = { ingredient: IngredientValues; oven: OvenValues; timer: TimerValues };
-export type Values = ValuesOf[Kind];
+export type ChipValues = ValuesOf[Kind];
 
 type Fields<K extends Kind> = {
   id: string;
@@ -58,7 +58,7 @@ const quantityOf = (row: Row) => row.quantityText;
 
 const textOf = (body: string, range?: Range) => (range ? body.slice(range.start, range.end) : '');
 /** Whether two sets of values are the same, whatever the order of their keys. */
-const sameValues = (a: Values, b: Values) => {
+const sameValues = (a: ChipValues, b: ChipValues) => {
   const x = a as Record<string, unknown>;
   const y = b as Record<string, unknown>;
   const keys = Object.keys(x);
@@ -66,7 +66,7 @@ const sameValues = (a: Values, b: Values) => {
 };
 
 /** What words say for a kind of chip (and a row, for an ingredient), or undefined when they say nothing of that kind. */
-function read({ kind, rowId }: { kind: Kind; rowId?: string }, words: string, ctx: Context): Values | undefined {
+function read({ kind, rowId }: { kind: Kind; rowId?: string }, words: string, ctx: Context): ChipValues | undefined {
   if (kind === 'timer') return findTimer(words)?.values;
   if (kind === 'oven') return findOven(words)?.values;
   const row = ctx.rows.find((r) => r.id === rowId);
@@ -74,11 +74,11 @@ function read({ kind, rowId }: { kind: Kind; rowId?: string }, words: string, ct
 }
 
 /** The values a chip shows: a following chip reads its words (and keeps its last values if they say nothing), a pinned chip has its own. */
-export function derive(chip: Chip, body: string, ctx: Context): Values {
+export function derive(chip: Chip, body: string, ctx: Context): ChipValues {
   return (chip.mode === 'auto' && chip.anchor && read(chip, textOf(body, chip.anchor), ctx)) || chip.values;
 }
 
-export type Proposal = { type: 'change'; values: Values } | { type: 'remove' };
+export type Proposal = { type: 'change'; values: ChipValues } | { type: 'remove' };
 
 /** What a pinned chip suggests after its words changed: a new value, or its removal. Nothing for a following chip, a hand-made one, or a suggestion that was discarded. */
 export function proposal(chip: Chip, body: string, ctx: Context): Proposal | undefined {
@@ -94,7 +94,7 @@ export function proposal(chip: Chip, body: string, ctx: Context): Proposal | und
 export const nextChipId = (step: Pick<StepChips, 'chips' | 'ghosts'>) =>
   `c${Math.max(-1, ...[...step.chips, ...step.ghosts].map((c) => Number(c.id.slice(1)))) + 1}`;
 
-const autoChip = (id: string, kind: Kind, anchor: Range, values: Values, rowId?: string) =>
+const autoChip = (id: string, kind: Kind, anchor: Range, values: ChipValues, rowId?: string) =>
   ({ id, kind, mode: 'auto', anchor, rowId, values }) as Chip;
 const range = ({ start, end }: Range): Range => ({ start, end });
 
@@ -133,7 +133,7 @@ export function reconcile<S extends StepChips>(step: S, ctx: Context, edit?: Tex
   });
 
   const held = (kind: Kind, rowId?: string) => [...chips, ...ghosts].some((c) => c.kind === kind && (kind !== 'ingredient' || c.rowId === rowId));
-  const add = (kind: Kind, found: Range & { values: Values }, rowId?: string) => {
+  const add = (kind: Kind, found: Range & { values: ChipValues }, rowId?: string) => {
     if (!held(kind, rowId)) chips.push(autoChip(nextChipId({ chips, ghosts }), kind, range(found), found.values, rowId));
   };
   if (timer) add('timer', timer);
@@ -226,7 +226,7 @@ export function discardProposal<S extends StepChips>(step: S, id: string, ctx: C
 export const proposals = (step: StepChips, ctx: Context) => step.chips.filter((c) => proposal(c, step.body, ctx));
 
 /** A whole, positive number of degrees or minutes (an ingredient has neither and passes). */
-const positive = (values: Values) => Object.values(values).every((v) => typeof v !== 'number' || (Number.isInteger(v) && v > 0));
+const positive = (values: ChipValues) => Object.values(values).every((v) => typeof v !== 'number' || (Number.isInteger(v) && v > 0));
 
 /** The step as it is stored and shown on the recipe page: following chips with what their words say, pinned chips with their own values, open proposals ignored, at most one oven and one timer. */
 export function toStored(step: StepChips, ctx: Context): Step {
