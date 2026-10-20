@@ -9,6 +9,8 @@ export async function loader({ context }: Route.LoaderArgs) {
   return { recipes: await listRecipes(context.get(envContext).DB) };
 }
 
+const intro = 'Het kookboek van de familie. Kies iets, of zoek wat je zin hebt.';
+
 export function meta() {
   return [{ title: 'Familiekookboek' }];
 }
@@ -24,8 +26,11 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         </p>
       ) : (
         <>
-          <p className="mt-2 max-w-[60ch] text-lg text-muted">{recipes.length} recepten van de familie.</p>
-          <ul className="mt-8 grid list-none grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] gap-6 p-0">
+          <p className="mt-2 max-w-[34ch] text-lg text-pretty text-muted">{intro}</p>
+          <output className="mt-6 mb-4 block font-extrabold text-muted">
+            {recipes.length} {recipes.length === 1 ? 'recept' : 'recepten'}
+          </output>
+          <ul className="grid list-none grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] gap-6 p-0">
             {recipes.map((r, i) => (
               <li key={r.slug}>
                 <RecipeCard recipe={r} tile={tileFor(i)} eager={i < 3} />

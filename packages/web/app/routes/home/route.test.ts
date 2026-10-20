@@ -2,11 +2,13 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
-import { RouterContextProvider } from 'react-router';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { MemoryRouter, RouterContextProvider } from 'react-router';
 import { envContext } from '~/.server/context';
 import { createRecipe } from '~/.server/recipes';
 import type { Route } from './+types/route';
-import { loader } from './route';
+import Home, { loader } from './route';
 
 // Real loader against an in-memory D1 holding the recipes the test inserted.
 let db: D1Database;
@@ -24,12 +26,17 @@ const load = async () => {
   return (await loader({ context } as Partial<Route.LoaderArgs> as Route.LoaderArgs)).recipes;
 };
 
+const render = async () => {
+  const loaderData = { recipes: await load() };
+  return renderToStaticMarkup(createElement(MemoryRouter, null, createElement(Home, { loaderData } as Route.ComponentProps)));
+};
+
 // Runs first: the other tests add recipes to the shared database.
 test('recipe-browsing › No recipes yet', async () => {
   assert.deepEqual(await load(), []);
-  // Rendering needs the JSX settings that tsx doesn't read from this project's tsconfig, so this checks the source.
-  const source = readFileSync(new URL('./route.tsx', import.meta.url), 'utf8');
-  assert.ok(source.includes('Er zijn nog geen recepten') && source.includes('to="/recepten/nieuw"'));
+  const html = await render();
+  assert.ok(html.includes('Er zijn nog geen recepten') && html.includes('href="/recepten/nieuw"'));
+  assert.ok(!html.includes('<output') && !html.includes('<input'));
 });
 
 test('recipe-browsing › Recipe without time or image', async () => {
@@ -49,9 +56,19 @@ test('recipe-browsing › Stored recipes are listed', async () => {
 });
 
 test('recipe-browsing › A new recipe appears', async () => {
+  const count = (html: string) => /<output[^>]*>(\d+) recept/.exec(html)?.[1];
   const listed = await load();
+  assert.equal(count(await render()), String(listed.length));
   const slug = await createRecipe(db, { title: 'Nieuw', author: 'Opa' });
   const relisted = await load();
   assert.equal(relisted.length, listed.length + 1);
   assert.equal(relisted[0]?.slug, slug);
+  assert.equal(count(await render()), String(relisted.length));
+});
+
+test('recipe-browsing › Welcome above the recipes', async () => {
+  const html = await render();
+  const heading = html.indexOf('Wat eten we vandaag?');
+  const intro = html.indexOf('Het kookboek van de familie');
+  assert.ok(heading >= 0 && intro > heading && intro < html.indexOf('<ul'));
 });
