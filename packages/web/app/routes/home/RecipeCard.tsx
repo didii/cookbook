@@ -18,7 +18,7 @@ export function RecipeCard({ recipe: r, tile, eager }: Props) {
           loading={eager ? 'eager' : 'lazy'}
           width="640"
           height="400"
-          className="block aspect-16/10 w-full border-b-3 border-ink object-cover"
+          className="block aspect-5/2 h-auto w-full md:aspect-16/10 border-b-3 border-ink object-cover"
         />
       )}
       {r.image && r.seal && <Seal id={r.seal} className="h-13" />}
