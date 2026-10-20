@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { Context } from '~/lib/chips';
-import type { StepRow } from '~/lib/draft';
+import type { StepDraft } from '~/lib/draft';
 import type { TextEdit } from '~/lib/textEdit';
 import { Button } from '~/shared/Button';
 import { Announcement } from './Announcement';
@@ -10,11 +10,11 @@ import { useAfterRender } from './useAfterRender';
 import { useReorder } from './useReorder';
 
 type Props = {
-  steps: StepRow[];
+  steps: StepDraft[];
   /** What each step's chips are read against, one per step. */
   contexts: Context[];
   /** Changes the chips of a step with a function of the chip logic. */
-  onChips: (id: string, change: (step: StepRow, context: Context) => StepRow) => void;
+  onChips: (id: string, change: (step: StepDraft, context: Context) => StepDraft) => void;
   onType: (id: string, body: string) => void;
   /** What a change of a step's text replaced; reported after the text itself (see `StepText`). */
   onEdit: (id: string, edit: TextEdit, body: string) => void;
@@ -22,7 +22,7 @@ type Props = {
   onAdd: (at: number) => void;
   onRemove: (id: string) => void;
   /** Put a removed step back at the place it had. */
-  onRestore: (step: StepRow, at: number) => void;
+  onRestore: (step: StepDraft, at: number) => void;
   /** Move a step to a place in the list. */
   onMove: (id: string, to: number) => void;
 };
@@ -31,7 +31,7 @@ type Props = {
 const undoSeconds = 8;
 
 /** A step that was removed and can still be restored, with the place it had. */
-type Removed = { step: StepRow; at: number };
+type Removed = { step: StepDraft; at: number };
 
 /** The steps of a recipe: numbered, reorderable, with "Stap toevoegen" below. */
 export function StepList({ steps, contexts, onChips, onType, onEdit, onAdd, onRemove, onRestore, onMove }: Props) {

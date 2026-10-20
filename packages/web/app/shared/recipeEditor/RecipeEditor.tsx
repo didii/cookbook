@@ -17,7 +17,7 @@ import {
   storedSteps,
   typeIngredient,
   type Content,
-  type Draft,
+  type RecipeDraft,
 } from '~/lib/draft';
 import {
   asksBeforeLeaving,
@@ -95,7 +95,7 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
   // The draft on the device is read once, before the first paint; nothing is written before that.
   const [ready, setReady] = useState(false);
   const [base, setBase] = useState<{ updatedAt?: string }>({ updatedAt });
-  const [restored, setRestored] = useState<{ at: string; draft: Draft }>();
+  const [restored, setRestored] = useState<{ at: string; draft: RecipeDraft }>();
   const [changedMeanwhile, setChangedMeanwhile] = useState(false);
   useLayoutEffect(() => {
     const storage = browserStorage();

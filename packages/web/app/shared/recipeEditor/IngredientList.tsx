@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import type { IngredientRow } from '~/lib/draft';
+import type { IngredientLine } from '~/lib/draft';
 import { Announcement } from './Announcement';
 import { IngredientItem } from './IngredientItem';
 import type { ItemHandle } from './ItemHandle';
@@ -7,7 +7,7 @@ import { useReorder } from './useReorder';
 
 type Props = {
   /** The rows to show; the last one is the empty row. */
-  rows: IngredientRow[];
+  rows: IngredientLine[];
   /** Messages by row index. */
   errors?: Record<number, string>;
   /** Step numbers that use a row; filled in by the chips change. */

@@ -16,7 +16,7 @@ import {
   startingDraft,
   storedSteps,
   typeIngredient,
-  type Draft,
+  type RecipeDraft,
 } from './draft';
 import { computeEdit } from './textEdit';
 
@@ -147,7 +147,7 @@ test('empty steps are no change, a typed or moved step is', () => {
 });
 
 /** Types into a step the way the editor reports it: the text, then what was replaced. */
-const typeStep = (draft: Draft, id: string, body: string) => {
+const typeStep = (draft: RecipeDraft, id: string, body: string) => {
   const before = draft.steps.find((s) => s.id === id)!.body;
   return editedStep(draft, id, body, computeEdit(before, body));
 };
@@ -179,7 +179,7 @@ test('stored chips come back as chips, and chips count as a change', () => {
   const draft = startingDraft({ ...content, steps: [step] });
   assert.deepEqual(storedSteps(draft), [step]);
   assert.equal(isDirty(draft, startingDraft({ ...content, steps: [step] })), false);
-  const pinned: Draft = {
+  const pinned: RecipeDraft = {
     ...draft,
     steps: [{ ...draft.steps[0], chips: draft.steps[0].chips.map((c) => ({ ...c, mode: 'manual', values: { minutes: 40 } }) as Chip) }],
   };

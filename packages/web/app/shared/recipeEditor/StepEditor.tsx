@@ -1,6 +1,6 @@
 import { useImperativeHandle, useRef, useState, type ComponentProps, type CSSProperties, type KeyboardEvent, type Ref } from 'react';
 import type { Context } from '~/lib/chips';
-import type { StepRow } from '~/lib/draft';
+import type { StepDraft } from '~/lib/draft';
 import type { TextEdit } from '~/lib/textEdit';
 import type { ItemHandle } from './ItemHandle';
 import { RowGrip } from './RowGrip';
@@ -13,14 +13,14 @@ type Props = {
   ref?: Ref<ItemHandle>;
   /** The step's number, counting from 1. */
   number: number;
-  step: StepRow;
+  step: StepDraft;
   /** What the step's chips are read against. */
   context: Context;
   canUp: boolean;
   canDown: boolean;
   onType: (text: string) => void;
   /** Changes the step's chips with a function of the chip logic. */
-  onChips: (change: (step: StepRow, context: Context) => StepRow) => void;
+  onChips: (change: (step: StepDraft, context: Context) => StepDraft) => void;
   /** What the change replaced. */
   onEdit: (edit: TextEdit, body: string) => void;
   /** Enter was pressed at the end of a step that has text. */
