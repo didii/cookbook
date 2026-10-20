@@ -100,7 +100,7 @@ export function IngredientList({ rows, errors = noErrors, usedIn = () => none, o
         })}
       </ul>
       {/* Keyboard hints mean nothing on a touch screen. */}
-      <p className="mt-2.5 text-[0.9rem] font-bold text-muted [@media(hover:none)]:hidden">
+      <div className="mt-2.5 text-[0.9rem] font-bold text-muted [@media(hover:none)]:hidden">
         <p>
           <Kbd>Enter</Kbd> gaat naar de volgende regel
         </p>
@@ -118,7 +118,7 @@ export function IngredientList({ rows, errors = noErrors, usedIn = () => none, o
           </Kbd>{' '}
           om te verplaatsen
         </p>
-      </p>
+      </div>
       <Announcement text={reorder.announcement} />
     </div>
   );
