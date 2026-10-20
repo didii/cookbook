@@ -14,7 +14,7 @@ Five stacked PRs, one per group, in this order. Group 1 branches from `main`; ea
 
 - [x] 2.1 Create branch `home-2-layout` from `home-1-button-press`. In `routes/home/route.tsx` add the heading, the introduction line and the count line ("N recepten", `role="status"`), and verify with a render test of the loader data
 - [x] 2.2 In `RecipeCard.tsx` set the image to `h-auto aspect-5/2` below 48rem and `aspect-16/10` from 48rem, and verify with the screenshot at 390px width showing two cards fully
-- [ ] 2.3 Keep the empty state (message and link, no controls), and verify with the `recipe-browsing › No recipes yet` test
+- [x] 2.3 Keep the empty state (message and link, no controls), and verify with the `recipe-browsing › No recipes yet` test
 - [ ] 2.4 Tests for each new and changed `recipe-browsing` scenario and verify with `pnpm test:spec home-search-and-filter`
 - [ ] 2.5 Format, lint, push `home-2-layout` and open a PR against `home-1-button-press`
 
