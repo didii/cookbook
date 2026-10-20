@@ -1,7 +1,7 @@
 import { classifyStored, reconcile, rowsOf, toStored, type Context, type StepChips } from '~/lib/chips';
 import type { Step } from '~/lib/recipe';
 import type { TextEdit } from '~/lib/textEdit';
-import type { Values } from '~/shared/recipeValidation';
+import type { RecipeForm } from '~/shared/recipeValidation';
 
 /** One ingredient line in the editor. The id is only a stable key for focus and drag; it is never posted or stored. */
 export type IngredientRow = { id: string; text: string };
@@ -10,10 +10,10 @@ export type IngredientRow = { id: string; text: string };
 export type StepRow = StepChips & { id: string };
 
 /** What the routes hand the editor: the fields, the ingredient lines as plain text and the steps as they are stored. */
-export type Content = Values & { ingredients: string[]; steps: Step[] };
+export type Content = RecipeForm & { ingredients: string[]; steps: Step[] };
 
 /** The editor's content. */
-export type Draft = Values & { ingredients: IngredientRow[]; steps: StepRow[] };
+export type Draft = RecipeForm & { ingredients: IngredientRow[]; steps: StepRow[] };
 
 export const emptyContent: Content = { title: '', author: '', servings: '', time: '', intro: '', image: '', ingredients: [], steps: [] };
 

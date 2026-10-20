@@ -6,7 +6,7 @@ import { joinIngredient } from '~/lib/ingredients';
 import { tileFor } from '~/lib/tile';
 import { endDraftAfterSave } from '~/shared/recipeEditor/endDraftAfterSave';
 import { RecipeEditor } from '~/shared/recipeEditor/RecipeEditor';
-import { readForm, readIngredients, readSteps, toRecipeFields, validate, type Errors } from '~/shared/recipeValidation';
+import { readForm, readIngredients, readSteps, toRecipeFields, validate, type RecipeFormErrors } from '~/shared/recipeValidation';
 import type { Route } from './+types/route';
 
 const notFound = () => data('Recept niet gevonden', { status: 404 });
@@ -42,7 +42,7 @@ export async function action({ request, params, context }: Route.ActionArgs) {
   const { lines, ingredients, errors: ingredientErrors } = readIngredients(form);
   const { lines: stepLines, steps } = readSteps(form);
 
-  const errors: Errors = validate(values);
+  const errors: RecipeFormErrors = validate(values);
   if (Object.keys(ingredientErrors).length) errors.ingredients = ingredientErrors;
   if (Object.keys(errors).length) return data({ errors, values: { ...values, ingredients: lines, steps: stepLines } }, { status: 400 });
 

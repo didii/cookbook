@@ -15,7 +15,7 @@ Precondition: `home-recipes-from-db` is merged. Each task is a rename only; veri
 
 ## 3. Form
 
-- [ ] 3.1 Rename `Values` / `Field` / `Errors` in `shared/recipeValidation.ts` to `RecipeForm` / `RecipeFormField` / `RecipeFormErrors` with all users; verify with type check and tests
+- [x] 3.1 Rename `Values` / `Field` / `Errors` in `shared/recipeValidation.ts` to `RecipeForm` / `RecipeFormField` / `RecipeFormErrors` with all users; verify with type check and tests
 - [ ] 3.2 Rename `Values` in `lib/chips.ts` to `ChipValues`; verify no ambiguous `Values` remains (`grep`)
 
 ## 4. Editor

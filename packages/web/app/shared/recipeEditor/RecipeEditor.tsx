@@ -34,7 +34,7 @@ import {
 import { AuthorInput } from '~/shared/AuthorInput';
 import { cn } from '~/shared/cn';
 import { Back } from '~/shared/icons';
-import type { Errors, Field } from '~/shared/recipeValidation';
+import type { RecipeFormErrors, RecipeFormField } from '~/shared/recipeValidation';
 import { IngredientList } from './IngredientList';
 import { OpenProposals } from './OpenProposals';
 import { PhotoField, type PhotoState } from './PhotoField';
@@ -51,7 +51,7 @@ type Props = {
   initial: Content;
   /** What the editor shows when it opens: the starting values, or the values of a refused submit. */
   values: Content;
-  errors: Errors;
+  errors: RecipeFormErrors;
   /** Index of the tile band shown under the photo. */
   tile: number;
   /** The recipe's seal, shown on the photo; a new recipe gets one chosen up front and posts it, so it is the one that gets saved. */
@@ -136,8 +136,8 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
     setPhoto('ready');
     setResets((n) => n + 1);
   };
-  const set = (name: Field) => (value: string) => setCurrent((c) => ({ ...c, [name]: value }));
-  const text = (name: Field) => ({
+  const set = (name: RecipeFormField) => (value: string) => setCurrent((c) => ({ ...c, [name]: value }));
+  const text = (name: RecipeFormField) => ({
     id: name,
     name,
     value: current[name],
@@ -145,7 +145,7 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
     'aria-invalid': errors[name] ? (true as const) : undefined,
     'aria-describedby': errors[name] ? `${name}-error` : undefined,
   });
-  const error = (name: Field) =>
+  const error = (name: RecipeFormField) =>
     errors[name] && (
       <p id={`${name}-error`} className="mt-1 font-bold text-red">
         {errors[name]}
