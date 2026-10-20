@@ -25,5 +25,5 @@ Precondition: `home-recipes-from-db` is merged. Each task is a rename only; veri
 
 ## 5. Wrap-up
 
-- [ ] 5.1 Update `STRUCTURE.md` / comments that name old types or `lib/recipes.ts`; verify with `grep` for each old name
+- [x] 5.1 Update `STRUCTURE.md` / comments that name old types or `lib/recipes.ts`; verify with `grep` for each old name
 - [ ] 5.2 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check` and `pnpm test:ai`; all clean
