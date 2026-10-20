@@ -90,24 +90,34 @@ const withSteps = (...steps: string[]) => startingDraft({ ...content, steps: ste
 
 test('recipe-step-editing › New recipe starts with one empty step', () => {
   assert.deepEqual(bodies(emptyDraft), ['']);
-  assert.deepEqual(bodies(withSteps('a', 'b')), ['a', 'b']);
 });
 
-test('recipe-step-editing › Step can be added with the button', () => {
+test('recipe-step-editing › Empty step at the end', () => {
+  assert.deepEqual(bodies(withSteps('a', 'b')), ['a', 'b', '']);
+});
+
+test('recipe-step-editing › Typing adds the next step', () => {
+  const draft = editStep(emptyDraft, 's0', 'x');
+  assert.deepEqual(bodies(draft), ['x', '']);
+  assert.deepEqual(bodies(editStep(draft, 's1', 'y')), ['x', 'y', '']);
+  // Clearing a step leaves a single empty one at the end.
+  assert.deepEqual(bodies(editStep(editStep(draft, 's1', 'y'), 's1', '')), ['x', '']);
+});
+
+test('addStep inserts an empty step with a new id', () => {
   const draft = withSteps('a', 'b');
-  assert.deepEqual(bodies(addStep(draft)), ['a', 'b', '']);
-  assert.deepEqual(bodies(addStep(draft, 1)), ['a', '', 'b']);
-  assert.equal(new Set(addStep(draft, 1).steps.map((s) => s.id)).size, 3);
-  assert.deepEqual(bodies(editStep(addStep(emptyDraft), 's1', 'x')), ['', 'x']);
+  assert.deepEqual(bodies(addStep(draft, 1)), ['a', '', 'b', '']);
+  assert.equal(new Set(addStep(draft, 1).steps.map((s) => s.id)).size, 4);
 });
 
 test('recipe-step-editing › Step moves up and down', () => {
   const draft = withSteps('a', 'b', 'c');
   const up = moveStep(draft, 's2', 1);
-  assert.deepEqual(bodies(up), ['a', 'c', 'b']);
-  assert.deepEqual(bodies(moveStep(up, 's2', 2)), ['a', 'b', 'c']);
-  assert.deepEqual(bodies(moveStep(draft, 's0', 9)), ['b', 'c', 'a']);
+  assert.deepEqual(bodies(up), ['a', 'c', 'b', '']);
+  assert.deepEqual(bodies(moveStep(up, 's2', 2)), ['a', 'b', 'c', '']);
+  assert.deepEqual(bodies(moveStep(draft, 's0', 9)), ['b', 'c', 'a', '']);
   assert.equal(moveStep(draft, 's0', -1), draft);
+  assert.equal(moveStep(emptyDraft, 's0', 0), emptyDraft);
   assert.equal(moveStep(draft, 'nope', 0), draft);
 });
 
@@ -115,14 +125,14 @@ test('recipe-step-editing › Deleted step can be undone', () => {
   const draft = withSteps('a', 'b', 'c');
   const removed = draft.steps[1];
   const without = removeStep(draft, removed.id);
-  assert.deepEqual(bodies(without), ['a', 'c']);
+  assert.deepEqual(bodies(without), ['a', 'c', '']);
   // Meanwhile another step took the id of the removed one.
-  const later = addStep(removeStep(draft, 's2'), 2);
+  const later = editStep(removeStep(draft, 's2'), 's3', 'd');
   const restored = restoreStep(removeStep(later, 's1'), removed, 1);
-  assert.deepEqual(bodies(restored), ['a', 'b', '']);
-  assert.equal(new Set(restored.steps.map((s) => s.id)).size, 3);
+  assert.deepEqual(bodies(restored), ['a', 'b', 'd', '']);
+  assert.equal(new Set(restored.steps.map((s) => s.id)).size, 4);
   assert.deepEqual(restoreStep(without, removed, 1), draft);
-  // The last step is replaced by an empty one, which the restored step takes over.
+  // The only step with text leaves the empty step, which the restored step goes before.
   const only = withSteps('solo');
   const emptied = removeStep(only, 's0');
   assert.deepEqual(bodies(emptied), ['']);
@@ -132,8 +142,12 @@ test('recipe-step-editing › Deleted step can be undone', () => {
 
 test('recipe-step-editing › Deleting an empty step is immediate', () => {
   const draft = withSteps('a', '', 'c');
-  assert.deepEqual(bodies(removeStep(draft, 's1')), ['a', 'c']);
+  assert.deepEqual(bodies(removeStep(draft, 's1')), ['a', 'c', '']);
   assert.deepEqual(bodies(removeStep(emptyDraft, 's0')), ['']);
+});
+
+test('recipe-step-editing › Deleting the last step with text leaves the empty step', () => {
+  assert.deepEqual(bodies(removeStep(withSteps('solo'), 's0')), ['']);
 });
 
 test('empty steps are no change, a typed or moved step is', () => {
@@ -157,7 +171,7 @@ test('recipe-step-chips › Chips travel with their step', () => {
   const timer = draft.steps[1].chips[0];
   assert.equal(timer.kind, 'timer');
   const moved = moveStep(draft, 's1', 0);
-  assert.deepEqual(bodies(moved), ['Laat 30 minuten rusten', 'a']);
+  assert.deepEqual(bodies(moved), ['Laat 30 minuten rusten', 'a', '']);
   assert.deepEqual(moved.steps[0].chips, draft.steps[1].chips);
   assert.deepEqual(moved.steps[0].ghosts, draft.steps[1].ghosts);
   assert.equal(moved.steps[0].body.slice(timer.anchor!.start, timer.anchor!.end), '30 minuten');
@@ -171,7 +185,7 @@ test('typing in a step and in the ingredient list changes the chips', () => {
   assert.equal(storedSteps(draft)[0].ingredients[0].quantityText, '300 g');
   draft = removeIngredient(draft, 'i0');
   assert.deepEqual(storedSteps(draft)[0].ingredients, []);
-  assert.deepEqual(bodies(draft), ['Zeef de bloem']);
+  assert.deepEqual(bodies(draft), ['Zeef de bloem', '']);
 });
 
 test('stored chips come back as chips, and chips count as a change', () => {

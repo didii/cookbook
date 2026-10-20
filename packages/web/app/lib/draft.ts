@@ -17,9 +17,20 @@ export type RecipeDraft = RecipeForm & { ingredients: IngredientLine[]; steps: S
 
 export const emptyDraftSeed: DraftSeed = { title: '', author: '', servings: '', time: '', intro: '', image: '', ingredients: [], steps: [] };
 
-/** The steps, but never none: a recipe being written always has a step to type in. */
 const newStep = (id: string): StepDraft => ({ id, body: '', chips: [], ghosts: [] });
-const withOneStep = (steps: StepDraft[]): StepDraft[] => (steps.length ? steps : [newStep('s0')]);
+
+/** An id no step has. */
+const freeStepId = (steps: StepDraft[]) => `s${Math.max(-1, ...steps.map((s) => Number(s.id.slice(1)))) + 1}`;
+
+const blankStep = (step: StepDraft) => !step.body.trim();
+
+/** Keeps exactly one empty step at the end, like `withFreeRow` for ingredients: adds one after the last filled step, and drops a surplus empty one at the end (the earlier one, which may have focus, stays). */
+function withFreeStep(steps: StepDraft[]): StepDraft[] {
+  const next = [...steps];
+  while (next.length > 1 && blankStep(next[next.length - 1]) && blankStep(next[next.length - 2])) next.pop();
+  if (!next.length || !blankStep(next[next.length - 1])) next.push(newStep(freeStepId(next)));
+  return next;
+}
 
 const blank = (row: IngredientLine) => !row.text.trim();
 
@@ -48,7 +59,7 @@ export function startingDraft(stored: DraftSeed = emptyDraftSeed): RecipeDraft {
   const ingredients = withFreeRow(stored.ingredients.map((text, i) => ({ id: `i${i}`, text })));
   const ctx = { rows: rowsOf(ingredients) };
   const steps = stored.steps.map((step, i) => ({ id: `s${i}`, ...classifyStored(step, ctx) }));
-  return { ...stored, ingredients, steps: withOneStep(steps) };
+  return { ...stored, ingredients, steps: withFreeStep(steps) };
 }
 
 export const emptyDraft: RecipeDraft = startingDraft();
@@ -77,11 +88,6 @@ export function moveIngredient(draft: RecipeDraft, id: string, to: number): Reci
   return setRows(draft, rows);
 }
 
-/** An id no step has. */
-const freeStepId = (steps: StepDraft[]) => `s${Math.max(-1, ...steps.map((s) => Number(s.id.slice(1)))) + 1}`;
-
-const blankStep = (step: StepDraft) => !step.body.trim();
-
 /** Adds an empty step at a place (the end when omitted). */
 export function addStep(draft: RecipeDraft, at = draft.steps.length): RecipeDraft {
   const steps = [...draft.steps];
@@ -89,35 +95,35 @@ export function addStep(draft: RecipeDraft, at = draft.steps.length): RecipeDraf
   return { ...draft, steps };
 }
 
-/** Sets the text of a step, nothing else: the chips follow when the edit is reported (`editedStep`), which for a composition happens once when it ends. */
+/** Sets the text of a step; typing in the empty last step adds the next one. The chips follow when the edit is reported (`editedStep`), which for a composition happens once when it ends. */
 export const editStep = (draft: RecipeDraft, id: string, body: string): RecipeDraft => ({
   ...draft,
-  steps: draft.steps.map((s) => (s.id === id ? { ...s, body } : s)),
+  steps: withFreeStep(draft.steps.map((s) => (s.id === id ? { ...s, body } : s))),
 });
 
 /** A step's text became `body` by an edit: its chips follow the words by the edit. */
 export const editedStep = (draft: RecipeDraft, id: string, body: string, edit: TextEdit): RecipeDraft =>
   reconcileSteps(editStep(draft, id, body), { id, edit });
 
-/** Removes a step; the last one is replaced by an empty step. */
+/** Removes a step; the empty step at the end stays. */
 export const removeStep = (draft: RecipeDraft, id: string): RecipeDraft =>
-  reconcileSteps({ ...draft, steps: withOneStep(draft.steps.filter((s) => s.id !== id)) });
+  reconcileSteps({ ...draft, steps: withFreeStep(draft.steps.filter((s) => s.id !== id)) });
 
-/** Moves a step to a place in the list. Unknown ids and no-op moves return the draft as it was. */
+/** Moves a step to a place in the list; the empty step at the end is not a place to move to. Unknown ids and no-op moves return the draft as it was. */
 export function moveStep(draft: RecipeDraft, id: string, to: number): RecipeDraft {
   const from = draft.steps.findIndex((s) => s.id === id);
-  const target = Math.min(Math.max(to, 0), draft.steps.length - 1);
-  if (from < 0 || target === from) return draft;
+  const target = Math.min(Math.max(to, 0), draft.steps.length - 2);
+  if (from < 0 || target < 0 || target === from) return draft;
   const steps = [...draft.steps];
   steps.splice(target, 0, ...steps.splice(from, 1));
-  return { ...draft, steps };
+  return { ...draft, steps: withFreeStep(steps) };
 }
 
-/** Puts a removed step back at the place it had. Only an untouched empty step (what removing the last one leaves) makes room for it; the id changes if another step took it meanwhile. */
+/** Puts a removed step back at the place it had. Only a lone untouched empty step (what removing the only step with text leaves) makes room for it; the id changes if another step took it meanwhile. */
 export function restoreStep(draft: RecipeDraft, step: StepDraft, at: number): RecipeDraft {
   const steps = draft.steps.length === 1 && blankStep(draft.steps[0]) ? [] : [...draft.steps];
   steps.splice(Math.min(Math.max(at, 0), steps.length), 0, steps.some((s) => s.id === step.id) ? { ...step, id: freeStepId(steps) } : step);
-  return reconcileSteps({ ...draft, steps });
+  return reconcileSteps({ ...draft, steps: withFreeStep(steps) });
 }
 
 /** What each step's chips are read against (see `lib/chips`). */
@@ -126,10 +132,10 @@ export function stepContexts(draft: RecipeDraft): Context[] {
   return draft.steps.map(() => ctx);
 }
 
-/** The steps as they are posted and stored: their text and the chips as they stand (see `toStored`). */
+/** The steps as they are posted and stored: their text and the chips as they stand (see `toStored`), without the empty ones. */
 export function storedSteps(draft: RecipeDraft): Step[] {
   const contexts = stepContexts(draft);
-  return draft.steps.map((s, i) => toStored(s, contexts[i]));
+  return draft.steps.flatMap((s, i) => (blankStep(s) ? [] : [toStored(s, contexts[i])]));
 }
 
 /** Changes the chips of one step (pinning, removing, accepting a proposal, …) with a function of the chip logic. */
@@ -144,7 +150,7 @@ const normalize = (draft: RecipeDraft) =>
     {
       ...draft,
       ingredients: draft.ingredients.filter((r) => !blank(r)).map((r) => r.text),
-      steps: storedSteps(draft).filter((s) => s.body.trim()),
+      steps: storedSteps(draft),
     },
     (_, v) => (typeof v === 'string' ? v.trim() : v),
   );
