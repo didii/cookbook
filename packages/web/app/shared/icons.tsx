@@ -101,27 +101,12 @@ export const Pin = ({ className }: Props) => (
   </svg>
 );
 
-/** A carrot: an ingredient chip. */
-export const Carrot = ({ className }: Props) => (
+/** An ear of wheat: an ingredient chip. */
+export const Ingredient = ({ className }: Props) => (
   <svg {...outline(className)}>
-    <path d="M9 7l8 8L3 21z" />
-    <path d="M15 9l1-5M15 9l5-1M8.5 14l2 2" />
+    <path d="M12 22V10M12 2c1.7 1.4 1.7 4 0 5.5-1.7-1.5-1.7-4.1 0-5.5zM12 11C8.5 11 6.5 9 6.5 6 10 6 12 8 12 11zM12 11c3.5 0 5.5-2 5.5-5C14 6 12 8 12 11zM12 17c-3.5 0-5.5-2-5.5-5 3.5 0 5.5 2 5.5 5zM12 17c3.5 0 5.5-2 5.5-5-3.5 0-5.5 2-5.5 5z" />
   </svg>
 );
-
-/** A tipped salt shaker, grains falling: an ingredient chip. */
-export const Salt = ({ className }: Props) => (
-  <svg {...outline(className)}>
-    <g transform="translate(-2 -3) rotate(130 12 12)">
-      <path d="M7 9V8a5 5 0 0 1 10 0v1zM8 9l-1 10a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l-1-10" />
-      <path d="M10 6h.01M12 5h.01M14 6h.01" />
-    </g>
-    <path d="M18 19h.01M20.5 20.5h.01M17 21.5h.01" />
-  </svg>
-);
-
-/** The icon of an ingredient chip: swap `Carrot` for `Salt` to compare. */
-export const Ingredient = Carrot;
 
 /** A stopwatch: a timer chip. */
 export const Clock = ({ className }: Props) => (
