@@ -16,7 +16,7 @@ import {
   stepContexts,
   storedSteps,
   typeIngredient,
-  type Content,
+  type DraftSeed,
   type RecipeDraft,
 } from '~/lib/draft';
 import {
@@ -48,9 +48,9 @@ type Props = {
   heading: string;
   authors: string[];
   /** The starting values: what Reset restores and what unsaved changes are measured against. */
-  initial: Content;
+  initial: DraftSeed;
   /** What the editor shows when it opens: the starting values, or the values of a refused submit. */
-  values: Content;
+  values: DraftSeed;
   errors: RecipeFormErrors;
   /** Index of the tile band shown under the photo. */
   tile: number;

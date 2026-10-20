@@ -2,7 +2,7 @@ import { data, redirect } from 'react-router';
 import { envContext, userEmailContext } from '~/.server/context';
 import { acceptImage } from '~/.server/photos';
 import { chooseSeal, createRecipe, listAuthors } from '~/.server/recipes';
-import { emptyContent } from '~/lib/draft';
+import { emptyDraftSeed } from '~/lib/draft';
 import { seals } from '~/lib/seals';
 import { tiles } from '~/lib/tile';
 import { endDraftAfterSave } from '~/shared/recipeEditor/endDraftAfterSave';
@@ -52,8 +52,8 @@ export default function NewRecipe({ loaderData, actionData }: Route.ComponentPro
       authors={loaderData.authors}
       tile={loaderData.tile}
       seal={loaderData.seal}
-      initial={emptyContent}
-      values={actionData?.values ?? emptyContent}
+      initial={emptyDraftSeed}
+      values={actionData?.values ?? emptyDraftSeed}
       errors={actionData?.errors ?? {}}
       cancelTo="/"
     />

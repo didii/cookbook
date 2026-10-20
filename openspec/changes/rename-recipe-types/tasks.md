@@ -21,7 +21,7 @@ Precondition: `home-recipes-from-db` is merged. Each task is a rename only; veri
 ## 4. Editor
 
 - [x] 4.1 Rename `Draft` -> `RecipeDraft`, `IngredientRow` (editor) -> `IngredientLine`, `StepRow` (editor) -> `StepDraft`; verify the DB `IngredientRow` / `StepRow` are untouched and tests pass
-- [ ] 4.2 Rename `Content` -> `DraftSeed` and `emptyContent` -> `emptyDraftSeed`; verify the stored-draft JSON shape is unchanged (existing `draftStore` tests pass without edits to expectations)
+- [x] 4.2 Rename `Content` -> `DraftSeed` and `emptyContent` -> `emptyDraftSeed`; verify the stored-draft JSON shape is unchanged (existing `draftStore` tests pass without edits to expectations)
 
 ## 5. Wrap-up
 

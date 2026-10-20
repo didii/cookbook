@@ -5,7 +5,7 @@ import {
   addStep,
   editedStep,
   editStep,
-  emptyContent,
+  emptyDraftSeed,
   emptyDraft,
   isDirty,
   moveIngredient,
@@ -20,7 +20,7 @@ import {
 } from './draft';
 import { computeEdit } from './textEdit';
 
-const content = { ...emptyContent, title: 'Soep', author: 'Oma' };
+const content = { ...emptyDraftSeed, title: 'Soep', author: 'Oma' };
 const stored = startingDraft(content);
 const lines = (d: { ingredients: { text: string }[] }) => d.ingredients.map((r) => r.text);
 const withLines = (...texts: string[]) => startingDraft({ ...content, ingredients: texts });

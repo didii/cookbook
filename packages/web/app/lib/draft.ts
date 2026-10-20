@@ -10,12 +10,12 @@ export type IngredientLine = { id: string; text: string };
 export type StepDraft = StepChips & { id: string };
 
 /** What the routes hand the editor: the fields, the ingredient lines as plain text and the steps as they are stored. */
-export type Content = RecipeForm & { ingredients: string[]; steps: Step[] };
+export type DraftSeed = RecipeForm & { ingredients: string[]; steps: Step[] };
 
 /** The editor's content. */
 export type RecipeDraft = RecipeForm & { ingredients: IngredientLine[]; steps: StepDraft[] };
 
-export const emptyContent: Content = { title: '', author: '', servings: '', time: '', intro: '', image: '', ingredients: [], steps: [] };
+export const emptyDraftSeed: DraftSeed = { title: '', author: '', servings: '', time: '', intro: '', image: '', ingredients: [], steps: [] };
 
 /** The steps, but never none: a recipe being written always has a step to type in. */
 const newStep = (id: string): StepDraft => ({ id, body: '', chips: [], ghosts: [] });
@@ -43,7 +43,7 @@ function reconcileSteps(draft: RecipeDraft, edited?: { id: string; edit: TextEdi
 const setRows = (draft: RecipeDraft, rows: IngredientLine[]): RecipeDraft => reconcileSteps({ ...draft, ingredients: withFreeRow(rows) }, undefined, true);
 
 /** The starting draft: the stored content when there is any, otherwise empty. Stored chips are tied to their words again. */
-export function startingDraft(stored: Content = emptyContent): RecipeDraft {
+export function startingDraft(stored: DraftSeed = emptyDraftSeed): RecipeDraft {
   const ingredients = withFreeRow(stored.ingredients.map((text, i) => ({ id: `i${i}`, text })));
   const ctx = { rows: rowsOf(ingredients) };
   const steps = stored.steps.map((step, i) => ({ id: `s${i}`, ...classifyStored(step, ctx) }));

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { addStep, editStep, emptyContent, startingDraft, typeIngredient } from './draft';
+import { addStep, editStep, emptyDraftSeed, startingDraft, typeIngredient } from './draft';
 import { clearDraft, describeSavedAt, draftKey, isFresh, loadDraft, purgeDrafts, resolveStart, saveDraft, type DraftStorage } from './draftStore';
 
 /** An in-memory storage that can be told to throw on reads or writes. */
@@ -24,7 +24,7 @@ function fakeStorage(fail: { read?: boolean; write?: boolean } = {}) {
   return { storage, items };
 }
 
-const initial = startingDraft({ ...emptyContent, title: 'Soep', author: 'Oma' });
+const initial = startingDraft({ ...emptyDraftSeed, title: 'Soep', author: 'Oma' });
 const edited = { ...initial, title: 'Stamppot' };
 const now = new Date('2026-10-19T12:00:00Z');
 const keeping = (state = edited, extra: object = {}) => ({
@@ -53,7 +53,7 @@ test('recipe-draft › An unchanged recipe keeps no draft', () => {
   const { storage } = fakeStorage();
   saveDraft(storage, key, keeping());
   assert.ok(loadDraft(storage, key));
-  assert.deepEqual(saveDraft(storage, key, keeping(startingDraft({ ...emptyContent, title: ' Soep ', author: 'Oma' }))), { ok: true });
+  assert.deepEqual(saveDraft(storage, key, keeping(startingDraft({ ...emptyDraftSeed, title: ' Soep ', author: 'Oma' }))), { ok: true });
   assert.equal(loadDraft(storage, key), undefined);
 });
 

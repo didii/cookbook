@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { emptyContent, isDirty, startingDraft } from '~/lib/draft';
+import { emptyDraftSeed, isDirty, startingDraft } from '~/lib/draft';
 import { asksBeforeLeaving, draftKey, saveDraft, type DraftStorage } from '~/lib/draftStore';
 
-const content = { ...emptyContent, title: 'Soep', author: 'Oma' };
+const content = { ...emptyDraftSeed, title: 'Soep', author: 'Oma' };
 const stored = startingDraft(content);
 const key = draftKey('oma@example.com', 'soep');
 /** A storage that refuses every write, as a full one does. */
