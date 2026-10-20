@@ -15,5 +15,5 @@
 
 ## 3. Deploy notes and wrap-up
 
-- [ ] 3.1 Document the one-time bucket creation (`wrangler r2 bucket create cookbook-photos`) where the project documents deployment and verify the command is spelled as the binding expects; check upload and display on a real phone against a deployed or `wrangler dev` instance.
+- [x] 3.1 Document the one-time bucket creation (`wrangler r2 bucket create cookbook-photos`) where the project documents deployment and verify the command is spelled as the binding expects; check upload and display on a real phone against a deployed or `wrangler dev` instance.
 - [x] 3.2 Run `pnpm format:fix`, `pnpm lint:fix`, `pnpm format:check`, `pnpm lint:check`, `pnpm typecheck` and `pnpm test:ai`; verify all pass.

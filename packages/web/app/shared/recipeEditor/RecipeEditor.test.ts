@@ -50,9 +50,6 @@ test.todo('recipe-form › Reset asks first');
 test.todo('recipe-form › Reset can be declined');
 
 // The confirmation itself (following a link) needs a browser; whether it is asked is decided by asksBeforeLeaving.
-// Superseded by the next scenario once edit-recipe-local-save is synced.
-test.todo('recipe-form › Leaving with unsaved changes asks first');
-
 test('recipe-form › Leaving when the draft could not be kept asks first', () => {
   const full = (state: typeof stored) =>
     saveDraft(fakeFullStorage, key, { state, initial: stored, base: {}, uploading: false, settledImage: '', now: new Date() });
