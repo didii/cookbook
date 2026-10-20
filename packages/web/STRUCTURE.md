@@ -7,7 +7,7 @@ app/
   root.tsx, routes.ts, app.css   shell, route table, tokens + base styles only
   routes/<name>/route.tsx        route module; its own components sit beside it
   shared/                        components used by 2+ routes/layouts (change with care)
-  lib/                           non-UI modules that run on both server and browser (helpers, sample data)
+  lib/                           non-UI modules that run on both server and browser (helpers, shared types)
   .server/                       server-only modules (context, identity, D1 queries); the build fails if browser code imports them
 ```
 

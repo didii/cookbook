@@ -15,6 +15,9 @@ export type RecipeRow = {
   updated_at: string;
 };
 
+/** What a recipe card shows. */
+export type RecipeSummary = Pick<RecipeRow, 'slug' | 'title' | 'author' | 'time' | 'image' | 'seal'>;
+
 export type IngredientRow = { quantity_text: string; name: string };
 
 export type StoredRecipe = RecipeRow & { ingredients: IngredientRow[]; steps: Step[] };
@@ -152,7 +155,13 @@ export async function createRecipe(db: D1Database, recipe: NewRecipe): Promise<s
   return slug;
 }
 
-/** Every author once (case variants count as one), for suggestions. */
+/** Every recipe, the most recently added first. */
+export async function listRecipes(db: D1Database): Promise<RecipeSummary[]> {
+  const { results } = await db.prepare('SELECT slug, title, author, time, image, seal FROM recipes ORDER BY id DESC').all<RecipeSummary>();
+  return results;
+}
+
+/** Every author once(case variants count as one), for suggestions. */
 export async function listAuthors(db: D1Database): Promise<string[]> {
   const { results } = await db
     .prepare('SELECT author FROM recipes GROUP BY author COLLATE NOCASE ORDER BY author COLLATE NOCASE')
