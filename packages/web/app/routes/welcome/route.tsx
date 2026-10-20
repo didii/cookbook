@@ -51,7 +51,7 @@ export default function Welcome({ loaderData, actionData }: Route.ComponentProps
             id="callingName"
             name="callingName"
             type="text"
-            autoComplete="nickname"
+            autoComplete="off"
             maxLength={maxNameLength}
             required
             defaultValue={actionData?.name}

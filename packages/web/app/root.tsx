@@ -1,8 +1,8 @@
-import { isRouteErrorResponse, Links, Meta, Outlet, redirect, Scripts, ScrollRestoration, useLocation } from 'react-router';
+import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration, useLocation } from 'react-router';
 import type { Route } from './+types/root';
 import './app.css';
 import { envContext, userEmailContext } from '~/.server/context';
-import { getUser } from '~/.server/users';
+import { redirectToWelcome } from '~/.server/users';
 import { welcomePath } from '~/lib/returnUrl';
 import { Header } from '~/shared/Header';
 import { SkipLink } from '~/shared/SkipLink';
@@ -40,11 +40,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   const email = context.get(userEmailContext);
-  const url = new URL(request.url);
   // A member without a user row is welcomed first and sent on to the page they asked for.
-  if (url.pathname !== welcomePath && !(await getUser(context.get(envContext).DB, email))) {
-    throw redirect(`${welcomePath}?${new URLSearchParams({ returnUrl: url.pathname + url.search })}`);
-  }
+  const welcome = await redirectToWelcome(context.get(envContext).DB, email, new URL(request.url));
+  if (welcome) throw welcome;
   return { email };
 }
 
