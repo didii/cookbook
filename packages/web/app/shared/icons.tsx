@@ -101,6 +101,28 @@ export const Pin = ({ className }: Props) => (
   </svg>
 );
 
+/** A carrot: an ingredient chip. */
+export const Carrot = ({ className }: Props) => (
+  <svg {...outline(className)}>
+    <path d="M9 7l8 8L3 21z" />
+    <path d="M15 9l1-5M15 9l5-1M8.5 14l2 2" />
+  </svg>
+);
+
+/** A tipped salt shaker, grains falling: an ingredient chip. */
+export const Salt = ({ className }: Props) => (
+  <svg {...outline(className)}>
+    <g transform="translate(-2 -3) rotate(130 12 12)">
+      <path d="M7 9V8a5 5 0 0 1 10 0v1zM8 9l-1 10a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l-1-10" />
+      <path d="M10 6h.01M12 5h.01M14 6h.01" />
+    </g>
+    <path d="M18 19h.01M20.5 20.5h.01M17 21.5h.01" />
+  </svg>
+);
+
+/** The icon of an ingredient chip: swap `Carrot` for `Salt` to compare. */
+export const Ingredient = Carrot;
+
 /** A stopwatch: a timer chip. */
 export const Clock = ({ className }: Props) => (
   <svg {...outline(className)}>
