@@ -196,7 +196,7 @@ export function ChipPopup({ chip, values, anchor, onValues, onLabel, onMode, onR
       <button
         type="button"
         onClick={onRemove}
-        className="flex min-h-9 cursor-pointer items-center gap-1.5 border-0 bg-transparent p-0 font-black text-red"
+        className="flex min-h-9 cursor-pointer items-center gap-1.5 border-0 bg-transparent p-0 font-black text-red hover:underline"
       >
         <Trash className="size-[1.1em]" />
         {kindLabel[chip.kind]} verwijderen
