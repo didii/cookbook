@@ -3,6 +3,7 @@ import { formatMinutes } from '~/lib/steps';
 import { formatCountdown } from '~/lib/timers';
 import { cn } from '~/shared/cn';
 import { Play } from '~/shared/icons';
+import { press } from '~/shared/press';
 import { TimersContext } from './timersContext';
 
 type Props = { id: string; minutes: number; label?: string };
@@ -22,7 +23,10 @@ export function TimerChip({ id, minutes, label }: Props) {
           type="button"
           onClick={() => timers.start(id)}
           aria-label={`Start timer van ${formatMinutes(minutes)}${label ? `, ${label}` : ''}`}
-          className="group inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-lg border-3 border-ink bg-jade pr-3 pl-2 text-[0.9375rem] font-black text-white shadow-hard-sm transition-[translate,box-shadow,background-color] duration-100 hover:bg-[color-mix(in_srgb,var(--color-jade),white_14%)] motion-safe:hover:-translate-y-px motion-safe:hover:shadow-[4px_4px_0_var(--color-ink)] motion-safe:active:translate-x-0.5 motion-safe:active:translate-y-0.5 motion-safe:active:shadow-[1px_1px_0_var(--color-ink)]"
+          className={cn(
+            'group inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-lg border-3 border-ink bg-jade pr-3 pl-2 text-[0.9375rem] font-black text-white hover:bg-[color-mix(in_srgb,var(--color-jade),white_14%)]',
+            press,
+          )}
         >
           <Play className="size-5 transition-transform group-hover:motion-safe:translate-x-px" />
           {formatMinutes(minutes)}
