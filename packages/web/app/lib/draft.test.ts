@@ -104,10 +104,14 @@ test('recipe-step-editing › Typing adds the next step', () => {
   assert.deepEqual(bodies(editStep(editStep(draft, 's1', 'y'), 's1', '')), ['x', '']);
 });
 
-test('addStep inserts an empty step with a new id', () => {
+test('recipe-step-editing › Insert above a step', () => {
   const draft = withSteps('a', 'b');
   assert.deepEqual(bodies(addStep(draft, 1)), ['a', '', 'b', '']);
   assert.equal(new Set(addStep(draft, 1).steps.map((s) => s.id)).size, 4);
+});
+
+test('recipe-step-editing › Insert before the first step', () => {
+  assert.deepEqual(bodies(addStep(withSteps('a'), 0)), ['', 'a', '']);
 });
 
 test('recipe-step-editing › Step moves up and down', () => {
