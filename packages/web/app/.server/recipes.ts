@@ -211,3 +211,11 @@ export async function updateRecipe(
   ]);
   return result.meta.changes > 0 ? { previousImage: (before.results[0] as { image: string | null }).image } : undefined;
 }
+
+/** Notes that the member opened the recipe, once per member and recipe. Nothing happens for an unknown recipe or a member without a user row. */
+export async function recordView(db: D1Database, email: string, slug: string): Promise<void> {
+  await db
+    .prepare('INSERT OR IGNORE INTO recipe_views (user_id, recipe_id) SELECT u.id, r.id FROM users u, recipes r WHERE u.email = ? AND r.slug = ?')
+    .bind(email, slug)
+    .run();
+}
