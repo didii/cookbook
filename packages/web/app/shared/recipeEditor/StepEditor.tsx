@@ -23,8 +23,10 @@ type Props = {
   onChips: (change: (step: StepDraft, context: Context) => StepDraft) => void;
   /** What the change replaced. */
   onEdit: (edit: TextEdit, body: string) => void;
-  /** Enter was pressed at the end of a step that has text. */
-  onEnterAtEnd: () => void;
+  /** Enter was pressed. */
+  onEnter: () => void;
+  /** The empty step at the end: its buttons are shown but inert. */
+  free: boolean;
   /** Backspace was pressed in an empty step. */
   onBackspaceEmpty: () => void;
   onRemove: () => void;
@@ -46,7 +48,8 @@ export function StepEditor({
   onType,
   onChips,
   onEdit,
-  onEnterAtEnd,
+  onEnter,
+  free,
   onBackspaceEmpty,
   onRemove,
   onMove,
@@ -100,6 +103,7 @@ export function StepEditor({
           canUp={canUp}
           canDown={canDown}
           trash
+          disabled={free}
           onMove={onMove}
           onDelete={onRemove}
         />
@@ -114,7 +118,7 @@ export function StepEditor({
         onEdit={onEdit}
         onCaret={setCaret}
         onKeyDown={keyDown}
-        onEnterAtEnd={onEnterAtEnd}
+        onEnter={onEnter}
         onBackspaceEmpty={onBackspaceEmpty}
       />
       <StepChips step={step} context={context} number={number} hotId={hotId} onHot={setChipHot} onChange={onChips} />

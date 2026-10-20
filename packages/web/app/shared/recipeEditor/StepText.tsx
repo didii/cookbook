@@ -19,8 +19,8 @@ type Props = {
   onEdit?: (edit: TextEdit, value: string) => void;
   /** Where the caret is (no selection), or undefined when there is a selection or the field lost focus. */
   onCaret?: (caret: number | undefined) => void;
-  /** Enter was pressed with the caret at the end of a step that has text. */
-  onEnterAtEnd?: () => void;
+  /** Enter was pressed. */
+  onEnter?: () => void;
   /** Backspace was pressed in an empty field. */
   onBackspaceEmpty?: () => void;
   /** Called first for every key; a handler that calls preventDefault stops the field's own handling. */
@@ -71,19 +71,7 @@ const field =
  * The text of a step: a real textarea over a mirror of its own text. The mirror, not the textarea, sets the height (so the field grows without scripting) and carries the marks.
  * Enter never inserts a line break; pasted line breaks become spaces.
  */
-export function StepText({
-  ref,
-  label,
-  value,
-  marks = [],
-  placeholder,
-  onChange,
-  onEdit,
-  onCaret,
-  onEnterAtEnd,
-  onBackspaceEmpty,
-  onKeyDown,
-}: Props) {
+export function StepText({ ref, label, value, marks = [], placeholder, onChange, onEdit, onCaret, onEnter, onBackspaceEmpty, onKeyDown }: Props) {
   const textarea = useRef<HTMLTextAreaElement>(null);
   useImperativeHandle(ref, () => textarea.current!);
   const handlers = useTextEdit(textarea, { value, sanitize: oneLine, onChange, onEdit: (edit, next) => onEdit?.(edit, next) });
@@ -95,8 +83,7 @@ export function StepText({
     const el = e.currentTarget;
     if (e.key === 'Enter') {
       e.preventDefault();
-      const atEnd = el.selectionStart === el.value.length && el.selectionEnd === el.value.length;
-      if (!e.shiftKey && atEnd && el.value.trim()) onEnterAtEnd?.();
+      if (!e.shiftKey) onEnter?.();
     } else if (e.key === 'Backspace' && !el.value) {
       e.preventDefault();
       onBackspaceEmpty?.();
