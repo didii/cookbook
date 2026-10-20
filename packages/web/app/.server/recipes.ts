@@ -15,7 +15,7 @@ export type RecipeRow = {
   updated_at: string;
 };
 
-export type IngredientRow = { quantity_text: string; name: string };
+export type IngredientRow = { quantityText: string; name: string };
 
 /** A step to store: its text, and any ingredient chips, oven temperature and timer. */
 export type StepInput = Pick<Step, 'body'> & Partial<Step>;
@@ -27,7 +27,9 @@ export async function getRecipe(db: D1Database, slug: string): Promise<Recipe | 
   const [recipe, ingredients, steps, chips] = await db.batch([
     db.prepare('SELECT id, slug, title, author, time, servings, intro, image, seal, updated_at FROM recipes WHERE slug = ?').bind(slug),
     db
-      .prepare('SELECT i.quantity_text, i.name FROM ingredients i JOIN recipes r ON r.id = i.recipe_id WHERE r.slug = ? ORDER BY i.position')
+      .prepare(
+        'SELECT i.quantity_text AS quantityText, i.name FROM ingredients i JOIN recipes r ON r.id = i.recipe_id WHERE r.slug = ? ORDER BY i.position',
+      )
       .bind(slug),
     db
       .prepare(
@@ -36,7 +38,7 @@ export async function getRecipe(db: D1Database, slug: string): Promise<Recipe | 
       .bind(slug),
     db
       .prepare(
-        'SELECT c.step_id, c.quantity_text, c.name FROM step_ingredient_chips c JOIN steps s ON s.id = c.step_id JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ? ORDER BY s.position, c.position',
+        'SELECT c.step_id, c.quantity_text AS quantityText, c.name FROM step_ingredient_chips c JOIN steps s ON s.id = c.step_id JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ? ORDER BY s.position, c.position',
       )
       .bind(slug),
   ]);
@@ -48,7 +50,7 @@ export async function getRecipe(db: D1Database, slug: string): Promise<Recipe | 
     ingredients: ingredients.results as IngredientRow[],
     steps: (steps.results as StepRow[]).map((s) => ({
       body: s.body,
-      ingredients: chipRows.filter((c) => c.step_id === s.id).map((c) => ({ quantity_text: c.quantity_text, name: c.name })),
+      ingredients: chipRows.filter((c) => c.step_id === s.id).map((c) => ({ quantityText: c.quantityText, name: c.name })),
       ovenTemperature: s.oven_temperature ?? undefined,
       timer: s.timer_minutes === null ? undefined : { minutes: s.timer_minutes, label: s.timer_label ?? undefined },
     })),
@@ -112,7 +114,7 @@ function insertSteps(db: D1Database, slug: string, steps: StepInput[]) {
         .prepare(
           'INSERT INTO step_ingredient_chips (step_id, position, quantity_text, name) SELECT s.id, ?, ?, ? FROM steps s JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ? AND s.position = ?',
         )
-        .bind(j, chip.quantity_text, chip.name, slug, i),
+        .bind(j, chip.quantityText, chip.name, slug, i),
     ),
   ]);
 }

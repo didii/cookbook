@@ -309,7 +309,7 @@ test('recipe-step-chips › A pinned chip is saved with its pinned values', () =
   assert.equal(proposals(changed, ctx).length, 1);
   assert.deepEqual(toStored(changed, ctx), {
     body: 'Zeef de bloem. Bak 45 minuten op 180 graden.',
-    ingredients: [{ quantity_text: '250 g', name: 'bloem' }],
+    ingredients: [{ quantityText: '250 g', name: 'bloem' }],
     ovenTemperature: 180,
     timer: { minutes: 30, label: 'Bakken' },
   });
@@ -346,7 +346,7 @@ test('recipe-step-chips › A stored chip that matches its text follows it', () 
   const step = classifyStored(
     {
       body: 'Zeef de bloem. Bak 30 minuten op 180 graden.',
-      ingredients: [{ quantity_text: '250 g', name: 'bloem' }],
+      ingredients: [{ quantityText: '250 g', name: 'bloem' }],
       ovenTemperature: 180,
       timer: { minutes: 30 },
     },
@@ -368,7 +368,7 @@ test('recipe-step-chips › A stored chip that differs is pinned', () => {
   const step = classifyStored(
     {
       body: 'Zeef de bloem. Bak 30 minuten op 180 graden.',
-      ingredients: [{ quantity_text: '100 g', name: 'bloem' }],
+      ingredients: [{ quantityText: '100 g', name: 'bloem' }],
       ovenTemperature: 200,
       timer: { minutes: 40 },
     },
@@ -391,8 +391,8 @@ test('recipe-step-chips › A stored chip without matching words is pinned witho
     {
       body: 'Verwarm de oven voor.',
       ingredients: [
-        { quantity_text: '1 scheutje', name: 'citroensap' },
-        { quantity_text: '250 g', name: 'bloem' },
+        { quantityText: '1 scheutje', name: 'citroensap' },
+        { quantityText: '250 g', name: 'bloem' },
       ],
       ovenTemperature: 180,
       timer: { minutes: 20, label: 'Wachten' },
@@ -423,10 +423,10 @@ test('a stored ingredient is linked by name, by its last word, and to a row only
     {
       body: 'Klop het ei. Schil een appel.',
       ingredients: [
-        { quantity_text: '1', name: 'ei' },
-        { quantity_text: '1', name: 'appel' },
-        { quantity_text: '2', name: 'eieren' },
-        { quantity_text: '', name: 'ZURE APPELS' },
+        { quantityText: '1', name: 'ei' },
+        { quantityText: '1', name: 'appel' },
+        { quantityText: '2', name: 'eieren' },
+        { quantityText: '', name: 'ZURE APPELS' },
       ],
     },
     ctx,
@@ -435,7 +435,7 @@ test('a stored ingredient is linked by name, by its last word, and to a row only
     step.chips.map((c) => c.rowId),
     ['r0', 'r1', undefined, undefined],
   );
-  assert.equal(classifyStored({ body: 'x', ingredients: [{ quantity_text: '', name: 'zure appels' }] }, ctx).chips[0].rowId, 'r1');
+  assert.equal(classifyStored({ body: 'x', ingredients: [{ quantityText: '', name: 'zure appels' }] }, ctx).chips[0].rowId, 'r1');
 });
 
 test('recipe-step-chips › Usage line lists the steps', () => {

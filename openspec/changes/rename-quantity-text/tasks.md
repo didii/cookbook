@@ -8,10 +8,10 @@ Precondition: `rename-recipe-types` is merged. Verify each task with the type ch
 
 ## 2. Rename the property
 
-- [ ] 2.1 Rename `quantity_text` to `quantityText` in `lib/recipe.ts` and `.server/recipes.ts` (alias the SQL selects, keep column names in inserts); verify `.server/recipes.test.ts` and route tests pass
-- [ ] 2.2 Rename in `lib/chips.ts`, `shared/recipeValidation.ts` (`cleanStep`) and the recipe views; verify `chips`, `recipeValidation`, `StepList` and `RecipePage` tests pass
-- [ ] 2.3 Update remaining tests and fixtures; verify `grep -r quantity_text packages/web/app` finds only SQL column names in `.server/recipes.ts`
+- [x] 2.1 Rename `quantity_text` to `quantityText` in `lib/recipe.ts` and `.server/recipes.ts` (alias the SQL selects, keep column names in inserts); verify `.server/recipes.test.ts` and route tests pass
+- [x] 2.2 Rename in `lib/chips.ts`, `shared/recipeValidation.ts` (`cleanStep`) and the recipe views; verify `chips`, `recipeValidation`, `StepList` and `RecipePage` tests pass
+- [x] 2.3 Update remaining tests and fixtures; verify `grep -r quantity_text packages/web/app` finds only SQL column names in `.server/recipes.ts`
 
 ## 3. Wrap-up
 
-- [ ] 3.1 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check` and `pnpm test:ai`; all clean
+- [x] 3.1 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check` and `pnpm test:ai`; all clean

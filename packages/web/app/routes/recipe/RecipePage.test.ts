@@ -26,8 +26,8 @@ const recipe: Omit<Recipe, 'steps'> = {
   image: null,
   seal: null,
   ingredients: [
-    { quantity_text: '4', name: 'appels' },
-    { quantity_text: '100 g', name: 'suiker' },
+    { quantityText: '4', name: 'appels' },
+    { quantityText: '100 g', name: 'suiker' },
   ],
 };
 

@@ -15,7 +15,7 @@ export function StepChips({ step, index, done }: Props) {
     <ul className="m-0 flex flex-auto list-none flex-wrap items-center gap-x-2 gap-y-1.5 p-0">
       {step.ingredients.map((x, i) => (
         <li key={i} className={cn(chip, done && 'opacity-60')}>
-          <b className="font-black text-blu">{x.quantity_text}</b> {x.name}
+          <b className="font-black text-blu">{x.quantityText}</b> {x.name}
         </li>
       ))}
       {step.ovenTemperature !== undefined && (

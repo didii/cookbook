@@ -31,7 +31,7 @@ test('recipe-viewing › Unknown slug', async () => {
 
 test('the page gets the steps of the database with their chips', async () => {
   const steps = [
-    { body: 'Bak 30 minuten op 180 graden.', ingredients: [{ quantity_text: '', name: 'boter' }], ovenTemperature: 180, timer: { minutes: 30 } },
+    { body: 'Bak 30 minuten op 180 graden.', ingredients: [{ quantityText: '', name: 'boter' }], ovenTemperature: 180, timer: { minutes: 30 } },
   ];
   const slug = await createRecipe(db, { title: 'Uit de database', author: 'Oma', steps });
   const { recipe, steps: loaded } = await load(slug);

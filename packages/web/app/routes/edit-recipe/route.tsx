@@ -22,7 +22,7 @@ export async function loader({ params, context }: Route.LoaderArgs) {
     time: recipe.time ?? '',
     intro: recipe.intro,
     image: recipe.image ?? '',
-    ingredients: recipe.ingredients.map((i) => joinIngredient({ quantityText: i.quantity_text, name: i.name })),
+    ingredients: recipe.ingredients.map((i) => joinIngredient({ quantityText: i.quantityText, name: i.name })),
     steps: recipe.steps,
   };
   return {

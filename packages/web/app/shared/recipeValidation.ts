@@ -88,7 +88,7 @@ function cleanStep(posted: unknown): Step {
     body: String(step.body ?? '')
       .replace(/\s*[\r\n]+\s*/g, ' ')
       .trim(),
-    ingredients: chips.map((c) => ({ quantity_text: text(c.quantity_text), name: text(c.name) })).filter((c) => c.name),
+    ingredients: chips.map((c) => ({ quantityText: text(c.quantityText), name: text(c.name) })).filter((c) => c.name),
     ...(oven && { ovenTemperature: oven }),
     ...(minutes && { timer: { minutes, ...(label && { label }) } }),
   };

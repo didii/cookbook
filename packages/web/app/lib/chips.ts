@@ -239,7 +239,7 @@ export function toStored(step: StepChips, ctx: Context): Step {
     body: step.body,
     ingredients: shown.flatMap(({ chip, values }) => {
       const { quantity, name } = values as IngredientValues;
-      return chip.kind === 'ingredient' && name.trim() ? [{ quantity_text: quantity.trim(), name: name.trim() }] : [];
+      return chip.kind === 'ingredient' && name.trim() ? [{ quantityText: quantity.trim(), name: name.trim() }] : [];
     }),
     ...(oven && { ovenTemperature: (oven.values as OvenValues).degrees }),
     ...(timer && { timer: { minutes: (timer.values as TimerValues).minutes, ...(label && { label }) } }),
@@ -281,7 +281,7 @@ export function classifyStored(stored: Step, ctx: Context): StepChips {
 
   const mentions = findIngredients(body, ctx.rows, quantityOf);
   const linked = new Set<string>();
-  for (const { quantity_text, name } of stored.ingredients) {
+  for (const { quantityText, name } of stored.ingredients) {
     const free = ctx.rows.filter((r) => !linked.has(r.id));
     const row =
       free.find((r) => r.name.trim().toLowerCase() === name.trim().toLowerCase()) ?? free.find((r) => sameWord(lastWord(r.name), lastWord(name)));
@@ -290,10 +290,10 @@ export function classifyStored(stored: Step, ctx: Context): StepChips {
     chips.push({
       id: id(),
       kind: 'ingredient',
-      mode: mention && mention.values.quantity === quantity_text && mention.values.name === name ? 'auto' : 'manual',
+      mode: mention && mention.values.quantity === quantityText && mention.values.name === name ? 'auto' : 'manual',
       anchor: mention && range(mention),
       rowId: row?.id,
-      values: { quantity: quantity_text, name },
+      values: { quantity: quantityText, name },
     });
   }
   for (const m of mentions) if (!linked.has(m.rowId)) ghosts.push({ id: id(), kind: 'ingredient', anchor: range(m), rowId: m.rowId });

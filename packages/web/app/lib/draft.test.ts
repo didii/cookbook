@@ -166,9 +166,9 @@ test('recipe-step-chips › Chips travel with their step', () => {
 test('typing in a step and in the ingredient list changes the chips', () => {
   let draft = startingDraft({ ...content, ingredients: ['250 g bloem'], steps: [{ body: '', ingredients: [] }] });
   draft = typeStep(draft, 's0', 'Zeef de bloem');
-  assert.deepEqual(storedSteps(draft), [{ body: 'Zeef de bloem', ingredients: [{ quantity_text: '250 g', name: 'bloem' }] }]);
+  assert.deepEqual(storedSteps(draft), [{ body: 'Zeef de bloem', ingredients: [{ quantityText: '250 g', name: 'bloem' }] }]);
   draft = typeIngredient(draft, 'i0', '300 g bloem');
-  assert.equal(storedSteps(draft)[0].ingredients[0].quantity_text, '300 g');
+  assert.equal(storedSteps(draft)[0].ingredients[0].quantityText, '300 g');
   draft = removeIngredient(draft, 'i0');
   assert.deepEqual(storedSteps(draft)[0].ingredients, []);
   assert.deepEqual(bodies(draft), ['Zeef de bloem']);
@@ -188,7 +188,7 @@ test('stored chips come back as chips, and chips count as a change', () => {
 });
 
 test('an open proposed removal survives typing in another step', () => {
-  const step = (body: string, ingredients = [{ quantity_text: '250 g', name: 'bloem' }]) => ({ body, ingredients });
+  const step = (body: string, ingredients = [{ quantityText: '250 g', name: 'bloem' }]) => ({ body, ingredients });
   let draft = startingDraft({ ...content, ingredients: ['250 g bloem'], steps: [step('Zeef de bloem'), step('a', [])] });
   const id = draft.steps[0].chips[0].id;
   draft = { ...draft, steps: [{ ...draft.steps[0], chips: [{ ...draft.steps[0].chips[0], mode: 'manual' }] }, draft.steps[1]] };
