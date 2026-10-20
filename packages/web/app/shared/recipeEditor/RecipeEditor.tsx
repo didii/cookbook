@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Form, Link, useLocation, useNavigate, useNavigation, useRouteLoaderData } from 'react-router';
 import { proposals, usedIn } from '~/lib/chips';
 import {
+  addStep,
   changeChips,
   editedStep,
   editStep,
@@ -260,6 +261,7 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
               onChips={(id, change) => setCurrent((c) => changeChips(c, id, change))}
               onType={(id, body) => setCurrent((c) => editStep(c, id, body))}
               onEdit={(id, edit, body) => setCurrent((c) => editedStep(c, id, body, edit))}
+              onAdd={(at) => setCurrent((c) => addStep(c, at))}
               onRemove={(id) => setCurrent((c) => removeStep(c, id))}
               onRestore={(step, at) => setCurrent((c) => restoreStep(c, step, at))}
               onMove={(id, to) => setCurrent((c) => moveStep(c, id, to))}

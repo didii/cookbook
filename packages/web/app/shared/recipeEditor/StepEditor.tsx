@@ -30,6 +30,8 @@ type Props = {
   /** Backspace was pressed in an empty step. */
   onBackspaceEmpty: () => void;
   onRemove: () => void;
+  /** Insert an empty step above this one. */
+  onInsert: () => void;
   /** Move one place up (-1) or down (1). */
   onMove: (direction: -1 | 1) => void;
   /** Pointer handlers for the grip, and the style the step gets while it is dragged or shifted aside. */
@@ -52,6 +54,7 @@ export function StepEditor({
   free,
   onBackspaceEmpty,
   onRemove,
+  onInsert,
   onMove,
   gripProps,
   style,
@@ -100,6 +103,8 @@ export function StepEditor({
         <RowToolbar
           label={`Acties voor stap ${number}`}
           deleteLabel="Verwijder stap"
+          insertLabel="Voeg stap toe boven"
+          onInsert={onInsert}
           canUp={canUp}
           canDown={canDown}
           trash

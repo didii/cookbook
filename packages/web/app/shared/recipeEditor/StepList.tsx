@@ -14,6 +14,8 @@ type Props = {
   contexts: Context[];
   /** Changes the chips of a step with a function of the chip logic. */
   onChips: (id: string, change: (step: StepDraft, context: Context) => StepDraft) => void;
+  /** Insert an empty step at a place. */
+  onAdd: (at: number) => void;
   onType: (id: string, body: string) => void;
   /** What a change of a step's text replaced; reported after the text itself (see `StepText`). */
   onEdit: (id: string, edit: TextEdit, body: string) => void;
@@ -31,7 +33,7 @@ const undoSeconds = 8;
 type Removed = { step: StepDraft; at: number };
 
 /** The steps of a recipe: numbered and reorderable, ending with an empty step that typing fills. */
-export function StepList({ steps, contexts, onChips, onType, onEdit, onRemove, onRestore, onMove }: Props) {
+export function StepList({ steps, contexts, onChips, onType, onEdit, onAdd, onRemove, onRestore, onMove }: Props) {
   const items = useRef(new Map<string, ItemHandle>());
   const undoButton = useRef<HTMLButtonElement>(null);
   // The steps as of the latest render, for focus requests that run after the next one. Declared before `useAfterRender`, so it is up to date when a request runs.
@@ -59,6 +61,11 @@ export function StepList({ steps, contexts, onChips, onType, onEdit, onRemove, o
 
   const focusStep = (index: number, caret: 'start' | 'end') => afterRender(() => items.current.get(latest.current[index]?.id)?.focusField(caret));
 
+  const insert = (at: number) => {
+    setRemoved(undefined);
+    focusStep(at, 'start');
+    onAdd(at);
+  };
   const type = (id: string, body: string) => {
     setRemoved(undefined);
     onType(id, body);
@@ -117,6 +124,7 @@ export function StepList({ steps, contexts, onChips, onType, onEdit, onRemove, o
               canDown={i < steps.length - 1}
               onType={(body) => type(step.id, body)}
               onEdit={(edit, body) => onEdit(step.id, edit, body)}
+              onInsert={() => insert(i)}
               onEnter={() => items.current.get(steps[i + 1]?.id)?.focusField('start')}
               free={i === steps.length - 1 && !step.body.trim()}
               onBackspaceEmpty={() => i < steps.length - 1 && remove(step.id)}
