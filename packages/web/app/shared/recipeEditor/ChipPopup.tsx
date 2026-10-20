@@ -140,9 +140,14 @@ export function ChipPopup({ chip, values, words, anchor, onValues, onLabel, onMo
       onKeyDown={keyDown}
       className="absolute top-(--pop-top) m-0 z-20 grid overflow-visible gap-3 rounded-xl border-3 border-ink bg-white p-3.5 font-bold text-ink shadow-hard max-sm:inset-x-0 max-sm:w-auto sm:right-auto sm:left-(--pop-left) sm:w-80"
     >
+      {/* The arrow is two triangles: an ink one, and a white one 3px smaller whose base covers the popup's border. */}
       <span
         aria-hidden="true"
-        className="absolute -top-2.5 left-(--pop-arrow) size-3.5 -translate-x-1/2 rotate-45 border-t-3 border-l-3 border-ink bg-white"
+        className="absolute -top-3 left-(--pop-arrow) h-3 w-6 -translate-x-1/2 bg-ink [clip-path:polygon(50%_0,100%_100%,0_100%)]"
+      />
+      <span
+        aria-hidden="true"
+        className="absolute top-[-7.75px] left-(--pop-arrow) h-[7.75px] w-[15.5px] -translate-x-1/2 bg-white [clip-path:polygon(50%_0,100%_100%,0_100%)]"
       />
       {chip.kind === 'timer' && (
         <div className="grid grid-cols-2 gap-2">
