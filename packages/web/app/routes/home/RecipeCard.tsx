@@ -1,9 +1,9 @@
 import { Link } from 'react-router';
-import type { Recipe } from '~/lib/recipes';
+import type { RecipeSummary } from '~/.server/recipes';
 import { Seal } from '~/shared/Seal';
 import { TileBand } from '~/shared/TileBand';
 
-type Props = { recipe: Recipe; tile: number; eager?: boolean };
+type Props = { recipe: RecipeSummary; tile: number; eager?: boolean };
 
 export function RecipeCard({ recipe: r, tile, eager }: Props) {
   return (
@@ -26,7 +26,8 @@ export function RecipeCard({ recipe: r, tile, eager }: Props) {
       <span className="block px-4 pt-3 pb-4">
         <span className="block text-[1.375rem] leading-[1.1] font-black">{r.title}</span>
         <span className="mt-1 block text-[0.9375rem] font-bold text-muted">
-          van {r.author} · {r.time}
+          van {r.author}
+          {r.time && ` · ${r.time}`}
         </span>
       </span>
     </Link>
