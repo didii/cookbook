@@ -13,7 +13,7 @@ import {
   Square,
   Timer,
   Trash2,
-  Wheat,
+  Utensils,
   X,
   type LucideIcon,
 } from 'lucide-react';
@@ -28,7 +28,6 @@ const icon =
 
 export const Play = icon(LucidePlay, 'size-4 fill-current');
 export const Stop = icon(Square, 'size-4 fill-current');
-/** An alarm clock: the app a timer is handed to. */
 export const Alarm = icon(AlarmClock, 'size-4');
 export const Thermometer = icon(LucideThermometer, 'size-4');
 export const Camera = icon(LucideCamera, 'size-5');
@@ -36,14 +35,10 @@ export const Trash = icon(Trash2, 'size-5');
 export const Up = icon(ChevronUp, 'size-5');
 export const Down = icon(ChevronDown, 'size-5');
 export const Cross = icon(X, 'size-5');
-export const Check = icon(LucideCheck, 'size-5');
+export const Check = icon(Utensils, 'size-5');
 export const Plus = icon(LucidePlus, 'size-5');
 export const Arrow = icon(ArrowRight, 'size-5');
-/** A chain link: the chip follows the text. */
 export const Link = icon(LucideLink, 'size-5');
-/** A pin: the chip keeps its values. */
 export const Pin = icon(LucidePin, 'size-5');
-/** A stopwatch: a timer chip. */
 export const Clock = icon(Timer, 'size-5');
-/** An ear of wheat: an ingredient chip. */
-export const Ingredient = icon(Wheat, 'size-5');
+export const Ingredient = icon(Utensils, 'size-5');

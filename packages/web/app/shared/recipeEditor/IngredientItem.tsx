@@ -1,7 +1,7 @@
 import { useImperativeHandle, useLayoutEffect, useRef, type ComponentProps, type CSSProperties, type KeyboardEvent, type Ref } from 'react';
 import { parseIngredient } from '~/lib/ingredients';
 import { cn } from '~/shared/cn';
-import { Check } from '~/shared/icons';
+import { Ingredient } from '~/shared/icons';
 import type { ItemHandle } from './ItemHandle';
 import { RowGrip } from './RowGrip';
 import { RowToolbar } from './RowToolbar';
@@ -166,7 +166,7 @@ export function IngredientItem({
       </div>
       {usedIn.length > 0 && (
         <span title={`Gebruikt in stap ${usedIn.join(', ')}`} className="z-10 col-start-3 row-start-1 mr-3 justify-self-end text-jade">
-          <Check />
+          <Ingredient />
           <span className="sr-only">Gebruikt in stap {usedIn.join(', ')}</span>
         </span>
       )}
