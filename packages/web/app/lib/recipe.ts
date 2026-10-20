@@ -36,4 +36,6 @@ export type RecipeSummary = {
   time: string | null;
   image: string | null;
   seal: string | null;
+  /** Added recently and not yet opened by the signed-in member. */
+  isNew?: boolean;
 };

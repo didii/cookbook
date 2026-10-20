@@ -1,5 +1,5 @@
 import { Link, useSearchParams, type ShouldRevalidateFunctionArgs } from 'react-router';
-import { envContext } from '~/.server/context';
+import { envContext, userEmailContext } from '~/.server/context';
 import { listRecipes } from '~/.server/recipes';
 import { authorsOf, filterParams, filterRecipes, isFiltered, minRecipesForFilters, noFilters, parseFilters, type Filters } from '~/lib/filterRecipes';
 import { tileFor } from '~/lib/tile';
@@ -9,7 +9,7 @@ import { FilterBar } from './FilterBar';
 import { RecipeCard } from './RecipeCard';
 
 export async function loader({ context }: Route.LoaderArgs) {
-  return { recipes: await listRecipes(context.get(envContext).DB) };
+  return { recipes: await listRecipes(context.get(envContext).DB, context.get(userEmailContext), new Date()) };
 }
 
 /** Typing in the search box only changes the address; the whole list is already here, so nothing is fetched again. */
