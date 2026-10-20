@@ -11,7 +11,7 @@ Precondition: `home-recipes-from-db` is merged. Each task is a rename only; veri
 
 ## 2. Write input
 
-- [ ] 2.1 Rename `NewRecipe` / `RecipeUpdate` to `RecipeInput` (update as a `Pick`), and settle `NewStep`; verify no old names remain and tests pass
+- [x] 2.1 Rename `NewRecipe` / `RecipeUpdate` to `RecipeInput` (update as a `Pick`), and settle `NewStep`; verify no old names remain and tests pass
 
 ## 3. Form
 
