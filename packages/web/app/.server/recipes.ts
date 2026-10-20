@@ -165,7 +165,11 @@ export async function listAuthors(db: D1Database): Promise<string[]> {
 }
 
 /** Replaces the base information of a recipe; an omitted optional field is cleared, but an omitted seal is kept. When ingredients or steps are given they replace the stored ones in the same batch (so atomically); when omitted the stored ones stay. Returns the image the recipe had before, or undefined when the recipe doesn't exist. */
-export async function updateRecipe(db: D1Database, slug: string, recipe: Pick<RecipeInput, 'title' | 'author' | 'servings' | 'time' | 'intro' | 'image' | 'seal' | 'ingredients' | 'steps'>): Promise<{ previousImage: string | null } | undefined> {
+export async function updateRecipe(
+  db: D1Database,
+  slug: string,
+  recipe: Pick<RecipeInput, 'title' | 'author' | 'servings' | 'time' | 'intro' | 'image' | 'seal' | 'ingredients' | 'steps'>,
+): Promise<{ previousImage: string | null } | undefined> {
   const [before, result] = await db.batch([
     db.prepare('SELECT image FROM recipes WHERE slug = ?').bind(slug),
     db

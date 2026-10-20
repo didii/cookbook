@@ -1,5 +1,5 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent, type Ref } from 'react';
-import type { Chip, IngredientValues, OvenValues, TimerValues, ChipValues } from '~/lib/chips';
+import type { Chip, ChipValues, IngredientValues, OvenValues, TimerValues } from '~/lib/chips';
 import { cn } from '~/shared/cn';
 import { Link, Pin, Trash } from '~/shared/icons';
 

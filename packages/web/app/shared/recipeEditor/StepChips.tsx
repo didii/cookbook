@@ -13,13 +13,13 @@ import {
   setLabel,
   setMode,
   type Chip,
+  type ChipValues,
   type Context,
   type Ghost,
   type IngredientValues,
   type Kind,
   type OvenValues,
   type TimerValues,
-  type ChipValues,
 } from '~/lib/chips';
 import type { StepDraft } from '~/lib/draft';
 import { formatMinutes } from '~/lib/steps';

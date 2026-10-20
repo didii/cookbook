@@ -40,7 +40,8 @@ function reconcileSteps(draft: RecipeDraft, edited?: { id: string; edit: TextEdi
   return { ...draft, steps: draft.steps.map((s, i) => reconcile(s, contexts[i], edited?.id === s.id ? edited.edit : undefined, rowsChanged)) };
 }
 
-const setRows = (draft: RecipeDraft, rows: IngredientLine[]): RecipeDraft => reconcileSteps({ ...draft, ingredients: withFreeRow(rows) }, undefined, true);
+const setRows = (draft: RecipeDraft, rows: IngredientLine[]): RecipeDraft =>
+  reconcileSteps({ ...draft, ingredients: withFreeRow(rows) }, undefined, true);
 
 /** The starting draft: the stored content when there is any, otherwise empty. Stored chips are tied to their words again. */
 export function startingDraft(stored: DraftSeed = emptyDraftSeed): RecipeDraft {
@@ -95,7 +96,8 @@ export const editStep = (draft: RecipeDraft, id: string, body: string): RecipeDr
 });
 
 /** A step's text became `body` by an edit: its chips follow the words by the edit. */
-export const editedStep = (draft: RecipeDraft, id: string, body: string, edit: TextEdit): RecipeDraft => reconcileSteps(editStep(draft, id, body), { id, edit });
+export const editedStep = (draft: RecipeDraft, id: string, body: string, edit: TextEdit): RecipeDraft =>
+  reconcileSteps(editStep(draft, id, body), { id, edit });
 
 /** Removes a step; the last one is replaced by an empty step. */
 export const removeStep = (draft: RecipeDraft, id: string): RecipeDraft =>

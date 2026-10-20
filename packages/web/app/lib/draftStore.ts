@@ -204,7 +204,17 @@ export type Start = {
  * How the editor opens. `shown` is what it shows without a draft, `updatedAt` the stored recipe's current version (none for a new recipe), `draft` what the device holds for it.
  * The edit link (`fresh`) throws the draft away. Otherwise a draft is restored, and flagged when its base is not the current version.
  */
-export function resolveStart({ draft, fresh, shown, updatedAt }: { draft?: StoredDraft; fresh: boolean; shown: RecipeDraft; updatedAt?: string }): Start {
+export function resolveStart({
+  draft,
+  fresh,
+  shown,
+  updatedAt,
+}: {
+  draft?: StoredDraft;
+  fresh: boolean;
+  shown: RecipeDraft;
+  updatedAt?: string;
+}): Start {
   if (fresh) return { state: shown, base: { updatedAt }, changedMeanwhile: false, discard: true };
   if (!draft) return { state: shown, base: { updatedAt }, changedMeanwhile: false, discard: false };
   return {
