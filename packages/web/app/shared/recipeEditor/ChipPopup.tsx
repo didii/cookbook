@@ -102,7 +102,10 @@ export function ChipPopup({ chip, values, words, anchor, onValues, onLabel, onMo
     if (!el || !chipEl) return;
     const room = (el.offsetParent as HTMLElement | null)?.clientWidth ?? 0;
     el.style.setProperty('--pop-left', `${Math.max(0, Math.min(chipEl.offsetLeft, room - el.offsetWidth))}px`);
-    el.style.setProperty('--pop-top', `${chipEl.offsetTop + chipEl.offsetHeight + 8}px`);
+    el.style.setProperty('--pop-top', `${chipEl.offsetTop + chipEl.offsetHeight + 12}px`);
+    // The arrow points at the middle of the chip, kept off the rounded corners.
+    const middle = chipEl.offsetLeft + chipEl.offsetWidth / 2 - el.offsetLeft;
+    el.style.setProperty('--pop-arrow', `${Math.max(20, Math.min(middle, el.offsetWidth - 20))}px`);
   });
 
   useEffect(() => first.current?.focus(), []);
@@ -135,8 +138,12 @@ export function ChipPopup({ chip, values, words, anchor, onValues, onLabel, onMo
       ref={popup}
       aria-label={title}
       onKeyDown={keyDown}
-      className="absolute top-(--pop-top) m-0 z-20 grid gap-3 rounded-xl border-3 border-ink bg-white p-3.5 font-bold text-ink shadow-hard max-sm:inset-x-0 max-sm:w-auto sm:right-auto sm:left-(--pop-left) sm:w-80"
+      className="absolute top-(--pop-top) m-0 z-20 grid overflow-visible gap-3 rounded-xl border-3 border-ink bg-white p-3.5 font-bold text-ink shadow-hard max-sm:inset-x-0 max-sm:w-auto sm:right-auto sm:left-(--pop-left) sm:w-80"
     >
+      <span
+        aria-hidden="true"
+        className="absolute -top-2.5 left-(--pop-arrow) size-3.5 -translate-x-1/2 rotate-45 border-t-3 border-l-3 border-ink bg-white"
+      />
       {chip.kind === 'timer' && (
         <div className="grid grid-cols-2 gap-2">
           <NumberField label="Minuten" value={values_.minutes} onValue={(minutes) => onValues({ minutes })} first={first} />

@@ -21,6 +21,10 @@ type Props = {
 /** Space between rows (Tailwind gap-1.5), needed to shift rows aside while one is dragged. */
 const gap = 6;
 
+const Kbd = ({ children }: { children: string }) => (
+  <kbd className="rounded-[0.3rem] border-2 border-ink/45 bg-white px-1.5 font-[inherit] text-[0.8rem] font-extrabold">{children}</kbd>
+);
+
 const none: number[] = [];
 const noErrors: Record<number, string> = {};
 
@@ -94,6 +98,15 @@ export function IngredientList({ rows, errors = noErrors, usedIn = () => none, o
           );
         })}
       </ul>
+      {/* Keyboard hints mean nothing on a touch screen. */}
+      <p className="mt-2.5 ml-9 flex flex-wrap gap-x-4 text-[0.9rem] font-bold text-muted [@media(hover:none)]:hidden">
+        <span>
+          <Kbd>Enter</Kbd> voor de volgende regel
+        </span>
+        <span>
+          <Kbd>Alt</Kbd>+<Kbd>Up</Kbd> of <Kbd>Alt</Kbd>+<Kbd>Down</Kbd> om te verplaatsen
+        </span>
+      </p>
       <Announcement text={reorder.announcement} />
     </div>
   );
