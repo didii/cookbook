@@ -1,6 +1,7 @@
 import { useImperativeHandle, useLayoutEffect, useRef, type ComponentProps, type CSSProperties, type KeyboardEvent, type Ref } from 'react';
 import { parseIngredient } from '~/lib/ingredients';
 import { cn } from '~/shared/cn';
+import { Ingredient } from '~/shared/icons';
 import type { ItemHandle } from './ItemHandle';
 import { RowGrip } from './RowGrip';
 import { RowToolbar } from './RowToolbar';
@@ -20,7 +21,7 @@ type Props = {
   canUp: boolean;
   canDown: boolean;
   error?: string;
-  /** Step numbers that use this ingredient, for the "Gebruikt in stap" line. */
+  /** Step numbers that use this ingredient: a check in the field, with the numbers as its name. */
   usedIn: number[];
   onType: (text: string) => void;
   onRemove: () => void;
@@ -151,7 +152,8 @@ export function IngredientItem({
           onKeyDown={keyDown}
           className={cn(
             field,
-            'w-full border-ink bg-transparent text-transparent caret-ink placeholder:text-ink/50 focus:shadow-focus focus:outline-transparent aria-invalid:border-red',
+            'w-full border-ink bg-transparent text-transparent hover:not-focus:bg-ink/5 caret-ink placeholder:text-ink/50 focus:shadow-focus focus:outline-transparent aria-invalid:border-red',
+            usedIn.length > 0 && 'pr-11',
           )}
         />
       </div>
@@ -161,9 +163,13 @@ export function IngredientItem({
             {error}
           </p>
         )}
-        {/* Always there, so the rows below don't jump when a step starts to use this ingredient. */}
-        <p className="mt-0.5 ml-1 min-h-5 text-[0.8125rem] font-bold text-muted">{usedIn.length > 0 && `Gebruikt in stap ${usedIn.join(', ')}`}</p>
       </div>
+      {usedIn.length > 0 && (
+        <span title={`Gebruikt in stap ${usedIn.join(', ')}`} className="z-10 col-start-3 row-start-1 mr-3 justify-self-end text-jade">
+          <Ingredient />
+          <span className="sr-only">Gebruikt in stap {usedIn.join(', ')}</span>
+        </span>
+      )}
     </li>
   );
 }

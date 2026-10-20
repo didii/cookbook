@@ -31,7 +31,7 @@ const icons = {
 };
 
 const buttonClass =
-  'grid cursor-pointer place-items-center rounded-md text-muted not-disabled:hover:bg-ink/10 not-disabled:hover:text-ink disabled:cursor-default disabled:opacity-30';
+  'grid cursor-pointer place-items-center text-muted not-disabled:hover:bg-ink/10 not-disabled:hover:text-ink disabled:cursor-default disabled:opacity-30';
 
 /** The up, down and delete buttons of a row as one toolbar: a single Tab stop, with the arrow keys (and Home and End) moving between the buttons. After a move, focus stays on the button that was used. */
 export function RowToolbar({ label, deleteLabel, canUp, canDown, stacked, trash, disabled, className, onMove, onDelete }: Props) {
@@ -74,7 +74,7 @@ export function RowToolbar({ label, deleteLabel, canUp, canDown, stacked, trash,
       aria-label={label}
       onKeyDown={keyDown}
       className={cn(
-        'items-center rounded-[0.55rem] bg-ink/7 px-0.5',
+        'items-center overflow-hidden rounded-[0.55rem] bg-ink/7',
         stacked ? 'grid grid-cols-[1.75rem_2rem] grid-rows-[1.625rem_1.625rem] justify-items-center' : 'flex',
         className,
       )}
@@ -94,8 +94,8 @@ export function RowToolbar({ label, deleteLabel, canUp, canDown, stacked, trash,
           className={cn(
             buttonClass,
             i < 2 && (stacked ? 'h-[1.625rem] w-7 text-[0.95rem]' : 'size-9'),
-            i === 2 && 'ml-0.5 rounded-l-none border-l-2 border-ink/10 hover:not-disabled:bg-red/10 hover:not-disabled:text-red',
-            i === 2 && (stacked ? 'col-start-2 row-span-2 row-start-1 size-8' : 'size-9'),
+            i === 2 && 'border-l-2 border-ink/10 hover:not-disabled:bg-red/10 hover:not-disabled:text-red',
+            i === 2 && (stacked ? 'col-start-2 row-span-2 row-start-1 h-full w-full' : 'size-9'),
             stacked && i === 1 && 'row-start-2',
           )}
         >

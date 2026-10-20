@@ -7,8 +7,6 @@ type Props = {
   chip: Chip;
   /** What the chip shows now. */
   values: Values;
-  /** The chip's words in the text, quoted in the explanation; none for a hand-made chip. */
-  words?: string;
   /** The chip the popup belongs to, to place the popup under it and to ignore clicks on it. */
   anchor: () => HTMLElement | null | undefined;
   /** Changing a value pins the chip. */
@@ -20,7 +18,8 @@ type Props = {
   onClose: (refocus: boolean) => void;
 };
 
-const inputClass = 'mt-0.5 block min-h-11 w-full rounded-[0.625rem] border-2 border-ink bg-white px-3 text-base font-bold text-ink';
+const inputClass =
+  'mt-0.5 block min-h-11 w-full rounded-[0.625rem] border-2 border-ink bg-white px-3 text-base font-bold text-ink hover:not-focus:bg-[color-mix(in_srgb,var(--color-ink)_5%,white)]';
 const labelClass = 'text-[0.8125rem] font-black text-muted';
 const kindLabel = { ingredient: 'Ingrediënt', oven: 'Oven', timer: 'Timer' } as const;
 
@@ -90,7 +89,7 @@ function TextField({
 }
 
 /** The popup of a chip: its fields, whether it follows the text or is pinned (with what that means), and remove. Not modal and without a focus trap: Escape or a click elsewhere closes it. */
-export function ChipPopup({ chip, values, words, anchor, onValues, onLabel, onMode, onRemove, onClose }: Props) {
+export function ChipPopup({ chip, values, anchor, onValues, onLabel, onMode, onRemove, onClose }: Props) {
   const popup = useRef<HTMLDialogElement>(null);
   const first = useRef<HTMLInputElement>(null);
   const title = `${kindLabel[chip.kind]} aanpassen`;
@@ -102,7 +101,10 @@ export function ChipPopup({ chip, values, words, anchor, onValues, onLabel, onMo
     if (!el || !chipEl) return;
     const room = (el.offsetParent as HTMLElement | null)?.clientWidth ?? 0;
     el.style.setProperty('--pop-left', `${Math.max(0, Math.min(chipEl.offsetLeft, room - el.offsetWidth))}px`);
-    el.style.setProperty('--pop-top', `${chipEl.offsetTop + chipEl.offsetHeight + 8}px`);
+    el.style.setProperty('--pop-top', `${chipEl.offsetTop + chipEl.offsetHeight + 12}px`);
+    // The arrow points at the middle of the chip, kept off the rounded corners.
+    const middle = chipEl.offsetLeft + chipEl.offsetWidth / 2 - el.offsetLeft;
+    el.style.setProperty('--pop-arrow', `${Math.max(20, Math.min(middle, el.offsetWidth - 20))}px`);
   });
 
   useEffect(() => first.current?.focus(), []);
@@ -135,8 +137,17 @@ export function ChipPopup({ chip, values, words, anchor, onValues, onLabel, onMo
       ref={popup}
       aria-label={title}
       onKeyDown={keyDown}
-      className="absolute top-(--pop-top) m-0 z-5 grid gap-3 rounded-xl border-3 border-ink bg-white p-3.5 font-bold text-ink shadow-hard max-sm:inset-x-0 max-sm:w-auto sm:right-auto sm:left-(--pop-left) sm:w-80"
+      className="absolute top-(--pop-top) m-0 z-20 grid overflow-visible gap-3 rounded-xl border-3 border-ink bg-white p-3.5 font-bold text-ink shadow-hard max-sm:inset-x-0 max-sm:w-auto sm:right-auto sm:left-(--pop-left) sm:w-80"
     >
+      {/* The arrow is two triangles: an ink one, and a white one 3px smaller whose base covers the popup's border. */}
+      <span
+        aria-hidden="true"
+        className="absolute -top-3 left-(--pop-arrow) h-3 w-6 -translate-x-1/2 bg-ink [clip-path:polygon(50%_0,100%_100%,0_100%)]"
+      />
+      <span
+        aria-hidden="true"
+        className="absolute top-[-7.75px] left-(--pop-arrow) h-[7.75px] w-[15.5px] -translate-x-1/2 bg-white [clip-path:polygon(50%_0,100%_100%,0_100%)]"
+      />
       {chip.kind === 'timer' && (
         <div className="grid grid-cols-2 gap-2">
           <NumberField label="Minuten" value={values_.minutes} onValue={(minutes) => onValues({ minutes })} first={first} />
@@ -152,7 +163,7 @@ export function ChipPopup({ chip, values, words, anchor, onValues, onLabel, onMo
       )}
       {canFollow ? (
         <>
-          <fieldset className="m-0 grid min-w-0 grid-cols-2 overflow-hidden rounded-lg border-2 border-ink p-0">
+          <fieldset className="m-0 grid min-w-0 grid-cols-2 border-0 p-0">
             <legend className="sr-only">Volgt dit de tekst</legend>
             {(
               [
@@ -165,7 +176,7 @@ export function ChipPopup({ chip, values, words, anchor, onValues, onLabel, onMo
                 type="button"
                 aria-pressed={follows === (mode === 'auto')}
                 onClick={() => onMode(mode)}
-                className="flex min-h-10 cursor-pointer items-center justify-center gap-1.5 border-0 bg-white text-sm font-black aria-pressed:bg-ink aria-pressed:text-white"
+                className="flex min-h-10 cursor-pointer items-center justify-center gap-1.5 border-2 border-ink bg-white text-sm font-black hover:not-aria-pressed:bg-[color-mix(in_srgb,var(--color-ink)_5%,white)] first-of-type:rounded-l-lg last:-ml-0.5 last:rounded-r-lg aria-pressed:bg-ink aria-pressed:text-white"
               >
                 {icon}
                 {text}
@@ -173,8 +184,8 @@ export function ChipPopup({ chip, values, words, anchor, onValues, onLabel, onMo
             ))}
           </fieldset>
           <p className="m-0 text-[0.8125rem] leading-snug font-bold text-muted">
-            <b className="text-ink">Volgt tekst:</b> verandert mee met &ldquo;{words}&rdquo; in de stap. <b className="text-ink">Vast:</b> blijft
-            zoals hij is; de tekst stelt alleen een wijziging voor. Haal je de tekst weg, dan kun je de chip houden of weggooien.
+            <b className="text-ink">Volgt tekst:</b> verandert mee met de tekst in de stap. <br />
+            <b className="text-ink">Vast:</b> verandert niet meer, toont suggesties als de tekst wijzigt
           </p>
         </>
       ) : (
@@ -185,7 +196,7 @@ export function ChipPopup({ chip, values, words, anchor, onValues, onLabel, onMo
       <button
         type="button"
         onClick={onRemove}
-        className="flex min-h-9 cursor-pointer items-center gap-1.5 border-0 bg-transparent p-0 font-black text-red"
+        className="flex min-h-9 cursor-pointer items-center gap-1.5 border-0 bg-transparent p-0 font-black text-red hover:underline"
       >
         <Trash className="size-[1.1em]" />
         {kindLabel[chip.kind]} verwijderen

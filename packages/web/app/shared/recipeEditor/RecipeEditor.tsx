@@ -33,6 +33,7 @@ import {
 } from '~/lib/draftStore';
 import { AuthorInput } from '~/shared/AuthorInput';
 import { cn } from '~/shared/cn';
+import { Back } from '~/shared/icons';
 import type { Errors, Field } from '~/shared/recipeValidation';
 import { IngredientList } from './IngredientList';
 import { OpenProposals } from './OpenProposals';
@@ -64,7 +65,7 @@ type Props = {
 };
 
 const inputClass =
-  'mt-1 block min-h-13 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-lg text-ink focus:shadow-focus focus:outline-transparent aria-invalid:border-red';
+  'mt-1 block min-h-13 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-lg text-ink hover:not-focus:bg-[color-mix(in_srgb,var(--color-ink)_5%,white)] focus:shadow-focus focus:outline-transparent aria-invalid:border-red';
 const labelClass = 'font-extrabold';
 const asterisk = (
   <span aria-hidden="true" className="ml-1 font-black text-red">
@@ -158,10 +159,13 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
   }, [errors]);
 
   return (
-    <main id="main" className="mx-auto max-w-290 px-[max(1rem,4vw)] pt-6 pb-32">
+    <main id="main" className="mx-auto max-w-290 px-[max(1rem,4vw)] pt-6 pb-[50vh]">
       <h1 className="sr-only">{heading}</h1>
-      <Link to={cancelTo} className="inline-flex min-h-11 items-center gap-1.5 font-extrabold text-muted">
-        <span aria-hidden="true">←</span> Terug
+      <Link
+        to={cancelTo}
+        className="inline-flex min-h-11 items-center gap-1 font-extrabold text-muted underline-offset-[0.25em] hover:text-ink hover:underline"
+      >
+        <Back className="-ml-1.5" /> Terug
       </Link>
       <p className="mt-1 text-lg text-muted">
         Velden met een <span className="font-black text-red">*</span> zijn verplicht.
@@ -218,7 +222,7 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
               autoComplete="off"
               required
               placeholder="Naam van het gerecht"
-              className="block w-full border-0 border-b-3 border-dashed border-ink/35 bg-transparent pt-[0.1em] pb-[0.15em] text-[clamp(2.25rem,6vw,3.75rem)] leading-[1.05] font-black tracking-[-0.03em] text-ink placeholder:text-ink/35 focus:border-solid focus:border-blu focus:outline-transparent aria-invalid:border-red"
+              className="block w-full border-0 border-b-3 border-dashed border-ink/35 bg-transparent pt-[0.1em] pb-[0.15em] text-[clamp(2.25rem,6vw,3.75rem)] leading-[1.05] font-black tracking-[-0.03em] text-ink placeholder:text-ink/35 hover:not-focus:bg-ink/5 focus:border-solid focus:border-blu focus:outline-transparent aria-invalid:border-red"
             />
             {error('title')}
           </div>

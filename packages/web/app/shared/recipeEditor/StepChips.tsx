@@ -24,7 +24,7 @@ import {
 import type { StepRow } from '~/lib/draft';
 import { formatMinutes } from '~/lib/steps';
 import { cn } from '~/shared/cn';
-import { Arrow, Check, Clock, Cross, Link, Pin, Plus, Thermometer, Trash } from '~/shared/icons';
+import { Arrow, Check, Clock, Cross, Ingredient, Link, Pin, Plus, Thermometer, Trash } from '~/shared/icons';
 import { ChipPopup } from './ChipPopup';
 import { proposalAttribute } from './OpenProposals';
 import { useAfterRender } from './useAfterRender';
@@ -75,14 +75,18 @@ function Face({ kind, values, label }: { kind: Kind; values: Values; label?: str
     );
   const { quantity, name } = values as IngredientValues;
   return (
-    <span>
-      {quantity && <b className="font-black text-blu">{quantity} </b>}
-      {name || 'Ingrediënt'}
-    </span>
+    <>
+      <Ingredient className={icon} />
+      <span>
+        {quantity && <b className="font-black text-blu">{quantity} </b>}
+        {name || 'Ingrediënt'}
+      </span>
+    </>
   );
 }
 
-const GhostIcon = ({ kind }: { kind: Kind }) => (kind === 'oven' ? <Thermometer /> : kind === 'timer' ? <Clock className={icon} /> : null);
+const KindIcon = ({ kind }: { kind: Kind }) =>
+  kind === 'oven' ? <Thermometer /> : kind === 'timer' ? <Clock className={icon} /> : <Ingredient className={icon} />;
 
 /** The chips of one step under its text, and the row to add one by hand or bring a removed one back. All of it is one toolbar: one Tab stop, the arrow keys move between the chips. */
 export function StepChips({ step, context, number, hotId, onHot, onChange }: Props) {
@@ -243,15 +247,18 @@ export function StepChips({ step, context, number, hotId, onHot, onChange }: Pro
           const pinned = chip.mode === 'manual';
           return (
             <span key={chip.id} data-chip-id={chip.id} {...hover(chip.id)} className={cn(chipClass, pinned && 'border-ink bg-white', hot(chip))}>
-              <button
-                type="button"
-                tabIndex={-1}
-                aria-label={pinned ? (chip.anchor ? 'Laten volgen en openen' : 'Openen') : 'Vastzetten en openen'}
-                onClick={() => switchMode(chip)}
-                className={cn(modeClass, pinned && 'text-blu')}
-              >
-                {pinned ? <Pin className={icon} /> : <Link className={icon} />}
-              </button>
+              {/* A hand-made chip has no words to follow, so there is nothing to switch. */}
+              {chip.anchor && (
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  aria-label={pinned ? 'Laten volgen en openen' : 'Vastzetten en openen'}
+                  onClick={() => switchMode(chip)}
+                  className={cn(modeClass, pinned && 'text-blu')}
+                >
+                  {pinned ? <Pin className={icon} /> : <Link className={icon} />}
+                </button>
+              )}
               <button
                 type="button"
                 aria-haspopup="dialog"
@@ -268,14 +275,22 @@ export function StepChips({ step, context, number, hotId, onHot, onChange }: Pro
         {/* Always takes its space, so nothing moves when it shows. */}
         <div
           className={cn(
-            'flex min-h-9 basis-full flex-wrap gap-1.5 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100',
+            'flex flex-wrap gap-1.5 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100',
             '[@media(hover:none)]:opacity-100',
           )}
         >
           {addable.map((kind) => (
-            <button key={kind} type="button" {...roving(`add:${kind}`)} onClick={() => add(kind)} className={addClass}>
+            <button
+              key={kind}
+              type="button"
+              title={`${kindName[kind]} toevoegen`}
+              aria-label={`${kindName[kind]} toevoegen`}
+              {...roving(`add:${kind}`)}
+              onClick={() => add(kind)}
+              className={addClass}
+            >
               <Plus className={icon} />
-              {kindName[kind]}
+              <KindIcon kind={kind} />
             </button>
           ))}
           {step.ghosts.map((ghost) => (
@@ -288,7 +303,7 @@ export function StepChips({ step, context, number, hotId, onHot, onChange }: Pro
               onClick={() => restore(ghost)}
               className={cn(addClass, 'border-solid border-ink/30 line-through decoration-[1.5px] hover:no-underline')}
             >
-              <GhostIcon kind={ghost.kind} />
+              <KindIcon kind={ghost.kind} />
               {step.body.slice(ghost.anchor.start, ghost.anchor.end)}
             </button>
           ))}
@@ -299,7 +314,6 @@ export function StepChips({ step, context, number, hotId, onHot, onChange }: Pro
           key={open.chip.id}
           chip={open.chip}
           values={open.values}
-          words={open.chip.anchor && step.body.slice(open.chip.anchor.start, open.chip.anchor.end)}
           anchor={() => wrapper.current?.querySelector<HTMLElement>(`[data-chip-id="${open.chip.id}"]`)}
           onValues={(patch) => onChange((s, c) => editValues(s, open.chip.id, patch, c))}
           onLabel={(label) => onChange((s) => setLabel(s, open.chip.id, label))}

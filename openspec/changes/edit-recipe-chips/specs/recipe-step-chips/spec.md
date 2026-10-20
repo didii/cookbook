@@ -320,12 +320,12 @@ The system SHALL show in the save bar the number of proposed changes and removal
 - **THEN** focus moves to the first chip with an open proposal, and then to the next on each use
 
 ### Requirement: The ingredient list shows where each ingredient is used
-The system SHALL show under each ingredient row in the editor "Gebruikt in stap" followed by the numbers of the steps that have a chip for that ingredient, and nothing when no step does.
+The system SHALL show a check icon inside each ingredient row in the editor when at least one step has a chip for that ingredient, named "Gebruikt in stap" followed by the numbers of those steps, and nothing when no step does.
 
 #### Scenario: Usage line lists the steps
 - **WHEN** the ingredient "zout" has chips in steps 1 and 5
-- **THEN** the line under its row says "Gebruikt in stap 1, 5"
+- **THEN** the check icon in its row is named "Gebruikt in stap 1, 5"
 
 #### Scenario: Unused ingredient has no usage line
 - **WHEN** no step has a chip for an ingredient
-- **THEN** no usage line is shown under its row
+- **THEN** no check icon is shown in its row
