@@ -18,7 +18,7 @@ export type RecipeRow = {
 /** What a recipe card shows. */
 export type RecipeSummary = Pick<RecipeRow, 'slug' | 'title' | 'author' | 'time' | 'image' | 'seal'>;
 
-export type IngredientRow ={ quantity_text: string; name: string };
+export type IngredientRow = { quantity_text: string; name: string };
 
 export type StoredRecipe = RecipeRow & { ingredients: IngredientRow[]; steps: Step[] };
 

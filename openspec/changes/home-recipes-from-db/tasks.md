@@ -12,4 +12,4 @@
 
 - [x] 3.1 Delete the `recipes` array, the `Recipe` type and the helpers from `lib/recipes.ts`, keep `Ingredient` and `Step`; fix the file comment
 - [x] 3.2 Update `STRUCTURE.md` ("helpers, sample data") and grep for leftover references to the sample data
-- [ ] 3.3 Run `pnpm format:fix`, `pnpm lint:fix`, `pnpm test:ai`, `pnpm test:spec home-recipes-from-db`; confirm `format:check` and `lint:check`
+- [x] 3.3 Run `pnpm format:fix`, `pnpm lint:fix`, `pnpm test:ai`, `pnpm test:spec home-recipes-from-db`; confirm `format:check` and `lint:check`
