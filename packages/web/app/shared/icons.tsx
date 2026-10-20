@@ -1,11 +1,13 @@
 import {
   AlarmClock,
+  ArrowBigDown,
+  ArrowBigUp,
   ArrowRight,
-  ChevronDown,
-  ChevronLeft,
-  ChevronUp,
   Camera as LucideCamera,
   Check as LucideCheck,
+  ChevronDown as LucideChevronDown,
+  ChevronLeft as LucideChevronLeft,
+  ChevronUp as LucideChevronUp,
   Link as LucideLink,
   Pin as LucidePin,
   Play as LucidePlay,
@@ -33,9 +35,11 @@ export const Alarm = icon(AlarmClock, 'size-4');
 export const Thermometer = icon(LucideThermometer, 'size-4');
 export const Camera = icon(LucideCamera, 'size-5');
 export const Trash = icon(Trash2, 'size-5');
-export const Back = icon(ChevronLeft, 'size-5');
-export const Up = icon(ChevronUp, 'size-5');
-export const Down = icon(ChevronDown, 'size-5');
+export const ChevronBack = icon(LucideChevronLeft, 'size-5');
+export const ChevronUp = icon(LucideChevronUp, 'size-5');
+export const ChevronDown = icon(LucideChevronDown, 'size-5');
+export const ArrowUp = icon(ArrowBigUp, 'size-5');
+export const ArrowDown = icon(ArrowBigDown, 'size-5');
 export const Cross = icon(X, 'size-5');
 export const Check = icon(LucideCheck, 'size-5');
 export const Plus = icon(LucidePlus, 'size-5');

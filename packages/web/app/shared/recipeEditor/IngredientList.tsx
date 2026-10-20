@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import type { IngredientLine } from '~/lib/draft';
+import { ArrowDown, ArrowUp } from '../icons';
 import { Announcement } from './Announcement';
 import { IngredientItem } from './IngredientItem';
 import type { ItemHandle } from './ItemHandle';
@@ -21,7 +22,7 @@ type Props = {
 /** Space between rows (Tailwind gap-1.5), needed to shift rows aside while one is dragged. */
 const gap = 6;
 
-const Kbd = ({ children }: { children: string }) => (
+const Kbd = ({ children }: { children: ReactNode }) => (
   <kbd className="rounded-[0.3rem] border-2 border-ink/45 bg-white px-1 font-[inherit] text-[0.8rem] font-extrabold">{children}</kbd>
 );
 
@@ -104,7 +105,16 @@ export function IngredientList({ rows, errors = noErrors, usedIn = () => none, o
           <Kbd>Enter</Kbd> voor de volgende regel
         </p>
         <p>
-          <Kbd>Alt+Up</Kbd> of <Kbd>Alt+Down</Kbd> om te verplaatsen
+          <Kbd>
+            Alt+
+            <ArrowUp className="inline align-text-bottom h-3.5" />
+          </Kbd>{' '}
+          of{' '}
+          <Kbd>
+            Alt+
+            <ArrowDown className="inline align-text-bottom size-3.5" />
+          </Kbd>{' '}
+          om te verplaatsen
         </p>
       </p>
       <Announcement text={reorder.announcement} />
