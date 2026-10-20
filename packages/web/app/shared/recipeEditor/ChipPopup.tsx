@@ -185,8 +185,8 @@ export function ChipPopup({ chip, values, words, anchor, onValues, onLabel, onMo
             ))}
           </fieldset>
           <p className="m-0 text-[0.8125rem] leading-snug font-bold text-muted">
-            <b className="text-ink">Volgt tekst:</b> verandert mee met &ldquo;{words}&rdquo; in de stap. <br /> <b className="text-ink">Vast:</b>{' '}
-            blijft zoals hij is; de tekst stelt alleen een wijziging voor. Haal je de tekst weg, dan kun je de chip houden of weggooien.
+            <b className="text-ink">Volgt tekst:</b> verandert mee met de tekst in de stap. <br />
+            <b className="text-ink">Vast:</b> verandert niet meer, toont suggesties als de tekst wijzigt
           </p>
         </>
       ) : (

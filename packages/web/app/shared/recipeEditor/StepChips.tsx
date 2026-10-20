@@ -247,15 +247,18 @@ export function StepChips({ step, context, number, hotId, onHot, onChange }: Pro
           const pinned = chip.mode === 'manual';
           return (
             <span key={chip.id} data-chip-id={chip.id} {...hover(chip.id)} className={cn(chipClass, pinned && 'border-ink bg-white', hot(chip))}>
-              <button
-                type="button"
-                tabIndex={-1}
-                aria-label={pinned ? (chip.anchor ? 'Laten volgen en openen' : 'Openen') : 'Vastzetten en openen'}
-                onClick={() => switchMode(chip)}
-                className={cn(modeClass, pinned && 'text-blu')}
-              >
-                {pinned ? <Pin className={icon} /> : <Link className={icon} />}
-              </button>
+              {/* A hand-made chip has no words to follow, so there is nothing to switch. */}
+              {chip.anchor && (
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  aria-label={pinned ? 'Laten volgen en openen' : 'Vastzetten en openen'}
+                  onClick={() => switchMode(chip)}
+                  className={cn(modeClass, pinned && 'text-blu')}
+                >
+                  {pinned ? <Pin className={icon} /> : <Link className={icon} />}
+                </button>
+              )}
               <button
                 type="button"
                 aria-haspopup="dialog"
