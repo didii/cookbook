@@ -43,7 +43,7 @@ Five stacked PRs, one per group, in this order. Group 1 branches from `main`; ea
 - [x] 5.3 Extend `listRecipes(db, email, now)` with `isNew` and the named `newForMonths` constant, and verify with in-memory D1 tests: recent unseen, seen, older than a month, own recipe, per member
 - [x] 5.4 Pass the signed-in email from the home loader, add the `isNew` prop and the "Nieuw" label to `RecipeCard` (top-left over the image, in the accessible name), and verify with a render test and the screenshot
 - [x] 5.5 Tests for each `recipe-new-marker` scenario (`recipe-new-marker › <Scenario title>`) and verify with `pnpm test:spec home-search-and-filter`
-- [ ] 5.6 Format, lint, push `home-5-new-marker` and open a PR against `home-4-users`. Ask which Kanban card these PRs belong to and move it to `review`
+- [x] 5.6 Format, lint, push `home-5-new-marker` and open a PR against `home-4-users`. The Kanban card move is done by the parent agent
 
 ## Workflow follow-up
 
