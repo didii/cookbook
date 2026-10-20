@@ -158,7 +158,7 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
   }, [errors]);
 
   return (
-    <main id="main" className="mx-auto max-w-290 px-[max(1rem,4vw)] pt-6 pb-32">
+    <main id="main" className="mx-auto max-w-290 px-[max(1rem,4vw)] pt-6 pb-[50vh]">
       <h1 className="sr-only">{heading}</h1>
       <Link to={cancelTo} className="inline-flex min-h-11 items-center gap-1.5 font-extrabold text-muted">
         <span aria-hidden="true">←</span> Terug

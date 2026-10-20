@@ -135,7 +135,7 @@ export function ChipPopup({ chip, values, words, anchor, onValues, onLabel, onMo
       ref={popup}
       aria-label={title}
       onKeyDown={keyDown}
-      className="absolute top-(--pop-top) m-0 z-5 grid gap-3 rounded-xl border-3 border-ink bg-white p-3.5 font-bold text-ink shadow-hard max-sm:inset-x-0 max-sm:w-auto sm:right-auto sm:left-(--pop-left) sm:w-80"
+      className="absolute top-(--pop-top) m-0 z-20 grid gap-3 rounded-xl border-3 border-ink bg-white p-3.5 font-bold text-ink shadow-hard max-sm:inset-x-0 max-sm:w-auto sm:right-auto sm:left-(--pop-left) sm:w-80"
     >
       {chip.kind === 'timer' && (
         <div className="grid grid-cols-2 gap-2">
