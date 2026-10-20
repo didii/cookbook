@@ -86,7 +86,7 @@ export function SaveBar({ cancelTo, busy, saveBlocked, dirty, kept, onReset, chi
               </button>
             )
           )}
-          <Link to={cancelTo} className="inline-flex min-h-13 items-center px-2 font-black text-blu">
+          <Link to={cancelTo} className="inline-flex min-h-13 items-center px-2 font-black text-blu hover:underline">
             Annuleren
           </Link>
           <Button type="submit" main disabled={busy || saveBlocked} className="max-w-none min-w-32 flex-none px-4 max-sm:flex-1">

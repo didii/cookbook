@@ -7,6 +7,7 @@ import { arrive, tabFromHash, type Positions, type TabId } from '~/lib/tabs';
 import { toggled } from '~/lib/toggled';
 import { cn } from '~/shared/cn';
 import { Fret } from '~/shared/Fret';
+import { Back } from '~/shared/icons';
 import { Seal } from '~/shared/Seal';
 import { TileBand } from '~/shared/TileBand';
 import { ClockSetting } from './ClockSetting';
@@ -117,13 +118,13 @@ export function RecipePage({ recipe: r, tile, steps }: Props) {
     <TimersContext value={timers}>
       <main id="main" className="mx-auto max-w-272 px-[max(1rem,4vw)] pt-8 pb-16 max-[51.99rem]:pb-0">
         <div className="mb-2 flex items-center justify-between gap-4">
-          <Link to="/" className="inline-flex min-h-11 items-center font-extrabold underline-offset-[0.25em]">
-            ← Alle recepten
+          <Link to="/" className="inline-flex min-h-11 items-center gap-1 font-extrabold underline-offset-[0.25em] hover:underline">
+            <Back className="-ml-1.5" /> Alle recepten
           </Link>
           <Link
             to={`/recepten/${r.slug}/bewerken`}
             state={{ fresh: true }}
-            className="inline-flex min-h-11 items-center font-extrabold underline-offset-[0.25em]"
+            className="inline-flex min-h-11 items-center font-extrabold underline-offset-[0.25em] hover:underline"
           >
             Bewerk
           </Link>

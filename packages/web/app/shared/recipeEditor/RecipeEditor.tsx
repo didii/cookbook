@@ -33,6 +33,7 @@ import {
 } from '~/lib/draftStore';
 import { AuthorInput } from '~/shared/AuthorInput';
 import { cn } from '~/shared/cn';
+import { Back } from '~/shared/icons';
 import type { Errors, Field } from '~/shared/recipeValidation';
 import { IngredientList } from './IngredientList';
 import { OpenProposals } from './OpenProposals';
@@ -160,8 +161,11 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
   return (
     <main id="main" className="mx-auto max-w-290 px-[max(1rem,4vw)] pt-6 pb-[50vh]">
       <h1 className="sr-only">{heading}</h1>
-      <Link to={cancelTo} className="inline-flex min-h-11 items-center gap-1.5 font-extrabold text-muted">
-        <span aria-hidden="true">←</span> Terug
+      <Link
+        to={cancelTo}
+        className="inline-flex min-h-11 items-center gap-1 font-extrabold text-muted underline-offset-[0.25em] hover:text-ink hover:underline"
+      >
+        <Back className="-ml-1.5" /> Terug
       </Link>
       <p className="mt-1 text-lg text-muted">
         Velden met een <span className="font-black text-red">*</span> zijn verplicht.
