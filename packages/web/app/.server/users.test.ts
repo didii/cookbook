@@ -43,11 +43,11 @@ test('an email in a different letter case is the same user', async () => {
 const welcome = async (email: string, path: string) =>
   (await redirectToWelcome(db, email, new URL(`http://localhost${path}`)))?.headers.get('Location');
 
-test('a new member asking for the home page is sent to the welcome screen', async () => {
+test('users › First visit', async () => {
   assert.equal(await welcome('new@example.com', '/'), '/welkom?returnUrl=%2F');
 });
 
-test('a new member asking for a recipe is sent to the welcome screen, which remembers the page and its query', async () => {
+test('users › Any other page on a first visit', async () => {
   assert.equal(await welcome('new@example.com', '/recepten/soep?stap=2'), '/welkom?returnUrl=%2Frecepten%2Fsoep%3Fstap%3D2');
 });
 
@@ -55,10 +55,17 @@ test('the welcome screen itself is not redirected, so a new member can reach it'
   assert.equal(await welcome('new@example.com', '/welkom?returnUrl=%2F'), undefined);
 });
 
-test('a known member is not redirected, whatever the letter case of their address', async () => {
+test('users › Returning member', async () => {
   await createUser(db, 'oma@example.com', 'Oma');
   assert.equal(await welcome('oma@example.com', '/'), undefined);
-  assert.equal(await welcome('OMA@Example.com', '/recepten/soep'), undefined);
+  assert.equal(await welcome('oma@example.com', '/recepten/soep'), undefined);
+});
+
+test('users › Same address in another case', async () => {
+  await createUser(db, 'Mama@Example.com', 'Mama');
+  assert.equal(await welcome('mama@example.com', '/'), undefined);
+  await createUser(db, 'mama@example.com', 'Mam');
+  assert.equal(await rows('MAMA@EXAMPLE.COM'), 1);
 });
 
 test('being redirected stores nobody', async () => {

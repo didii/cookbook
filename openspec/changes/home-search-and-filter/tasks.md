@@ -33,8 +33,8 @@ Five stacked PRs, one per group, in this order. Group 1 branches from `main`; ea
 - [x] 4.2 Add `.server/users.ts` (`getUser(db, email)`, idempotent `createUser(db, email, callingName)` with `ON CONFLICT DO NOTHING`) and verify with in-memory D1 tests for new, repeated and different-case emails
 - [x] 4.3 Add `lib/returnUrl.ts` (accepts only a same-site path, else `/`) with unit tests for `//evil.test`, `https://evil.test`, `/\evil`, `/welkom` and a normal path with a query. Then add `routes/welcome/route.tsx` at `/welkom` (route table entry; loader redirects known members to the return address; action trims and validates the name, creates the user, redirects to the return address) with a welcome screen in the cookbook look, and verify with loader and action tests for the first visit, blank name, submitting twice and continuing to the first requested page
 - [x] 4.4 Give the root loader the DB and redirect a member with no user row to `/welkom?returnUrl=<requested path and query>` (not when already there; resource routes unaffected), and verify with a test for the home page and a recipe page on a first visit, and that a known member is not redirected
-- [ ] 4.5 Tests for each `users` scenario and the modified `family-access` scenario (`users › <Scenario title>`, `family-access › First visit by a new family member`) and verify with `pnpm test:spec home-search-and-filter`
-- [ ] 4.6 Format, lint, push `home-4-users` and open a PR against `home-3-filtering`
+- [x] 4.5 Tests for each `users` scenario and the modified `family-access` scenario (`users › <Scenario title>`, `family-access › First visit by a new family member`) and verify with `pnpm test:spec home-search-and-filter`
+- [x] 4.6 Format, lint, push `home-4-users` and open a PR against `home-3-filtering`
 
 ## 5. Recipe new marker (branch `home-5-new-marker`, PR stacked on `home-4-users`)
 

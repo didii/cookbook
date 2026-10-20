@@ -117,3 +117,12 @@ test('a known member opening the welcome screen is sent on', async () => {
   await submit('known@example.com', { callingName: 'Kim' });
   assert.equal(((await open('KNOWN@example.com', '?returnUrl=%2Frecepten%2Fsoep')) as Response).headers.get('Location'), '/recepten/soep');
 });
+
+// The emailed one-time code is Cloudflare Access, outside this code. What is ours: a new member is asked for nothing but a calling name.
+test('family-access › First visit by a new family member', async () => {
+  const html = await render({ loaderData: { returnUrl: '/' } });
+  const fields = [...html.matchAll(/<input[^>]*>/g)].map((m) => m[0]).filter((f) => !f.includes('type="hidden"'));
+  assert.equal(fields.length, 1);
+  assert.match(fields[0], /name="callingName"/);
+  assert.doesNotMatch(html, /type="(password|email)"/);
+});
