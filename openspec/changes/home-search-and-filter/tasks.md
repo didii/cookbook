@@ -38,7 +38,7 @@ Five stacked PRs, one per group, in this order. Group 1 branches from `main`; ea
 
 ## 5. Recipe new marker (branch `home-5-new-marker`, PR stacked on `home-4-users`)
 
-- [ ] 5.1 Create branch `home-5-new-marker` from `home-4-users`. Add `migrations/0005_recipe_views.sql` and verify with a migration test (one row per member and recipe, cascade on delete)
+- [x] 5.1 Create branch `home-5-new-marker` from `home-4-users`. Add `migrations/0005_recipe_views.sql` and verify with a migration test (one row per member and recipe, cascade on delete)
 - [ ] 5.2 Record the view in the recipe page loader (`INSERT OR IGNORE`) and verify with a loader test: opening twice leaves one row and an unknown recipe records nothing
 - [ ] 5.3 Extend `listRecipes(db, email, now)` with `isNew` and the named `newForMonths` constant, and verify with in-memory D1 tests: recent unseen, seen, older than a month, own recipe, per member
 - [ ] 5.4 Pass the signed-in email from the home loader, add the `isNew` prop and the "Nieuw" label to `RecipeCard` (top-left over the image, in the accessible name), and verify with a render test and the screenshot

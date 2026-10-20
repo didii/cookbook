@@ -297,3 +297,30 @@ test('a user gets a creation time in the same format as a recipe', async () => {
   const row = await db.prepare("SELECT created_at FROM users WHERE email = 'time@example.com'").first<{ created_at: string }>();
   assert.match(row!.created_at, /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/);
 });
+
+const addView = (user: number, recipe: number) => db.prepare('INSERT INTO recipe_views (user_id, recipe_id) VALUES (?, ?)').bind(user, recipe).run();
+const userId = async (email: string) =>
+  (await db.prepare('INSERT INTO users (email, calling_name) VALUES (?, ?) RETURNING id').bind(email, 'X').first<{ id: number }>())!.id;
+
+test('a member and a recipe have one view row', async () => {
+  const user = await userId('viewer@example.com');
+  const recipe = await addRecipe('view-once');
+  await addView(user, recipe);
+  await assert.rejects(addView(user, recipe));
+  await addView(await userId('other-viewer@example.com'), recipe);
+  assert.equal(await count('SELECT user_id FROM recipe_views WHERE recipe_id = ?', recipe), 2);
+  await assert.rejects(addView(user, 9999));
+  await assert.rejects(addView(9999, recipe));
+});
+
+test('views are removed with their recipe or member', async () => {
+  const user = await userId('cascade-viewer@example.com');
+  const recipe = await addRecipe('view-cascade');
+  const other = await addRecipe('view-cascade-user');
+  await addView(user, recipe);
+  await addView(user, other);
+  await db.prepare('DELETE FROM recipes WHERE id = ?').bind(recipe).run();
+  assert.equal(await count('SELECT user_id FROM recipe_views WHERE user_id = ?', user), 1);
+  await db.prepare('DELETE FROM users WHERE id = ?').bind(user).run();
+  assert.equal(await count('SELECT user_id FROM recipe_views WHERE recipe_id = ?', other), 0);
+});
