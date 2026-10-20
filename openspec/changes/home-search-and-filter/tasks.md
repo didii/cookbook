@@ -25,7 +25,7 @@ Five stacked PRs, one per group, in this order. Group 1 branches from `main`; ea
 - [x] 3.3 Fixed bottom bar below 48rem (safe area, bottom padding on the page, `interactive-widget=resizes-content`, `visualViewport` fallback) and inline bar from 48rem. Verify on an Android and an iOS phone that the bar stays above the keyboard
 - [x] 3.4 Wire the URL state (`q`, `auteur`, `sort`, replace navigation, `shouldRevalidate`), the result count "N van M", the no-results state and hiding of chips and sort below 4 recipes. Verify with the scenarios for address, count and no match
 - [x] 3.5 Tests for each `recipe-filtering` scenario (`recipe-filtering › <Scenario title>`, `test.todo` with a reason for browser-only ones) and verify with `pnpm test:spec home-search-and-filter`
-- [ ] 3.6 Format, lint, push `home-3-filtering` and open a PR against `home-2-layout`
+- [x] 3.6 Format, lint, push `home-3-filtering` and open a PR against `home-2-layout`
 
 ## 4. Users (branch `home-4-users`, PR stacked on `home-3-filtering`)
 
