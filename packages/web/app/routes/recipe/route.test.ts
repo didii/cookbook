@@ -5,7 +5,7 @@ import { createTestDb } from '~testing/db';
 import { defined } from '~testing/defined';
 import { RouterContextProvider } from 'react-router';
 import { envContext, userEmailContext } from '~/.server/context';
-import { createRecipe } from '~/.server/recipes';
+import { createRecipe, listRecipes } from '~/.server/recipes';
 import { createUser } from '~/.server/users';
 import type { Route } from './+types/route';
 import { loader } from './route';
@@ -36,6 +36,15 @@ const viewCount = async (slug: string) =>
     .prepare('SELECT COUNT(*) AS n FROM recipe_views v JOIN recipes r ON r.id = v.recipe_id WHERE r.slug = ?')
     .bind(slug)
     .first<{ n: number }>())!.n;
+
+test('recipe-new-marker › Opening the recipe', async () => {
+  await createUser(db, 'oma@example.com', 'Oma');
+  const slug = await createRecipe(db, { title: 'Net geopend', author: 'Papa', createdBy: 'papa@example.com' });
+  const isNew = async () => (await listRecipes(db, 'oma@example.com', new Date())).find((r) => r.slug === slug)?.isNew;
+  assert.equal(await isNew(), true);
+  await load(slug);
+  assert.equal(await isNew(), false);
+});
 
 test('recipe-new-marker › Opening twice', async () => {
   await createUser(db, 'oma@example.com', 'Oma');
