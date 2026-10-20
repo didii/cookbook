@@ -4,7 +4,7 @@ Precondition: `rename-recipe-types` is merged. Verify each task with the type ch
 
 ## 1. Check stored drafts
 
-- [ ] 1.1 Confirm `RecipeDraft` and `StoredDraft` never contain `quantity_text` (grep `lib/draft*.ts` and `lib/chips.ts` state types); if they do, bump `version` in `lib/draftStore.ts` and add a test that an old draft is ignored
+- [x] 1.1 Confirm `RecipeDraft` and `StoredDraft` never contain `quantity_text` (grep `lib/draft*.ts` and `lib/chips.ts` state types); if they do, bump `version` in `lib/draftStore.ts` and add a test that an old draft is ignored
 
 ## 2. Rename the property
 
