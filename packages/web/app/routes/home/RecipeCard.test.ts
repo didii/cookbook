@@ -21,3 +21,6 @@ test('recipe-browsing › Card image ratio', async () => {
   // The tile band follows the image.
   assert.ok(html.indexOf('<svg') > html.indexOf('<img'));
 });
+
+// Needs a real browser at 390px width to measure what is visible without scrolling.
+test.todo('recipe-browsing › Two recipes on one phone screen');
