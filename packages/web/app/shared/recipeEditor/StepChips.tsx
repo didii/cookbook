@@ -314,7 +314,6 @@ export function StepChips({ step, context, number, hotId, onHot, onChange }: Pro
           key={open.chip.id}
           chip={open.chip}
           values={open.values}
-          words={open.chip.anchor && step.body.slice(open.chip.anchor.start, open.chip.anchor.end)}
           anchor={() => wrapper.current?.querySelector<HTMLElement>(`[data-chip-id="${open.chip.id}"]`)}
           onValues={(patch) => onChange((s, c) => editValues(s, open.chip.id, patch, c))}
           onLabel={(label) => onChange((s) => setLabel(s, open.chip.id, label))}

@@ -7,8 +7,6 @@ type Props = {
   chip: Chip;
   /** What the chip shows now. */
   values: Values;
-  /** The chip's words in the text, quoted in the explanation; none for a hand-made chip. */
-  words?: string;
   /** The chip the popup belongs to, to place the popup under it and to ignore clicks on it. */
   anchor: () => HTMLElement | null | undefined;
   /** Changing a value pins the chip. */
@@ -90,7 +88,7 @@ function TextField({
 }
 
 /** The popup of a chip: its fields, whether it follows the text or is pinned (with what that means), and remove. Not modal and without a focus trap: Escape or a click elsewhere closes it. */
-export function ChipPopup({ chip, values, words, anchor, onValues, onLabel, onMode, onRemove, onClose }: Props) {
+export function ChipPopup({ chip, values, anchor, onValues, onLabel, onMode, onRemove, onClose }: Props) {
   const popup = useRef<HTMLDialogElement>(null);
   const first = useRef<HTMLInputElement>(null);
   const title = `${kindLabel[chip.kind]} aanpassen`;
