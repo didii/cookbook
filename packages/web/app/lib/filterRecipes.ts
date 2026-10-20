@@ -5,11 +5,17 @@ export type Sort = 'nieuwste' | 'az';
 /** What the home page narrows and orders the recipes by. `author` is null for "Iedereen". */
 export type Filters = { q: string; author: string | null; sort: Sort };
 
+/** No search, everyone, newest first. */
+export const noFilters: Filters = { q: '', author: null, sort: 'nieuwste' };
+
 /** The author chips and the sort control appear from this many recipes up. */
 export const minRecipesForFilters = 4;
 
 /** Lowercase without accents, so "Crème" matches "creme". */
 const fold = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+
+/** Whether two spellings are the same author (case and accents ignored). */
+export const sameAuthor = (a: string, b: string) => fold(a) === fold(b);
 
 const collator = new Intl.Collator('nl', { sensitivity: 'base' });
 
@@ -37,9 +43,8 @@ export function authorsOf(recipes: Pick<RecipeSummary, 'author'>[]): string[] {
 /** The recipes whose title or author contain the search text and whose author matches, in the chosen order. `recipes` is newest first. */
 export function filterRecipes<T extends Pick<RecipeSummary, 'title' | 'author'>>(recipes: T[], { q, author, sort }: Filters): T[] {
   const needle = fold(q).trim();
-  const who = author && fold(author);
   const shown = recipes.filter(
-    (r) => (!who || fold(r.author) === who) && (!needle || fold(r.title).includes(needle) || fold(r.author).includes(needle)),
+    (r) => (!author || sameAuthor(r.author, author)) && (!needle || fold(r.title).includes(needle) || fold(r.author).includes(needle)),
   );
   return sort === 'az' ? shown.sort((a, b) => collator.compare(a.title, b.title)) : shown;
 }
