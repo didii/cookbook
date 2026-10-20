@@ -18,7 +18,8 @@ type Props = {
   onClose: (refocus: boolean) => void;
 };
 
-const inputClass = 'mt-0.5 block min-h-11 w-full rounded-[0.625rem] border-2 border-ink bg-white px-3 text-base font-bold text-ink';
+const inputClass =
+  'mt-0.5 block min-h-11 w-full rounded-[0.625rem] border-2 border-ink bg-white px-3 text-base font-bold text-ink hover:not-focus:bg-[color-mix(in_srgb,var(--color-ink)_5%,white)]';
 const labelClass = 'text-[0.8125rem] font-black text-muted';
 const kindLabel = { ingredient: 'Ingrediënt', oven: 'Oven', timer: 'Timer' } as const;
 

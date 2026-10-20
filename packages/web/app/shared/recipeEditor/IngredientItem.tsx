@@ -152,7 +152,7 @@ export function IngredientItem({
           onKeyDown={keyDown}
           className={cn(
             field,
-            'w-full border-ink bg-transparent text-transparent hover:bg-ink/5 focus:bg-transparent caret-ink placeholder:text-ink/50 focus:shadow-focus focus:outline-transparent aria-invalid:border-red',
+            'w-full border-ink bg-transparent text-transparent hover:not-focus:bg-ink/5 caret-ink placeholder:text-ink/50 focus:shadow-focus focus:outline-transparent aria-invalid:border-red',
             usedIn.length > 0 && 'pr-11',
           )}
         />

@@ -65,7 +65,7 @@ type Props = {
 };
 
 const inputClass =
-  'mt-1 block min-h-13 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-lg text-ink focus:shadow-focus focus:outline-transparent aria-invalid:border-red';
+  'mt-1 block min-h-13 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-lg text-ink hover:not-focus:bg-[color-mix(in_srgb,var(--color-ink)_5%,white)] focus:shadow-focus focus:outline-transparent aria-invalid:border-red';
 const labelClass = 'font-extrabold';
 const asterisk = (
   <span aria-hidden="true" className="ml-1 font-black text-red">
@@ -222,7 +222,7 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
               autoComplete="off"
               required
               placeholder="Naam van het gerecht"
-              className="block w-full border-0 border-b-3 border-dashed border-ink/35 bg-transparent pt-[0.1em] pb-[0.15em] text-[clamp(2.25rem,6vw,3.75rem)] leading-[1.05] font-black tracking-[-0.03em] text-ink placeholder:text-ink/35 focus:border-solid focus:border-blu focus:outline-transparent aria-invalid:border-red"
+              className="block w-full border-0 border-b-3 border-dashed border-ink/35 bg-transparent pt-[0.1em] pb-[0.15em] text-[clamp(2.25rem,6vw,3.75rem)] leading-[1.05] font-black tracking-[-0.03em] text-ink placeholder:text-ink/35 hover:not-focus:bg-ink/5 focus:border-solid focus:border-blu focus:outline-transparent aria-invalid:border-red"
             />
             {error('title')}
           </div>
