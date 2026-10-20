@@ -102,17 +102,19 @@ export function IngredientList({ rows, errors = noErrors, usedIn = () => none, o
       {/* Keyboard hints mean nothing on a touch screen. */}
       <p className="mt-2.5 text-[0.9rem] font-bold text-muted [@media(hover:none)]:hidden">
         <p>
-          <Kbd>Enter</Kbd> voor de volgende regel
+          <Kbd>Enter</Kbd> gaat naar de volgende regel
         </p>
         <p>
           <Kbd>
             Alt+
-            <ArrowUp className="inline align-text-bottom h-3.5" />
+            <ArrowUp className="inline align-text-bottom size-3.5" />
+            <span className="sr-only">omhoog</span>
           </Kbd>{' '}
           of{' '}
           <Kbd>
             Alt+
             <ArrowDown className="inline align-text-bottom size-3.5" />
+            <span className="sr-only">omlaag</span>
           </Kbd>{' '}
           om te verplaatsen
         </p>
