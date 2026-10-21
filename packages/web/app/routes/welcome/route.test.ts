@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
+import { render, screen } from '~testing/dom';
 import { createElement } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
-import { createStaticHandler, createStaticRouter, RouterContextProvider, StaticRouterProvider, type StaticHandlerContext } from 'react-router';
+import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
 import { envContext, userEmailContext } from '~/.server/context';
 import { getUser } from '~/.server/users';
 import type { Route } from './+types/route';
@@ -40,12 +40,10 @@ const open = async (email: string, search = '') => {
     return thrown as Response; // a redirect is thrown
   }
 };
-// The Form needs a data router, so the screen is rendered inside a static one.
-const render = async (props: object) => {
-  const handler = createStaticHandler([{ path: '/welkom', Component: () => createElement(Welcome, props as Route.ComponentProps) }]);
-  const context = (await handler.query(new Request('http://localhost/welkom'))) as StaticHandlerContext;
-  const router = createStaticRouter(handler.dataRoutes, context);
-  return renderToStaticMarkup(createElement(StaticRouterProvider, { router, context, hydrate: false }));
+// The Form needs a data router, so the screen is rendered inside one.
+const show = (props: object) => {
+  const router = createMemoryRouter([{ path: '/', element: createElement(Welcome, props as Route.ComponentProps) }]);
+  return render(createElement(RouterProvider, { router }));
 };
 const countRows = async (email: string) => (await db.prepare('SELECT id FROM users WHERE email = ?').bind(email).all()).results.length;
 
@@ -86,8 +84,8 @@ test('users › Blank calling name', async () => {
   }
   assert.equal(await countRows('blank@example.com'), 0);
   // The screen stays and says what is needed.
-  const html = await render({ loaderData: { returnUrl: '/recepten/soep' }, actionData: { error: 'Vul in hoe we je noemen.', name: '' } });
-  assert.match(html, /role="alert"[^>]*>Vul in hoe we je noemen\./);
+  show({ loaderData: { returnUrl: '/recepten/soep' }, actionData: { error: 'Vul in hoe we je noemen.', name: '' } });
+  assert.equal(screen.getByRole('alert').textContent, 'Vul in hoe we je noemen.');
 });
 
 test('a too long calling name is refused and nothing is stored', async () => {
@@ -107,9 +105,9 @@ test('users › Submitting twice', async () => {
 test('the welcome screen asks for the name and remembers the page', async () => {
   const data = (await open('new@example.com', '?returnUrl=%2Frecepten%2Fsoep')) as { returnUrl: string };
   assert.equal(data.returnUrl, '/recepten/soep');
-  const html = await render({ loaderData: data });
-  assert.match(html, /Hoe noemen we je\?/);
-  assert.match(html, /name="returnUrl" value="\/recepten\/soep"/);
+  const { container } = show({ loaderData: data });
+  assert.ok(screen.getByText('Hoe noemen we je?'));
+  assert.equal(container.querySelector<HTMLInputElement>('input[name=returnUrl]')?.value, '/recepten/soep');
   assert.equal(await countRows('new@example.com'), 0);
 });
 
@@ -120,11 +118,11 @@ test('a known member opening the welcome screen is sent on', async () => {
 
 // The emailed one-time code is Cloudflare Access, outside this code. What is ours: a new member is asked for nothing but a calling name.
 test('family-access › First visit by a new family member', async () => {
-  const html = await render({ loaderData: { returnUrl: '/' } });
-  const fields = [...html.matchAll(/<input[^>]*>/g)].map((m) => m[0]).filter((f) => !f.includes('type="hidden"'));
+  const { container } = show({ loaderData: { returnUrl: '/' } });
+  const fields = [...container.querySelectorAll('input:not([type=hidden])')];
   assert.equal(fields.length, 1);
-  assert.match(fields[0], /name="callingName"/);
-  assert.doesNotMatch(html, /type="(password|email)"/);
+  assert.equal(fields[0].getAttribute('name'), 'callingName');
+  assert.equal(container.querySelector('[type=password], [type=email]'), null);
   // Nothing but the calling name is needed to be taken in.
   const res = (await submit('nieuw@example.com', { callingName: 'Nel' })) as Response;
   assert.equal(res.status, 302);

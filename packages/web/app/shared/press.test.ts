@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { cssFor } from '~testing/css';
+import { cleanup, render, screen } from '~testing/dom';
 import { createElement } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
 import { Button } from './Button';
 import { press } from './press';
 
@@ -25,7 +25,8 @@ test('button-press › Pressing a shadowed button', async () => {
   assert.match(body, /translate:\s*3px 3px/);
   assert.match(body, /--tw-shadow:\s*0 0 #0000/);
   // The real components carry every press class after class merging.
-  const button = renderToStaticMarkup(createElement(Button));
+  render(createElement(Button));
+  const button = screen.getByRole('button').className;
   for (const c of press.split(' ')) assert.ok(button.includes(c), c);
 });
 
@@ -41,8 +42,10 @@ test('button-press › Releasing a pressed button', async () => {
 test('button-press › Expanded button at rest', async () => {
   // Expanded is colour only: no rule reacts to aria attributes, and aria-expanded changes no class.
   assert.doesNotMatch(await cssFor(press), /aria-/);
-  const rest = renderToStaticMarkup(createElement(Button));
-  assert.equal(renderToStaticMarkup(createElement(Button, { 'aria-expanded': true })).replace(' aria-expanded="true"', ''), rest);
+  const rest = render(createElement(Button)).getByRole('button').className;
+  cleanup();
+  render(createElement(Button, { 'aria-expanded': true }));
+  assert.equal(screen.getByRole('button').className, rest);
 });
 
 test('button-press › Disabled button', async () => {

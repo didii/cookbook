@@ -1,11 +1,14 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
-import { RouterContextProvider } from 'react-router';
+import { cleanup, fireEvent, openAutocomplete, render, screen } from '~testing/dom';
+import { createElement } from 'react';
+import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
 import { envContext, userEmailContext } from '~/.server/context';
 import { getRecipe } from '~/.server/recipes';
+import { emptyDraftSeed } from '~/lib/draft';
 import type { Route } from './+types/route';
-import { action, loader } from './route';
+import NewRecipe, { action, loader } from './route';
 
 // Action-level tests: real action, real queries against an in-memory D1.
 let db: D1Database;
@@ -49,12 +52,49 @@ test('recipe-creation › Servings left empty', async () => {
   assert.equal((await getRecipe(db, 'zonder-porties'))?.servings, null);
 });
 
-// The filter runs in the browser (Base UI's Autocomplete with a base-sensitivity filter), so this needs a real browser; checked by hand.
-test.todo('recipe-creation › Suggestions ignore letter case');
+/** The new recipe page as the router shows it, with what a refused submit hands back (nothing on first opening). */
+const form = (actionData?: { errors: Record<string, string>; values: typeof emptyDraftSeed }) => {
+  const props = { loaderData: { authors: ['Oma', 'Mama'], tile: 0, seal: undefined }, actionData } as unknown as Route.ComponentProps;
+  return render(createElement(RouterProvider, { router: createMemoryRouter([{ path: '/', element: createElement(NewRecipe, props) }]) }));
+};
 
-// These need a browser (visible asterisk and focus), so they are checked by hand.
-test.todo('recipe-creation › Required fields are marked');
-test.todo('recipe-creation › Errors are announced and focused');
+test('recipe-creation › Suggestions ignore letter case', async () => {
+  form();
+  const author = screen.getByRole('combobox');
+  openAutocomplete(author);
+  fireEvent.change(author, { target: { value: 'oma' } });
+  const options = await screen.findAllByRole('option');
+  assert.deepEqual(
+    options.map((o) => o.textContent),
+    ['Oma'],
+  );
+});
+
+test('recipe-creation › Required fields are marked', () => {
+  form();
+  const label = (id: string) => document.querySelector(`label[for=${id}]`)!.textContent;
+  // The title and author labels carry an asterisk and the form explains it; the servings label has none.
+  assert.match(label('title') ?? '', /\*$/);
+  assert.match(label('author') ?? '', /\*$/);
+  assert.doesNotMatch(label('servings') ?? '', /\*/);
+  assert.ok(screen.getByText(/zijn verplicht/).textContent?.includes('*'));
+});
+
+test('recipe-creation › Errors are announced and focused', () => {
+  const errors = { title: 'Vul een titel in.', author: 'Vul een kok in.' };
+  form({ errors, values: emptyDraftSeed });
+  // Each error is text tied to its field, and focus is on the first field in error.
+  for (const [id, message] of Object.entries(errors)) {
+    const field = document.getElementById(id)!;
+    assert.equal(field.getAttribute('aria-invalid'), 'true');
+    assert.equal(document.getElementById(field.getAttribute('aria-describedby')!)?.textContent, message);
+  }
+  assert.ok(document.activeElement === document.getElementById('title'), 'focus on the title');
+  cleanup();
+  // With only a later field in error, focus goes there.
+  form({ errors: { servings: 'Vul een getal in.' }, values: emptyDraftSeed });
+  assert.ok(document.activeElement === document.getElementById('servings'), 'focus on the servings');
+});
 
 // Only the action stores anything: opening the editor (the loader) leaves the database as it was.
 test('recipe-form › Nothing stored before saving', async () => {

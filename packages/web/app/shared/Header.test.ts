@@ -1,13 +1,35 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
+import { cssFor } from '~testing/css';
+import { render, screen } from '~testing/dom';
+import { routePaths } from '~testing/routes';
+import { createElement } from 'react';
+import { MemoryRouter } from 'react-router';
+import { Header } from './Header';
 
-// Rendering the header needs the JSX settings that tsx doesn't read from this project's tsconfig, so this checks the source:
-// the header links to the new recipe address and the route table serves it.
+const show = () => render(createElement(MemoryRouter, null, createElement(Header, { email: 'oma@example.com' })));
+const flat = (css: string) => css.replace(/\s+/g, ' ');
+/** The `sm` breakpoint, where the header has room for both the long link and the email. */
+const fromSm = /@media \(width >= 40rem\) \{ [^{]*\{ display: (\w+)/;
+
 test('recipe-creation › Link to the form', () => {
-  assert.match(readFileSync(new URL('./Header.tsx', import.meta.url), 'utf8'), /to="\/recepten\/nieuw"/);
-  assert.match(readFileSync(new URL('../routes.ts', import.meta.url), 'utf8'), /route\('recepten\/nieuw'/);
+  show();
+  assert.equal(screen.getByRole('link', { name: /Nieuw/ }).getAttribute('href'), '/recepten/nieuw');
+  // The route table serves it.
+  assert.ok(routePaths.includes('recepten/nieuw'));
 });
 
-// Which text shows depends on CSS breakpoints, so it needs a real browser; checked by hand at 360px and desktop width.
-test.todo('recipe-creation › Link on a narrow screen');
+// The classes decide which text shows at which width; this reads them, a real width is not measured.
+test('recipe-creation › Link on a narrow screen', async () => {
+  show();
+  // Short form below the breakpoint: hidden from it.
+  const short = flat(await cssFor(screen.getByText('+ Nieuw').className));
+  assert.equal(fromSm.exec(short)?.[1], 'none');
+  assert.doesNotMatch(short.replace(fromSm, ''), /display: none/);
+  // The long form and the email: hidden by default, shown from the breakpoint.
+  for (const el of [screen.getByText('Nieuw recept'), screen.getByText('oma@example.com')]) {
+    const css = flat(await cssFor(el.className));
+    assert.match(css, /\.hidden \{ display: none;/);
+    assert.equal(fromSm.exec(css)?.[1], 'inline');
+  }
+});

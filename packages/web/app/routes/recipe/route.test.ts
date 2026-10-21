@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
 import { defined } from '~testing/defined';
@@ -70,15 +69,4 @@ test('the page gets the steps of the database with their chips', async () => {
   const { recipe, steps: loaded } = await load(slug);
   assert.equal(recipe.title, 'Uit de database');
   assert.deepEqual(defined(loaded), steps);
-});
-
-// Not automated: rendering needs component tests.
-test.todo('recipe-viewing › Optional fields are empty');
-test.todo('recipe-viewing › Ingredient without quantity');
-
-// Rendering needs the JSX settings that tsx doesn't read from this project's tsconfig, so this checks the source:
-// the page links to the edit address of its own recipe and the route table serves it.
-test('recipe-viewing › Link to the edit form', () => {
-  assert.ok(readFileSync(new URL('./RecipePage.tsx', import.meta.url), 'utf8').includes('/bewerken`}'));
-  assert.ok(readFileSync(new URL('../../routes.ts', import.meta.url), 'utf8').includes("'recepten/:slug/bewerken'"));
 });

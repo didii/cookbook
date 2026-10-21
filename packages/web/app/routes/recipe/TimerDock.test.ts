@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { fireEvent, precedes, render, screen } from '~testing/dom';
 import { createElement } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
 import type { Step } from '~/lib/recipe';
 import { activeTimers, start, timerDefs } from '~/lib/timers';
 import { TimerDock } from './TimerDock';
@@ -17,20 +17,32 @@ const T0 = 1_000_000;
 const timers = activeTimers(defs, start(start({}, defs[1], T0), defs[0], T0), T0 + 60_000);
 
 test('the dock holds a pill per timer, earlier steps first, and is hidden when empty', () => {
-  const html = renderToStaticMarkup(createElement(TimerDock, { timers, onJump() {} }));
-  assert.ok(html.indexOf('Stap 2, Deeg rust, 29:00') < html.indexOf('Stap 10, Bakken, 49:00'));
-  assert.ok(!html.includes('hidden=""'));
-  assert.ok(renderToStaticMarkup(createElement(TimerDock, { timers: [], onJump() {} })).includes('hidden=""'));
+  const jumped: number[] = [];
+  const { container } = render(createElement(TimerDock, { timers, onJump: (step) => jumped.push(step) }));
+  const second = screen.getByRole('button', { name: /^Stap 2, Deeg rust, 29:00/ });
+  const tenth = screen.getByRole('button', { name: /^Stap 10, Bakken, 49:00/ });
+  assert.ok(precedes(second, tenth));
+  assert.equal(container.querySelector('nav')!.hidden, false);
+  // A pill goes to the step of its timer.
+  fireEvent.click(tenth);
+  assert.deepEqual(jumped, [9]);
+  assert.equal(render(createElement(TimerDock, { timers: [], onJump() {} })).container.querySelector('nav')!.hidden, true);
 });
 
 test('the sidebar lists the timers with their controls and a jump to the step', () => {
-  const html = renderToStaticMarkup(createElement(TimerSidebar, { timers, onJump() {}, onPeek() {} }));
-  assert.equal(html.match(/aria-label="Ga naar stap/g)?.length, 2);
-  assert.ok(html.includes('Eén minuut erbij') && html.includes('Vijf minuten erbij') && html.includes('>Stop<'));
-  assert.equal(renderToStaticMarkup(createElement(TimerSidebar, { timers: [], onJump() {}, onPeek() {} })), '');
+  const jumped: number[] = [];
+  const { container } = render(createElement(TimerSidebar, { timers, onJump: (step) => jumped.push(step), onPeek() {} }));
+  assert.equal(screen.getAllByRole('button', { name: /^Ga naar stap/ }).length, 2);
+  assert.equal(screen.getAllByRole('button', { name: 'Eén minuut erbij' }).length, 2);
+  assert.equal(screen.getAllByRole('button', { name: 'Vijf minuten erbij' }).length, 2);
+  assert.equal(screen.getAllByRole('button', { name: 'Stop timer' }).length, 2);
+  fireEvent.click(screen.getByRole('button', { name: 'Ga naar stap 2' }));
+  assert.deepEqual(jumped, [1]);
+  assert.equal(container.querySelectorAll('li').length, 2);
+  assert.equal(render(createElement(TimerSidebar, { timers: [], onJump() {}, onPeek() {} })).container.firstChild, null);
 });
 
-// Need a browser: they depend on which steps are on screen (IntersectionObserver) and on the layout.
+// Need a browser: they depend on which steps are on screen, which IntersectionObserver reports from real layout; a DOM without layout reports nothing.
 test.todo('step-timers › Timer docks when its step leaves the screen');
 test.todo('step-timers › Timer undocks when its step returns');
 test.todo('step-timers › Docked timers on the other tab');

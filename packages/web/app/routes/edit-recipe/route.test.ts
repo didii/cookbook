@@ -1,14 +1,17 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
 import { defined } from '~testing/defined';
-import { RouterContextProvider } from 'react-router';
+import { render, screen } from '~testing/dom';
+import { createElement, type ReactElement } from 'react';
+import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
 import { envContext } from '~/.server/context';
 import { getPhoto, storePhoto } from '~/.server/photos';
 import { getRecipe } from '~/.server/recipes';
+import type { Route as NewRoute } from '../new-recipe/+types/route';
+import NewRecipe from '../new-recipe/route';
 import type { Route } from './+types/route';
-import { action, loader } from './route';
+import EditRecipe, { action, loader } from './route';
 
 // Real loader and action against an in-memory D1 holding a recipe the test inserted.
 let db: D1Database;
@@ -135,13 +138,32 @@ test('a forged external image link is dropped, a stored one is kept', async () =
   assert.equal((await getRecipe(db, 'oud'))?.image, '/img/oud.jpg');
 });
 
-// Both routes must render the shared editor and write no fields of their own, so the UI can only differ in values, heading and cancel target.
+// Both routes render the shared editor and write no fields of their own, so the form can only differ in values, heading and cancel target.
 test('recipe-editing › Same form for new and existing recipes', () => {
-  for (const route of ['../edit-recipe/route.tsx', '../new-recipe/route.tsx']) {
-    const source = readFileSync(new URL(route, import.meta.url), 'utf8');
-    assert.match(source, /<RecipeEditor\b/, route);
-    assert.doesNotMatch(source, /<(input|textarea|label|form)\b/i, route);
-  }
+  const values = { title: 'Soep', author: 'Oma', servings: '4', time: '1u', intro: 'Warm', image: '', ingredients: [], steps: [] };
+  const form = (element: ReactElement) => {
+    const router = createMemoryRouter([{ path: '/', element }]);
+    const { container, unmount } = render(createElement(RouterProvider, { router }));
+    const found = {
+      heading: screen.getByRole('heading', { level: 1 }).textContent,
+      title: screen.getByRole<HTMLInputElement>('textbox', { name: /Titel/ }).value,
+      controls: [...container.querySelectorAll('form [name]')].map((el) => el.getAttribute('name')).sort(),
+      cancel: screen.getByRole('link', { name: /Terug/ }).getAttribute('href'),
+    };
+    unmount();
+    return found;
+  };
+  const edit = form(
+    createElement(EditRecipe, {
+      loaderData: { slug: 'soep', updatedAt: '2026-01-01T00:00:00Z', authors: ['Oma'], tile: 0, seal: undefined, values },
+    } as unknown as Route.ComponentProps),
+  );
+  const create = form(createElement(NewRecipe, { loaderData: { authors: ['Oma'], tile: 0, seal: undefined } } as unknown as NewRoute.ComponentProps));
+  // The same fields, in the same form.
+  assert.deepEqual(edit.controls, create.controls);
+  // Only the starting values, the heading and the way back differ.
+  assert.deepEqual([edit.heading, edit.title, edit.cancel], ['Recept bewerken', 'Soep', '/recepten/soep']);
+  assert.deepEqual([create.heading, create.title, create.cancel], ['Nieuw recept', '', '/']);
 });
 
 test('an edit posts its ingredient lines and a bad row refuses it', async () => {
