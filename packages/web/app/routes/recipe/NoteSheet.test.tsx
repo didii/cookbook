@@ -62,19 +62,16 @@ test('recipe-note › Opening the note field', async () => {
 
 test('recipe-note › Closing by tapping outside', async () => {
   await open();
-  // A tap inside the field leaves it open.
-  await act(async () => void fireEvent.pointerDown(field()));
+  // A tap inside the field leaves it open, a tap on the scrim closes.
+  await act(async () => void fireEvent.click(field()));
   assert.ok(sheet());
-  await act(async () => void fireEvent.pointerDown(screen.getByTestId('outside')));
+  await act(async () => void fireEvent.click(screen.getByTestId('NoteSheet-scrim')));
   assert.equal(sheet(), null);
   assert.equal(document.activeElement, button());
 });
 
 test('recipe-note › Closing with the button', async () => {
   await open();
-  // The button's own pointerdown is not "outside"; its click closes.
-  await act(async () => void fireEvent.pointerDown(button()));
-  assert.ok(sheet());
   await act(async () => void fireEvent.click(button()));
   assert.equal(sheet(), null);
   assert.equal(document.activeElement, button());

@@ -3,14 +3,15 @@ import { cn } from '~/shared/cn';
 import { Heart } from '~/shared/icons';
 import { press } from '~/shared/press';
 
-type Props = { slug: string; liked: boolean };
+type Props = { slug: string; initialLiked: boolean };
 
 /** Heart button in the top row: likes and unlikes the recipe for the member. Changes at once and goes back when the request fails. */
-export function LikeButton({ slug, liked: stored }: Props) {
-  const [liked, setLiked] = useState(stored);
+export function LikeButton({ slug, initialLiked }: Props) {
+  const [liked, setLiked] = useState(initialLiked);
   const [pending, setPending] = useState(false);
 
   const toggle = async () => {
+    if (pending) return;
     const wanted = !liked;
     setLiked(wanted);
     setPending(true);
@@ -30,7 +31,7 @@ export function LikeButton({ slug, liked: stored }: Props) {
       data-testid="LikeButton-heart"
       aria-pressed={liked}
       aria-label={liked ? 'Verwijder uit favorieten' : 'Markeer als favoriet'}
-      disabled={pending}
+      aria-disabled={pending}
       onClick={() => void toggle()}
       className={cn(
         'grid size-11 cursor-pointer place-items-center rounded-[10px] border-3 border-ink',

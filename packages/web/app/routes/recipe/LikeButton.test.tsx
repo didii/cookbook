@@ -18,7 +18,7 @@ const stub = (answer: () => Promise<Response>) => {
 };
 
 test('recipe-like › Recipe not liked', () => {
-  render(<LikeButton slug="soep" liked={false} />);
+  render(<LikeButton slug="soep" initialLiked={false} />);
   assert.equal(heart().getAttribute('aria-pressed'), 'false');
   assert.equal(heart().getAttribute('aria-label'), 'Markeer als favoriet');
   assert.ok(heart().classList.contains('bg-white') && heart().classList.contains('size-11'));
@@ -26,7 +26,7 @@ test('recipe-like › Recipe not liked', () => {
 });
 
 test('recipe-like › Recipe liked', () => {
-  render(<LikeButton slug="soep" liked />);
+  render(<LikeButton slug="soep" initialLiked />);
   assert.equal(heart().getAttribute('aria-pressed'), 'true');
   assert.equal(heart().getAttribute('aria-label'), 'Verwijder uit favorieten');
   assert.ok(heart().classList.contains('bg-red'));
@@ -35,7 +35,7 @@ test('recipe-like › Recipe liked', () => {
 
 test('pressing the heart changes it at once and states the wanted value', async () => {
   const sent = stub(() => Promise.resolve(new Response(null, { status: 204 })));
-  render(<LikeButton slug="soep" liked={false} />);
+  render(<LikeButton slug="soep" initialLiked={false} />);
   await act(async () => {
     fireEvent.click(heart());
   });
@@ -50,7 +50,7 @@ test('pressing the heart changes it at once and states the wanted value', async 
 
 test('recipe-like › Like cannot be saved', async () => {
   stub(() => Promise.resolve(new Response(null, { status: 500 })));
-  render(<LikeButton slug="soep" liked={false} />);
+  render(<LikeButton slug="soep" initialLiked={false} />);
   await act(async () => {
     fireEvent.click(heart());
   });

@@ -144,7 +144,7 @@ export function RecipePage({ recipe: r, tile, steps, liked = false, note: savedN
             <ChevronBack className="-ml-1.5" /> Alle recepten
           </Link>
           <div className="flex items-center gap-3.5">
-            <LikeButton slug={r.slug} liked={liked} />
+            <LikeButton slug={r.slug} initialLiked={liked} />
             <Link
               to={`/recepten/${r.slug}/bewerken`}
               state={{ fresh: true }}

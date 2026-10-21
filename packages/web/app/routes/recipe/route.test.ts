@@ -145,6 +145,12 @@ test('the like and note routes refuse what they cannot store', async () => {
   assert.equal((await post(noteAction, 'does-not-exist', { note: 'x' })).status, 404);
   assert.equal((await post(noteAction, slug, { note: 'x' }, 'vreemd@example.com')).status, 403);
   assert.equal((await post(noteAction, slug, {})).status, 400);
-  assert.equal((await post(noteAction, slug, { note: 'x'.repeat(4001) })).status, 413);
   assert.equal((await post(noteAction, slug, { note: 'x'.repeat(4000) })).status, 204);
+});
+
+test('recipe-note › Note too long', async () => {
+  await createUser(db, 'oma@example.com', 'Oma');
+  const slug = await createRecipe(db, { title: 'Lang', author: 'Oma' });
+  assert.equal((await post(noteAction, slug, { note: 'x'.repeat(4001) })).status, 413);
+  assert.equal((await load(slug)).note, '');
 });

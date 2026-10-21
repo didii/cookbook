@@ -66,10 +66,8 @@ test('recipe-viewing › Tabs on a narrow screen', () => {
 // Needs layout: from 52rem both panels are shown side by side and the ingredients scroll away with the page.
 test.todo('recipe-viewing › Two columns on a wide screen');
 
-// Needs layout: the whole page scrolls when the column (timers, list, note) is taller than the window.
-test.todo('recipe-viewing › Long ingredient list on a wide screen');
-
-test('the ingredient column is neither sticky nor a scroller of its own', () => {
+// The page scrolling as a whole needs layout; checked here: the column has no sticky or scrolling behaviour of its own.
+test('recipe-viewing › Long ingredient list on a wide screen', () => {
   page();
   const column = document.getElementById('panel-ingredients')!;
   for (const el of [column, ...column.querySelectorAll('ul')]) {

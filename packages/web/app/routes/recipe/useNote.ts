@@ -24,6 +24,8 @@ export function useNote(slug: string, saved: string, narrow: boolean) {
   const stored = useRef(saved);
   const open = useRef(false);
   const inFlight = useRef(false);
+  const alive = useRef(true);
+  const wasFailed = useRef(false);
   const pause = useRef<ReturnType<typeof setTimeout>>(undefined);
   const cueTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const narrowNow = useRef(narrow);
@@ -42,6 +44,18 @@ export function useNote(slug: string, saved: string, narrow: boolean) {
     setCue('off');
   }, []);
 
+  // keepalive lets the request outlive the page (pagehide, leaving the route).
+  const post = useCallback(
+    async (body: string) => {
+      try {
+        return (await fetch(`/recepten/${slug}/notitie`, { method: 'POST', body: new URLSearchParams({ note: body }), keepalive: true })).ok;
+      } catch {
+        return false;
+      }
+    },
+    [slug],
+  );
+
   /** Stores the text when it differs from what was stored last; one request at a time. Returns after the request is done. */
   const save = useCallback(async (): Promise<void> => {
     clearTimeout(pause.current);
@@ -50,31 +64,29 @@ export function useNote(slug: string, saved: string, narrow: boolean) {
     // Typing may go on while a request is out, so repeat until what was stored is the current text.
     while (latest.current !== stored.current) {
       const sent = latest.current;
-      let ok = false;
-      try {
-        // keepalive lets the request outlive the page (pagehide, leaving the route).
-        const response = await fetch(`/recepten/${slug}/notitie`, { method: 'POST', body: new URLSearchParams({ note: sent }), keepalive: true });
-        ok = response.ok;
-      } catch {
-        ok = false;
-      }
+      const ok = await post(sent);
+      if (ok) stored.current = sent;
+      // After unmount only the request matters: no state, no cue.
+      if (!alive.current) break;
       if (!ok) {
         inFlight.current = false;
-        setFailed(true);
         // A failed save must not vanish with the closed field: the text is still there, so the field comes back.
-        if (narrowNow.current) {
+        // Only once: when the member closes it again after a failure, it stays closed (a failure that never heals must not trap them).
+        if (narrowNow.current && !wasFailed.current) {
           open.current = true;
           setIsOpen(true);
         }
+        wasFailed.current = true;
+        setFailed(true);
         return;
       }
-      stored.current = sent;
+      wasFailed.current = false;
       setFailed(false);
       setSavedSinceOpen(latest.current === sent);
       if (!open.current) showCue();
     }
     inFlight.current = false;
-  }, [slug]);
+  }, [post]);
 
   const change = (next: string) => {
     latest.current = next;
@@ -85,15 +97,26 @@ export function useNote(slug: string, saved: string, narrow: boolean) {
   };
 
   useEffect(() => {
-    const leave = () => void save();
+    const leave = () => {
+      clearTimeout(pause.current);
+      // A request is out and the member typed on: the loop in `save` may never get to send the rest, so send it now (the server keeps the last write).
+      if (inFlight.current && latest.current !== stored.current) void post(latest.current);
+      else void save();
+    };
     window.addEventListener('pagehide', leave);
     return () => {
       window.removeEventListener('pagehide', leave);
-      clearTimeout(pause.current);
       clearTimeout(cueTimer.current);
-      void save();
+      leave();
     };
-  }, [save]);
+  }, [save, post]);
+
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
 
   return {
     text,

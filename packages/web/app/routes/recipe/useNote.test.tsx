@@ -213,3 +213,40 @@ test('leaving the page stores a changed note with a keepalive request', async ()
   assert.equal(sent.length, 1);
   assert.equal(sent[0]!.keepalive, true);
 });
+
+test('recipe-note › Leaving while a save is under way', async () => {
+  let release!: () => void;
+  const real = globalThis.fetch;
+  globalThis.fetch = ((url: string, init: RequestInit) => {
+    sent.push({ url, body: String(init.body), keepalive: init.keepalive });
+    return sent.length === 1
+      ? new Promise<Response>((r) => (release = () => r(new Response(null, { status: 204 }))))
+      : Promise.resolve(new Response(null, { status: 204 }));
+  }) as typeof fetch;
+  try {
+    render(<Harness />);
+    await type('een');
+    await press('blur');
+    await type('een twee');
+    await act(async () => void window.dispatchEvent(new Event('pagehide')));
+    assert.deepEqual(
+      sent.map((s) => s.body),
+      ['note=een', 'note=een+twee'],
+    );
+    assert.ok(sent.every((s) => s.keepalive));
+    release();
+  } finally {
+    globalThis.fetch = real;
+  }
+});
+
+test('recipe-note › Failed note can be abandoned', async () => {
+  status = 500;
+  render(<Harness narrow />);
+  await press('open');
+  await type('nieuw');
+  await press('dismiss');
+  assert.equal(state().open, true);
+  await press('dismiss');
+  assert.deepEqual(state(), { open: false, failed: true, savedSinceOpen: false, cue: 'off' });
+});

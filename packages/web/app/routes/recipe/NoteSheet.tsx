@@ -10,7 +10,6 @@ type Props = { note: Note };
 /** Narrow screens: a floating button at the bottom right that opens the note field above it. Hidden from 52rem, where `NotePanel` takes over. */
 export function NoteSheet({ note }: Props) {
   const button = useRef<HTMLButtonElement>(null);
-  const sheet = useRef<HTMLDialogElement>(null);
   const field = useRef<HTMLTextAreaElement>(null);
   const wasOpen = useRef(false);
   const { isOpen, dismiss } = note;
@@ -22,29 +21,20 @@ export function NoteSheet({ note }: Props) {
     wasOpen.current = isOpen;
   }, [isOpen]);
 
-  // A tap outside the field and the button, or Escape, closes it.
+  // Escape closes it; a tap on the scrim does too (see below).
   useEffect(() => {
     if (!isOpen) return;
-    const outside = (e: PointerEvent) => {
-      const target = e.target as Node;
-      if (!sheet.current?.contains(target) && !button.current?.contains(target)) dismiss();
-    };
     const escape = (e: KeyboardEvent) => e.key === 'Escape' && dismiss();
-    document.addEventListener('pointerdown', outside);
     document.addEventListener('keydown', escape);
-    return () => {
-      document.removeEventListener('pointerdown', outside);
-      document.removeEventListener('keydown', escape);
-    };
+    return () => document.removeEventListener('keydown', escape);
   }, [isOpen, dismiss]);
 
   return (
     <div className="min-[52rem]:hidden">
-      {isOpen && <div className="fixed inset-0 z-30 bg-ink/30" aria-hidden="true" />}
+      {isOpen && <div data-testid="NoteSheet-scrim" className="fixed inset-0 z-30 bg-ink/30" aria-hidden="true" onClick={dismiss} />}
       {isOpen && (
         <dialog
           open
-          ref={sheet}
           aria-label="Mijn notitie"
           data-testid="NoteSheet-sheet"
           className="fixed inset-x-4 m-0 w-[calc(100%-2rem)] text-ink bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-40 animate-rise rounded-xl border-3 border-ink bg-white px-4 pt-3.5 pb-4 shadow-hard motion-reduce:animate-none"
@@ -66,7 +56,7 @@ export function NoteSheet({ note }: Props) {
           />
           <output data-testid="NoteSheet-status" className="mt-2 block">
             {note.failed ? (
-              <p data-testid="NoteSheet-failed" role="alert" className="text-sm font-bold text-red">
+              <p data-testid="NoteSheet-failed" className="text-sm font-bold text-red">
                 Notitie niet bewaard. Sluit of typ verder om het opnieuw te proberen.
               </p>
             ) : note.savedSinceOpen ? (

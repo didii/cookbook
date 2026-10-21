@@ -84,6 +84,21 @@ The system SHALL store the note for the member and the recipe when the member di
 - **WHEN** a member dismisses a changed note and it cannot be stored
 - **THEN** the text stays in the field, the field stays open, no saved cue is shown and the member is told the note was not saved
 
+#### Scenario: Failed note can be abandoned
+- **WHEN** the field was kept open after a failed save and the member dismisses it again and the note still cannot be stored
+- **THEN** the field closes, so a note that can never be stored does not trap the member
+
+#### Scenario: Leaving while a save is under way
+- **WHEN** a save is still under way, the member types more and then leaves the page
+- **THEN** the newest text is sent as well
+
+### Requirement: A note has a maximum length
+The system SHALL limit a note to 4000 characters: the field stops typing at the limit and the server SHALL refuse a longer note, and a request body that is clearly too large before reading it, with status 413, storing nothing.
+
+#### Scenario: Note too long
+- **WHEN** a note longer than 4000 characters is sent to the server
+- **THEN** it is refused with status 413 and nothing is stored
+
 ### Requirement: The narrow field says when everything is saved
 The system SHALL show under the text of the note field on a narrow screen a hint, "Wordt vanzelf bewaard. Tik buiten het veld om te sluiten.", while the text has changes that are not stored. When the text has been stored since the field was opened and nothing is left to store, the system SHALL show "Bewaard" with a check mark in the place of the hint, announced to assistive technology without taking focus. Opening the field without changing anything SHALL keep the hint, since nothing was stored.
 
