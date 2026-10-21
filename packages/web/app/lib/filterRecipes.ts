@@ -14,10 +14,10 @@ export const minRecipesForFilters = 4;
 /** Lowercase without accents, so "Crème" matches "creme". */
 const fold = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
 
-/** Whether two spellings are the same author (case and accents ignored). */
-export const sameAuthor = (a: string, b: string) => fold(a) === fold(b);
-
 const collator = new Intl.Collator('nl', { sensitivity: 'base' });
+
+/** Whether two spellings are the same author (case and accents ignored). */
+export const sameAuthor = (a: string, b: string) => collator.compare(a, b) === 0;
 
 /** Filters from the page address (`q`, `auteur`, `sort`); anything missing or unknown is the default. */
 export function parseFilters(params: URLSearchParams): Filters {
@@ -35,9 +35,9 @@ export function filterParams({ q, author, sort = 'nieuwste' }: Filters): URLSear
 
 /** Each author once (case variants are one, the first spelling wins), alphabetical. */
 export function authorsOf(recipes: Pick<RecipeSummary, 'author'>[]): string[] {
-  const seen = new Map<string, string>();
-  for (const { author } of recipes) if (!seen.has(fold(author))) seen.set(fold(author), author);
-  return [...seen.values()].sort(collator.compare);
+  const authors: string[] = [];
+  for (const { author } of recipes) if (!authors.some((a) => sameAuthor(a, author))) authors.push(author);
+  return authors.sort(collator.compare);
 }
 
 /** The recipes whose title or author contain the search text and whose author matches, in the chosen order. `recipes` is newest first. */
