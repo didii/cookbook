@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { fireEvent, render, screen, within } from '~testing/dom';
-import { ChipsHarness, stepOf } from '~testing/stepChips';
+import { useState, type ReactNode } from 'react';
+import { classifyStored, type StepChips as Chips, type Context } from '~/lib/chips';
+import type { StepDraft } from '~/lib/draft';
+import type { Step } from '~/lib/recipe';
+import { StepChips } from '~/shared/recipeEditor/StepChips';
 
 // Needs a browser: hover, focus and visibility.
 test.todo('recipe-step-chips › A ghost is shown only while its step is active');
@@ -11,6 +15,30 @@ test.todo('recipe-step-chips › The add row keeps its space');
 test.todo('recipe-step-chips › Following and pinned chips are marked differently');
 // Needs a browser: pointer hover and the fill of the marked words.
 test.todo('recipe-step-chips › Hovering a chip fills its words');
+
+export const noRows: Context = { rows: [] };
+
+/** A step as the editor holds it, with the chips its stored form gives it. */
+export const stepOf = (stored: Step, context: Context = noRows): StepDraft => ({ id: 's1', ...classifyStored(stored, context) });
+
+/** The chips of a step wired to state, as the editor wires them. */
+export function ChipsHarness({
+  initial,
+  context = noRows,
+  extra,
+}: {
+  initial: Chips & { id: string };
+  context?: Context;
+  extra?: (step: StepDraft) => ReactNode;
+}) {
+  const [step, setStep] = useState<StepDraft>(initial);
+  return (
+    <div>
+      <StepChips step={step} context={context} number={1} onHot={() => {}} onChange={(change) => setStep((s) => change(s, context))} />
+      {extra?.(step)}
+    </div>
+  );
+}
 
 const initial = stepOf({ body: 'Bak 30 minuten op 180 graden.', ingredients: [], ovenTemperature: 180, timer: { minutes: 30 } });
 const show = () => render(<ChipsHarness initial={initial} />);

@@ -3,10 +3,11 @@ import { test } from 'node:test';
 import { cssFor } from '~testing/css';
 import { precedes, render, screen } from '~testing/dom';
 import { MemoryRouter } from 'react-router';
+import type { RecipeSummary } from '~/lib/recipe';
 import { RecipeCard } from './RecipeCard';
 
-const recipe = { slug: 'soep', title: 'Soep', author: 'Oma', time: null, image: '/soep.jpg', seal: null };
-const card = (r: Partial<typeof recipe & { isNew: boolean }> = {}) =>
+const recipe: RecipeSummary = { slug: 'soep', title: 'Soep', author: 'Oma', time: null, image: '/soep.jpg', seal: null };
+const card = (r: Partial<RecipeSummary> = {}) =>
   render(
     <MemoryRouter>
       <RecipeCard recipe={{ ...recipe, ...r }} tile={0} />
