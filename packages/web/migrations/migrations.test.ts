@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
 
@@ -298,20 +300,33 @@ test('a user gets a creation time in the same format as a recipe', async () => {
   assert.match(row!.created_at, /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/);
 });
 
-const roleOf = async (email: string) => (await db.prepare('SELECT role FROM roles WHERE email = ?').bind(email).first<{ role: string }>())?.role;
+const roles = readFileSync(join(import.meta.dirname, '0006_roles.sql'), 'utf8');
+const seed = roles.slice(roles.indexOf('INSERT'));
+const roleOf = async (email: string) => (await db.prepare('SELECT role FROM users WHERE email = ?').bind(email).first<{ role: string }>())?.role;
 
 test('users › Unknown role is refused', async () => {
-  await assert.rejects(db.prepare("INSERT INTO roles (email, role) VALUES ('x@example.com', 'user')").run());
-  await assert.rejects(db.prepare("INSERT INTO roles (email, role) VALUES ('x@example.com', 'owner')").run());
-  assert.equal(await count("SELECT email FROM roles WHERE email = 'x@example.com'"), 0);
+  await assert.rejects(db.prepare("INSERT INTO users (email, calling_name, role) VALUES ('x@example.com', 'X', 'owner')").run());
+  assert.equal(await count("SELECT id FROM users WHERE email = 'x@example.com'"), 0);
 });
 
 test('users › Seeded superadmin', async () => {
-  assert.equal(await roleOf('info@rhythm-coder.dev'), 'superadmin');
+  assert.deepEqual(await db.prepare("SELECT calling_name, role FROM users WHERE email = 'info@rhythm-coder.dev'").first(), {
+    calling_name: 'Dieter',
+    role: 'superadmin',
+  });
 });
 
 test('users › Seeded address in another case', async () => {
   assert.equal(await roleOf('Info@Rhythm-Coder.dev'), 'superadmin');
+});
+
+test('users › Seed promotes an existing member', async () => {
+  await db.prepare("UPDATE users SET role = 'user', calling_name = 'Oud' WHERE email = 'info@rhythm-coder.dev'").run();
+  await db.prepare(seed).run();
+  assert.deepEqual(await db.prepare("SELECT calling_name, role FROM users WHERE email = 'info@rhythm-coder.dev'").first(), {
+    calling_name: 'Oud',
+    role: 'superadmin',
+  });
 });
 
 const addView = (user: number, recipe: number) => db.prepare('INSERT INTO recipe_views (user_id, recipe_id) VALUES (?, ?)').bind(user, recipe).run();

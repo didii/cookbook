@@ -35,22 +35,16 @@ test('users › Existing member is a user', async () => {
   assert.equal((await getUser(db, 'old@example.com'))?.role, 'user');
 });
 
-test('users › Seeded superadmin', async () => {
-  await createUser(db, 'info@rhythm-coder.dev', 'Info');
-  assert.equal((await getUser(db, 'info@rhythm-coder.dev'))?.role, 'superadmin');
-});
-
-test('users › Seeded address in another case', async () => {
-  await createUser(db, 'Info@Rhythm-Coder.dev', 'Info');
-  assert.equal((await getUser(db, 'INFO@rhythm-coder.dev'))?.role, 'superadmin');
+test('users › Seeded superadmin is known without the welcome screen', async () => {
+  const user = await getUser(db, 'Info@Rhythm-Coder.dev');
+  assert.deepEqual([user?.callingName, user?.role], ['Dieter', 'superadmin']);
 });
 
 // Nothing checks roles yet; the existing route tests already show the pages to a plain member.
 test.todo("users › Today's features need no role");
 
-test('an admin role is read from the roles table', async () => {
-  await db.prepare("INSERT INTO roles (email, role) VALUES ('adm@example.com', 'admin')").run();
-  await createUser(db, 'adm@example.com', 'Adm');
+test('an admin role is read from the user', async () => {
+  await db.prepare("INSERT INTO users (email, calling_name, role) VALUES ('adm@example.com', 'Adm', 'admin')").run();
   assert.equal((await getUser(db, 'adm@example.com'))?.role, 'admin');
 });
 
