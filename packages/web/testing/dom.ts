@@ -36,6 +36,10 @@ afterEach(() => cleanup());
 // Happy-dom keeps timers alive that stop `node --test` from exiting.
 after(() => GlobalRegistrator.unregister());
 
+/** Sets the size of the window, which media queries (`matchMedia`) answer for. A new DOM is 1024 wide. */
+export const setViewport = (width: number, height = 768) =>
+  (window as unknown as { happyDOM: { setViewport(size: { width: number; height: number }): void } }).happyDOM.setViewport({ width, height });
+
 /** Whether `a` comes before `b` in the document. */
 export const precedes = (a: Node, b: Node) => !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
 

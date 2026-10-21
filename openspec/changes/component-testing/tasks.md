@@ -13,9 +13,9 @@
 
 ## 3. Recipe page tests
 
-- [ ] 3.1 Convert `routes/recipe/RecipePage.test.ts`, `StepList.test.ts`, `TimerCard.test.ts`, `TimerDock.test.ts` and `route.test.ts` (including the `<li` count and the switch `<label>` regex). Verify: `pnpm test:ai` passes, scenario names unchanged.
-- [ ] 3.2 Implement `recipe-viewing › Optional fields are empty` and `Ingredient without quantity` from rendered output. Verify: `pnpm test:ai` passes; both are tests, not todos.
-- [ ] 3.3 Re-read the remaining todos in these files (columns, scrolling, docking, animation, chips overflow) and rewrite any reason that is vague into the real limit (layout, scroll position, animation). Verify: each remaining todo has a one-line reason naming what a DOM cannot show.
+- [x] 3.1 Convert `routes/recipe/RecipePage.test.ts`, `StepList.test.ts`, `TimerCard.test.ts`, `TimerDock.test.ts` and `route.test.ts` (including the `<li` count and the switch `<label>` regex). Verify: `pnpm test:ai` passes, scenario names unchanged.
+- [x] 3.2 Implement `recipe-viewing › Optional fields are empty` and `Ingredient without quantity` from rendered output. Verify: `pnpm test:ai` passes; both are tests, not todos.
+- [x] 3.3 Re-read the remaining todos in these files (columns, scrolling, docking, animation, chips overflow) and rewrite any reason that is vague into the real limit (layout, scroll position, animation). Verify: each remaining todo has a one-line reason naming what a DOM cannot show.
 
 ## 4. Editor and form tests
 
