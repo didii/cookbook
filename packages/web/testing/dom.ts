@@ -1,8 +1,24 @@
-import { afterEach } from 'node:test';
+import { after, afterEach } from 'node:test';
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
 
-// Keep Node's own networking classes: loader and action tests in the same file use the real ones.
-const node = { fetch, Request, Response, Headers, FormData };
+// Keep Node's own networking, stream and abort classes: the test database (Miniflare) and the loader and action tests in the same file use the real ones, and they refuse happy-dom's lookalikes.
+const keep = [
+  'fetch',
+  'Request',
+  'Response',
+  'Headers',
+  'FormData',
+  'ReadableStream',
+  'WritableStream',
+  'TransformStream',
+  'Blob',
+  'File',
+  'AbortController',
+  'AbortSignal',
+  'URL',
+  'URLSearchParams',
+] as const;
+const node = Object.fromEntries(keep.map((name) => [name, globalThis[name]]));
 GlobalRegistrator.register({ url: 'http://localhost/' });
 Object.assign(globalThis, node);
 
@@ -13,7 +29,11 @@ export const render: typeof testing.render = testing.render;
 export const screen: typeof testing.screen = testing.screen;
 export const fireEvent: typeof testing.fireEvent = testing.fireEvent;
 export const within: typeof testing.within = testing.within;
-afterEach(() => testing.cleanup());
+/** Removes what was rendered; it also happens after each test, so only a test that renders twice needs it. */
+export const cleanup: typeof testing.cleanup = testing.cleanup;
+afterEach(() => cleanup());
+// Happy-dom keeps timers alive that stop `node --test` from exiting.
+after(() => GlobalRegistrator.unregister());
 
 /** Whether `a` comes before `b` in the document. */
 export const precedes = (a: Node, b: Node) => !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
