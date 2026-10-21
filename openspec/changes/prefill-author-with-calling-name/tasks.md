@@ -1,7 +1,7 @@
 ## 1. Prefill
 
-- [ ] 1.1 In `new-recipe/route.tsx` loader, read the user with `getUser` and return `callingName` (`''` when none)
-- [ ] 1.2 Pass `initial` and `values` fallback as `{ ...emptyDraftSeed, author: loaderData.callingName }`
+- [x] 1.1 In `new-recipe/route.tsx` loader, read the user with `getUser` and return `callingName` (`''` when none)
+- [x] 1.2 Pass `initial` and `values` fallback as `{ ...emptyDraftSeed, author: loaderData.callingName }`
 
 ## 2. Tests
 
