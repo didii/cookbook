@@ -1,8 +1,9 @@
 import { Form } from 'react-router';
 import type { Role, UserListItem } from '~/.server/users';
 import { Button } from '~/shared/Button';
+import { DeleteUser } from './DeleteUser';
 
-type Props = { user: UserListItem; lastSuperadmin: boolean; error?: string; refused?: string; saved?: boolean };
+type Props = { user: UserListItem; lastSuperadmin: boolean; isSelf: boolean; accessUrl: string; error?: string; refused?: string; saved?: boolean };
 
 const roles: { value: Role; label: string }[] = [
   { value: 'user', label: 'Gebruiker' },
@@ -13,7 +14,7 @@ const field =
   'mt-1 block min-h-12 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-lg text-ink focus:shadow-focus focus:outline-transparent disabled:opacity-40 aria-invalid:border-red';
 
 /** The edit form of one user. Fields are uncontrolled, so "Herstel" (`type="reset"`) puts the stored values back; the caller keys it by user id. */
-export function UserForm({ user, lastSuperadmin, error, refused, saved }: Props) {
+export function UserForm({ user, lastSuperadmin, isSelf, accessUrl, error, refused, saved }: Props) {
   return (
     <section aria-labelledby="user-title" className="mt-8 border-t-3 border-ink pt-6">
       <h2 id="user-title" data-testid="UserForm-title" className="text-2xl font-black">
@@ -89,6 +90,12 @@ export function UserForm({ user, lastSuperadmin, error, refused, saved }: Props)
           </Button>
         </div>
       </Form>
+      <DeleteUser
+        name={user.callingName}
+        isSelf={isSelf}
+        accessUrl={accessUrl}
+        disabledReason={lastSuperadmin ? 'De enige superadmin kan niet worden verwijderd' : undefined}
+      />
     </section>
   );
 }

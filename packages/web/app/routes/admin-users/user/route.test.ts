@@ -5,6 +5,7 @@ import { fake } from '~testing/fake';
 import { RouterContextProvider } from 'react-router';
 import { envContext, userEmailContext } from '~/.server/context';
 import { getUser } from '~/.server/users';
+import { redirectToWelcome } from '~/.server/welcome';
 import type { Route } from './+types/route';
 import { action, loader } from './route';
 
@@ -139,4 +140,10 @@ test('user-management › Demote self while another superadmin exists', async ()
   const response = await post('admin', ids.admin, { callingName: 'admin', role: 'admin' });
   assert.equal(response.headers!.get('Location'), '/');
   assert.equal((await stored('admin'))?.role, 'admin');
+});
+
+test('user-management › Deleted member returns', async () => {
+  // `jos` was deleted above. Without a user row the member is sent to the welcome screen, which asks for the calling name again.
+  const welcome = redirectToWelcome(await stored('jos'), new URL('http://localhost/'));
+  assert.match(welcome?.headers.get('Location') ?? '', /^\/welkom/);
 });

@@ -9,7 +9,7 @@ const jos = { id: 2, email: 'jos@example.com', callingName: 'Jos', role: 'admin'
 
 // The form is a data-router `Form`, so it needs a data router around it.
 const show = (props: Partial<Parameters<typeof UserForm>[0]> = {}) =>
-  render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <UserForm user={jos} lastSuperadmin={false} {...props} /> }])} />);
+  render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <UserForm user={jos} lastSuperadmin={false} isSelf={false} accessUrl="https://access.example.com/" {...props} /> }])} />);
 const nameInput = () => screen.getByTestId<HTMLInputElement>('UserForm-name');
 const roleSelect = () => screen.getByTestId('UserForm-role') as unknown as HTMLSelectElement;
 
@@ -36,6 +36,8 @@ test('user-management › Sole superadmin selects own record', () => {
   show({ user: { ...jos, role: 'superadmin' }, lastSuperadmin: true });
   assert.equal(roleSelect().disabled, true);
   assert.equal(nameInput().disabled, false);
+  assert.equal(screen.getByTestId<HTMLButtonElement>('DeleteUser-open').disabled, true);
+  assert.equal(screen.getByTestId('DeleteUser-reason').textContent, 'De enige superadmin kan niet worden verwijderd');
   assert.equal(screen.getByTestId('UserForm-reason').textContent, 'De rol van de enige superadmin kan niet worden gewijzigd');
 });
 
