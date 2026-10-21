@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { cssFor } from '~testing/css';
 import { render, screen } from '~testing/dom';
+import { routePaths } from '~testing/routes';
 import { createElement } from 'react';
 import { MemoryRouter } from 'react-router';
-import routes from '../routes';
 import { Header } from './Header';
 
 const show = () => render(createElement(MemoryRouter, null, createElement(Header, { email: 'oma@example.com' })));
@@ -16,7 +16,7 @@ test('recipe-creation › Link to the form', () => {
   show();
   assert.equal(screen.getByRole('link', { name: /Nieuw/ }).getAttribute('href'), '/recepten/nieuw');
   // The route table serves it.
-  assert.ok(routes.some((r) => r.path === 'recepten/nieuw'));
+  assert.ok(routePaths.includes('recepten/nieuw'));
 });
 
 // The classes decide which text shows at which width; this reads them, a real width is not measured.

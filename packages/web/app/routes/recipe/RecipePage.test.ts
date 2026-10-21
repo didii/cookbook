@@ -2,11 +2,11 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { afterEach, test } from 'node:test';
 import { cleanup, fireEvent, precedes, render, screen, setViewport } from '~testing/dom';
+import { routePaths } from '~testing/routes';
 import { createElement, type ComponentProps } from 'react';
 import { MemoryRouter } from 'react-router';
 import type { Recipe, Step } from '~/lib/recipe';
 import { arrive, type Positions, type TabId } from '~/lib/tabs';
-import routes from '../../routes';
 import { IngredientList } from './IngredientList';
 import { RecipePage } from './RecipePage';
 
@@ -145,7 +145,7 @@ test('recipe-viewing › Link to the edit form', () => {
   page();
   assert.equal(screen.getByRole('link', { name: 'Bewerk' }).getAttribute('href'), '/recepten/appeltaart/bewerken');
   // The route table serves that address.
-  assert.ok(routes.some((r) => r.path === 'recepten/:slug/bewerken'));
+  assert.ok(routePaths.includes('recepten/:slug/bewerken'));
 });
 
 test('cook-mode › Switch on a narrow screen', () => {
