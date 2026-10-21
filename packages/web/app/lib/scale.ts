@@ -63,5 +63,5 @@ const eps = 1e-3;
 export function nextMultiplier(current: number, direction: 1 | -1): number {
   if (direction === 1) return ladder.find((v) => v > current + eps) ?? Math.floor(current + eps) + 1;
   if (current > 4 + eps) return Math.max(4, Math.ceil(current - eps) - 1);
-  return ladder.findLast((v) => v < current - eps) ?? Math.min(current, ladder[0]);
+  return ladder.filter((v) => v < current - eps).at(-1) ?? Math.min(current, ladder[0]);
 }
