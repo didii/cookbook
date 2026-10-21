@@ -45,6 +45,8 @@ test('recipe-ingredient-editing › Quantity is highlighted while typing', async
   // The field's own text is transparent; a layer under it paints the same text with the quantity in blue.
   const quantity = screen.getByTestId('IngredientItem-quantity');
   assert.equal(quantity.tagName, 'B');
+  assert.equal(field(1).getAttribute('aria-label'), 'Ingrediënt 1');
+  assert.equal(toolbar(1).getAttribute('aria-label'), 'Acties voor ingrediënt 1');
   assert.equal(quantity.textContent, '250 g');
   assert.equal(quantity.parentElement?.textContent, '250 g bloem');
   assert.match(await cssFor(quantity.className), /color: var\(--color-blu\)/);

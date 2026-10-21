@@ -112,7 +112,9 @@ test('the welcome screen asks for the name and remembers the page', async () => 
   const data = (await open('new@example.com', '?returnUrl=%2Frecepten%2Fsoep')) as { returnUrl: string };
   assert.equal(data.returnUrl, '/recepten/soep');
   const { container } = show({ loaderData: data });
-  assert.ok(screen.getByTestId('Welcome-label'));
+  const label = screen.getByTestId<HTMLLabelElement>('Welcome-label');
+  assert.equal(label.textContent?.trim(), 'Hoe noemen we je?');
+  assert.equal(label.htmlFor, screen.getByTestId('Welcome-name').id);
   assert.equal(container.querySelector<HTMLInputElement>('input[name=returnUrl]')?.value, '/recepten/soep');
   assert.equal(await countRows('new@example.com'), 0);
 });

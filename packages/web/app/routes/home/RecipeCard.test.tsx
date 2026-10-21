@@ -44,7 +44,9 @@ test('recipe-new-marker › Marker on a card with an image', async () => {
   assert.match(css, /border-color: var\(--color-ink\)/);
   assert.match(css, /\.shadow-hard-sm \{ --tw-shadow: 3px 3px 0/);
   // It is text inside the card's link, so it is part of the accessible name.
-  assert.ok(screen.getByTestId('RecipeCard-link').contains(label));
+  const link = screen.getByTestId('RecipeCard-link');
+  assert.ok(link.contains(label));
+  assert.match(link.textContent ?? '', /Nieuw.*Soep/);
   card({ isNew: false });
   card();
   assert.equal(screen.getAllByTestId('RecipeCard-new').length, 1);

@@ -161,7 +161,7 @@ test('cook-mode › Switch on a narrow screen', () => {
   // The switch is a real switch, directly above the sticky stack and not part of it.
   assert.ok(precedes(toggle, stack()) && !stack().contains(toggle));
   assert.equal(toggle.getAttribute('aria-checked'), 'false');
-  assert.equal(screen.getByTestId('CookSwitch-title').textContent, 'Scherm mag slapen');
+  assert.ok(screen.getByTestId('CookSwitch-text').textContent?.startsWith('Scherm mag slapen'));
   assert.equal(screen.getByTestId('CookSwitch-sub').textContent, 'Gaat vanzelf aan zodra je begint');
 });
 

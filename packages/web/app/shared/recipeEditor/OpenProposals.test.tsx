@@ -15,7 +15,7 @@ const withProposals = reconcile(
 const show = (initial = withProposals) =>
   render(<ChipsHarness initial={initial} extra={(step) => <OpenProposals count={proposals(step, noRows).length} />} />);
 const link = () => screen.getByTestId('OpenProposals-link');
-const accepts = () => screen.getAllByTestId('StepChips-accept');
+const accepts = () => screen.getAllByTestId('StepChips-accept').filter((b) => b.getAttribute('aria-label') === 'Wijziging overnemen');
 
 test('recipe-step-chips › Suggestions are counted in the save bar', () => {
   assert.equal(proposals(withProposals, noRows).length, 2);

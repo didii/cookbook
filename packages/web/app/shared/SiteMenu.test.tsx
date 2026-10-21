@@ -45,6 +45,7 @@ test('site-menu › Menu closes', () => {
   assert.equal(fireEvent(dialog, new Event('cancel', { cancelable: true })), true);
   // The close button and a click on the backdrop close it too.
   openMenu();
+  assert.equal(screen.getByTestId('SiteMenu-close').getAttribute('aria-label'), 'Sluit menu');
   fireEvent.click(screen.getByTestId('SiteMenu-close'));
   assert.equal(dialog.hasAttribute('open'), false);
   openMenu();

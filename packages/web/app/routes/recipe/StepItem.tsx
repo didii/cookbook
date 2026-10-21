@@ -18,7 +18,6 @@ export function StepItem({ step, number, done, onToggle, highlight, peek }: Prop
   return (
     <li
       id={`step-${number}`}
-      data-testid="StepItem-item"
       className="relative isolate scroll-mt-[calc(var(--stack-h,0px)+0.75rem)] border-t-2 border-dashed border-ink/28 py-4 pb-4.5 first:border-t-0 first:pt-0"
     >
       {/* Tint between the dashed rules. A jump's highlight is remounted by each jump (new key), which restarts the fade; with reduced motion it

@@ -9,7 +9,6 @@ export function CookSwitch({ wanted, lock, manual, onToggle }: Props) {
   const unable = wanted && (lock === 'unsupported' || lock === 'refused');
 
   return (
-    // oxlint-disable-next-line jsx-a11y/label-has-associated-control -- the label wraps Base UI's Switch.Root, which the rule does not know as a control
     <label
       data-testid="CookSwitch-label"
       className="mt-6 flex min-h-12 w-full cursor-pointer items-center gap-3 rounded-[0.625rem] border-3 border-ink bg-white py-1 pr-3.5 pl-2 text-left font-extrabold min-[52rem]:hidden"
@@ -23,8 +22,8 @@ export function CookSwitch({ wanted, lock, manual, onToggle }: Props) {
       >
         <Switch.Thumb className="block size-4.5 translate-x-px rounded-full bg-ink transition-transform data-checked:translate-x-[1.1875rem] data-checked:bg-white motion-reduce:transition-none" />
       </Switch.Root>
-      <span>
-        <span data-testid="CookSwitch-title">{title}</span>
+      <span data-testid="CookSwitch-text">
+        {title}
         <small data-testid="CookSwitch-sub" className="block text-[0.8125rem] font-bold text-muted">
           {sub}
         </small>

@@ -20,7 +20,6 @@ export function DeleteRecipe({ title }: Props) {
       {/* oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- a mouse shortcut for the backdrop; keyboard users have Escape and "Annuleren" */}
       <dialog
         ref={dialog}
-        data-testid="DeleteRecipe-dialog"
         aria-labelledby="delete-title"
         onClick={(e) => e.target === e.currentTarget && e.currentTarget.close()}
         className="m-auto w-[min(26rem,calc(100vw-2rem))] rounded-xl border-3 border-ink bg-white p-0 text-ink shadow-hard backdrop:bg-ink/40"

@@ -67,7 +67,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
               </Button>
             </div>
           ) : (
-            <ul data-testid="Home-list" className="grid list-none grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] gap-6 p-0">
+            <ul className="grid list-none grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] gap-6 p-0">
               {shown.map((r, i) => (
                 <li key={r.slug}>
                   <RecipeCard recipe={r} tile={tileFor(i)} eager={i < 3} />

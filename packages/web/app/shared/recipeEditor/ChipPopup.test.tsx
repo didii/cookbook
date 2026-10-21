@@ -25,7 +25,8 @@ test('recipe-step-chips › Clicking a chip opens its popup', () => {
   // The popup has that chip's fields, the follow or pinned choice and a remove action, and sits next to its chip.
   const dialog = screen.getByTestId('ChipPopup-dialog');
   assert.equal(dialog.getAttribute('aria-label'), 'Timer aanpassen');
-  assert.ok(within(dialog).getByTestId('NumberField-input') && within(dialog).getByTestId('TextField-input'));
+  assert.equal(within(dialog).getByTestId<HTMLInputElement>('NumberField-input').labels?.[0]?.textContent, 'Minuten');
+  assert.equal(within(dialog).getByTestId<HTMLInputElement>('TextField-input').labels?.[0]?.textContent, 'Naam');
   assert.match(modes().follow.textContent ?? '', /Volgt tekst/);
   assert.match(modes().pinned.textContent ?? '', /Vast/);
   assert.equal(within(dialog).getByTestId('ChipPopup-remove').textContent, 'Timer verwijderen');

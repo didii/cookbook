@@ -25,7 +25,6 @@ function SidebarCard({ timer: t, onJump, onPeek }: { timer: TimerView; onJump: (
   return (
     // oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- mouse-only hint; the same step is reachable by the jump button
     <li
-      data-testid="SidebarCard-card"
       onMouseEnter={() => {
         hovered.current = true;
         onPeek(t.step);
@@ -69,7 +68,7 @@ function SidebarCard({ timer: t, onJump, onPeek }: { timer: TimerView; onJump: (
           →
         </TimerButton>
         {finished ? (
-          <TimerButton main data-testid="SidebarCard-done" onClick={() => controls.stop(t.id)}>
+          <TimerButton main onClick={() => controls.stop(t.id)}>
             Klaar
           </TimerButton>
         ) : (

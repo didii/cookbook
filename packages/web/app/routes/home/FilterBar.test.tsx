@@ -136,6 +136,8 @@ test('the chosen order is checked, and Iedereen is chosen by default', () => {
   show({ ...noFilters, sort: 'az' });
   assert.equal(sortInput('az').checked, true);
   assert.equal(sortInput('nieuwste').checked, false);
+  assert.equal(sortInput('az').labels?.[0]?.textContent, 'A–Z');
+  assert.equal(sortInput('nieuwste').labels?.[0]?.textContent, 'Nieuwste');
   assert.equal(pressed(chip('Iedereen')), true);
 });
 
