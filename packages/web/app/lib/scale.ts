@@ -1,5 +1,5 @@
 import { numberPattern, numberValue, units } from '~/lib/ingredients';
-import { findIngredients, type Row } from '~/lib/stepParsers';
+import { findIngredients, findOven, findTimer, type Row } from '~/lib/stepParsers';
 
 /** A number or range at the start of a text: leading space, first number, the dash, second number. */
 const leading = new RegExp(String.raw`^(\s*)(${numberPattern})(?:(\s*[-–]\s*)(${numberPattern}))?`, 'u');
@@ -42,12 +42,14 @@ export function scaleBody(body: string, factor: number, rows: Row[]): string {
   for (const f of findIngredients(body, rows, () => '')) {
     if (f.values.quantity) spans.push([f.start, f.start + f.values.quantity.length]);
   }
+  // A temperature or duration is never scaled, even when its word is also a unit ("180 gr").
+  const fixed = [findOven(body), findTimer(body)].filter((f) => f !== undefined);
   // From the end, so earlier positions stay valid; a span that overlaps a later one is skipped.
   spans.sort((a, b) => b[0] - a[0]);
   let out = body;
   let limit = Infinity;
   for (const [start, end] of spans) {
-    if (end > limit) continue;
+    if (end > limit || fixed.some((f) => start < f.end && f.start < end)) continue;
     out = out.slice(0, start) + scaleQuantity(body.slice(start, end), factor) + out.slice(end);
     limit = start;
   }
@@ -61,5 +63,5 @@ const eps = 1e-3;
 export function nextMultiplier(current: number, direction: 1 | -1): number {
   if (direction === 1) return ladder.find((v) => v > current + eps) ?? Math.floor(current + eps) + 1;
   if (current > 4 + eps) return Math.max(4, Math.ceil(current - eps) - 1);
-  return ladder.findLast((v) => v < current - eps) ?? ladder[0];
+  return ladder.findLast((v) => v < current - eps) ?? Math.min(current, ladder[0]);
 }
