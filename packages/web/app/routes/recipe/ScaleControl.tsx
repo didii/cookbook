@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { formatNumber, nextMultiplier, parseNumber } from '~/lib/scale';
 
 type Props = { value: number; onChange: (value: number) => void; servings: boolean };
@@ -15,6 +15,7 @@ const button =
 export function ScaleControl({ value, onChange, servings }: Props) {
   // What is typed while it differs from the last valid value.
   const [draft, setDraft] = useState<string>();
+  const fieldId = useId();
 
   const parse = (text: string) => {
     if (servings) return /^\d+$/.test(text.trim()) && Number(text) >= 1 ? Number(text) : undefined;
@@ -27,34 +28,38 @@ export function ScaleControl({ value, onChange, servings }: Props) {
   };
 
   return (
-    <span className="inline-flex items-center gap-2">
-      <button data-testid="ScaleControl-less" type="button" aria-label="Minder" onClick={() => step(-1)} className={button}>
-        −
-      </button>
-      {!servings && (
-        <span data-testid="ScaleControl-times" aria-hidden="true">
-          ×
-        </span>
-      )}
-      <input
-        data-testid="ScaleControl-field"
-        type="text"
-        inputMode="decimal"
-        aria-label={servings ? 'Personen' : 'Vermenigvuldiger'}
-        value={draft ?? shown(value, servings)}
-        onChange={(e) => {
-          setDraft(e.target.value);
-          const n = parse(e.target.value);
-          if (n !== undefined) onChange(n);
-        }}
-        onBlur={() => setDraft(undefined)}
-        onKeyDown={(e) => e.key === 'Enter' && setDraft(undefined)}
-        className="min-h-11 w-16 rounded-lg border-3 border-ink bg-white px-2 text-center font-extrabold tabular-nums"
-      />
-      {servings && <span data-testid="ScaleControl-unit">personen</span>}
-      <button data-testid="ScaleControl-more" type="button" aria-label="Meer" onClick={() => step(1)} className={button}>
-        +
-      </button>
-    </span>
+    <div className="inline-flex flex-col gap-1">
+      <label data-testid="ScaleControl-label" htmlFor={fieldId} className="font-extrabold">
+        {servings ? 'Personen' : 'Vermenigvuldiger'}
+      </label>
+      <span className="inline-flex items-center gap-2">
+        <button data-testid="ScaleControl-less" type="button" aria-label="Minder" onClick={() => step(-1)} className={button}>
+          −
+        </button>
+        {!servings && (
+          <span data-testid="ScaleControl-times" aria-hidden="true">
+            ×
+          </span>
+        )}
+        <input
+          id={fieldId}
+          data-testid="ScaleControl-field"
+          type="text"
+          inputMode="decimal"
+          value={draft ?? shown(value, servings)}
+          onChange={(e) => {
+            setDraft(e.target.value);
+            const n = parse(e.target.value);
+            if (n !== undefined) onChange(n);
+          }}
+          onBlur={() => setDraft(undefined)}
+          onKeyDown={(e) => e.key === 'Enter' && setDraft(undefined)}
+          className="min-h-11 w-16 rounded-lg border-3 border-ink bg-white px-2 text-center font-extrabold tabular-nums"
+        />
+        <button data-testid="ScaleControl-more" type="button" aria-label="Meer" onClick={() => step(1)} className={button}>
+          +
+        </button>
+      </span>
+    </div>
   );
 }

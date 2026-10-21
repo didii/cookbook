@@ -12,7 +12,7 @@ export function DeleteRecipe({ title }: Props) {
         type="button"
         data-testid="DeleteRecipe-open"
         onClick={() => dialog.current?.showModal()}
-        className="inline-flex min-h-11 items-center font-extrabold text-muted underline underline-offset-[0.25em] hover:text-ink"
+        className="inline-flex min-h-11 cursor-pointer items-center rounded-full border-3 border-red px-5 font-extrabold text-red hover:bg-red hover:text-white"
       >
         Verwijder recept
       </button>

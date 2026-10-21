@@ -8,8 +8,9 @@ const links = [
   { to: '/over', label: 'Over' },
 ];
 const focus = 'focus-visible:outline-white';
+const iconButton = `flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-[0.625rem] hover:bg-white/15 ${focus}`;
 
-/** Menu button with a sidebar. A modal `<dialog>` gives the focus trap, Escape and backdrop. */
+/** Menu button with a sidebar that slides in from the left. A modal `<dialog>` gives the focus trap, Escape and backdrop. */
 export function SiteMenu() {
   const dialog = useRef<HTMLDialogElement>(null);
   const close = () => dialog.current?.close();
@@ -20,7 +21,7 @@ export function SiteMenu() {
         aria-label="Menu"
         data-testid="SiteMenu-open"
         onClick={() => dialog.current?.showModal()}
-        className={`flex min-h-11 min-w-11 shrink-0 cursor-pointer items-center justify-center rounded-[0.625rem] border-3 border-white ${focus}`}
+        className={`shrink-0 ${iconButton}`}
       >
         <Menu />
       </button>
@@ -31,16 +32,10 @@ export function SiteMenu() {
         data-testid="SiteMenu-dialog"
         aria-label="Menu"
         onClick={(e) => e.target === e.currentTarget && close()}
-        className="m-0 h-full max-h-none w-72 max-w-[85vw] border-r-3 border-white bg-red p-0 text-white backdrop:bg-black/50"
+        className="m-0 h-full max-h-none w-72 max-w-[85vw] -translate-x-full border-r-3 border-ink bg-red p-0 text-white transition-[translate,display,overlay] duration-200 transition-discrete open:translate-x-0 starting:open:-translate-x-full backdrop:bg-black/50 motion-reduce:transition-none"
       >
         <div data-testid="SiteMenu-panel" className="h-full p-4">
-          <button
-            type="button"
-            aria-label="Sluit menu"
-            data-testid="SiteMenu-close"
-            onClick={close}
-            className={`mb-4 flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-[0.625rem] border-3 border-white ${focus}`}
-          >
+          <button type="button" aria-label="Sluit menu" data-testid="SiteMenu-close" onClick={close} className={`mb-4 ${iconButton}`}>
             <Cross />
           </button>
           <nav className="flex flex-col gap-2">
@@ -50,7 +45,7 @@ export function SiteMenu() {
                 to={to}
                 onClick={close}
                 data-testid="SiteMenu-link"
-                className={`flex min-h-11 items-center px-2 text-lg font-black no-underline ${focus}`}
+                className={`flex min-h-11 items-center rounded-[0.625rem] px-2 text-lg font-black no-underline hover:bg-white/15 ${focus}`}
               >
                 {label}
               </Link>

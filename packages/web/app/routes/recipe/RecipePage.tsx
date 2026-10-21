@@ -155,7 +155,7 @@ export function RecipePage({ recipe: r, tile, steps }: Props) {
             van {r.author}
           </span>
           {r.time && <span data-testid="RecipePage-time">{r.time}</span>}
-          <ScaleControl value={amount} onChange={setAmount} servings={r.servings != null} />
+          {r.servings && <span data-testid="RecipePage-servings">{r.servings} personen</span>}
         </p>
         <p className="mt-2 max-w-[60ch] text-lg text-muted">{r.intro}</p>
 
@@ -177,7 +177,11 @@ export function RecipePage({ recipe: r, tile, steps }: Props) {
           <TimerDock timers={timers.active.filter((t) => !inView.has(t.step))} onJump={jump} />
         </div>
 
-        <div className="mt-6 grid grid-cols-[minmax(0,1fr)] gap-10 min-[52rem]:mt-10 min-[52rem]:grid-cols-[minmax(16rem,22rem)_1fr] min-[52rem]:items-start">
+        <div className="mt-6 min-[52rem]:mt-10">
+          <ScaleControl value={amount} onChange={setAmount} servings={r.servings != null} />
+        </div>
+
+        <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-10 min-[52rem]:grid-cols-[minmax(16rem,22rem)_1fr] min-[52rem]:items-start">
           <section
             id="panel-ingredients"
             aria-labelledby="ing"
