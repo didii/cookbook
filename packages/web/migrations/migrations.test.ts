@@ -298,6 +298,22 @@ test('a user gets a creation time in the same format as a recipe', async () => {
   assert.match(row!.created_at, /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/);
 });
 
+const roleOf = async (email: string) => (await db.prepare('SELECT role FROM roles WHERE email = ?').bind(email).first<{ role: string }>())?.role;
+
+test('users › Unknown role is refused', async () => {
+  await assert.rejects(db.prepare("INSERT INTO roles (email, role) VALUES ('x@example.com', 'user')").run());
+  await assert.rejects(db.prepare("INSERT INTO roles (email, role) VALUES ('x@example.com', 'owner')").run());
+  assert.equal(await count("SELECT email FROM roles WHERE email = 'x@example.com'"), 0);
+});
+
+test('users › Seeded superadmin', async () => {
+  assert.equal(await roleOf('info@rhythm-coder.dev'), 'superadmin');
+});
+
+test('users › Seeded address in another case', async () => {
+  assert.equal(await roleOf('Info@Rhythm-Coder.dev'), 'superadmin');
+});
+
 const addView = (user: number, recipe: number) => db.prepare('INSERT INTO recipe_views (user_id, recipe_id) VALUES (?, ?)').bind(user, recipe).run();
 const userId = async (email: string) =>
   (await db.prepare('INSERT INTO users (email, calling_name) VALUES (?, ?) RETURNING id').bind(email, 'X').first<{ id: number }>())!.id;

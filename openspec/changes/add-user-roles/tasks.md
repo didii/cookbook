@@ -2,7 +2,7 @@
 
 ## 1. Roles in the database
 
-- [ ] 1.1 Add `packages/web/migrations/0006_roles.sql`: `roles` table (email unique, case-insensitive; role limited to `admin`/`superadmin`) and the `info@rhythm-coder.dev` superadmin seed. Verify with `migrations.test.ts` tests `users › Unknown role is refused`, `users › Seeded superadmin` and `users › Seeded address in another case`.
+- [x] 1.1 Add `packages/web/migrations/0006_roles.sql`: `roles` table (email unique, case-insensitive; role limited to `admin`/`superadmin`) and the `info@rhythm-coder.dev` superadmin seed. Verify with `migrations.test.ts` tests `users › Unknown role is refused`, `users › Seeded superadmin` and `users › Seeded address in another case`.
 
 ## 2. Role on the user
 
