@@ -13,8 +13,8 @@ Each scenario test is named `<capability> › <Scenario title>`; run `pnpm test:
 
 ## 3. Like button
 
-- [ ] 3.1 Add `Heart`, `StickyNote` and `Lock` to `shared/icons.tsx`.
-- [ ] 3.2 Add `LikeButton` in `routes/recipe` (fetcher, optimistic from `formData`, `aria-pressed`, accessible names "Markeer als favoriet" / "Verwijder uit favorieten", 44px target, `press`) and place it before `Bewerk` in the top row of `RecipePage`, as in `docs/design/recipe-like-note-narrow.html`. Verify with component tests: `recipe-like › Recipe not liked`, `recipe-like › Recipe liked`, `recipe-like › Like cannot be saved`.
+- [x] 3.1 Add `Heart`, `StickyNote` and `Lock` to `shared/icons.tsx`.
+- [x] 3.2 Add `LikeButton` in `routes/recipe` (fetcher, optimistic from `formData`, `aria-pressed`, accessible names "Markeer als favoriet" / "Verwijder uit favorieten", 44px target, `press`) and place it before `Bewerk` in the top row of `RecipePage`, as in `docs/design/recipe-like-note-narrow.html`. Verify with component tests: `recipe-like › Recipe not liked`, `recipe-like › Recipe liked`, `recipe-like › Like cannot be saved`.
 
 ## 4. Note
 

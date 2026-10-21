@@ -14,6 +14,7 @@ import { ClockSetting } from './ClockSetting';
 import { CookSwitch } from './CookSwitch';
 import { DeleteRecipe } from './DeleteRecipe';
 import { IngredientList } from './IngredientList';
+import { LikeButton } from './LikeButton';
 import { ScaleControl } from './ScaleControl';
 import { StepList } from './StepList';
 import { TabBar } from './TabBar';
@@ -26,9 +27,9 @@ import { useStepsInView } from './useStepsInView';
 import { useTimers } from './useTimers';
 import { useWakeLock } from './useWakeLock';
 
-type Props = { recipe: Omit<Recipe, 'steps'>; tile: number; steps: Step[] };
+type Props = { recipe: Omit<Recipe, 'steps'>; tile: number; steps: Step[]; liked?: boolean; note?: string };
 
-export function RecipePage({ recipe: r, tile, steps }: Props) {
+export function RecipePage({ recipe: r, tile, steps, liked = false, note = '' }: Props) {
   const [tab, setTab] = useState<TabId>('ingredients');
   // Lives here, not in the list, because both tabs stay mounted and cook mode reads it.
   const [ticked, setTicked] = useState<ReadonlySet<number>>(new Set());
@@ -138,14 +139,17 @@ export function RecipePage({ recipe: r, tile, steps }: Props) {
           <Link to="/" className="inline-flex min-h-11 items-center gap-1 font-extrabold underline-offset-[0.25em] hover:underline">
             <ChevronBack className="-ml-1.5" /> Alle recepten
           </Link>
-          <Link
-            to={`/recepten/${r.slug}/bewerken`}
-            state={{ fresh: true }}
-            data-testid="RecipePage-edit"
-            className="inline-flex min-h-11 items-center font-extrabold underline-offset-[0.25em] hover:underline"
-          >
-            Bewerk
-          </Link>
+          <div className="flex items-center gap-3.5">
+            <LikeButton slug={r.slug} liked={liked} />
+            <Link
+              to={`/recepten/${r.slug}/bewerken`}
+              state={{ fresh: true }}
+              data-testid="RecipePage-edit"
+              className="inline-flex min-h-11 items-center font-extrabold underline-offset-[0.25em] hover:underline"
+            >
+              Bewerk
+            </Link>
+          </div>
         </div>
         <h1 data-testid="RecipePage-title" className="text-[clamp(2rem,6vw,3.5rem)] leading-[1.05] font-black tracking-[-0.03em] text-balance">
           {r.title}
