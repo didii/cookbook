@@ -37,6 +37,9 @@ test('site-menu › Menu lists the links', () => {
   ]);
 });
 
+// Needs a browser: the slide is a CSS transition on the open dialog.
+test.todo('site-menu › Menu slides in and out');
+
 test('site-menu › Menu closes', () => {
   const { dialog } = show();
   const openMenu = () => fireEvent.click(screen.getByTestId('SiteMenu-open'));

@@ -25,8 +25,11 @@ const setup = (start: number, servings: boolean) => {
 test('recipe-scaling › Control starts at the stored servings', () => {
   setup(4, true);
   assert.equal(field().value, '4');
-  assert.equal(screen.getByTestId('ScaleControl-unit').textContent, 'personen');
-  assert.equal(field().getAttribute('aria-label'), 'Personen');
+  // The label sits above the buttons and names the field.
+  const label = screen.getByTestId('ScaleControl-label');
+  assert.equal(label.textContent, 'Personen');
+  assert.equal(label.getAttribute('for'), field().id);
+  assert.ok(label.compareDocumentPosition(screen.getByTestId('ScaleControl-less')) & Node.DOCUMENT_POSITION_FOLLOWING);
 });
 
 test('recipe-scaling › Plus and minus change by one serving', () => {

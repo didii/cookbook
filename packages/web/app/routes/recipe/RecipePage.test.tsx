@@ -125,12 +125,13 @@ test('recipe-viewing › Optional fields are empty', () => {
   assert.equal(screen.getByTestId('RecipePage-title').textContent, 'Appeltaart');
   assert.equal(screen.getByTestId('RecipePage-author').textContent, 'van Oma');
   assert.equal(screen.queryByTestId('RecipePage-time'), null);
-  assert.equal(screen.queryByTestId('ScaleControl-unit'), null);
+  assert.equal(screen.queryByTestId('RecipePage-servings'), null);
   assert.equal(container.querySelector('img'), null);
   cleanup();
   // With them, each is shown.
   const full = page({ recipe: { ...recipe, time: '1 uur', servings: 6, image: '/taart.jpg' } });
   assert.equal(screen.getByTestId('RecipePage-time').textContent, '1 uur');
+  assert.equal(screen.getByTestId('RecipePage-servings').textContent, '6 personen');
   assert.equal((screen.getByTestId('ScaleControl-field') as HTMLInputElement).value, '6');
   assert.ok(full.container.querySelector('img'));
 });
@@ -215,4 +216,12 @@ test('recipe-scaling › Reload resets', () => {
   cleanup();
   page({ recipe: { ...recipe, servings: 4 } });
   assert.equal((screen.getByTestId('ScaleControl-field') as HTMLInputElement).value, '4');
+});
+
+test('recipe-scaling › Control sits above the lists', () => {
+  page({ recipe: { ...recipe, servings: 4 } });
+  const control = screen.getByTestId('ScaleControl-field');
+  for (const id of ['panel-ingredients', 'panel-steps']) {
+    assert.ok(control.compareDocumentPosition(document.getElementById(id)!) & Node.DOCUMENT_POSITION_FOLLOWING);
+  }
 });

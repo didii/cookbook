@@ -6,15 +6,11 @@ Lets a family member add a new recipe to the cookbook, so recipes can be shared 
 ## Requirements
 
 ### Requirement: A new recipe can be added from the app
-The system SHALL offer, from every page, a link to a form at `/recepten/nieuw` where a family member provides a title and an author, and optionally a number of servings, a preparation time, an intro and a photo, and SHALL save the recipe when the form is submitted.
+The system SHALL offer, in the menu of the header of every page, a link to a form at `/recepten/nieuw` where a family member provides a title and an author, and optionally a number of servings, a preparation time, an intro and a photo, and SHALL save the recipe when the form is submitted.
 
 #### Scenario: Link to the form
-- **WHEN** a family member looks at any page
-- **THEN** a link to the new recipe form is available
-
-#### Scenario: Link on a narrow screen
-- **WHEN** a family member looks at any page on a narrow (phone) screen
-- **THEN** the link is shown in a short form and the signed-in email is not shown, because the header has no room for both; on wider screens both are shown
+- **WHEN** a family member opens the menu on any page
+- **THEN** a link "Nieuw recept" to the new recipe form is available, and the header itself has no such link
 
 #### Scenario: Recipe is created
 - **WHEN** a family member submits a title, an author and a number of servings greater than zero
