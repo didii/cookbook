@@ -5,7 +5,7 @@
 
 ## 2. Recipe page
 
-- [ ] 2.1 Add `routes/recipe/ScaleControl.tsx` (− / field / + with 44 px buttons, servings or multiplier mode, draft text committed on blur/Enter, invalid input reverted) with `ScaleControl.test.tsx` for the control scenarios (`Control starts at the stored servings`, `Plus and minus change by one serving`, `Servings do not go below one`, `A typed number is taken over`, `Invalid typing is undone`, `Multiplier starts at one`, `Buttons walk the steps`, `Typed multiplier between steps`, `Typed fraction`)
+- [x] 2.1 Add `routes/recipe/ScaleControl.tsx` (− / field / + with 44 px buttons, servings or multiplier mode, draft text committed on blur/Enter, invalid input reverted) with `ScaleControl.test.tsx` for the control scenarios (`Control starts at the stored servings`, `Plus and minus change by one serving`, `Servings do not go below one`, `A typed number is taken over`, `Invalid typing is undone`, `Multiplier starts at one`, `Buttons walk the steps`, `Typed multiplier between steps`, `Typed fraction`)
 - [ ] 2.2 Hold the chosen amount in `RecipePage`, replace the "n personen" span by the control, pass scaled ingredients, step texts and chip quantities to `IngredientList` and `StepList` (timers and oven untouched); component tests in `RecipePage.test.tsx` for `recipe-scaling › Step chips scale` and `… › Reload resets`
 - [ ] 2.3 Check the narrow and wide layouts in the running app (buttons reachable by thumb, control does not break the meta row)
 
