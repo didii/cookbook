@@ -1,8 +1,8 @@
 ## 1. Placeholder screens
 
-- [ ] 1.1 Add `shared/WorkInProgress.tsx` (banner "Dit scherm is nog in aanbouw" in `<main id="main">`, with a heading prop)
-- [ ] 1.2 Add `routes/settings/route.tsx` ("Instellingen") and `routes/about/route.tsx` ("Over") using it, each with `meta`
-- [ ] 1.3 Register `instellingen` and `over` in `routes.ts` inside the layout
+- [x] 1.1 Add `shared/WorkInProgress.tsx` (banner "Dit scherm is nog in aanbouw" in `<main id="main">`, with a heading prop)
+- [x] 1.2 Add `routes/settings/route.tsx` ("Instellingen") and `routes/about/route.tsx` ("Over") using it, each with `meta`
+- [x] 1.3 Register `instellingen` and `over` in `routes.ts` inside the layout
 
 ## 2. Menu
 

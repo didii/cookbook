@@ -9,6 +9,7 @@ import {
   ChevronLeft as LucideChevronLeft,
   ChevronUp as LucideChevronUp,
   Link as LucideLink,
+  Menu as LucideMenu,
   Pin as LucidePin,
   Play as LucidePlay,
   Plus as LucidePlus,
@@ -47,7 +48,8 @@ export const Check = icon(LucideCheck);
 export const Plus = icon(LucidePlus);
 export const Arrow = icon(ArrowRight);
 export const Link = icon(LucideLink);
-export const Pin = icon(LucidePin);
+export const Menu = icon(LucideMenu);
+export const Pin =icon(LucidePin);
 export const Search = icon(LucideSearch);
 export const Sliders = icon(SlidersHorizontal);
 export const Clock = icon(Timer);
