@@ -2,8 +2,10 @@ import { data, Form, redirect } from 'react-router';
 import { envContext, userEmailContext } from '~/.server/context';
 import { createUser, getUser } from '~/.server/users';
 import { safeReturnUrl } from '~/lib/returnUrl';
+import { tiles } from '~/lib/tile';
 import { Button } from '~/shared/Button';
 import { Fret } from '~/shared/Fret';
+import { TileBand } from '~/shared/TileBand';
 import type { Route } from './+types/route';
 
 const maxNameLength = 40;
@@ -11,7 +13,7 @@ const maxNameLength = 40;
 export async function loader({ request, context }: Route.LoaderArgs) {
   const returnUrl = safeReturnUrl(new URL(request.url).searchParams.get('returnUrl'));
   if (await getUser(context.get(envContext).DB, context.get(userEmailContext))) throw redirect(returnUrl);
-  return { returnUrl };
+  return { returnUrl, tile: Math.floor(Math.random() * tiles.length) };
 }
 
 /** The calling name without surrounding spaces, or why it is refused. */
@@ -37,9 +39,9 @@ export function meta() {
 
 export default function Welcome({ loaderData, actionData }: Route.ComponentProps) {
   return (
-    <main id="main" className="mx-auto max-w-272 px-[max(1rem,4vw)] pt-8 pb-16">
-      <div className="max-w-lg border-3 border-ink bg-white shadow-hard">
-        <Fret size={14} className="text-yel" />
+    <main id="main" className="@container mx-auto max-w-3xl px-[max(1rem,4vw)] pt-8 pb-16 md:pt-16">
+      <div className="border-3 border-ink bg-white shadow-hard">
+        <Fret size={14} className="text-red" />
         <Form method="post" className="p-6">
           <h1 className="text-[clamp(2rem,6vw,3rem)] leading-[1.05] font-black tracking-[-0.03em] text-balance">Welkom in het Familiekookboek</h1>
           <p className="mt-2 text-lg text-pretty text-muted">Alle familierecepten op één plek. Eén ding nog voordat je begint.</p>
@@ -68,6 +70,7 @@ export default function Welcome({ loaderData, actionData }: Route.ComponentProps
             Aan de slag
           </Button>
         </Form>
+        <TileBand first={loaderData.tile} responsive className="border-t-3" />
       </div>
     </main>
   );

@@ -92,7 +92,7 @@ export function FilterBar({ filters, authors, detailed, onChange }: Props) {
                     htmlFor={`${sheetId}-${value}`}
                     className={cn(
                       control,
-                      'relative bg-white peer-checked:bg-ink peer-checked:text-white peer-focus-visible:outline-4 peer-focus-visible:outline-offset-3 peer-focus-visible:outline-blu',
+                      'relative bg-white peer-checked:bg-red peer-checked:text-white peer-focus-visible:outline-4 peer-focus-visible:outline-offset-3 peer-focus-visible:outline-blu',
                       value === sorts[0].value ? 'rounded-r-none' : '-ml-[3px] rounded-l-none',
                     )}
                   >
@@ -134,7 +134,7 @@ export function FilterBar({ filters, authors, detailed, onChange }: Props) {
             aria-expanded={open}
             aria-controls={sheetId}
             onClick={() => setOpen(!open)}
-            className={cn(control, press, 'relative min-h-12 min-w-12 gap-2 bg-yel px-3.5 aria-expanded:bg-ink aria-expanded:text-white md:hidden')}
+            className={cn(control, press, 'relative min-h-12 min-w-12 gap-2 bg-yel px-3.5 aria-expanded:bg-red aria-expanded:text-white md:hidden')}
           >
             <Sliders />
             <span>Filter</span>
@@ -160,7 +160,7 @@ function Chip({ pressed, onClick, children }: ChipProps) {
       type="button"
       aria-pressed={pressed}
       onClick={onClick}
-      className={cn(control, 'border-dashed bg-transparent hover:bg-ink/8 aria-pressed:border-solid aria-pressed:bg-ink aria-pressed:text-white')}
+      className={cn(control, 'border-dashed bg-transparent hover:bg-ink/8 aria-pressed:border-solid aria-pressed:bg-red aria-pressed:text-white')}
     >
       {children}
     </button>

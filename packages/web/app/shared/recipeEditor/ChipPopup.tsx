@@ -176,7 +176,7 @@ export function ChipPopup({ chip, values, anchor, onValues, onLabel, onMode, onR
                 type="button"
                 aria-pressed={follows === (mode === 'auto')}
                 onClick={() => onMode(mode)}
-                className="flex min-h-10 cursor-pointer items-center justify-center gap-1.5 border-2 border-ink bg-white text-sm font-black hover:not-aria-pressed:bg-[color-mix(in_srgb,var(--color-ink)_5%,white)] first-of-type:rounded-l-lg last:-ml-0.5 last:rounded-r-lg aria-pressed:bg-ink aria-pressed:text-white"
+                className="flex min-h-10 cursor-pointer items-center justify-center gap-1.5 border-2 border-ink bg-white text-sm font-black hover:not-aria-pressed:bg-[color-mix(in_srgb,var(--color-ink)_5%,white)] first-of-type:rounded-l-lg last:-ml-0.5 last:rounded-r-lg aria-pressed:bg-red aria-pressed:text-white"
               >
                 {icon}
                 {text}
