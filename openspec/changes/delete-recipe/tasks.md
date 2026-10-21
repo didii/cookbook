@@ -5,12 +5,12 @@
 
 ## 2. UI
 
-- [ ] 2.1 Add `routes/recipe/DeleteRecipe.tsx`: "Verwijder recept" button and modal `<dialog>` naming the recipe with "Verwijderen" (submit) and "Annuleren"; closes on Escape and on a click on the backdrop
-- [ ] 2.2 Render it in `RecipePage` after the steps, outside the tab panels, and check the narrow and wide layouts
+- [x] 2.1 Add `routes/recipe/DeleteRecipe.tsx`: "Verwijder recept" button and modal `<dialog>` naming the recipe with "Verwijderen" (submit) and "Annuleren"; closes on Escape and on a click on the backdrop
+- [x] 2.2 Render it in `RecipePage` after the steps, outside the tab panels, and check the narrow and wide layouts
 
 ## 3. Tests
 
-- [ ] 3.1 Component tests for the `recipe-deletion` button and popup scenarios (`recipe-deletion › Delete button is shown`, `… › Popup asks for confirmation`, `… › Cancel closes the popup`, `… › Click outside closes the popup`, `… › Escape closes the popup`)
+- [x] 3.1 Component tests for the `recipe-deletion` button and popup scenarios (`recipe-deletion › Delete button is shown`, `… › Popup asks for confirmation`, `… › Cancel closes the popup`, `… › Click outside closes the popup`, `… › Escape closes the popup`)
 - [ ] 3.2 Route tests for `recipe-deletion › Recipe is deleted`, `… › Photo is deleted`, `… › Unknown recipe`
 
 ## 4. Finish

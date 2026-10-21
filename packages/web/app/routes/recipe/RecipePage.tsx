@@ -11,6 +11,7 @@ import { Seal } from '~/shared/Seal';
 import { TileBand } from '~/shared/TileBand';
 import { ClockSetting } from './ClockSetting';
 import { CookSwitch } from './CookSwitch';
+import { DeleteRecipe } from './DeleteRecipe';
 import { IngredientList } from './IngredientList';
 import { StepList } from './StepList';
 import { TabBar } from './TabBar';
@@ -179,6 +180,7 @@ export function RecipePage({ recipe: r, tile, steps }: Props) {
             <Fret size={18} className="mt-7 text-red" />
           </section>
         </div>
+        <DeleteRecipe title={r.title} />
       </main>
     </TimersContext>
   );
