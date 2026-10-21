@@ -13,10 +13,10 @@
 
 ## 3. Admin only
 
-- [ ] 3.1 Add `requireAdmin(db, email)` to `.server/users.ts` (403 unless `admin` or `superadmin`). Verify with `users.test.ts` unit tests.
-- [ ] 3.2 Add route `beheer/herkenning` (`routes/admin-rules/route.tsx`) with a loader and action that call `requireAdmin` first, and a form with five textareas, the error messages and the restore button; register it in `routes.ts`. Verify with `parsing-rules › User opens the page`, `parsing-rules › User posts a change`, `parsing-rules › Admin opens the page`, `parsing-rules › Superadmin opens the page`, `parsing-rules › Non-admin cannot restore defaults`.
-- [ ] 3.3 Root loader does one `getUser` and returns `role`. `Layout` passes `role` to `Header`, which passes it to `SiteMenu` (one `role` prop) which adds "Herkenning" for admin and superadmin; update `Header.test.tsx`. Verify with `SiteMenu.test.tsx` tests `parsing-rules › Admin sees the link`, `parsing-rules › Superadmin sees the link`, `parsing-rules › User does not see the link`, and `site-menu › Menu lists the links for a superadmin`.
+- [x] 3.1 Add `requireAdmin(db, email)` to `.server/users.ts` (403 unless `admin` or `superadmin`). Verify with `users.test.ts` unit tests.
+- [x] 3.2 Add route `beheer/herkenning` (`routes/admin-rules/route.tsx`) with a loader and action that call `requireAdmin` first, and a form with five textareas, the error messages and the restore button; register it in `routes.ts`. Verify with `parsing-rules › User opens the page`, `parsing-rules › User posts a change`, `parsing-rules › Admin opens the page`, `parsing-rules › Superadmin opens the page`, `parsing-rules › Non-admin cannot restore defaults`.
+- [x] 3.3 Root loader does one `getUser` and returns `role`. `Layout` passes `role` to `Header`, which passes it to `SiteMenu` (one `role` prop) which adds "Herkenning" for admin and superadmin; update `Header.test.tsx`. Verify with `SiteMenu.test.tsx` tests `parsing-rules › Admin sees the link`, `parsing-rules › Superadmin sees the link`, `parsing-rules › User does not see the link`, and `site-menu › Menu lists the links for a superadmin`.
 
 ## 4. Finish
 
-- [ ] 4.1 Run `pnpm test:spec configure-parsing-rules` (no scenario without a test), then `pnpm format:fix`, `pnpm lint:fix`, `pnpm format:check`, `pnpm lint:check`, `pnpm typecheck` and `pnpm test:ai`; all pass.
+- [x] 4.1 Run `pnpm test:spec configure-parsing-rules` (no scenario without a test), then `pnpm format:fix`, `pnpm lint:fix`, `pnpm format:check`, `pnpm lint:check`, `pnpm typecheck` and `pnpm test:ai`; all pass.

@@ -1,3 +1,5 @@
+import { data } from 'react-router';
+
 export type Role = 'user' | 'admin' | 'superadmin';
 export type User = { id: number; email: string; callingName: string; createdAt: string; role: Role };
 
@@ -25,4 +27,11 @@ export async function createUser(db: D1Database, email: string, callingName: str
     )
     .bind(email, callingName, superadminEmail ?? '')
     .run();
+}
+
+/** The member, when their role is `admin` or `superadmin`; otherwise throws a 403 response. Check this first in the loader and action of every admin page: hiding a link is not protection. */
+export async function requireAdmin(db: D1Database, email: string): Promise<User> {
+  const user = await getUser(db, email);
+  if (user?.role !== 'admin' && user?.role !== 'superadmin') throw data('Geen toegang', { status: 403 });
+  return user;
 }

@@ -5,10 +5,12 @@ import { routePaths } from '~testing/routes';
 import { MemoryRouter } from 'react-router';
 import { Header } from './Header';
 
+const memberRole = 'user' as const;
+
 test('recipe-creation › Link to the form', () => {
   render(
     <MemoryRouter>
-      <Header email="oma@example.com" />
+      <Header email="oma@example.com" role={memberRole} />
     </MemoryRouter>,
   );
   // The link lives in the menu, not in the header itself.

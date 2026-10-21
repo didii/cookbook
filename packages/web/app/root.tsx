@@ -2,6 +2,8 @@ import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration }
 import type { Route } from './+types/root';
 import './app.css';
 import { envContext, userEmailContext } from '~/.server/context';
+import { getRules } from '~/.server/rules';
+import { getUser } from '~/.server/users';
 import { redirectToWelcome } from '~/.server/welcome';
 import { SkipLink } from '~/shared/SkipLink';
 
@@ -39,9 +41,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export async function loader({ request, context }: Route.LoaderArgs) {
   const email = context.get(userEmailContext);
   // A member without a user row is welcomed first and sent on to the page they asked for.
-  const welcome = await redirectToWelcome(context.get(envContext).DB, email, new URL(request.url));
+  const db = context.get(envContext).DB;
+  const user = await getUser(db, email);
+  const welcome = redirectToWelcome(user, new URL(request.url));
   if (welcome) throw welcome;
-  return { email };
+  // `role` drives the menu links only; the pages that need a role check it themselves. Without a user row (the welcome screen) there is no menu.
+  return { email, role: user?.role ?? 'user', rules: await getRules(db) };
 }
 
 export default function App() {

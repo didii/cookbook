@@ -7,6 +7,7 @@ export default [
   layout('routes/layout/route.tsx', [
     index('routes/home/route.tsx'),
     route('instellingen', 'routes/settings/route.tsx'),
+    route('beheer/herkenning', 'routes/admin-rules/route.tsx'),
     route('over', 'routes/about/route.tsx'),
     route('recepten/nieuw', 'routes/new-recipe/route.tsx'),
     route('recepten/:slug/bewerken', 'routes/edit-recipe/route.tsx'),
