@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { fireEvent, render, screen, within } from '~testing/dom';
 import { ChipsHarness, stepOf } from '~testing/stepChips';
-import { createElement } from 'react';
 
 // Needs a browser: hover, focus and visibility.
 test.todo('recipe-step-chips › A ghost is shown only while its step is active');
@@ -14,7 +13,7 @@ test.todo('recipe-step-chips › Following and pinned chips are marked different
 test.todo('recipe-step-chips › Hovering a chip fills its words');
 
 const initial = stepOf({ body: 'Bak 30 minuten op 180 graden.', ingredients: [], ovenTemperature: 180, timer: { minutes: 30 } });
-const show = () => render(createElement(ChipsHarness, { initial }));
+const show = () => render(<ChipsHarness initial={initial} />);
 const bar = () => screen.getByRole('toolbar', { name: 'Chips van stap 1' });
 /** The things in the tab order: the chips and the add buttons, but not the small icon buttons (those are for the pointer). */
 const tabStops = () =>

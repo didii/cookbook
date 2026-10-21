@@ -3,7 +3,7 @@ import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
 import { defined } from '~testing/defined';
 import { render, screen } from '~testing/dom';
-import { createElement, type ReactElement } from 'react';
+import type { ReactElement } from 'react';
 import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
 import { envContext } from '~/.server/context';
 import { getPhoto, storePhoto } from '~/.server/photos';
@@ -143,7 +143,7 @@ test('recipe-editing › Same form for new and existing recipes', () => {
   const values = { title: 'Soep', author: 'Oma', servings: '4', time: '1u', intro: 'Warm', image: '', ingredients: [], steps: [] };
   const form = (element: ReactElement) => {
     const router = createMemoryRouter([{ path: '/', element }]);
-    const { container, unmount } = render(createElement(RouterProvider, { router }));
+    const { container, unmount } = render(<RouterProvider router={router} />);
     const found = {
       heading: screen.getByRole('heading', { level: 1 }).textContent,
       title: screen.getByRole<HTMLInputElement>('textbox', { name: /Titel/ }).value,
@@ -153,12 +153,12 @@ test('recipe-editing › Same form for new and existing recipes', () => {
     unmount();
     return found;
   };
-  const edit = form(
-    createElement(EditRecipe, {
-      loaderData: { slug: 'soep', updatedAt: '2026-01-01T00:00:00Z', authors: ['Oma'], tile: 0, seal: undefined, values },
-    } as unknown as Route.ComponentProps),
-  );
-  const create = form(createElement(NewRecipe, { loaderData: { authors: ['Oma'], tile: 0, seal: undefined } } as unknown as NewRoute.ComponentProps));
+  const editProps = {
+    loaderData: { slug: 'soep', updatedAt: '2026-01-01T00:00:00Z', authors: ['Oma'], tile: 0, seal: undefined, values },
+  } as unknown as Route.ComponentProps;
+  const newProps = { loaderData: { authors: ['Oma'], tile: 0, seal: undefined } } as unknown as NewRoute.ComponentProps;
+  const edit = form(<EditRecipe {...editProps} />);
+  const create = form(<NewRecipe {...newProps} />);
   // The same fields, in the same form.
   assert.deepEqual(edit.controls, create.controls);
   // Only the starting values, the heading and the way back differ.

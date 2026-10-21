@@ -2,13 +2,16 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { cssFor } from '~testing/css';
 import { precedes, render, screen } from '~testing/dom';
-import { createElement } from 'react';
 import { MemoryRouter } from 'react-router';
 import { RecipeCard } from './RecipeCard';
 
 const recipe = { slug: 'soep', title: 'Soep', author: 'Oma', time: null, image: '/soep.jpg', seal: null };
 const card = (r: Partial<typeof recipe & { isNew: boolean }> = {}) =>
-  render(createElement(MemoryRouter, null, createElement(RecipeCard, { recipe: { ...recipe, ...r }, tile: 0 })));
+  render(
+    <MemoryRouter>
+      <RecipeCard recipe={{ ...recipe, ...r }} tile={0} />
+    </MemoryRouter>,
+  );
 
 test('recipe-browsing › Card image ratio', async () => {
   const { container } = card();

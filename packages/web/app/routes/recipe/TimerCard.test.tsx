@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { cleanup, precedes, render, screen } from '~testing/dom';
-import { createElement } from 'react';
 import type { Step } from '~/lib/recipe';
 import { activeTimers, handOver, start, timerDefs, timerView } from '~/lib/timers';
 import { ClockSetting } from './ClockSetting';
@@ -33,7 +32,11 @@ const controlsAt = (now: number, timers = start({}, defs[0], T0)): TimerControls
 });
 
 const stepTwo = (controls: TimerControls) =>
-  render(createElement(TimersContext, { value: controls }, createElement(StepItem, { step: steps[1], number: 2, done: false, onToggle() {} })));
+  render(
+    <TimersContext value={controls}>
+      <StepItem step={steps[1]} number={2} done={false} onToggle={() => {}} />
+    </TimersContext>,
+  );
 
 test('a running timer is a card with its controls and a countdown chip', () => {
   stepTwo(controlsAt(T0 + 5 * 60_000));
@@ -67,7 +70,7 @@ test('the clock app control is offered only where the clock app can be started',
   assert.ok(screen.getByRole('button', { name: /klok-app/ }));
   cleanup();
   // And no setting without it.
-  assert.equal(render(createElement(ClockSetting)).container.firstChild, null);
+  assert.equal(render(<ClockSetting />).container.firstChild, null);
 });
 
 test('a handed over timer is a note with the label below it, which can be undone or wiped', () => {

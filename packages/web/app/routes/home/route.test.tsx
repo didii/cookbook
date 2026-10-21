@@ -3,7 +3,6 @@ import { after, before, test } from 'node:test';
 import { cssFor } from '~testing/css';
 import { createTestDb } from '~testing/db';
 import { act, cleanup, fireEvent, precedes, render, screen, within } from '~testing/dom';
-import { createElement } from 'react';
 import { createMemoryRouter, MemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
 import { envContext, userEmailContext } from '~/.server/context';
 import { createRecipe } from '~/.server/recipes';
@@ -30,8 +29,14 @@ const load = async () => {
 };
 
 /** The page for a list of recipes at an address. */
-const renderAt = (url: string, recipes: RecipeSummary[]) =>
-  render(createElement(MemoryRouter, { initialEntries: [url] }, createElement(Home, { loaderData: { recipes } } as Route.ComponentProps)));
+const renderAt = (url: string, recipes: RecipeSummary[]) => {
+  const props = { loaderData: { recipes } } as Route.ComponentProps;
+  return render(
+    <MemoryRouter initialEntries={[url]}>
+      <Home {...props} />
+    </MemoryRouter>,
+  );
+};
 /** The slugs of the cards on the page, in order. */
 const shownTitles = () => screen.queryAllByRole('link').map((a) => a.getAttribute('href')?.replace('/recepten/', ''));
 /** The "n recepten" line. */
@@ -176,14 +181,15 @@ test('typing a search does not fetch the recipes again, other navigation does', 
 
 test('recipe-filtering › Filtering does not fill the history', async () => {
   // A memory history stands in for the browser's: one step back from the home page leads to the page before it, however much was typed.
+  const props = { loaderData: { recipes: family } } as Route.ComponentProps;
   const router = createMemoryRouter(
     [
-      { path: '/', element: createElement(Home, { loaderData: { recipes: family } } as Route.ComponentProps) },
+      { path: '/', element: <Home {...props} /> },
       { path: '/eerder', element: null },
     ],
     { initialEntries: ['/eerder', '/'], initialIndex: 1 },
   );
-  render(createElement(RouterProvider, { router }));
+  render(<RouterProvider router={router} />);
   fireEvent.change(searchBox(), { target: { value: 'a' } });
   fireEvent.change(searchBox(), { target: { value: 'ap' } });
   assert.equal(router.state.location.search, '?q=ap');

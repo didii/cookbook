@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { cleanup, fireEvent, precedes, render, screen } from '~testing/dom';
-import { createElement } from 'react';
 import type { Step } from '~/lib/recipe';
 import { toggled } from '~/lib/toggled';
 import { StepItem } from './StepItem';
@@ -15,10 +14,10 @@ const steps: Step[] = [
   plain('Laat afkoelen.'),
 ];
 
-const renderStep = (step: Step, number = 1, done = false) => render(createElement(StepItem, { step, number, done, onToggle: () => {} }));
+const renderStep = (step: Step, number = 1, done = false) => render(<StepItem step={step} number={number} done={done} onToggle={() => {}} />);
 
 test('recipe-viewing › Steps are all readable', () => {
-  const { container } = render(createElement(StepList, { steps }));
+  const { container } = render(<StepList steps={steps} />);
   for (const [i, s] of steps.entries()) {
     assert.ok(screen.getByText(`Stap ${i + 1}`), `label of step ${i + 1}`);
     assert.ok(screen.getByRole('button', { name: s.body }), `text of step ${i + 1}`);
@@ -37,7 +36,7 @@ test('recipe-viewing › Step is marked done', () => {
   assert.ok(screen.getByRole('button', { name: 'snijden', pressed: true }) && screen.getByText('✓'));
   cleanup();
   // Tapping marks it, and tapping again restores it.
-  render(createElement(StepList, { steps: [step] }));
+  render(<StepList steps={[step]} />);
   fireEvent.click(screen.getByRole('button', { name: 'snijden' }));
   assert.ok(screen.getByRole('button', { name: 'snijden', pressed: true }) && screen.getByText('✓'));
   fireEvent.click(screen.getByRole('button', { name: 'snijden' }));
@@ -49,13 +48,13 @@ test('recipe-viewing › Step is marked done', () => {
 test.todo('recipe-viewing › Nothing shifts when a step is done');
 
 test('recipe-viewing › Marks are not kept', () => {
-  render(createElement(StepList, { steps }));
+  render(<StepList steps={steps} />);
   assert.equal(screen.queryAllByRole('button', { pressed: true }).length, 0);
   // A mark made by hand is gone on a new page.
   fireEvent.click(screen.getByRole('button', { name: 'Kneed het deeg.' }));
   assert.equal(screen.queryAllByRole('button', { pressed: true }).length, 1);
   cleanup();
-  render(createElement(StepList, { steps }));
+  render(<StepList steps={steps} />);
   assert.equal(screen.queryAllByRole('button', { pressed: true }).length, 0);
 });
 

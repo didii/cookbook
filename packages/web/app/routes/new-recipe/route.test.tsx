@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
 import { cleanup, fireEvent, openAutocomplete, render, screen } from '~testing/dom';
-import { createElement } from 'react';
 import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
 import { envContext, userEmailContext } from '~/.server/context';
 import { getRecipe } from '~/.server/recipes';
@@ -55,7 +54,7 @@ test('recipe-creation › Servings left empty', async () => {
 /** The new recipe page as the router shows it, with what a refused submit hands back (nothing on first opening). */
 const form = (actionData?: { errors: Record<string, string>; values: typeof emptyDraftSeed }) => {
   const props = { loaderData: { authors: ['Oma', 'Mama'], tile: 0, seal: undefined }, actionData } as unknown as Route.ComponentProps;
-  return render(createElement(RouterProvider, { router: createMemoryRouter([{ path: '/', element: createElement(NewRecipe, props) }]) }));
+  return render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <NewRecipe {...props} /> }])} />);
 };
 
 test('recipe-creation › Suggestions ignore letter case', async () => {

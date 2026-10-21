@@ -2,34 +2,37 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { cssFor } from '~testing/css';
 import { fireEvent, precedes, render, screen, within } from '~testing/dom';
-import { createElement, useState } from 'react';
+import { useState } from 'react';
 import type { IngredientLine } from '~/lib/draft';
 import { IngredientList } from './IngredientList';
 
 /** The list as the editor holds it: a few rows and the free row at the end. */
 function Harness({ start }: { start: string[] }) {
   const [rows, setRows] = useState<IngredientLine[]>([...start, ''].map((text, i) => ({ id: `r${i}`, text })));
-  return createElement(IngredientList, {
-    rows,
-    onType: (id: string, text: string) => setRows((r) => r.map((x) => (x.id === id ? { ...x, text } : x))),
-    onRemove: (id: string) => setRows((r) => r.filter((x) => x.id !== id)),
-    onMove: (id: string, to: number) =>
-      setRows((r) => {
-        const next = [...r];
-        next.splice(
-          to,
-          0,
-          ...next.splice(
-            r.findIndex((x) => x.id === id),
-            1,
-          ),
-        );
-        return next;
-      }),
-  });
+  return (
+    <IngredientList
+      rows={rows}
+      onType={(id, text) => setRows((r) => r.map((x) => (x.id === id ? { ...x, text } : x)))}
+      onRemove={(id) => setRows((r) => r.filter((x) => x.id !== id))}
+      onMove={(id, to) =>
+        setRows((r) => {
+          const next = [...r];
+          next.splice(
+            to,
+            0,
+            ...next.splice(
+              r.findIndex((x) => x.id === id),
+              1,
+            ),
+          );
+          return next;
+        })
+      }
+    />
+  );
 }
 
-const show = (...start: string[]) => render(createElement(Harness, { start }));
+const show = (...start: string[]) => render(<Harness start={start} />);
 const field = (n: number) => screen.getByRole<HTMLInputElement>('textbox', { name: `Ingrediënt ${n}` });
 const toolbar = (n: number) => screen.getByRole('toolbar', { name: `Acties voor ingrediënt ${n}` });
 const press = (el: Element, key: string, init: object = {}) => fireEvent.keyDown(el, { key, ...init });

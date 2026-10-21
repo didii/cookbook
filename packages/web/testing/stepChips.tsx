@@ -1,4 +1,4 @@
-import { createElement, useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { classifyStored, type StepChips as Chips, type Context } from '~/lib/chips';
 import type { StepDraft } from '~/lib/draft';
 import type { Step } from '~/lib/recipe';
@@ -17,13 +17,13 @@ export function ChipsHarness({
 }: {
   initial: Chips & { id: string };
   context?: Context;
-  extra?: (step: StepDraft) => unknown;
+  extra?: (step: StepDraft) => ReactNode;
 }) {
   const [step, setStep] = useState<StepDraft>(initial);
-  return createElement(
-    'div',
-    null,
-    createElement(StepChips, { step, context, number: 1, onHot() {}, onChange: (change) => setStep((s) => change(s, context)) }),
-    extra?.(step) as never,
+  return (
+    <div>
+      <StepChips step={step} context={context} number={1} onHot={() => {}} onChange={(change) => setStep((s) => change(s, context))} />
+      {extra?.(step)}
+    </div>
   );
 }

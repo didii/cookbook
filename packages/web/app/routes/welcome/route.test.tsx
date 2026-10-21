@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
 import { render, screen } from '~testing/dom';
-import { createElement } from 'react';
 import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
 import { envContext, userEmailContext } from '~/.server/context';
 import { getUser } from '~/.server/users';
@@ -42,8 +41,8 @@ const open = async (email: string, search = '') => {
 };
 // The Form needs a data router, so the screen is rendered inside one.
 const show = (props: object) => {
-  const router = createMemoryRouter([{ path: '/', element: createElement(Welcome, props as Route.ComponentProps) }]);
-  return render(createElement(RouterProvider, { router }));
+  const router = createMemoryRouter([{ path: '/', element: <Welcome {...(props as Route.ComponentProps)} /> }]);
+  return render(<RouterProvider router={router} />);
 };
 const countRows = async (email: string) => (await db.prepare('SELECT id FROM users WHERE email = ?').bind(email).all()).results.length;
 

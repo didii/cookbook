@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { afterEach, test } from 'node:test';
 import { cleanup, fireEvent, precedes, render, screen, setViewport } from '~testing/dom';
 import { routePaths } from '~testing/routes';
-import { createElement, type ComponentProps } from 'react';
+import type { ComponentProps } from 'react';
 import { MemoryRouter } from 'react-router';
 import type { Recipe, Step } from '~/lib/recipe';
 import { arrive, type Positions, type TabId } from '~/lib/tabs';
@@ -33,7 +33,11 @@ const recipe: Omit<Recipe, 'steps'> = {
 };
 
 const page = (props: Partial<ComponentProps<typeof RecipePage>> = {}) =>
-  render(createElement(MemoryRouter, null, createElement(RecipePage, { recipe, tile: 0, steps, ...props })));
+  render(
+    <MemoryRouter>
+      <RecipePage recipe={recipe} tile={0} steps={steps} {...props} />
+    </MemoryRouter>,
+  );
 /** The sticky bar with the tabs and the timer dock. */
 const stack = () => screen.getByRole('tablist').parentElement!;
 
@@ -80,7 +84,7 @@ test('recipe-viewing › Ticked ingredients are kept', () => {
     [true, false],
   );
   cleanup();
-  render(createElement(IngredientList, { ingredients: recipe.ingredients, ticked: new Set([1]), onToggle: () => {} }));
+  render(<IngredientList ingredients={recipe.ingredients} ticked={new Set([1])} onToggle={() => {}} />);
   assert.deepEqual(
     screen.getAllByRole<HTMLInputElement>('checkbox').map((c) => c.checked),
     [false, true],

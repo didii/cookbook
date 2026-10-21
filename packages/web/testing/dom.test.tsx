@@ -1,10 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { createElement } from 'react';
 import { openAutocomplete, render, screen } from './dom';
 
 test('renders into a DOM that is queried by role', () => {
-  render(createElement('button', null, 'Ja'));
+  render(<button>Ja</button>);
   assert.equal(screen.getByRole('button', { name: 'Ja' }).tagName, 'BUTTON');
 });
 
@@ -19,7 +18,7 @@ test('keeps Node networking classes', () => {
 
 test('opens an autocomplete popup from the pointer and the arrow key', () => {
   const opened: string[] = [];
-  render(createElement('input', { 'aria-label': 'x', onPointerDown: () => opened.push('pointer'), onKeyDown: (e) => opened.push(e.key) }));
+  render(<input aria-label="x" onPointerDown={() => opened.push('pointer')} onKeyDown={(e) => opened.push(e.key)} />);
   openAutocomplete(screen.getByRole('textbox'));
   assert.deepEqual(opened, ['pointer', 'ArrowDown']);
 });
