@@ -1,16 +1,15 @@
 import { data, redirect } from 'react-router';
 import { envContext, userEmailContext } from '~/.server/context';
-import { deleteUser, getUserById, isLastSuperadmin, requireSuperadmin, updateUser, type Role } from '~/.server/users';
+import { deleteUser, getUserById, isLastSuperadmin, requireSuperadmin, updateUser } from '~/.server/users';
+import { roles, type Role } from '~/lib/role';
 import type { Route } from './+types/route';
 import { UserForm } from './UserForm';
-
-const roles: readonly string[] = ['user', 'admin', 'superadmin'] satisfies Role[];
 
 /** The role check comes first, so a non-superadmin gets 403 for any id and cannot tell which users exist. */
 async function target(context: Route.LoaderArgs['context'], idParam: string) {
   const db = context.get(envContext).DB;
   const me = await requireSuperadmin(db, context.get(userEmailContext));
-  const user = /^\d+$/.test(idParam) ? await getUserById(db, Number(idParam)) : undefined;
+  const user = /^\d{1,9}$/.test(idParam) ? await getUserById(db, Number(idParam)) : undefined;
   if (!user) throw data('Gebruiker niet gevonden', { status: 404 });
   return { db, me, user };
 }
@@ -30,7 +29,10 @@ export async function action({ request, params, context }: Route.ActionArgs) {
   const form = await request.formData();
   const isSelf = me.id === user.id;
   if (form.get('intent') === 'delete') {
-    if (!(await deleteUser(db, user.id))) return data({ refused: 'De enige superadmin kan niet worden verwijderd.' }, { status: 400 });
+    if (!(await deleteUser(db, user.id))) {
+      await target(context, params.id); // 404 when the user vanished meanwhile (e.g. a double submit)
+      return data({ refused: 'De enige superadmin kan niet worden verwijderd.' }, { status: 400 });
+    }
     // Without a user row the member is welcomed again, so a self-delete goes home (the page would answer 403).
     return redirect(isSelf ? '/' : '/beheer/gebruikers');
   }
@@ -38,9 +40,10 @@ export async function action({ request, params, context }: Route.ActionArgs) {
   if (!callingName) return data({ error: 'Vul een roepnaam in.' }, { status: 400 });
   // A disabled field is not submitted, so a missing role means unchanged.
   const roleValue = form.get('role');
-  if (roleValue !== null && !roles.includes(String(roleValue))) return data({ refused: 'Onbekende rol.' }, { status: 400 });
+  if (roleValue !== null && !roles.includes(roleValue as Role)) return data({ refused: 'Onbekende rol.' }, { status: 400 });
   const role = roleValue === null ? undefined : (roleValue as Role);
   if (!(await updateUser(db, user.id, { callingName, role }))) {
+    await target(context, params.id); // 404 when the user vanished meanwhile
     return data({ refused: 'De rol van de enige superadmin kan niet worden gewijzigd.' }, { status: 400 });
   }
   // Demoting yourself ends your access to this page, so go home.

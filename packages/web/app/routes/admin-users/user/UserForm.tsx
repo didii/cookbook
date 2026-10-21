@@ -1,17 +1,13 @@
 import { useRef } from 'react';
 import { Form } from 'react-router';
 import type { UserListItem } from '~/.server/users';
-import type { Role } from '~/lib/role';
+import { roles } from '~/lib/role';
 import { Button } from '~/shared/Button';
 import { DeleteUser } from './DeleteUser';
 
 type Props = { user: UserListItem; lastSuperadmin: boolean; isSelf: boolean; accessUrl: string; error?: string; refused?: string; saved?: boolean };
 
-const roles: { value: Role; label: string }[] = [
-  { value: 'user', label: 'Gebruiker' },
-  { value: 'admin', label: 'Beheerder' },
-  { value: 'superadmin', label: 'Superadmin' },
-];
+const labels = { user: 'Gebruiker', admin: 'Beheerder', superadmin: 'Superadmin' };
 const field =
   'mt-1 block min-h-12 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-lg text-ink focus:shadow-focus focus:outline-transparent disabled:opacity-40 aria-invalid:border-red';
 
@@ -70,9 +66,9 @@ export function UserForm({ user, lastSuperadmin, isSelf, accessUrl, error, refus
             aria-describedby={lastSuperadmin ? 'role-reason' : undefined}
             className={field}
           >
-            {roles.map(({ value, label }) => (
+            {roles.map((value) => (
               <option key={value} value={value}>
-                {label}
+                {labels[value]}
               </option>
             ))}
           </select>
