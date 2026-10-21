@@ -61,6 +61,9 @@ test('recipe-deletion › Click outside closes the popup', () => {
   // A click inside the popup leaves it open; one on the backdrop (the dialog element itself) closes it.
   fireEvent.click(within(dialog()).getByRole('heading'));
   assert.equal(dialog().open, true);
+  // The padding belongs to the inner form, so a click on it is not a click on the backdrop.
+  fireEvent.click(dialog().firstElementChild!);
+  assert.equal(dialog().open, true);
   fireEvent.click(dialog());
   assert.equal(dialog().open, false);
 });

@@ -444,15 +444,22 @@ test('deleteRecipe removes the recipe with its ingredients, steps and views, and
     author: 'Oma',
     image: '/foto/x.jpg',
     ingredients: [{ name: 'bloem' }],
-    steps: [{ body: 'Bak 30 minuten.', timer: { minutes: 30 } }],
+    steps: [{ body: 'Bak 30 minuten.', ingredients: [{ quantityText: '1', name: 'bloem' }], timer: { minutes: 30 } }],
   });
   await db
     .prepare('INSERT INTO recipe_views (user_id, recipe_id) SELECT u.id, r.id FROM users u, recipes r WHERE u.email = ? AND r.slug = ?')
     .bind('wis@example.com', slug)
     .run();
+  const stepId = (await db
+    .prepare('SELECT s.id FROM steps s JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ?')
+    .bind(slug)
+    .first<{ id: number }>())!.id;
+  const chips = () => db.prepare('SELECT COUNT(*) AS n FROM step_ingredient_chips WHERE step_id = ?').bind(stepId).first<{ n: number }>();
+  assert.equal((await chips())!.n, 1);
   const id = (await db.prepare('SELECT id FROM recipes WHERE slug = ?').bind(slug).first<{ id: number }>())!.id;
   assert.deepEqual(await deleteRecipe(db, slug), { image: '/foto/x.jpg' });
   assert.equal(await getRecipe(db, slug), undefined);
+  assert.equal((await chips())!.n, 0);
   for (const table of ['ingredients', 'steps', 'recipe_views']) {
     assert.equal((await db.prepare(`SELECT COUNT(*) AS n FROM ${table} WHERE recipe_id = ?`).bind(id).first<{ n: number }>())!.n, 0, table);
   }

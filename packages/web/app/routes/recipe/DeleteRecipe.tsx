@@ -7,7 +7,7 @@ type Props = { title: string };
 export function DeleteRecipe({ title }: Props) {
   const dialog = useRef<HTMLDialogElement>(null);
   return (
-    <div className="mt-10 flex justify-center max-[51.99rem]:pb-16">
+    <div className="mt-10 flex justify-center">
       <button
         type="button"
         onClick={() => dialog.current?.showModal()}

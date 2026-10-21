@@ -180,7 +180,9 @@ export function RecipePage({ recipe: r, tile, steps }: Props) {
             <Fret size={18} className="mt-7 text-red" />
           </section>
         </div>
-        <DeleteRecipe title={r.title} />
+        <div className="max-[51.99rem]:pb-16">
+          <DeleteRecipe title={r.title} />
+        </div>
       </main>
     </TimersContext>
   );
