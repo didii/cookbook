@@ -6,7 +6,7 @@ import { createTestDb } from '~testing/db';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, RouterContextProvider } from 'react-router';
-import { envContext } from '~/.server/context';
+import { envContext, userEmailContext } from '~/.server/context';
 import { createRecipe } from '~/.server/recipes';
 import { filterParams, noFilters } from '~/lib/filterRecipes';
 import type { RecipeSummary } from '~/lib/recipe';
@@ -26,6 +26,7 @@ after(() => dispose());
 const load = async () => {
   const context = new RouterContextProvider();
   context.set(envContext, { DB: db } as Partial<Env> as Env);
+  context.set(userEmailContext, 'oma@example.com');
   return (await loader({ context } as Partial<Route.LoaderArgs> as Route.LoaderArgs)).recipes;
 };
 

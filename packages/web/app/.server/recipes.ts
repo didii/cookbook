@@ -152,10 +152,24 @@ export async function createRecipe(db: D1Database, recipe: RecipeInput): Promise
   return slug;
 }
 
-/** Every recipe, the most recently added first. */
-export async function listRecipes(db: D1Database): Promise<RecipeSummary[]> {
-  const { results } = await db.prepare('SELECT slug, title, author, time, image, seal FROM recipes ORDER BY id DESC').all<RecipeSummary>();
-  return results;
+/** A recipe is "new" to a member for this many months after it was added. */
+export const newForMonths = 1;
+
+/** Every recipe, the most recently added first, each flagged `isNew` for this member: added less than `newForMonths` before `now`, not opened by them and not added by them. */
+export async function listRecipes(db: D1Database, email: string, now: Date): Promise<RecipeSummary[]> {
+  const cutoff = new Date(now);
+  cutoff.setUTCMonth(cutoff.getUTCMonth() - newForMonths);
+  const { results } = await db
+    .prepare(
+      `SELECT r.slug, r.title, r.author, r.time, r.image, r.seal,
+        (r.created_at > ?1 AND v.recipe_id IS NULL AND COALESCE(r.created_by <> ?2 COLLATE NOCASE, 1)) AS isNew
+      FROM recipes r
+      LEFT JOIN recipe_views v ON v.recipe_id = r.id AND v.user_id = (SELECT id FROM users WHERE email = ?2)
+      ORDER BY r.id DESC`,
+    )
+    .bind(cutoff.toISOString().replace(/\.\d+Z$/, 'Z'), email)
+    .all<Omit<RecipeSummary, 'isNew'> & { isNew: 0 | 1 }>();
+  return results.map((r) => ({ ...r, isNew: r.isNew === 1 }));
 }
 
 /** Every author once(case variants count as one), for suggestions. */
@@ -210,4 +224,12 @@ export async function updateRecipe(
       : []),
   ]);
   return result.meta.changes > 0 ? { previousImage: (before.results[0] as { image: string | null }).image } : undefined;
+}
+
+/** Notes that the member opened the recipe, once per member and recipe. Nothing happens for an unknown recipe or a member without a user row. */
+export async function recordView(db: D1Database, email: string, slug: string): Promise<void> {
+  await db
+    .prepare('INSERT OR IGNORE INTO recipe_views (user_id, recipe_id) SELECT u.id, r.id FROM users u, recipes r WHERE u.email = ? AND r.slug = ?')
+    .bind(email, slug)
+    .run();
 }

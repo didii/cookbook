@@ -4,6 +4,7 @@ import { createTestDb } from '~testing/db';
 import { defined } from '~testing/defined';
 import { seals } from '~/lib/seals';
 import { createRecipe, getRecipe, listAuthors, listRecipes, slugify, updateRecipe, type StepInput } from './recipes';
+import { createUser } from './users';
 
 /** Steps with only a text, as they are stored and as they come back. */
 const plain = (...bodies: string[]): StepInput[] => bodies.map((body) => ({ body }));
@@ -150,12 +151,12 @@ test('recipe-creation › Existing authors are suggested', async () => {
 test('lists every recipe with its card fields, the most recently added first', async () => {
   const fresh = await createTestDb();
   try {
-    assert.deepEqual(await listRecipes(fresh.db), []);
+    assert.deepEqual(await listRecipes(fresh.db, 'x@example.com', new Date()), []);
     await createRecipe(fresh.db, { title: 'Eerst', author: 'Oma', time: '30 min', image: '/a.jpg', seal: 'fu' });
     await createRecipe(fresh.db, { title: 'Daarna', author: 'Papa', seal: 'fu' });
-    assert.deepEqual(await listRecipes(fresh.db), [
-      { slug: 'daarna', title: 'Daarna', author: 'Papa', time: null, image: null, seal: 'fu' },
-      { slug: 'eerst', title: 'Eerst', author: 'Oma', time: '30 min', image: '/a.jpg', seal: 'fu' },
+    assert.deepEqual(await listRecipes(fresh.db, 'x@example.com', new Date()), [
+      { slug: 'daarna', title: 'Daarna', author: 'Papa', time: null, image: null, seal: 'fu', isNew: true },
+      { slug: 'eerst', title: 'Eerst', author: 'Oma', time: '30 min', image: '/a.jpg', seal: 'fu', isNew: true },
     ]);
   } finally {
     await fresh.dispose();
@@ -383,4 +384,55 @@ test('recipe-step-chips › Chips are stored with their step', async () => {
     )?.n,
     1,
   );
+});
+
+// "Nieuw": added less than a month before `now`, not opened by this member, not added by them.
+const now = new Date('2026-03-15T12:00:00Z');
+const newFor = async (email: string, slug: string, at = now) => (await listRecipes(db, email, at)).find((r) => r.slug === slug)?.isNew;
+const addedAt = (slug: string, createdAt: string) => db.prepare('UPDATE recipes SET created_at = ? WHERE slug = ?').bind(createdAt, slug).run();
+const open = (email: string, slug: string) =>
+  db
+    .prepare('INSERT INTO recipe_views (user_id, recipe_id) SELECT u.id, r.id FROM users u, recipes r WHERE u.email = ? AND r.slug = ?')
+    .bind(email, slug)
+    .run();
+
+test('recipe-new-marker › Recent recipe never opened', async () => {
+  const slug = await createRecipe(db, { title: 'Vorige week', author: 'Oma', createdBy: 'oma@example.com' });
+  await addedAt(slug, '2026-03-08T12:00:00Z');
+  assert.equal(await newFor('kind@example.com', slug), true);
+  // Just inside and just outside the month.
+  await addedAt(slug, '2026-02-15T12:00:01Z');
+  assert.equal(await newFor('kind@example.com', slug), true);
+  await addedAt(slug, '2026-02-15T12:00:00Z');
+  assert.equal(await newFor('kind@example.com', slug), false);
+});
+
+test('recipe-new-marker › Marker is per member', async () => {
+  await createUser(db, 'een@example.com', 'Een');
+  await createUser(db, 'twee@example.com', 'Twee');
+  const slug = await createRecipe(db, { title: 'Per lid', author: 'Oma', createdBy: 'oma@example.com' });
+  await addedAt(slug, '2026-03-08T12:00:00Z');
+  await open('een@example.com', slug);
+  assert.equal(await newFor('een@example.com', slug), false);
+  assert.equal(await newFor('EEN@example.com', slug), false);
+  assert.equal(await newFor('twee@example.com', slug), true);
+});
+
+test('recipe-new-marker › Recipe older than a month', async () => {
+  const slug = await createRecipe(db, { title: 'Oud', author: 'Oma', createdBy: 'oma@example.com' });
+  await addedAt(slug, '2026-02-01T12:00:00Z');
+  assert.equal(await newFor('kind@example.com', slug), false);
+});
+
+test('recipe-new-marker › Viewing your own recent recipe', async () => {
+  const slug = await createRecipe(db, { title: 'Eigen', author: 'Oma', createdBy: 'Mama@Example.com' });
+  await addedAt(slug, '2026-03-14T12:00:00Z');
+  assert.equal(await newFor('mama@example.com', slug), false);
+  assert.equal(await newFor('kind@example.com', slug), true);
+});
+
+test('a recipe without a creator can be new to everyone', async () => {
+  const slug = await createRecipe(db, { title: 'Zonder maker', author: 'Oma' });
+  await addedAt(slug, '2026-03-14T12:00:00Z');
+  assert.equal(await newFor('kind@example.com', slug), true);
 });
