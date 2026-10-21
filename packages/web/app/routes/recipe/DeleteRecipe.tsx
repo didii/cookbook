@@ -16,6 +16,7 @@ export function DeleteRecipe({ title }: Props) {
         Verwijder recept
       </button>
       {/* Escape and the focus trap come with showModal. The dialog has no padding of its own, so a click whose target is the dialog itself is a click on the backdrop. */}
+      {/* oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- a mouse shortcut for the backdrop; keyboard users have Escape and "Annuleren" */}
       <dialog
         ref={dialog}
         aria-labelledby="delete-title"

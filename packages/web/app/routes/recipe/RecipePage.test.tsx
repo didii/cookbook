@@ -4,7 +4,7 @@ import { afterEach, test } from 'node:test';
 import { cleanup, fireEvent, precedes, render, screen, setViewport } from '~testing/dom';
 import { routePaths } from '~testing/routes';
 import type { ComponentProps } from 'react';
-import { MemoryRouter } from 'react-router';
+import { createMemoryRouter, RouterProvider } from 'react-router';
 import type { Recipe, Step } from '~/lib/recipe';
 import { arrive, type Positions, type TabId } from '~/lib/tabs';
 import { IngredientList } from './IngredientList';
@@ -33,11 +33,8 @@ const recipe: Omit<Recipe, 'steps'> = {
 };
 
 const page = (props: Partial<ComponentProps<typeof RecipePage>> = {}) =>
-  render(
-    <MemoryRouter>
-      <RecipePage recipe={recipe} tile={0} steps={steps} {...props} />
-    </MemoryRouter>,
-  );
+  // A data router, because the page holds a router `Form` (delete button).
+  render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <RecipePage recipe={recipe} tile={0} steps={steps} {...props} /> }])} />);
 /** The sticky bar with the tabs and the timer dock. */
 const stack = () => screen.getByRole('tablist').parentElement!;
 

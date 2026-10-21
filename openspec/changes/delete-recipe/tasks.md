@@ -15,4 +15,4 @@
 
 ## 4. Finish
 
-- [ ] 4.1 `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check`, `pnpm test:ai`; `pnpm test:spec delete-recipe` shows no missing scenarios
+- [x] 4.1 `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check`, `pnpm test:ai`; `pnpm test:spec delete-recipe` shows no missing scenarios
