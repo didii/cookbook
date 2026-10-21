@@ -23,29 +23,31 @@ export function SiteMenu() {
       >
         <Menu />
       </button>
-      {/* A click on the dialog itself is a click on the backdrop: the panel's content covers the rest. */}
+      {/* A click on the dialog itself is a click on the backdrop: the panel div fills the dialog, so everything inside it hits that div. */}
       {/* oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- Escape is native; this is the backdrop click. */}
       <dialog
         ref={dialog}
         aria-label="Menu"
         onClick={(e) => e.target === e.currentTarget && close()}
-        className="m-0 h-full max-h-none w-72 max-w-[85vw] border-r-3 border-white bg-red p-4 text-white backdrop:bg-black/50"
+        className="m-0 h-full max-h-none w-72 max-w-[85vw] border-r-3 border-white bg-red p-0 text-white backdrop:bg-black/50"
       >
-        <button
-          type="button"
-          aria-label="Sluit menu"
-          onClick={close}
-          className={`mb-4 flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-[0.625rem] border-3 border-white ${focus}`}
-        >
-          <Cross />
-        </button>
-        <nav className="flex flex-col gap-2">
-          {links.map(({ to, label }) => (
-            <Link key={to} to={to} onClick={close} className={`flex min-h-11 items-center px-2 text-lg font-black no-underline ${focus}`}>
-              {label}
-            </Link>
-          ))}
-        </nav>
+        <div className="h-full p-4">
+          <button
+            type="button"
+            aria-label="Sluit menu"
+            onClick={close}
+            className={`mb-4 flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-[0.625rem] border-3 border-white ${focus}`}
+          >
+            <Cross />
+          </button>
+          <nav className="flex flex-col gap-2">
+            {links.map(({ to, label }) => (
+              <Link key={to} to={to} onClick={close} className={`flex min-h-11 items-center px-2 text-lg font-black no-underline ${focus}`}>
+                {label}
+              </Link>
+            ))}
+          </nav>
+        </div>
       </dialog>
     </>
   );

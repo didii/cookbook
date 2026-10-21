@@ -1,13 +1,24 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { fireEvent, render, screen } from '~testing/dom';
-import { createMemoryRouter, RouterProvider } from 'react-router';
+import { createMemoryRouter, Outlet, RouterProvider } from 'react-router';
 import { SiteMenu } from './SiteMenu';
 
 const show = () => {
   const router = createMemoryRouter([
-    { path: '/', element: <SiteMenu /> },
-    { path: '/over', element: <p>Over pagina</p> },
+    // The menu sits in a layout, as in the app, so it survives the navigation.
+    {
+      element: (
+        <>
+          <SiteMenu />
+          <Outlet />
+        </>
+      ),
+      children: [
+        { path: '/', element: <p>Start</p> },
+        { path: '/over', element: <p>Over pagina</p> },
+      ],
+    },
   ]);
   const view = render(<RouterProvider router={router} />);
   return { ...view, dialog: view.container.querySelector('dialog')! };
@@ -30,10 +41,8 @@ test('site-menu › Menu closes', () => {
   const { dialog } = show();
   const openMenu = () => fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
   openMenu();
-  // Escape closes a modal dialog in the browser; the DOM here only fires `cancel`, so the close is done as the browser does it.
-  fireEvent.keyDown(dialog, { key: 'Escape' });
-  dialog.close();
-  assert.equal(dialog.hasAttribute('open'), false);
+  // Escape closes a modal dialog in the browser by firing `cancel` and then closing, unless `cancel` is prevented. happy-dom does not do Escape, so this checks nothing stops the cancel; the close itself is the browser's.
+  assert.equal(fireEvent(dialog, new Event('cancel', { cancelable: true })), true);
   // The close button and a click on the backdrop close it too.
   openMenu();
   fireEvent.click(screen.getByRole('button', { name: 'Sluit menu', hidden: true }));
@@ -41,6 +50,10 @@ test('site-menu › Menu closes', () => {
   openMenu();
   fireEvent.click(dialog);
   assert.equal(dialog.hasAttribute('open'), false);
+  // A click inside the panel (its padding, not a link) leaves it open.
+  openMenu();
+  fireEvent.click(dialog.querySelector('nav')!.parentElement!);
+  assert.equal(dialog.hasAttribute('open'), true);
 });
 
 test('site-menu › Following a link closes the menu', async () => {
@@ -48,5 +61,6 @@ test('site-menu › Following a link closes the menu', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
   fireEvent.click(screen.getByRole('link', { name: 'Over' }));
   await screen.findByText('Over pagina');
-  assert.equal(dialog.isConnected, false); // the page changed; the menu was closed by the click before it
+  assert.equal(dialog.isConnected, true);
+  assert.equal(dialog.hasAttribute('open'), false);
 });
