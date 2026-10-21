@@ -16,8 +16,8 @@ Stacked on `configure-parsing-rules` (it adds `role` to the root loader, the `Si
 
 ## 3. Menu link
 
-- [ ] 3.1 `SiteMenu` already has the `role` prop; add "Gebruikers" (`/beheer/gebruikers`) after "Herkenning", shown for `superadmin` only. Update the existing `SiteMenu.test.tsx` superadmin test and add an admin one. Verify with `site-menu › Menu lists the links for an admin` and `site-menu › Menu lists the links for a superadmin`.
+- [x] 3.1 `SiteMenu` already has the `role` prop; add "Gebruikers" (`/beheer/gebruikers`) after "Herkenning", shown for `superadmin` only. Update the existing `SiteMenu.test.tsx` superadmin test and add an admin one. Verify with `site-menu › Menu lists the links for an admin` and `site-menu › Menu lists the links for a superadmin`.
 
 ## 4. Finish
 
-- [ ] 4.1 Run `pnpm test:spec add-user-management` (no scenario without a test), then `pnpm format:fix`, `pnpm lint:fix`, `pnpm format:check`, `pnpm lint:check`, `pnpm typecheck` and `pnpm test:ai`; all pass.
+- [x] 4.1 Run `pnpm test:spec add-user-management` (no scenario without a test), then `pnpm format:fix`, `pnpm lint:fix`, `pnpm format:check`, `pnpm lint:check`, `pnpm typecheck` and `pnpm test:ai`; all pass.

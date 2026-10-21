@@ -8,6 +8,7 @@ const links = [
   { to: '/instellingen', label: 'Instellingen' },
   { to: '/over', label: 'Over' },
   { to: '/beheer/herkenning', label: 'Herkenning', admin: true },
+  { to: '/beheer/gebruikers', label: 'Gebruikers', superadmin: true },
 ];
 const focus = 'focus-visible:outline-white';
 const iconButton = `flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-[0.625rem] hover:bg-white/15 ${focus}`;
@@ -42,7 +43,7 @@ export function SiteMenu({ role }: { role: Role }) {
           </button>
           <nav className="flex flex-col gap-2">
             {links
-              .filter((l) => !l.admin || role !== 'user')
+              .filter((l) => (!l.admin || role !== 'user') && (!l.superadmin || role === 'superadmin'))
               .map(({ to, label }) => (
                 <Link
                   key={to}
