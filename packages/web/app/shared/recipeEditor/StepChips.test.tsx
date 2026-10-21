@@ -5,6 +5,7 @@ import { useState, type ReactNode } from 'react';
 import { classifyStored, type StepChips as Chips, type Context } from '~/lib/chips';
 import type { StepDraft } from '~/lib/draft';
 import type { Step } from '~/lib/recipe';
+import { defaultRules } from '~/lib/rules';
 import { StepChips } from '~/shared/recipeEditor/StepChips';
 
 // Needs a browser: hover, focus and visibility.
@@ -16,7 +17,7 @@ test.todo('recipe-step-chips › Following and pinned chips are marked different
 // Needs a browser: pointer hover and the fill of the marked words.
 test.todo('recipe-step-chips › Hovering a chip fills its words');
 
-export const noRows: Context = { rows: [] };
+export const noRows: Context = { rows: [], rules: defaultRules };
 
 /** A step as the editor holds it, with the chips its stored form gives it. */
 export const stepOf = (stored: Step, context: Context = noRows): StepDraft => ({ id: 's1', ...classifyStored(stored, context) });

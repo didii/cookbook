@@ -31,6 +31,7 @@ import {
   purgeDrafts,
   resolveStart,
 } from '~/lib/draftStore';
+import { defaultRules, type Rules } from '~/lib/rules';
 import { AuthorInput } from '~/shared/AuthorInput';
 import { cn } from '~/shared/cn';
 import { ChevronBack } from '~/shared/icons';
@@ -75,14 +76,16 @@ const asterisk = (
 
 /** The one page for creating and editing a recipe; the routes only differ in the values, heading and cancel target they pass. */
 export function RecipeEditor({ heading, authors, initial, values, errors, tile, seal, cancelTo, slug, updatedAt }: Props) {
-  const [current, setCurrent] = useState(() => startingDraft(values));
+  // The recognition rules come with the root data; a test that renders the editor alone has none and gets the defaults.
+  const rules = useRouteLoaderData<{ rules?: Rules }>('root')?.rules ?? defaultRules;
+  const [current, setCurrent] = useState(() => startingDraft(rules, values));
   const [photo, setPhoto] = useState<PhotoState>('ready');
   // Bumped by Herstel so the photo field starts over: it drops a running upload and its preview.
   const [resets, setResets] = useState(0);
   const busy = useNavigation().formMethod != null;
-  const startingValues = startingDraft(initial);
-  const dirty = isDirty(startingValues, current);
-  const contexts = stepContexts(current);
+  const startingValues = startingDraft(rules, initial);
+  const dirty = isDirty(startingValues, current, rules);
+  const contexts = stepContexts(current, rules);
   const proposalCount = current.steps.reduce((n, step, i) => n + proposals(step, contexts[i]).length, 0);
   // Set when the form is submitted, before the navigation starts, so saving never asks; cleared when the response (a refusal) is back.
   const submitting = useRef(false);
@@ -100,7 +103,7 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
   useLayoutEffect(() => {
     const storage = browserStorage();
     purgeDrafts(storage, new Date());
-    const start = resolveStart({ draft: loadDraft(storage, key), fresh: isFresh(location.state), shown: startingDraft(values), updatedAt });
+    const start = resolveStart({ draft: loadDraft(storage, key), fresh: isFresh(location.state), shown: startingDraft(rules, values), updatedAt });
     if (start.discard) {
       clearDraft(storage, key);
       // The flag is used up: a reload from here on restores the new draft instead of starting fresh again.
@@ -122,6 +125,7 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
     key,
     state: current,
     initial: startingValues,
+    rules,
     base,
     uploading: photo === 'uploading',
     ready,
@@ -132,7 +136,7 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
   // Puts every field back to the starting values; the draft ends with it (the editor is not dirty any more).
   const reset = () => {
     clearDraft(browserStorage(), key);
-    setCurrent(startingDraft(initial));
+    setCurrent(startingDraft(rules, initial));
     setPhoto('ready');
     setResets((n) => n + 1);
   };
@@ -243,11 +247,12 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
             <p className="mb-2 text-muted">Hoeveelheid eerst, dan de naam.</p>
             <IngredientList
               rows={current.ingredients}
+              rules={rules}
               usedIn={(id) => usedIn(current.steps, id)}
               errors={errors.ingredients}
-              onType={(id, value) => setCurrent((c) => typeIngredient(c, id, value))}
-              onRemove={(id) => setCurrent((c) => removeIngredient(c, id))}
-              onMove={(id, to) => setCurrent((c) => moveIngredient(c, id, to))}
+              onType={(id, value) => setCurrent((c) => typeIngredient(c, id, value, rules))}
+              onRemove={(id) => setCurrent((c) => removeIngredient(c, id, rules))}
+              onMove={(id, to) => setCurrent((c) => moveIngredient(c, id, to, rules))}
             />
           </section>
           <section aria-labelledby="steps-heading">
@@ -257,17 +262,17 @@ export function RecipeEditor({ heading, authors, initial, values, errors, tile, 
             <p className="mb-2 text-muted">
               Eén stap per alinea. Enter gaat naar de volgende stap; typ in de lege stap onderaan om er een toe te voegen.
             </p>
-            <input type="hidden" name="steps" value={JSON.stringify(storedSteps(current))} />
+            <input type="hidden" name="steps" value={JSON.stringify(storedSteps(current, rules))} />
             <StepList
               key={resets}
               steps={current.steps}
               contexts={contexts}
-              onChips={(id, change) => setCurrent((c) => changeChips(c, id, change))}
+              onChips={(id, change) => setCurrent((c) => changeChips(c, id, change, rules))}
               onType={(id, body) => setCurrent((c) => editStep(c, id, body))}
-              onEdit={(id, edit, body) => setCurrent((c) => editedStep(c, id, body, edit))}
+              onEdit={(id, edit, body) => setCurrent((c) => editedStep(c, id, body, edit, rules))}
               onAdd={(at) => setCurrent((c) => addStep(c, at))}
-              onRemove={(id) => setCurrent((c) => removeStep(c, id))}
-              onRestore={(step, at) => setCurrent((c) => restoreStep(c, step, at))}
+              onRemove={(id) => setCurrent((c) => removeStep(c, id, rules))}
+              onRestore={(step, at) => setCurrent((c) => restoreStep(c, step, at, rules))}
               onMove={(id, to) => setCurrent((c) => moveStep(c, id, to))}
             />
           </section>

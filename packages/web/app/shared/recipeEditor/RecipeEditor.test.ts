@@ -2,9 +2,10 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { emptyDraftSeed, isDirty, startingDraft } from '~/lib/draft';
 import { asksBeforeLeaving, draftKey, saveDraft, type DraftStorage } from '~/lib/draftStore';
+import { defaultRules } from '~/lib/rules';
 
 const content = { ...emptyDraftSeed, title: 'Soep', author: 'Oma' };
-const stored = startingDraft(content);
+const stored = startingDraft(defaultRules, content);
 const key = draftKey('oma@example.com', 'soep');
 /** A storage that refuses every write, as a full one does. */
 const fakeFullStorage: DraftStorage = {
@@ -29,19 +30,19 @@ test.todo('recipe-form › Save is busy while storing');
 test.todo('recipe-form › Cancel leaves without storing');
 
 // The bar shows "Herstel" and "Niet opgeslagen" exactly while isDirty is true.
-test('recipe-form › Reset hidden without changes', () => assert.equal(isDirty(stored, startingDraft(content)), false));
+test('recipe-form › Reset hidden without changes', () => assert.equal(isDirty(stored, startingDraft(defaultRules, content), defaultRules), false));
 
 test('recipe-form › Reset restores the starting values', () => {
   const edited = { ...stored, title: 'Stamppot', intro: 'x' };
-  assert.equal(isDirty(stored, edited), true);
-  const reset = startingDraft(content);
+  assert.equal(isDirty(stored, edited, defaultRules), true);
+  const reset = startingDraft(defaultRules, content);
   assert.deepEqual(reset, stored);
-  assert.equal(isDirty(stored, reset), false);
+  assert.equal(isDirty(stored, reset, defaultRules), false);
 });
 
 test('recipe-form › Unsaved indicator', () => {
-  assert.equal(isDirty(stored, { ...stored, time: '1 uur' }), true);
-  assert.equal(isDirty(stored, { ...stored, time: '' }), false);
+  assert.equal(isDirty(stored, { ...stored, time: '1 uur' }, defaultRules), true);
+  assert.equal(isDirty(stored, { ...stored, time: '' }, defaultRules), false);
 });
 
 // Needs a browser: the inline question and its focus.
@@ -52,7 +53,7 @@ test.todo('recipe-form › Reset can be declined');
 // The confirmation itself (following a link) needs a browser; whether it is asked is decided by asksBeforeLeaving.
 test('recipe-form › Leaving when the draft could not be kept asks first', () => {
   const full = (state: typeof stored) =>
-    saveDraft(fakeFullStorage, key, { state, initial: stored, base: {}, uploading: false, settledImage: '', now: new Date() });
+    saveDraft(fakeFullStorage, key, { state, initial: stored, base: {}, uploading: false, settledImage: '', now: new Date(), rules: defaultRules });
   const edited = { ...stored, title: 'Stamppot' };
   assert.equal(
     asksBeforeLeaving({ dirty: true, submitting: false }, () => full(edited).ok),
@@ -68,7 +69,9 @@ test('recipe-form › Leaving with a kept draft does not ask', () => {
   let storedValue = '';
   const storage = { ...fakeFullStorage, setItem: (_: string, v: string) => void (storedValue = v) };
   const edited = { ...stored, title: 'Stamppot' };
-  const keep = () => saveDraft(storage, key, { state: edited, initial: stored, base: {}, uploading: false, settledImage: '', now: new Date() }).ok;
+  const keep = () =>
+    saveDraft(storage, key, { state: edited, initial: stored, base: {}, uploading: false, settledImage: '', now: new Date(), rules: defaultRules })
+      .ok;
   assert.equal(asksBeforeLeaving({ dirty: true, submitting: false }, keep), false);
   assert.ok(storedValue, 'the changes are on the device when the page is left');
 });

@@ -1,5 +1,6 @@
 import type { Range } from '~/lib/anchors';
 import { parseIngredient } from '~/lib/ingredients';
+import { alternation, type Rules } from '~/lib/rules';
 
 /** What the words of a chip say, per kind of chip. */
 export type IngredientValues = { quantity: string; name: string };
@@ -15,25 +16,38 @@ const toNumber = (text: string) => Number(text.replace(',', '.'));
 const before = String.raw`(?<![\p{L}\d])`;
 const after = String.raw`(?![\p{L}\d])`;
 
-const spoken: Record<string, number> = { 'een half uur': 30, 'een kwartier': 15, 'anderhalf uur': 90, 'een uur': 60 };
-const duration = new RegExp(
-  String.raw`${before}(?:(een half uur|een kwartier|anderhalf uur|een uur)|(${num})(?:\s*[-–]\s*${num})?\s*(minuten|minuut|min|uren|uur|u))${after}`,
-  'giu',
-);
+type Patterns = { duration: RegExp; temperature: RegExp };
+const cache = new WeakMap<Rules, Patterns>();
+
+/** The regexes of a set of rules, built from its escaped words and kept per rules object. A spoken phrase is tried before a number with an hour word. */
+function patternsOf(rules: Rules): Patterns {
+  let patterns = cache.get(rules);
+  if (!patterns) {
+    const spoken = Object.keys(rules.spoken);
+    const phrase = spoken.length ? `(${alternation(spoken)})|` : '(?!)()|';
+    patterns = {
+      duration: new RegExp(
+        String.raw`${before}(?:${phrase}(${num})(?:\s*[-–]\s*${num})?\s*(${alternation([...rules.minuteWords, ...rules.hourWords])}))${after}`,
+        'giu',
+      ),
+      temperature: new RegExp(String.raw`${before}(\d+)\s*(?:${alternation(rules.degreeWords)})${after}`, 'giu'),
+    };
+    cache.set(rules, patterns);
+  }
+  return patterns;
+}
 
 /** The first duration in the text ("30 minuten", "1,5 uur", "20-25 minuten", "een kwartier"), in whole minutes; a range gives its lower value. */
-export function findTimer(text: string): Found<TimerValues> | undefined {
-  for (const m of text.matchAll(duration)) {
-    const minutes = m[1] ? spoken[m[1].toLowerCase()] : Math.round(toNumber(m[2]) * (m[3].toLowerCase().startsWith('u') ? 60 : 1));
+export function findTimer(text: string, rules: Rules): Found<TimerValues> | undefined {
+  for (const m of text.matchAll(patternsOf(rules).duration)) {
+    const minutes = m[1] ? rules.spoken[m[1].toLowerCase()] : Math.round(toNumber(m[2]) * (rules.hourWords.includes(m[3].toLowerCase()) ? 60 : 1));
     if (minutes > 0) return { start: m.index, end: m.index + m[0].length, values: { minutes } };
   }
 }
 
-const temperature = new RegExp(String.raw`${before}(\d+)\s*(?:graden|gr|°\s?C?)${after}`, 'giu');
-
 /** The first temperature in the text ("180 graden", "180 °C", "180°"), when it is plausible for an oven: 50 to 300. */
-export function findOven(text: string): Found<OvenValues> | undefined {
-  for (const m of text.matchAll(temperature)) {
+export function findOven(text: string, rules: Rules): Found<OvenValues> | undefined {
+  for (const m of text.matchAll(patternsOf(rules).temperature)) {
     const degrees = Number(m[1]);
     if (degrees >= 50 && degrees <= 300) return { start: m.index, end: m.index + m[0].length, values: { degrees } };
   }
@@ -83,13 +97,13 @@ function mentions(row: Row, words: Token[], text: string): Range[] {
 }
 
 /** The amount written right before the name ("100 g", "2"), as a range, when the text before the name ends in one. */
-function writtenQuantity(text: string, name: Range): Range | undefined {
+function writtenQuantity(text: string, name: Range, rules: Rules): Range | undefined {
   const before = [...text.slice(0, name.start).matchAll(/\S+/g)];
   for (const take of [2, 1]) {
     const from = before.at(-take);
     if (!from) continue;
     const phrase = text.slice(from.index, name.start).trim();
-    const parsed = parseIngredient(phrase);
+    const parsed = parseIngredient(phrase, rules);
     if (parsed.quantityText && !parsed.name) return { start: from.index, end: from.index + phrase.length };
   }
 }
@@ -98,7 +112,7 @@ function writtenQuantity(text: string, name: Range): Range | undefined {
  * The ingredient chips a step's text asks for, in the order of the text. A word matches a row by its last word (singular or plural, any letter case) and by its whole name when all of it is written; of rows that overlap the longest wins, then the earlier row; each row is found once, at its first place that is not taken.
  * `fallback` gives the amount to show when none is written before the name.
  */
-export function findIngredients(text: string, rows: Row[], fallback: (row: Row) => string): FoundIngredient[] {
+export function findIngredients(text: string, rows: Row[], fallback: (row: Row) => string, rules: Rules): FoundIngredient[] {
   const words = tokens(text);
   const pending = rows.map((row, order) => ({ row, order, places: mentions(row, words, text), at: 0 }));
   const taken: (Range & { row: Row })[] = [];
@@ -118,7 +132,7 @@ export function findIngredients(text: string, rows: Row[], fallback: (row: Row) 
   return taken
     .sort((a, b) => a.start - b.start)
     .map(({ row, ...place }) => {
-      const quantity = writtenQuantity(text, place);
+      const quantity = writtenQuantity(text, place, rules);
       return {
         rowId: row.id,
         start: quantity?.start ?? place.start,

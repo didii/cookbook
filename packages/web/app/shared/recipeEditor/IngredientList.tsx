@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import type { IngredientLine } from '~/lib/draft';
+import type { Rules } from '~/lib/rules';
 import { ArrowDown, ArrowUp } from '../icons';
 import { Announcement } from './Announcement';
 import { IngredientItem } from './IngredientItem';
@@ -9,6 +10,7 @@ import { useReorder } from './useReorder';
 type Props = {
   /** The rows to show; the last one is the empty row. */
   rows: IngredientLine[];
+  rules: Rules;
   /** Messages by row index. */
   errors?: Record<number, string>;
   /** Step numbers that use a row; filled in by the chips change. */
@@ -30,7 +32,7 @@ const none: number[] = [];
 const noErrors: Record<number, string> = {};
 
 /** The ingredient list: one line per row, keyboard navigation between rows, move announcements, and the list as the form field `ingredients`. */
-export function IngredientList({ rows, errors = noErrors, usedIn = () => none, onType, onRemove, onMove }: Props) {
+export function IngredientList({ rows, rules, errors = noErrors, usedIn = () => none, onType, onRemove, onMove }: Props) {
   const items = useRef(new Map<string, ItemHandle>());
   // Work to do once the rows have rendered, such as focusing a row that did not exist yet.
   const afterRender = useRef<() => void>(undefined);
@@ -79,6 +81,7 @@ export function IngredientList({ rows, errors = noErrors, usedIn = () => none, o
                 else items.current.delete(row.id);
               }}
               id={`ingredient-${row.id}`}
+              rules={rules}
               label={`Ingrediënt ${i + 1}`}
               toolbarLabel={`Acties voor ingrediënt ${i + 1}`}
               text={row.text}

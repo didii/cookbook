@@ -1,5 +1,6 @@
 import { parseIngredient, type ParsedIngredient } from '~/lib/ingredients';
 import type { Step } from '~/lib/recipe';
+import type { Rules } from '~/lib/rules';
 
 export type RecipeFormField = 'title' | 'author' | 'servings' | 'time' | 'intro' | 'image';
 
@@ -47,15 +48,15 @@ function readLines(form: FormData): string[] | undefined {
   }
 }
 
-/** Parses the posted ingredient lines here, never trusting a client-side split: blank lines are dropped, a quantity without a name is an error on its row. `lines` is every posted line, to show again after a refusal. `ingredients` is undefined when the form carried no (valid) list, so a submit without the field leaves the stored ingredients alone instead of clearing them; an explicit empty list does clear them. */
-export function readIngredients(form: FormData) {
+/** Parses the posted ingredient lines here against the rules, never trusting a client-side split: blank lines are dropped, a quantity without a name is an error on its row. `lines` is every posted line, to show again after a refusal. `ingredients` is undefined when the form carried no (valid) list, so a submit without the field leaves the stored ingredients alone instead of clearing them; an explicit empty list does clear them. */
+export function readIngredients(form: FormData, rules: Rules) {
   const posted = readLines(form);
   const lines = posted ?? [];
   const ingredients: ParsedIngredient[] | undefined = posted && [];
   const errors: Record<number, string> = {};
   lines.forEach((line, i) => {
     if (!line) return;
-    const parsed = parseIngredient(line);
+    const parsed = parseIngredient(line, rules);
     if (parsed.name) ingredients?.push(parsed);
     else errors[i] = `Vul bij "${parsed.quantityText}" ook een naam in.`;
   });

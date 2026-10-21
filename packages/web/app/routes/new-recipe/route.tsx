@@ -2,6 +2,7 @@ import { data, redirect } from 'react-router';
 import { envContext, userEmailContext } from '~/.server/context';
 import { acceptImage } from '~/.server/photos';
 import { chooseSeal, createRecipe, listAuthors } from '~/.server/recipes';
+import { getRules } from '~/.server/rules';
 import { getUser } from '~/.server/users';
 import { emptyDraftSeed } from '~/lib/draft';
 import { seals } from '~/lib/seals';
@@ -22,7 +23,7 @@ export async function loader({ context }: Route.LoaderArgs) {
 export async function action({ request, context }: Route.ActionArgs) {
   const form = await request.formData();
   const values = readForm(form);
-  const { lines, ingredients, errors: ingredientErrors } = readIngredients(form);
+  const { lines, ingredients, errors: ingredientErrors } = readIngredients(form, await getRules(context.get(envContext).DB));
   const { lines: stepLines, steps } = readSteps(form);
 
   const errors: RecipeFormErrors = validate(values);

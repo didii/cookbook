@@ -2,6 +2,7 @@ import { data, redirect } from 'react-router';
 import { envContext } from '~/.server/context';
 import { acceptImage, deletePhoto } from '~/.server/photos';
 import { getRecipe, listAuthors, updateRecipe } from '~/.server/recipes';
+import { getRules } from '~/.server/rules';
 import { joinIngredient } from '~/lib/ingredients';
 import { tileFor } from '~/lib/tile';
 import { endDraftAfterSave } from '~/shared/recipeEditor/endDraftAfterSave';
@@ -39,7 +40,7 @@ export async function loader({ params, context }: Route.LoaderArgs) {
 export async function action({ request, params, context }: Route.ActionArgs) {
   const form = await request.formData();
   const values = readForm(form);
-  const { lines, ingredients, errors: ingredientErrors } = readIngredients(form);
+  const { lines, ingredients, errors: ingredientErrors } = readIngredients(form, await getRules(context.get(envContext).DB));
   const { lines: stepLines, steps } = readSteps(form);
 
   const errors: RecipeFormErrors = validate(values);

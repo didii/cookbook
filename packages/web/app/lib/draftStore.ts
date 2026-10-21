@@ -1,5 +1,6 @@
 import type { Chip, Ghost } from '~/lib/chips';
 import { isDirty, withFreeRow, type RecipeDraft, type StepDraft } from '~/lib/draft';
+import type { Rules } from '~/lib/rules';
 
 /** The part of `Storage` the drafts need; `localStorage` fits, and so does a fake in a test. */
 export type DraftStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem' | 'key' | 'length'>;
@@ -49,15 +50,16 @@ export type Keeping = {
   /** The last photo path that was settled (the one a photo that is going up replaces). */
   settledImage: string;
   now: Date;
+  rules: Rules;
 };
 
 /** Keeps the state under the key, or removes the draft when the state equals where the editor started. `ok` is false when the storage refused the write; removing never counts as a failure. */
 export function saveDraft(
   storage: DraftStorage | undefined,
   key: string,
-  { state, initial, base, uploading, settledImage, now }: Keeping,
+  { state, initial, base, uploading, settledImage, now, rules }: Keeping,
 ): { ok: boolean } {
-  if (!isDirty(initial, state)) {
+  if (!isDirty(initial, state, rules)) {
     clearDraft(storage, key);
     return { ok: true };
   }

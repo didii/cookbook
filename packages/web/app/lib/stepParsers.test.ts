@@ -1,17 +1,18 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { parseIngredient } from '~/lib/ingredients';
+import { defaultRules } from '~/lib/rules';
 import { findIngredients, findOven, findTimer, type Row } from './stepParsers';
 
-const minutes = (text: string) => findTimer(text)?.values.minutes;
-const degrees = (text: string) => findOven(text)?.values.degrees;
+const minutes = (text: string) => findTimer(text, defaultRules)?.values.minutes;
+const degrees = (text: string) => findOven(text, defaultRules)?.values.degrees;
 const words = (text: string, found?: { start: number; end: number }) => found && text.slice(found.start, found.end);
 
 test('recipe-step-chips › Minutes become a timer', () => {
   for (const unit of ['minuten', 'min', 'minuut']) {
     const text = `Laat 30 ${unit} rusten.`;
     assert.equal(minutes(text), 30);
-    assert.equal(words(text, findTimer(text)), `30 ${unit}`);
+    assert.equal(words(text, findTimer(text, defaultRules)), `30 ${unit}`);
   }
   assert.equal(minutes('Laat 30 MINUTEN rusten'), 30);
 });
@@ -33,32 +34,32 @@ test('recipe-step-chips › Spoken amounts', () => {
 test('recipe-step-chips › A range uses its lower value', () => {
   const text = 'Bak 20-25 minuten';
   assert.equal(minutes(text), 20);
-  assert.equal(words(text, findTimer(text)), '20-25 minuten');
+  assert.equal(words(text, findTimer(text, defaultRules)), '20-25 minuten');
   assert.equal(minutes('Bak 20 – 25 min'), 20);
 });
 
 test('recipe-step-chips › Text without a duration has no timer', () => {
-  assert.equal(findTimer('Voeg 30 gram boter toe'), undefined);
-  assert.equal(findTimer('Voeg 30 m toe'), undefined);
-  assert.equal(findTimer('Roer goed'), undefined);
+  assert.equal(findTimer('Voeg 30 gram boter toe', defaultRules), undefined);
+  assert.equal(findTimer('Voeg 30 m toe', defaultRules), undefined);
+  assert.equal(findTimer('Roer goed', defaultRules), undefined);
   // Half typed: the chip appears when the word is complete.
-  assert.equal(findTimer('Laat 30 mi'), undefined);
-  assert.equal(findTimer('Laat 30 minu'), undefined);
-  assert.equal(findTimer('Laat 0 minuten rusten'), undefined);
-  assert.equal(findTimer('Laat 130 uurwerken'), undefined);
+  assert.equal(findTimer('Laat 30 mi', defaultRules), undefined);
+  assert.equal(findTimer('Laat 30 minu', defaultRules), undefined);
+  assert.equal(findTimer('Laat 0 minuten rusten', defaultRules), undefined);
+  assert.equal(findTimer('Laat 130 uurwerken', defaultRules), undefined);
 });
 
 test('recipe-step-chips › Only the first duration is a timer', () => {
   const text = 'Kook 10 minuten en daarna 20 minuten';
   assert.equal(minutes(text), 10);
-  assert.equal(words(text, findTimer(text)), '10 minuten');
+  assert.equal(words(text, findTimer(text, defaultRules)), '10 minuten');
 });
 
 test('recipe-step-chips › Degrees become an oven temperature', () => {
-  for (const written of ['180 graden', '180 °C', '180°C', '180 °', '180 gr', '180 Graden']) {
+  for (const written of ['180 graden', '180 °C', '180°C', '180 °', '180 Graden']) {
     const text = `Verwarm op ${written} voor.`;
     assert.equal(degrees(text), 180, written);
-    assert.equal(words(text, findOven(text)), written);
+    assert.equal(words(text, findOven(text, defaultRules)), written);
   }
 });
 
@@ -74,18 +75,18 @@ test('recipe-step-chips › Implausible numbers are ignored', () => {
 test('recipe-step-chips › Only the first temperature counts', () => {
   const text = 'Eerst 180 graden, daarna 200 graden';
   assert.equal(degrees(text), 180);
-  assert.equal(words(text, findOven(text)), '180 graden');
+  assert.equal(words(text, findOven(text, defaultRules)), '180 graden');
   // An implausible first number does not hide a later plausible one.
   assert.equal(degrees('3 graden warmer, 200 graden'), 200);
 });
 
 const row = (id: string, line: string): Row => {
-  const { quantityText, name } = parseIngredient(line);
+  const { quantityText, name } = parseIngredient(line, defaultRules);
   return { id, quantityText, name };
 };
 const none = () => '';
 const found = (text: string, rows: Row[], fallback: (r: Row) => string = none) =>
-  findIngredients(text, rows, fallback).map((f) => ({ row: f.rowId, words: text.slice(f.start, f.end), ...f.values }));
+  findIngredients(text, rows, fallback, defaultRules).map((f) => ({ row: f.rowId, words: text.slice(f.start, f.end), ...f.values }));
 
 test('recipe-step-chips › Name in the text creates an ingredient chip', () => {
   const rows = [row('a', '250 g zelfrijzende bloem')];
@@ -132,7 +133,7 @@ test('recipe-step-chips › An ingredient is chipped once per step', () => {
     found(text, [row('a', 'bloem')]).map((f) => f.words),
     ['bloem'],
   );
-  assert.equal(findIngredients(text, [row('a', 'bloem')], none)[0].start, text.indexOf('bloem'));
+  assert.equal(findIngredients(text, [row('a', 'bloem')], none, defaultRules)[0].start, text.indexOf('bloem'));
 });
 
 test('recipe-step-chips › Amount written before the name', () => {

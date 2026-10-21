@@ -7,9 +7,9 @@
 
 ## 2. Parsers take rules
 
-- [ ] 2.1 Change `parseIngredient`, `findTimer` and `findOven` to take `rules` and build their patterns from escaped words (longest first, cached per `rules` object); remove the fixed `units` and the TODOs. Verify with `ingredients.test.ts` and `stepParsers.test.ts` (existing tests pass `defaultRules`) and `parsing-rules › Words are not regular expressions`.
-- [ ] 2.2 Add `rules` to the chip `Context` and pass it through `chips.ts`, `draft.ts`, `scale.ts` (`scaleBody`), `recipeValidation.ts` and `IngredientItem.tsx`. Verify with the existing chip, draft and scale tests, plus `parsing-rules › New unit is recognised`, `parsing-rules › New minute word makes a timer`, `parsing-rules › New spoken duration makes a timer`, `parsing-rules › Removed word is not recognised`, `parsing-rules › Scaling uses the stored units`.
-- [ ] 2.3 Return `rules` from the root loader and hand them to the places that parse: `routes/edit-recipe/route.tsx` and `routes/new-recipe/route.tsx` (their actions call `readIngredients` and `readSteps` in `recipeValidation.ts`, which use `getRules`), `routes/recipe` (`scaleBody` in `RecipePage.tsx`) and `RecipeEditor.tsx` (the client reads root data). Verify with `parsing-rules › Saved change applies at once` (loader-level test).
+- [x] 2.1 Change `parseIngredient`, `findTimer` and `findOven` to take `rules` and build their patterns from escaped words (longest first, cached per `rules` object); remove the fixed `units` and the TODOs. Verify with `ingredients.test.ts` and `stepParsers.test.ts` (existing tests pass `defaultRules`) and `parsing-rules › Words are not regular expressions`.
+- [x] 2.2 Add `rules` to the chip `Context` and pass it through `chips.ts`, `draft.ts`, `scale.ts` (`scaleBody`), `recipeValidation.ts` and `IngredientItem.tsx`. Verify with the existing chip, draft and scale tests, plus `parsing-rules › New unit is recognised`, `parsing-rules › New minute word makes a timer`, `parsing-rules › New spoken duration makes a timer`, `parsing-rules › Removed word is not recognised`, `parsing-rules › Scaling uses the stored units`.
+- [x] 2.3 Return `rules` from the root loader and hand them to the places that parse: `routes/edit-recipe/route.tsx` and `routes/new-recipe/route.tsx` (their actions call `readIngredients` and `readSteps` in `recipeValidation.ts`, which use `getRules`), `routes/recipe` (`scaleBody` in `RecipePage.tsx`) and `RecipeEditor.tsx` (the client reads root data). Verify with `parsing-rules › Saved change applies at once` (loader-level test).
 
 ## 3. Admin only
 

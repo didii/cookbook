@@ -6,6 +6,7 @@ import { routePaths } from '~testing/routes';
 import type { ComponentProps } from 'react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import type { Recipe, Step } from '~/lib/recipe';
+import { defaultRules } from '~/lib/rules';
 import { arrive, type Positions, type TabId } from '~/lib/tabs';
 import { IngredientList } from './IngredientList';
 import { RecipePage } from './RecipePage';
@@ -34,7 +35,11 @@ const recipe: Omit<Recipe, 'steps'> = {
 
 const page = (props: Partial<ComponentProps<typeof RecipePage>> = {}) =>
   // A data router, because the page holds a router `Form` (delete button).
-  render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <RecipePage recipe={recipe} tile={0} steps={steps} {...props} /> }])} />);
+  render(
+    <RouterProvider
+      router={createMemoryRouter([{ path: '/', element: <RecipePage recipe={recipe} tile={0} steps={steps} rules={defaultRules} {...props} /> }])}
+    />,
+  );
 /** The sticky bar with the tabs and the timer dock. */
 const stack = () => screen.getByTestId('RecipePage-stack');
 const tabs = () => screen.getAllByTestId('TabBar-tab');

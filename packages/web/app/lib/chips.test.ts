@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { defaultRules } from '~/lib/rules';
 import {
   acceptProposal,
   addChip,
@@ -23,8 +24,12 @@ import {
   type StepChips,
 } from './chips';
 
-const rowsFor = (...lines: string[]) => rowsOf(lines.map((text, i) => ({ id: `r${i}`, text })));
-const alone = (...lines: string[]): Context => ({ rows: rowsFor(...lines) });
+const rowsFor = (...lines: string[]) =>
+  rowsOf(
+    lines.map((text, i) => ({ id: `r${i}`, text })),
+    defaultRules,
+  );
+const alone = (...lines: string[]): Context => ({ rows: rowsFor(...lines), rules: defaultRules });
 
 /** A step as the editor has it after the text was typed in one go. */
 const typed = (body: string, ctx: Context): StepChips => reconcile({ body, chips: [], ghosts: [] }, ctx);

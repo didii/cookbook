@@ -1,5 +1,6 @@
 import { useImperativeHandle, useLayoutEffect, useRef, type ComponentProps, type CSSProperties, type KeyboardEvent, type Ref } from 'react';
 import { parseIngredient } from '~/lib/ingredients';
+import type { Rules } from '~/lib/rules';
 import { cn } from '~/shared/cn';
 import { Ingredient } from '~/shared/icons';
 import type { ItemHandle } from './ItemHandle';
@@ -15,6 +16,8 @@ type Props = {
   toolbarLabel: string;
   id: string;
   text: string;
+  /** The words that count as a unit, to tell the quantity from the name. */
+  rules: Rules;
   placeholder?: string;
   /** The empty row at the end: it has no buttons yet. */
   free: boolean;
@@ -44,6 +47,7 @@ export function IngredientItem({
   toolbarLabel,
   id,
   text,
+  rules,
   placeholder,
   free,
   canUp,
@@ -104,7 +108,7 @@ export function IngredientItem({
     }
   };
 
-  const quantity = parseIngredient(text).quantityText;
+  const quantity = parseIngredient(text, rules).quantityText;
   const at = quantity ? text.indexOf(quantity) : -1;
   const errorId = `${id}-error`;
 
