@@ -114,7 +114,8 @@ test('requireAdmin lets admin and superadmin through and refuses a user, an unkn
 });
 
 const add = async (d: D1Database, email: string, name = 'X', role: Role = 'user') =>
-  (await d.prepare('INSERT INTO users (email, calling_name, role) VALUES (?, ?, ?) RETURNING id').bind(email, name, role).first<{ id: number }>())!.id;
+  (await d.prepare('INSERT INTO users (email, calling_name, role) VALUES (?, ?, ?) RETURNING id').bind(email, name, role).first<{ id: number }>())!
+    .id;
 const refused = (thrown: { init?: { status?: number } }) => thrown.init?.status === 403;
 
 test('requireSuperadmin lets a superadmin through and refuses others with 403', () =>
@@ -192,11 +193,17 @@ test('user-management › Unknown role', () =>
 test('user-management › Delete a user', () =>
   withFreshDb(async (d) => {
     const id = await add(d, 'jos@example.com', 'Jos');
-    const recipe = (await d.prepare("INSERT INTO recipes (slug, title, author, servings) VALUES ('t', 't', 'Oma', 4) RETURNING id").first<{ id: number }>())!.id;
+    const recipe = (await d
+      .prepare("INSERT INTO recipes (slug, title, author, servings) VALUES ('t', 't', 'Oma', 4) RETURNING id")
+      .first<{ id: number }>())!.id;
     await d.prepare('INSERT INTO recipe_views (user_id, recipe_id) VALUES (?, ?)').bind(id, recipe).run();
     assert.equal(await deleteUser(d, id), true);
     assert.equal(await getUser(d, 'jos@example.com'), undefined);
-    const count = (sql: string) => d.prepare(sql).first<{ n: number }>().then((r) => r!.n);
+    const count = (sql: string) =>
+      d
+        .prepare(sql)
+        .first<{ n: number }>()
+        .then((r) => r!.n);
     assert.deepEqual([await count('SELECT COUNT(*) AS n FROM recipes'), await count('SELECT COUNT(*) AS n FROM recipe_views')], [1, 0]);
     assert.equal(await deleteUser(d, id), false);
   }));

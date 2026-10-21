@@ -53,5 +53,16 @@ export default function AdminUser({ loaderData, actionData }: Route.ComponentPro
   const error = actionData && 'error' in actionData ? actionData.error : undefined;
   const refused = actionData && 'refused' in actionData ? actionData.refused : undefined;
   const saved = !!actionData && 'saved' in actionData;
-  return <UserForm key={user.id} user={user} lastSuperadmin={lastSuperadmin} isSelf={isSelf} accessUrl={accessUrl} error={error} refused={refused} saved={saved} />;
+  return (
+    <UserForm
+      key={user.id}
+      user={user}
+      lastSuperadmin={lastSuperadmin}
+      isSelf={isSelf}
+      accessUrl={accessUrl}
+      error={error}
+      refused={refused}
+      saved={saved}
+    />
+  );
 }

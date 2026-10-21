@@ -43,13 +43,13 @@ const open = (as: string, id: string | number) =>
 /** What the action returns: `data()` has `init` and `data`, a redirect is a `Response` with `headers`. */
 type Sent = { init?: { status?: number }; data?: unknown; headers?: Headers };
 const post = (as: string, id: string | number, fields: Record<string, string>) =>
-  (action(
+  action(
     fake<Route.ActionArgs>({
       request: new Request('http://localhost/x', { method: 'POST', body: new URLSearchParams(fields) }),
       params: { id: String(id) },
       context: contextFor(as),
     }),
-  ) as unknown as Promise<Sent>);
+  ) as unknown as Promise<Sent>;
 /** The status a call throws (a 403 or 404 response), or undefined when it succeeds. */
 const thrownStatus = async (call: Promise<unknown>) => {
   try {
