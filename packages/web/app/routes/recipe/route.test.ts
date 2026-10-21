@@ -8,7 +8,11 @@ import { envContext, userEmailContext } from '~/.server/context';
 import { getPhoto, storePhoto } from '~/.server/photos';
 import { createRecipe, listRecipes } from '~/.server/recipes';
 import { createUser } from '~/.server/users';
+import type { Route as LikeRoute } from './+types/like';
+import type { Route as NoteRoute } from './+types/note';
 import type { Route } from './+types/route';
+import { action as likeAction } from './like';
+import { action as noteAction } from './note';
 import { action, loader } from './route';
 
 // Real loader and action against an in-memory D1 holding a recipe the test inserted.
@@ -103,4 +107,44 @@ test('recipe-deletion › Photo is deleted', async () => {
 
 test('recipe-deletion › Unknown recipe', async () => {
   await assert.rejects(remove('does-not-exist'), (thrown: { init?: { status?: number } }) => thrown.init?.status === 404);
+});
+
+const post = (handler: typeof likeAction | typeof noteAction, slug: string, fields: Record<string, string>, email = 'oma@example.com') => {
+  const context = new RouterContextProvider();
+  context.set(envContext, fake<Env>({ DB: db, PHOTOS: photos }));
+  context.set(userEmailContext, email);
+  const request = new Request('http://x/', { method: 'POST', body: new URLSearchParams(fields) });
+  return handler(fake<LikeRoute.ActionArgs & NoteRoute.ActionArgs>({ request, params: { slug }, context })) as Promise<Response>;
+};
+
+test('the like route stores and removes the like and the loader returns it', async () => {
+  await createUser(db, 'oma@example.com', 'Oma');
+  const slug = await createRecipe(db, { title: 'Favoriet', author: 'Oma' });
+  assert.equal((await post(likeAction, slug, { liked: 'true' })).status, 204);
+  assert.equal((await load(slug)).liked, true);
+  assert.equal((await post(likeAction, slug, { liked: 'false' })).status, 204);
+  assert.equal((await load(slug)).liked, false);
+});
+
+test('the note route stores the note and the loader returns it', async () => {
+  await createUser(db, 'oma@example.com', 'Oma');
+  const slug = await createRecipe(db, { title: 'Met notitie', author: 'Oma' });
+  assert.equal((await post(noteAction, slug, { note: 'minder zout' })).status, 204);
+  assert.equal((await load(slug)).note, 'minder zout');
+  assert.equal((await post(noteAction, slug, { note: '  ' })).status, 204);
+  assert.equal((await load(slug)).note, '');
+});
+
+test('the like and note routes refuse what they cannot store', async () => {
+  await createUser(db, 'oma@example.com', 'Oma');
+  const slug = await createRecipe(db, { title: 'Streng', author: 'Oma' });
+  assert.equal((await post(likeAction, slug, { liked: 'maybe' })).status, 400);
+  assert.equal((await post(likeAction, slug, {})).status, 400);
+  assert.equal((await post(likeAction, 'does-not-exist', { liked: 'true' })).status, 404);
+  assert.equal((await post(likeAction, slug, { liked: 'true' }, 'vreemd@example.com')).status, 403);
+  assert.equal((await post(noteAction, 'does-not-exist', { note: 'x' })).status, 404);
+  assert.equal((await post(noteAction, slug, { note: 'x' }, 'vreemd@example.com')).status, 403);
+  assert.equal((await post(noteAction, slug, {})).status, 400);
+  assert.equal((await post(noteAction, slug, { note: 'x'.repeat(4001) })).status, 413);
+  assert.equal((await post(noteAction, slug, { note: 'x'.repeat(4000) })).status, 204);
 });

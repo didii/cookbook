@@ -4,6 +4,8 @@ export default [
   route('welkom', 'routes/welcome/route.tsx'),
   route('foto', 'routes/photo/upload.ts'),
   route('foto/:file', 'routes/photo/file.ts'),
+  route('recepten/:slug/favoriet', 'routes/recipe/like.ts'),
+  route('recepten/:slug/notitie', 'routes/recipe/note.ts'),
   layout('routes/layout/route.tsx', [
     index('routes/home/route.tsx'),
     route('instellingen', 'routes/settings/route.tsx'),
