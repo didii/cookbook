@@ -11,4 +11,4 @@
 
 ## 3. Finish
 
-- [ ] 3.1 `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check`, `pnpm test:ai`; `pnpm test:spec scale-servings` shows no missing scenarios
+- [x] 3.1 `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check`, `pnpm test:ai`; `pnpm test:spec scale-servings` shows no missing scenarios
