@@ -1,10 +1,8 @@
-import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration, useLocation } from 'react-router';
+import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router';
 import type { Route } from './+types/root';
 import './app.css';
 import { envContext, userEmailContext } from '~/.server/context';
 import { redirectToWelcome } from '~/.server/welcome';
-import { welcomePath } from '~/lib/returnUrl';
-import { Header } from '~/shared/Header';
 import { SkipLink } from '~/shared/SkipLink';
 
 export const links: Route.LinksFunction = () => [
@@ -46,12 +44,10 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   return { email };
 }
 
-export default function App({ loaderData }: Route.ComponentProps) {
-  const welcoming = useLocation().pathname === welcomePath;
+export default function App() {
   return (
     <>
       <SkipLink />
-      {!welcoming && <Header email={loaderData.email} />}
       <Outlet />
     </>
   );
