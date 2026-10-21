@@ -1,7 +1,7 @@
 ## 1. Scaling logic
 
-- [ ] 1.1 Export the number pattern and value parser from `lib/ingredients.ts`; add `lib/scale.ts` with `formatNumber`, `scaleQuantity`, `scaleBody` and the multiplier ladder, with `lib/scale.test.ts` covering rounding, comma, ranges, fractions and glyphs, no-number text, factor 1 untouched, units vs durations/temperatures, and the ladder (up, down, between values, floor 1/10)
-- [ ] 1.2 Name tests in `lib/scale.test.ts` for `recipe-scaling › Ingredient list scales`, `… › Amounts in step text scale`, `… › Times and temperatures do not scale`, `… › Ranges scale`, `… › Quantity without a number`, `… › Original at factor one`, `… › Long numbers are rounded`, `… › Round numbers stay round`
+- [x] 1.1 Export the number pattern and value parser from `lib/ingredients.ts`; add `lib/scale.ts` with `formatNumber`, `scaleQuantity`, `scaleBody` and the multiplier ladder, with `lib/scale.test.ts` covering rounding, comma, ranges, fractions and glyphs, no-number text, factor 1 untouched, units vs durations/temperatures, and the ladder (up, down, between values, floor 1/10)
+- [x] 1.2 Name tests in `lib/scale.test.ts` for `recipe-scaling › Ingredient list scales`, `… › Amounts in step text scale`, `… › Times and temperatures do not scale`, `… › Ranges scale`, `… › Quantity without a number`, `… › Original at factor one`, `… › Long numbers are rounded`, `… › Round numbers stay round`
 
 ## 2. Recipe page
 

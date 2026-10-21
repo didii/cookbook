@@ -1,7 +1,8 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { initialCook, observe, setByHand, wantsCookMode } from '~/lib/cookMode';
 import type { Recipe, Step } from '~/lib/recipe';
+import { scaleBody, scaleQuantity } from '~/lib/scale';
 import { arrive, tabFromHash, type Positions, type TabId } from '~/lib/tabs';
 import { toggled } from '~/lib/toggled';
 import { cn } from '~/shared/cn';
@@ -12,6 +13,7 @@ import { TileBand } from '~/shared/TileBand';
 import { ClockSetting } from './ClockSetting';
 import { CookSwitch } from './CookSwitch';
 import { IngredientList } from './IngredientList';
+import { ScaleControl } from './ScaleControl';
 import { StepList } from './StepList';
 import { TabBar } from './TabBar';
 import { TimerDock } from './TimerDock';
@@ -29,6 +31,21 @@ export function RecipePage({ recipe: r, tile, steps }: Props) {
   const [tab, setTab] = useState<TabId>('ingredients');
   // Lives here, not in the list, because both tabs stay mounted and cook mode reads it.
   const [ticked, setTicked] = useState<ReadonlySet<number>>(new Set());
+
+  // The chosen servings (or multiplier without servings); not stored, so a reload starts at the recipe's own.
+  const [amount, setAmount] = useState(r.servings ?? 1);
+  const factor = r.servings ? amount / r.servings : amount;
+  const scaled = useMemo(() => {
+    const rows = r.ingredients.map((x, i) => ({ id: String(i), ...x }));
+    return {
+      ingredients: r.ingredients.map((x) => ({ ...x, quantityText: scaleQuantity(x.quantityText, factor) })),
+      steps: steps.map((s) => ({
+        ...s,
+        body: scaleBody(s.body, factor, rows),
+        ingredients: s.ingredients.map((x) => ({ ...x, quantityText: scaleQuantity(x.quantityText, factor) })),
+      })),
+    };
+  }, [r.ingredients, steps, factor]);
 
   const timers = useTimers(r.slug, steps);
   const stack = useRef<HTMLDivElement>(null);
@@ -132,7 +149,7 @@ export function RecipePage({ recipe: r, tile, steps }: Props) {
         <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 font-extrabold">
           <span className="rounded-full border-3 border-ink bg-yel px-3.5 py-0.5">van {r.author}</span>
           {r.time && <span>{r.time}</span>}
-          {r.servings && <span>{r.servings} personen</span>}
+          <ScaleControl value={amount} onChange={setAmount} servings={r.servings != null} />
         </p>
         <p className="mt-2 max-w-[60ch] text-lg text-muted">{r.intro}</p>
 
@@ -164,7 +181,7 @@ export function RecipePage({ recipe: r, tile, steps }: Props) {
               Ingrediënten
             </h2>
             <IngredientList
-              ingredients={r.ingredients}
+              ingredients={scaled.ingredients}
               ticked={ticked}
               onToggle={(i) => setTicked((prev) => toggled(prev, i))}
               className="min-[52rem]:min-h-0 min-[52rem]:flex-1 min-[52rem]:overflow-y-auto min-[52rem]:overscroll-contain min-[52rem]:pr-1 min-[52rem]:pb-1"
@@ -175,7 +192,7 @@ export function RecipePage({ recipe: r, tile, steps }: Props) {
             <h2 id="bereiding" className="mb-4 scroll-mt-[calc(var(--stack-h,0px)+0.75rem)] text-2xl font-black">
               Bereiding
             </h2>
-            <StepList steps={steps} highlight={flash} peek={peek} />
+            <StepList steps={scaled.steps}highlight={flash} peek={peek} />
             <Fret size={18} className="mt-7 text-red" />
           </section>
         </div>
