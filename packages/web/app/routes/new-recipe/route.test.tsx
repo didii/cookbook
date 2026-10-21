@@ -140,9 +140,12 @@ test('recipe-creation › Prefilled author can be changed', async () => {
   await openFormAs('jos2@example.com');
   const author = document.getElementById('author') as HTMLInputElement;
   fireEvent.change(author, { target: { value: 'Oma' } });
-  assert.equal(author.value, 'Oma');
-  // What the form posts is stored as typed.
-  await submit({ title: 'Oma kookt', author: author.value });
+  fireEvent.change(document.getElementById('title')!, { target: { value: 'Oma kookt' } });
+  // Submit what the form itself posts, not values copied from the inputs.
+  const posted = Object.fromEntries(
+    [...author.form!.elements].filter((e): e is HTMLInputElement => e instanceof HTMLInputElement && !!e.name).map((e) => [e.name, e.value]),
+  );
+  await submit(posted);
   assert.equal((await getRecipe(db, 'oma-kookt'))?.author, 'Oma');
 });
 
