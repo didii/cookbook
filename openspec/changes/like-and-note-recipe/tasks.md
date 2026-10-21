@@ -4,7 +4,7 @@ Each scenario test is named `<capability> › <Scenario title>`; run `pnpm test:
 
 ## 1. Data
 
-- [ ] 1.1 Add `migrations/0008_recipe_likes_notes.sql` with `recipe_likes` and `recipe_notes` (composite primary keys, `ON DELETE CASCADE` on user and recipe, non-empty `body` check, `updated_at`). Verify in `migrations/migrations.test.ts`: `recipe-like › Liking twice stores one like`, `recipe-like › Deleting a recipe removes its likes`, `recipe-note › Deleting a recipe removes its notes`, plus a test that a blank body is rejected.
+- [x] 1.1 Add `migrations/0008_recipe_likes_notes.sql` with `recipe_likes` and `recipe_notes` (composite primary keys, `ON DELETE CASCADE` on user and recipe, non-empty `body` check, `updated_at`). Verify in `migrations/migrations.test.ts`: `recipe-like › Liking twice stores one like`, `recipe-like › Deleting a recipe removes its likes`, `recipe-note › Deleting a recipe removes its notes`, plus a test that a blank body is rejected.
 
 ## 2. Server
 
