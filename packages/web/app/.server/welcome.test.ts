@@ -32,6 +32,12 @@ test('the welcome screen itself is not redirected, so a new member can reach it'
   assert.equal(await welcome('new@example.com', '/Welkom'), undefined);
 });
 
+test('a data request of the welcome screen is not redirected, and others return to their page', async () => {
+  assert.equal(await welcome('new@example.com', '/welkom.data?returnUrl=%2F'), undefined);
+  assert.equal(await welcome('new@example.com', '/recepten/soep.data?stap=2&_routes=root'), '/welkom?returnUrl=%2Frecepten%2Fsoep%3Fstap%3D2');
+  assert.equal(await welcome('new@example.com', '/_root.data'), '/welkom?returnUrl=%2F');
+});
+
 test('users › Returning member', async () => {
   await createUser(db, 'oma@example.com', 'Oma');
   assert.equal(await welcome('oma@example.com', '/'), undefined);
