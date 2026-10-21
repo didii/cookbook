@@ -27,5 +27,5 @@
 
 ## 5. Remaining files and wrap-up
 
-- [ ] 5.1 Convert `routes/welcome/route.test.ts`, `shared/Header.test.ts` and `shared/press.test.ts` to DOM queries. Verify: `pnpm test:ai` passes.
-- [ ] 5.2 Final sweep. Verify: `grep -rn "renderToStaticMarkup" packages/web/app --include=*.test.ts` finds only tests that deliberately check server output (list each in the PR), `grep -rn "\[\^>\]" packages/web/app --include=*.test.ts` finds nothing, `pnpm test:ai`, `pnpm format:check` and `pnpm lint:check` all pass.
+- [x] 5.1 Convert `routes/welcome/route.test.ts`, `shared/Header.test.ts` and `shared/press.test.ts` to DOM queries. Verify: `pnpm test:ai` passes.
+- [x] 5.2 Final sweep. Verify: `grep -rn "renderToStaticMarkup" packages/web/app --include=*.test.ts` finds only tests that deliberately check server output (list each in the PR), `grep -rn "\[\^>\]" packages/web/app --include=*.test.ts` finds nothing, `pnpm test:ai`, `pnpm format:check` and `pnpm lint:check` all pass.

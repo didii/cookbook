@@ -6,6 +6,7 @@ import { createElement, type ComponentProps } from 'react';
 import { MemoryRouter } from 'react-router';
 import type { Recipe, Step } from '~/lib/recipe';
 import { arrive, type Positions, type TabId } from '~/lib/tabs';
+import routes from '../../routes';
 import { IngredientList } from './IngredientList';
 import { RecipePage } from './RecipePage';
 
@@ -144,7 +145,7 @@ test('recipe-viewing › Link to the edit form', () => {
   page();
   assert.equal(screen.getByRole('link', { name: 'Bewerk' }).getAttribute('href'), '/recepten/appeltaart/bewerken');
   // The route table serves that address.
-  assert.ok(readFileSync(new URL('../../routes.ts', import.meta.url), 'utf8').includes("'recepten/:slug/bewerken'"));
+  assert.ok(routes.some((r) => r.path === 'recepten/:slug/bewerken'));
 });
 
 test('cook-mode › Switch on a narrow screen', () => {
