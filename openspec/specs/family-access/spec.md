@@ -18,11 +18,11 @@ The system SHALL allow only people whose email address is on the family allowlis
 - **THEN** no page of the cookbook is shown to them
 
 ### Requirement: Sign-in needs no account
-The system SHALL let a family member sign in using only their email address and a one-time code sent to it, without creating an account or a password anywhere.
+The system SHALL let a family member sign in using only their email address and a one-time code sent to it, without creating an account or a password anywhere. The only thing a new member is asked, once, after signing in, is what they like to be called.
 
 #### Scenario: First visit by a new family member
 - **WHEN** a family member whose email was just added to the allowlist opens the cookbook for the first time
-- **THEN** they can sign in with an emailed one-time code and are not asked to register or choose a password
+- **THEN** they can sign in with an emailed one-time code and are not asked to register or choose a password, only for their calling name
 
 ### Requirement: Sign-in persists on a device
 The system SHALL keep a family member signed in on a device for at least 30 days after signing in, without asking for a new code.
