@@ -16,6 +16,7 @@
 ## Decisions
 
 **Roles live in their own table, keyed by email, not in a column on `users`.** The seed must exist before the superadmin has ever signed in, but a `users` row needs a calling name that only the person can give. A placeholder name would skip the welcome screen and give a wrong name. A table `roles (email TEXT PRIMARY KEY COLLATE NOCASE, role TEXT NOT NULL CHECK (role IN ('admin', 'superadmin')))` holds only elevated roles; no row means `user`. The migration inserts `info@rhythm-coder.dev` as `superadmin`. `getUser` does a `LEFT JOIN` and returns `role` as `COALESCE(roles.role, 'user')`. The `CHECK` refuses unknown roles; `user` is never stored, so it cannot go out of step.
+- Why email and not `users.id` as key: a `users.id` does not exist until the member is welcomed (`0004_users.sql` makes the row only on the welcome submit), and the seed must exist before that. The email is also the identity key everywhere else: Cloudflare Access gives only the email, and `users.email` is the unique, case-insensitive link. The join is `roles.email = users.email`, both `COLLATE NOCASE`.
 - Alternative: `users.role` column plus a seeded `users` row with a placeholder calling name. Rejected: breaks the welcome screen for the superadmin.
 - Alternative: `users.role` nullable-name row. Rejected: relaxes `calling_name`, which touches welcome and all readers.
 - Alternative: promote by code on welcome when the email matches a constant. Rejected: the user wanted the seed in migrations, and it hides a data fact in code.
