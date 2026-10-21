@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { fireEvent, render, screen } from '~testing/dom';
-import { ChipsHarness, noRows, stepOf } from '~testing/stepChips';
 import { proposals, reconcile, setMode } from '~/lib/chips';
 import { OpenProposals } from './OpenProposals';
+import { ChipsHarness, noRows, stepOf } from './StepChips.test';
 
 const following = stepOf({ body: 'Bak 30 minuten op 180 graden.', ingredients: [], ovenTemperature: 180, timer: { minutes: 30 } });
 /** Both chips pinned, then the words changed: each pinned chip now has a proposal. */

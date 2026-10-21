@@ -13,7 +13,7 @@ import { createFetch } from './handler';
 const teamDomain: string = 'team.cloudflareaccess.com';
 const audience: string = 'aud-tag';
 const { publicKey, privateKey } = await generateKeyPair('RS256');
-const env = fake<Env>({ ACCESS_TEAM_DOMAIN: teamDomain, ACCESS_AUD: audience, DEV_USER_EMAIL: 'dev@example.com' });
+const env = fake<Env & { DEV_USER_EMAIL: string }>({ ACCESS_TEAM_DOMAIN: teamDomain, ACCESS_AUD: audience, DEV_USER_EMAIL: 'dev@example.com' });
 
 const token = () =>
   new SignJWT({ email: 'mum@example.com' })

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { fireEvent, render, screen, within } from '~testing/dom';
-import { ChipsHarness, stepOf } from '~testing/stepChips';
+import { ChipsHarness, stepOf } from './StepChips.test';
 
 // A step with a timer and an oven chip, both following the words.
 const initial = stepOf({ body: 'Bak 30 minuten op 180 graden.', ingredients: [], ovenTemperature: 180, timer: { minutes: 30 } });
