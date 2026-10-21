@@ -129,7 +129,7 @@ test('recipe-viewing › Optional fields are empty', () => {
   // With them, each is shown.
   const full = page({ recipe: { ...recipe, time: '1 uur', servings: 6, image: '/taart.jpg' } });
   assert.ok(screen.getByText('1 uur'));
-  assert.ok(screen.getByText('6 personen'));
+  assert.equal(screen.getByRole<HTMLInputElement>('textbox', { name: 'Personen' }).value, '6');
   assert.ok(full.container.querySelector('img'));
 });
 
@@ -194,4 +194,22 @@ test('cook-mode › Choice is not kept', () => {
   }
   // Another recipe gets a fresh page: the route keys the page by the recipe's slug.
   assert.ok(readFileSync(new URL('./route.tsx', import.meta.url), 'utf8').includes('key={recipe.slug}'));
+});
+
+test('recipe-scaling › Step chips scale', () => {
+  const chipSteps: Step[] = [{ body: 'meng', ingredients: [{ quantityText: '200 g', name: 'bloem' }] }];
+  page({ recipe: { ...recipe, servings: 4 }, steps: chipSteps });
+  fireEvent.change(screen.getByRole('textbox', { name: 'Personen' }), { target: { value: '6' } });
+  assert.ok(screen.getByText('300 g'));
+  assert.equal(screen.queryByText('200 g'), null);
+});
+
+test('recipe-scaling › Reload resets', () => {
+  page({ recipe: { ...recipe, servings: 4 } });
+  fireEvent.click(screen.getByRole('button', { name: 'Meer' }));
+  assert.equal(screen.getByRole<HTMLInputElement>('textbox', { name: 'Personen' }).value, '5');
+  // Nothing is stored: a fresh mount starts at the recipe's own servings.
+  cleanup();
+  page({ recipe: { ...recipe, servings: 4 } });
+  assert.equal(screen.getByRole<HTMLInputElement>('textbox', { name: 'Personen' }).value, '4');
 });

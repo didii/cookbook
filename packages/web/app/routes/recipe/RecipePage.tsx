@@ -192,7 +192,7 @@ export function RecipePage({ recipe: r, tile, steps }: Props) {
             <h2 id="bereiding" className="mb-4 scroll-mt-[calc(var(--stack-h,0px)+0.75rem)] text-2xl font-black">
               Bereiding
             </h2>
-            <StepList steps={scaled.steps}highlight={flash} peek={peek} />
+            <StepList steps={scaled.steps} highlight={flash} peek={peek} />
             <Fret size={18} className="mt-7 text-red" />
           </section>
         </div>
