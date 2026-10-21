@@ -30,4 +30,5 @@ Stored ingredients and step chips are `{ quantityText, name }`: free text, no nu
 
 - [An amount in a step text that has no unit and is not before a known ingredient ("voeg 2 toe") is not scaled] → acceptable; chips and list stay right, and adding the name to the list makes it scale.
 - [Pluralisation: "1 ei" doubled reads "2 ei"] → out of scope, named in the proposal.
+- [Quantity text is parsed at render time, and the unit and temperature keywords are hard-coded (`gr` is only ever gram)] → placeholder until `quantityValue` and `quantityUnit` are saved in the DB and the keywords become configurable there; marked with a TODO in `ingredients.ts` and `scale.ts`.
 - [Rounding to 3 digits makes 1000 × 1/3 show as 333] → by request.

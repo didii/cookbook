@@ -1,6 +1,7 @@
 import { numberPattern, numberValue, units } from '~/lib/ingredients';
-import { findIngredients, findOven, findTimer, type Row } from '~/lib/stepParsers';
+import { findIngredients, type Row } from '~/lib/stepParsers';
 
+// TODO: placeholder logic. Scaling parses the quantity text with the parser of `ingredients.ts`; once `quantityValue` and `quantityUnit` are saved in the DB it multiplies those instead.
 /** A number or range at the start of a text: leading space, first number, the dash, second number. */
 const leading = new RegExp(String.raw`^(\s*)(${numberPattern})(?:(\s*[-–]\s*)(${numberPattern}))?`, 'u');
 const whole = new RegExp(String.raw`^${numberPattern}$`, 'u');
@@ -42,14 +43,12 @@ export function scaleBody(body: string, factor: number, rows: Row[]): string {
   for (const f of findIngredients(body, rows, () => '')) {
     if (f.values.quantity) spans.push([f.start, f.start + f.values.quantity.length]);
   }
-  // A temperature or duration is never scaled, even when its word is also a unit ("180 gr").
-  const fixed = [findOven(body), findTimer(body)].filter((f) => f !== undefined);
   // From the end, so earlier positions stay valid; a span that overlaps a later one is skipped.
   spans.sort((a, b) => b[0] - a[0]);
   let out = body;
   let limit = Infinity;
   for (const [start, end] of spans) {
-    if (end > limit || fixed.some((f) => start < f.end && f.start < end)) continue;
+    if (end > limit) continue;
     out = out.slice(0, start) + scaleQuantity(body.slice(start, end), factor) + out.slice(end);
     limit = start;
   }

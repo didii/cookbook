@@ -21,8 +21,7 @@ test('recipe-scaling › Amounts in step text scale', () => {
 test('recipe-scaling › Times and temperatures do not scale', () => {
   assert.equal(scaleBody('Bak 20 minuten op 180 graden', 2, rows), 'Bak 20 minuten op 180 graden');
   assert.equal(scaleBody('Bak 1 uur op 200 °C', 2, rows), 'Bak 1 uur op 200 °C');
-  // "gr" is both a unit and graden.
-  assert.equal(scaleBody('Bak op 180 gr', 2, rows), 'Bak op 180 gr');
+  assert.equal(scaleBody('Bak op 180°', 2, rows), 'Bak op 180°');
 });
 
 test('recipe-scaling › Ranges scale', () => {

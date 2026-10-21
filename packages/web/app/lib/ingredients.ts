@@ -6,6 +6,7 @@ export const units =
     ' ',
   );
 
+// TODO: placeholder logic. This parsing of the quantity text goes away once `quantityValue` and `quantityUnit` are saved in the DB. The unit and temperature keywords then become configurable in the DB too, so this logic changes anyway.
 const fractions: Record<string, number> = { '½': 1 / 2, '⅓': 1 / 3, '⅔': 2 / 3, '¼': 1 / 4, '¾': 3 / 4, '⅛': 1 / 8 };
 const glyph = '[½⅓⅔¼¾⅛]';
 // Longest alternatives first: "1 ½", "1 2/3", "1/2", "1,5", "½".
