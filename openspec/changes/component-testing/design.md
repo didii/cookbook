@@ -32,13 +32,13 @@ Test files are `.ts` (the test globs are `**/*.test.ts`), so components are buil
 
 **Todos are converted per component.** A spike (done, files kept outside the repo) showed happy-dom handles the candidates below: the filter sheet (click, Escape, focus back), `IngredientList` keys, focus and the live region, `ChipPopup`, `StepChips` opening the popup, `OpenProposals`, `RecipeEditor` error focus and required marks, and `AuthorInput` ignoring case. A todo whose real test still turns out not to work stays with its reason rewritten to the real limit. Candidates:
 - Filter sheet: `Opening the sheet`, `Closing the sheet` (the "search box must not move" part stays browser-only).
-- `IngredientList`: Enter, arrow keys, Backspace on an empty row, Alt+arrow, edge rows disabled, row buttons one tab stop (check roving `tabindex`), move announced (live region text).
+- `IngredientList`: Enter, arrow keys, Backspace on an empty row, Alt+arrow, edge rows disabled, row buttons one tab stop (check roving `tabindex`), move announced (live region text), and the quantity highlight (the `b` with the blue class over a transparent field).
 - `ChipPopup`: open on click, icon switches mode, popup text, Escape closes.
 - `OpenProposals`: count in the save bar, jump to the next suggestion.
 - `new-recipe`: `Suggestions ignore letter case`, `Required fields are marked`, `Errors are announced and focused` (the visible-asterisk part is a class check).
 - `recipe/route`: `Optional fields are empty`, `Ingredient without quantity`.
 
-Staying `test.todo`: two columns and scroll position on wide screens, `Two recipes on one phone screen`, timer docking and animation, `Many chips`, `Nothing shifts when a step is done`, header link on a narrow screen, and `Quantity is highlighted while typing` (computed colour).
+Staying `test.todo`: two columns and scroll position on wide screens, `Two recipes on one phone screen`, timer docking and animation, `Many chips`, `Nothing shifts when a step is done`, header link on a narrow screen.
 
 ## Risks / Trade-offs
 
