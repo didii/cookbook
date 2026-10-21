@@ -70,8 +70,8 @@ export default function Welcome({ loaderData, actionData }: Route.ComponentProps
             Aan de slag
           </Button>
         </Form>
+        <TileBand first={loaderData.tile} responsive className="border-t-3" />
       </div>
-      <TileBand first={loaderData.tile} responsive className="mt-8 border-3 shadow-hard" />
     </main>
   );
 }
