@@ -22,7 +22,7 @@
 - [x] 4.1 Convert `shared/recipeEditor/RowToolbar.test.ts` and `routes/edit-recipe/route.test.ts` to DOM queries. Verify: `pnpm test:ai` passes.
 - [x] 4.2 Implement (spike passed; the toolbars have role `toolbar`) the recipe-ingredient-editing scenarios it supports: Enter moves to the next row, arrow keys move between rows, Backspace removes an empty row, Alt and arrow move the row, edge rows disabled, row buttons one tab stop (roving `tabindex`), move announced (live region text). Also `Quantity is highlighted while typing`: the quantity is a `b` with the blue class over a transparent field. Verify: `pnpm test:ai` passes; todos left in `IngredientList.test.ts` each state a real limit.
 - [x] 4.3 Implement `ChipPopup` and `StepChips` scenarios (a plain `<dialog>`; spike passed): click opens the popup, icon switches mode, popup text, Escape closes. Verify: `pnpm test:ai` passes; any scenario left as a todo says why.
-- [ ] 4.4 Implement `OpenProposals` scenarios (count in the save bar, jump to the next suggestion with focus). Verify: `pnpm test:ai` passes.
+- [x] 4.4 Implement `OpenProposals` scenarios (count in the save bar, jump to the next suggestion with focus). Verify: `pnpm test:ai` passes.
 - [ ] 4.5 Implement the `routes/new-recipe/route.test.ts` scenarios that need only a DOM: `Suggestions ignore letter case` (through `openAutocomplete`), `Required fields are marked`, `Errors are announced and focused` (render `RecipeEditor` in `createMemoryRouter`; spike passed). Verify: `pnpm test:ai` passes; any todo left names the limit.
 
 ## 5. Remaining files and wrap-up
