@@ -1,7 +1,7 @@
 ## 1. Server
 
 - [x] 1.1 Add `deleteRecipe(db, slug)` to `.server/recipes.ts` (`DELETE ... RETURNING image`, `undefined` when no row) with tests in `recipes.test.ts` (cascade removes ingredients, steps, chips, views)
-- [ ] 1.2 Add `action` to `routes/recipe/route.tsx`: delete, 404 when unknown, `deletePhoto(...).catch(() => undefined)`, `redirect('/')`
+- [x] 1.2 Add `action` to `routes/recipe/route.tsx`: delete, 404 when unknown, `deletePhoto(...).catch(() => undefined)`, `redirect('/')`
 
 ## 2. UI
 
