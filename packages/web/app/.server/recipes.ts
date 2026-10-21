@@ -233,3 +233,9 @@ export async function recordView(db: D1Database, email: string, slug: string): P
     .bind(email, slug)
     .run();
 }
+
+/** Deletes a recipe; its ingredients, steps, chips and views go with it (foreign keys cascade). Returns the image it had, or undefined when the recipe doesn't exist. */
+export async function deleteRecipe(db: D1Database, slug: string): Promise<{ image: string | null } | undefined> {
+  const row = await db.prepare('DELETE FROM recipes WHERE slug = ? RETURNING image').bind(slug).first<{ image: string | null }>();
+  return row ?? undefined;
+}
