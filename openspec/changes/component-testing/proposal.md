@@ -10,7 +10,7 @@ The web package's route and component tests render with `renderToStaticMarkup` a
 - Convert the regex-on-HTML assertions in the route and component tests to role, text and attribute queries on a rendered DOM (`getByRole`, `getByText`, `.value`, `aria-*`), including the attribute-order alternations and the `html.slice(indexOf(...))` position checks.
 - Replace tests that read source text (`readFileSync` of `RecipeCard.tsx` in `routes/home/route.test.ts`) with assertions on the rendered output.
 - Turn `test.todo` scenarios whose only reason is "needs a browser" for clicks, key presses, focus or live regions into real tests, after a short spike per component to confirm happy-dom is enough.
-- Keep as `test.todo` (with the reason updated where needed) the scenarios that need real layout, scrolling, viewport width, animation or browser history.
+- Keep as `test.todo` (with the reason updated where needed) the scenarios that need real layout, scrolling, viewport width, animation (browser history is covered with a memory router).
 - Keep `cssFor` for class-based CSS claims; the DOM gives it the `className`.
 - Update `STRUCTURE.md` ("What to test how") for the new default.
 

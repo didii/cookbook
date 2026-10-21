@@ -12,7 +12,7 @@ Test files are `.ts` (the test globs are `**/*.test.ts`), so components are buil
 - Keep `pnpm test` fast and browser-free.
 
 **Non-Goals:**
-- No real-browser tooling (Playwright). Layout, scrolling, viewport width, animation and history scenarios stay `test.todo`.
+- No real-browser tooling (Playwright). Layout, scrolling, viewport width, animation scenarios (a memory router stands in for browser history) stay `test.todo`.
 - No change to app code, specs or scenario titles.
 - No move of test files to `.tsx` or change to the test globs.
 
@@ -38,7 +38,7 @@ Test files are `.ts` (the test globs are `**/*.test.ts`), so components are buil
 - `new-recipe`: `Suggestions ignore letter case`, `Required fields are marked`, `Errors are announced and focused` (the visible-asterisk part is a class check).
 - `recipe/route`: `Optional fields are empty`, `Ingredient without quantity`.
 
-Staying `test.todo`: two columns and scroll position on wide screens, `Two recipes on one phone screen`, timer docking and animation, `Many chips`, `Nothing shifts when a step is done`, header link on a narrow screen, `Filtering does not fill the history`, and `Quantity is highlighted while typing` (computed colour).
+Staying `test.todo`: two columns and scroll position on wide screens, `Two recipes on one phone screen`, timer docking and animation, `Many chips`, `Nothing shifts when a step is done`, header link on a narrow screen, and `Quantity is highlighted while typing` (computed colour).
 
 ## Risks / Trade-offs
 

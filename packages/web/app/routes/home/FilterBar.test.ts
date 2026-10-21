@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { cssFor } from '~testing/css';
-import { cleanup, precedes, render, screen } from '~testing/dom';
+import { cleanup, fireEvent, precedes, render, screen, within } from '~testing/dom';
 import { createElement } from 'react';
 import { noFilters, type Filters } from '~/lib/filterRecipes';
 import { FilterBar } from './FilterBar';
@@ -135,7 +135,30 @@ test('button-press › Pressing a chip', async () => {
   assert.match(await cssFor(filterButton().className), /:active/);
 });
 
-// A real browser is needed: opening the sheet is a click, and the search box must not move on screen.
-test.todo('recipe-filtering › Opening the sheet');
-// A real browser is needed: pressing Filter again or Escape closes the sheet, and focus returns to the Filter button.
-test.todo('recipe-filtering › Closing the sheet');
+// That the search box does not move on screen is layout; 'Search box stays put' covers the classes that keep it still.
+test('recipe-filtering › Opening the sheet', () => {
+  show();
+  fireEvent.click(filterButton());
+  // The sheet is open, above the search box, and the button shows it is expanded; it holds the chips, the order and "Wis filters".
+  assert.equal(filterButton().getAttribute('aria-expanded'), 'true');
+  assert.equal(sheet().hasAttribute('data-open'), true);
+  assert.ok(precedes(sheet(), searchBox()));
+  assert.ok(within(sheet()).getByRole('button', { name: 'Iedereen' }));
+  assert.ok(within(sheet()).getByRole('radio', { name: 'A–Z' }));
+  assert.ok(within(sheet()).getByRole('button', { name: 'Wis filters' }));
+});
+
+test('recipe-filtering › Closing the sheet', () => {
+  show();
+  fireEvent.click(filterButton());
+  fireEvent.click(filterButton());
+  assert.equal(filterButton().getAttribute('aria-expanded'), 'false');
+  assert.equal(sheet().hasAttribute('data-open'), false);
+  // Escape closes it too, from the search box, and focus goes back to the Filter button.
+  fireEvent.click(filterButton());
+  searchBox().focus();
+  fireEvent.keyDown(searchBox(), { key: 'Escape' });
+  assert.equal(filterButton().getAttribute('aria-expanded'), 'false');
+  assert.equal(sheet().hasAttribute('data-open'), false);
+  assert.equal(document.activeElement, filterButton());
+});

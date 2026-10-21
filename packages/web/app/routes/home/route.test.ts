@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import { cssFor } from '~testing/css';
 import { createTestDb } from '~testing/db';
-import { cleanup, fireEvent, precedes, render, screen, within } from '~testing/dom';
+import { act, cleanup, fireEvent, precedes, render, screen, within } from '~testing/dom';
 import { createElement } from 'react';
-import { MemoryRouter, RouterContextProvider } from 'react-router';
+import { createMemoryRouter, MemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
 import { envContext, userEmailContext } from '~/.server/context';
 import { createRecipe } from '~/.server/recipes';
 import { filterParams, noFilters } from '~/lib/filterRecipes';
@@ -174,8 +174,23 @@ test('typing a search does not fetch the recipes again, other navigation does', 
   assert.equal(shouldRevalidate(args('recepten/nieuw', '', false)), false);
 });
 
-// The history behaviour (replace) is set where the address changes, in the browser: it needs a real back button.
-test.todo('recipe-filtering › Filtering does not fill the history');
+test('recipe-filtering › Filtering does not fill the history', async () => {
+  // A memory history stands in for the browser's: one step back from the home page leads to the page before it, however much was typed.
+  const router = createMemoryRouter(
+    [
+      { path: '/', element: createElement(Home, { loaderData: { recipes: family } } as Route.ComponentProps) },
+      { path: '/eerder', element: null },
+    ],
+    { initialEntries: ['/eerder', '/'], initialIndex: 1 },
+  );
+  render(createElement(RouterProvider, { router }));
+  fireEvent.change(searchBox(), { target: { value: 'a' } });
+  fireEvent.change(searchBox(), { target: { value: 'ap' } });
+  assert.equal(router.state.location.search, '?q=ap');
+  assert.equal(router.state.historyAction, 'REPLACE');
+  await act(() => router.navigate(-1));
+  assert.equal(router.state.location.pathname, '/eerder');
+});
 
 test('recipe-filtering › Reaching the last recipe', async () => {
   // The page keeps room under the list for the fixed bar and the safe area on phones, and returns to normal spacing from 48rem.

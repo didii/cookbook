@@ -29,6 +29,7 @@ export const render: typeof testing.render = testing.render;
 export const screen: typeof testing.screen = testing.screen;
 export const fireEvent: typeof testing.fireEvent = testing.fireEvent;
 export const within: typeof testing.within = testing.within;
+export const act: typeof testing.act = testing.act;
 /** Removes what was rendered; it also happens after each test, so only a test that renders twice needs it. */
 export const cleanup: typeof testing.cleanup = testing.cleanup;
 afterEach(() => cleanup());
