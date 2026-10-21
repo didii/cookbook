@@ -19,7 +19,7 @@
 
 ## 4. Editor and form tests
 
-- [ ] 4.1 Convert `shared/recipeEditor/RowToolbar.test.ts` and `routes/edit-recipe/route.test.ts` to DOM queries. Verify: `pnpm test:ai` passes.
+- [x] 4.1 Convert `shared/recipeEditor/RowToolbar.test.ts` and `routes/edit-recipe/route.test.ts` to DOM queries. Verify: `pnpm test:ai` passes.
 - [ ] 4.2 Implement (spike passed; the toolbars have role `toolbar`) the recipe-ingredient-editing scenarios it supports: Enter moves to the next row, arrow keys move between rows, Backspace removes an empty row, Alt and arrow move the row, edge rows disabled, row buttons one tab stop (roving `tabindex`), move announced (live region text). Keep `Quantity is highlighted while typing` as a todo (computed colour). Verify: `pnpm test:ai` passes; todos left in `IngredientList.test.ts` each state a real limit.
 - [ ] 4.3 Implement `ChipPopup` and `StepChips` scenarios (a plain `<dialog>`; spike passed): click opens the popup, icon switches mode, popup text, Escape closes. Verify: `pnpm test:ai` passes; any scenario left as a todo says why.
 - [ ] 4.4 Implement `OpenProposals` scenarios (count in the save bar, jump to the next suggestion with focus). Verify: `pnpm test:ai` passes.
