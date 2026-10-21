@@ -15,6 +15,7 @@ import { CookSwitch } from './CookSwitch';
 import { DeleteRecipe } from './DeleteRecipe';
 import { IngredientList } from './IngredientList';
 import { LikeButton } from './LikeButton';
+import { NotePanel } from './NotePanel';
 import { NoteSheet } from './NoteSheet';
 import { ScaleControl } from './ScaleControl';
 import { StepList } from './StepList';
@@ -207,6 +208,7 @@ export function RecipePage({ recipe: r, tile, steps, liked = false, note: savedN
               onToggle={(i) => setTicked((prev) => toggled(prev, i))}
               className="min-[52rem]:min-h-0 min-[52rem]:flex-1 min-[52rem]:overflow-y-auto min-[52rem]:overscroll-contain min-[52rem]:pr-1 min-[52rem]:pb-1"
             />
+            <NotePanel note={note} />
           </section>
 
           <section id="panel-steps" aria-labelledby="bereiding" className={panel('steps')}>
