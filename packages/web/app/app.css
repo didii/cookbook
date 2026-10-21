@@ -21,6 +21,14 @@
   /* A finished timer pulses; a newly shown timer pops in. Both are switched off with motion-reduce. */
   --animate-ring: ring 1s ease-in-out infinite;
   --animate-pop: pop 0.22s ease-out;
+  /* The filter sheet rises from the bar. */
+  --animate-rise: rise 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(0.75rem);
+    }
+  }
   /* The highlight of a step reached from a timer: in by 20%, held until 60%, out at the end. */
   --animate-flash: flash 3s ease-in-out forwards;
   @keyframes flash {

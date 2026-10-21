@@ -1,12 +1,20 @@
-import { Link } from 'react-router';
+import { Link, useSearchParams, type ShouldRevalidateFunctionArgs } from 'react-router';
 import { envContext } from '~/.server/context';
 import { listRecipes } from '~/.server/recipes';
+import { authorsOf, filterParams, filterRecipes, isFiltered, minRecipesForFilters, noFilters, parseFilters, type Filters } from '~/lib/filterRecipes';
 import { tileFor } from '~/lib/tile';
+import { Button } from '~/shared/Button';
 import type { Route } from './+types/route';
+import { FilterBar } from './FilterBar';
 import { RecipeCard } from './RecipeCard';
 
 export async function loader({ context }: Route.LoaderArgs) {
   return { recipes: await listRecipes(context.get(envContext).DB) };
+}
+
+/** Typing in the search box only changes the address; the whole list is already here, so nothing is fetched again. */
+export function shouldRevalidate({ currentUrl, nextUrl, defaultShouldRevalidate }: ShouldRevalidateFunctionArgs) {
+  return currentUrl.pathname === nextUrl.pathname && currentUrl.search !== nextUrl.search ? false : defaultShouldRevalidate;
 }
 
 const intro = 'Het kookboek van de familie. Kies iets, of zoek wat je zin hebt.';
@@ -17,8 +25,15 @@ export function meta() {
 
 export default function Home({ loaderData }: Route.ComponentProps) {
   const { recipes } = loaderData;
+  const [params, setParams] = useSearchParams();
+  const detailed = recipes.length >= minRecipesForFilters;
+  const parsed = parseFilters(params);
+  // Without the chips and the sort control there is no way to undo them, so an address that sets them is ignored.
+  const filters: Filters = detailed ? parsed : { ...noFilters, q: parsed.q };
+  const change = (next: Filters) => setParams(filterParams(next), { replace: true });
+  const shown = filterRecipes(recipes, filters);
   return (
-    <main id="main" className="mx-auto max-w-272 px-[max(1rem,4vw)] pt-8 pb-16">
+    <main id="main" className="mx-auto max-w-272 px-[max(1rem,4vw)] pt-8 pb-[calc(7rem+env(safe-area-inset-bottom))] md:pb-16">
       <h1 className="text-[clamp(2rem,6vw,3.5rem)] leading-[1.05] font-black tracking-[-0.03em] text-balance">Wat eten we vandaag?</h1>
       {recipes.length === 0 ? (
         <p className="mt-2 max-w-[60ch] text-lg text-muted">
@@ -27,16 +42,26 @@ export default function Home({ loaderData }: Route.ComponentProps) {
       ) : (
         <>
           <p className="mt-2 max-w-[34ch] text-lg text-pretty text-muted">{intro}</p>
+          <FilterBar filters={filters} authors={authorsOf(recipes)} detailed={detailed} onChange={change} />
           <output className="mt-6 mb-4 block font-extrabold text-muted">
-            {recipes.length} {recipes.length === 1 ? 'recept' : 'recepten'}
+            {isFiltered(filters) ? `${shown.length} van ${recipes.length}` : shown.length} {recipes.length === 1 ? 'recept' : 'recepten'}
           </output>
-          <ul className="grid list-none grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] gap-6 p-0">
-            {recipes.map((r, i) => (
-              <li key={r.slug}>
-                <RecipeCard recipe={r} tile={tileFor(i)} eager={i < 3} />
-              </li>
-            ))}
-          </ul>
+          {shown.length === 0 ? (
+            <div className="flex max-w-[60ch] flex-col items-start gap-4">
+              <p className="text-lg">Niets gevonden voor deze zoekopdracht.</p>
+              <Button type="button" className="flex-none px-4" onClick={() => change(noFilters)}>
+                Wis filters
+              </Button>
+            </div>
+          ) : (
+            <ul className="grid list-none grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] gap-6 p-0">
+              {shown.map((r, i) => (
+                <li key={r.slug}>
+                  <RecipeCard recipe={r} tile={tileFor(i)} eager={i < 3} />
+                </li>
+              ))}
+            </ul>
+          )}
         </>
       )}
     </main>

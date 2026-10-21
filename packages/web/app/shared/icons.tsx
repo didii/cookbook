@@ -12,7 +12,9 @@ import {
   Pin as LucidePin,
   Play as LucidePlay,
   Plus as LucidePlus,
+  Search as LucideSearch,
   Thermometer as LucideThermometer,
+  SlidersHorizontal,
   Square,
   Timer,
   Trash2,
@@ -46,5 +48,7 @@ export const Plus = icon(LucidePlus);
 export const Arrow = icon(ArrowRight);
 export const Link = icon(LucideLink);
 export const Pin = icon(LucidePin);
+export const Search = icon(LucideSearch);
+export const Sliders = icon(SlidersHorizontal);
 export const Clock = icon(Timer);
 export const Ingredient = icon(Utensils);
