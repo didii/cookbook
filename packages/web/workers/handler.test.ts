@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { after, test } from 'node:test';
+import { createTestDb } from '~testing/db';
 import { generateKeyPair, SignJWT } from 'jose';
 import type { RouterContextProvider } from 'react-router';
 import { envContext, userEmailContext } from '~/.server/context';
 import { accessJwtHeader } from '~/.server/identity';
+import { createUser } from '~/.server/users';
 import { createFetch } from './handler';
 
 // Typed string: the generated Env types these vars as the exact literals from wrangler.jsonc.
@@ -68,10 +70,29 @@ test('family-access › Stand-in identity configured on a deployed app', async (
   assert.equal(prod.calls.length, 0);
 });
 
+// A request without verified identity never reaches the app, so nothing that would store a user can run.
+test('users › Forged identity', async () => {
+  const { db, dispose } = await createTestDb();
+  after(dispose);
+  const reached: string[] = [];
+  const fetch = createFetch({
+    requestHandler: async (_request, context) => (
+      await createUser(db, context.get(userEmailContext), 'Nep'),
+      reached.push('app'),
+      new Response('app')
+    ),
+    dev: false,
+    getKey: async () => publicKey,
+  });
+  const res = await fetch(get('forged'), { ...env, DB: db });
+  assert.equal(res.status, 403);
+  assert.deepEqual(reached, []);
+  assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM users').first<{ n: number }>())?.n, 0);
+});
+
 // Not automated: sign-in happens at Cloudflare Access, outside this code.
 test.todo('family-access › Allowlisted member signs in');
 test.todo('family-access › Unknown email is refused');
-test.todo('family-access › First visit by a new family member');
 test.todo('family-access › Returning within the session period');
 // Not automated: the home page needs a component or loader-level test.
 test.todo('family-access › Home page shows who is signed in');

@@ -1,8 +1,8 @@
 import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router';
 import type { Route } from './+types/root';
 import './app.css';
-import { userEmailContext } from '~/.server/context';
-import { Header } from '~/shared/Header';
+import { envContext, userEmailContext } from '~/.server/context';
+import { redirectToWelcome } from '~/.server/welcome';
 import { SkipLink } from '~/shared/SkipLink';
 
 export const links: Route.LinksFunction = () => [
@@ -36,15 +36,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function loader({ context }: Route.LoaderArgs) {
-  return { email: context.get(userEmailContext) };
+export async function loader({ request, context }: Route.LoaderArgs) {
+  const email = context.get(userEmailContext);
+  // A member without a user row is welcomed first and sent on to the page they asked for.
+  const welcome = await redirectToWelcome(context.get(envContext).DB, email, new URL(request.url));
+  if (welcome) throw welcome;
+  return { email };
 }
 
-export default function App({ loaderData }: Route.ComponentProps) {
+export default function App() {
   return (
     <>
       <SkipLink />
-      <Header email={loaderData.email} />
       <Outlet />
     </>
   );
