@@ -193,20 +193,16 @@ export function RecipePage({ recipe: r, tile, steps, liked = false, note: savedN
           <section
             id="panel-ingredients"
             aria-labelledby="ing"
-            className={cn(
-              panel('ingredients'),
-              'min-[52rem]:sticky min-[52rem]:top-4 min-[52rem]:flex min-[52rem]:max-h-[calc(100svh-2rem)] min-[52rem]:flex-col',
-            )}
+            className={panel('ingredients')}
           >
             <TimerSidebar timers={timers.active} onJump={jump} onPeek={setPeek} />
-            <h2 id="ing" className="mb-4 shrink-0 scroll-mt-[calc(var(--stack-h,0px)+0.75rem)] text-2xl font-black">
+            <h2 id="ing" className="mb-4 scroll-mt-[calc(var(--stack-h,0px)+0.75rem)] text-2xl font-black">
               Ingrediënten
             </h2>
             <IngredientList
               ingredients={scaled.ingredients}
               ticked={ticked}
               onToggle={(i) => setTicked((prev) => toggled(prev, i))}
-              className="min-[52rem]:min-h-0 min-[52rem]:flex-1 min-[52rem]:overflow-y-auto min-[52rem]:overscroll-contain min-[52rem]:pr-1 min-[52rem]:pb-1"
             />
             <NotePanel note={note} />
           </section>

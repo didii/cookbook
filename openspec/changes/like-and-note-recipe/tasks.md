@@ -24,7 +24,7 @@ Each scenario test is named `<capability> › <Scenario title>`; run `pnpm test:
 
 ## 5. Wide layout
 
-- [ ] 5.1 Remove the sticky position, `max-h` and inner scroll from the ingredient section and its list in `RecipePage`. Verify: the two `recipe-viewing` scenarios (`Two columns on a wide screen`, `Long ingredient list on a wide screen`) stay `test.todo` with their updated reasons, a component test asserts the section no longer has `sticky` or an overflow class, and a browser check at 1280×600 with many ingredients and a running timer scrolls the whole page.
+- [x] 5.1 Remove the sticky position, `max-h` and inner scroll from the ingredient section and its list in `RecipePage`. Verify: the two `recipe-viewing` scenarios (`Two columns on a wide screen`, `Long ingredient list on a wide screen`) stay `test.todo` with their updated reasons, a component test asserts the section no longer has `sticky` or an overflow class, and a browser check at 1280×600 with many ingredients and a running timer scrolls the whole page.
 
 ## 6. Finish
 
