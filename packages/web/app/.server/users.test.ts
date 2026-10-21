@@ -25,6 +25,67 @@ test('a created user is found with name and creation time', async () => {
   assert.match(user!.createdAt, /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/);
 });
 
+test('users › New member is a user', async () => {
+  await createUser(db, 'new@example.com', 'Nieuw');
+  assert.equal((await getUser(db, 'new@example.com'))?.role, 'user');
+});
+
+test('users › Existing member is a user', async () => {
+  await db.prepare('INSERT INTO users (email, calling_name) VALUES (?, ?)').bind('old@example.com', 'Oud').run();
+  assert.equal((await getUser(db, 'old@example.com'))?.role, 'user');
+});
+
+// Each superadmin test needs a database without a superadmin, so it gets its own.
+const withFreshDb = async (run: (fresh: D1Database) => Promise<void>) => {
+  const fresh = await createTestDb();
+  try {
+    await run(fresh.db);
+  } finally {
+    await fresh.dispose();
+  }
+};
+const roleOf = async (d: D1Database, email: string) => (await getUser(d, email))?.role;
+
+test('users › Configured email becomes superadmin', () =>
+  withFreshDb(async (d) => {
+    await createUser(d, 'boss@example.com', 'Baas', 'boss@example.com');
+    assert.equal(await roleOf(d, 'boss@example.com'), 'superadmin');
+  }));
+
+test('users › Configured email in another letter case becomes superadmin', () =>
+  withFreshDb(async (d) => {
+    await createUser(d, 'Boss@Example.com', 'Baas', 'boss@EXAMPLE.com');
+    assert.equal(await roleOf(d, 'boss@example.com'), 'superadmin');
+  }));
+
+test('users › Configured email is not promoted when a superadmin exists', () =>
+  withFreshDb(async (d) => {
+    await d.prepare("INSERT INTO users (email, calling_name, role) VALUES ('first@example.com', 'Eerste', 'superadmin')").run();
+    await createUser(d, 'boss@example.com', 'Baas', 'boss@example.com');
+    assert.equal(await roleOf(d, 'boss@example.com'), 'user');
+  }));
+
+test('users › Other emails become users', () =>
+  withFreshDb(async (d) => {
+    await createUser(d, 'other@example.com', 'Ander', 'boss@example.com');
+    assert.equal(await roleOf(d, 'other@example.com'), 'user');
+  }));
+
+test('users › No configured email promotes nobody', () =>
+  withFreshDb(async (d) => {
+    await createUser(d, 'boss@example.com', 'Baas');
+    await createUser(d, 'blank@example.com', 'Leeg', '');
+    assert.deepEqual([await roleOf(d, 'boss@example.com'), await roleOf(d, 'blank@example.com')], ['user', 'user']);
+  }));
+
+// Nothing checks roles yet; the existing route tests already show the pages to a plain member.
+test.todo("users › Today's features need no role");
+
+test('an admin role is read from the user', async () => {
+  await db.prepare("INSERT INTO users (email, calling_name, role) VALUES ('adm@example.com', 'Adm', 'admin')").run();
+  assert.equal((await getUser(db, 'adm@example.com'))?.role, 'admin');
+});
+
 test('creating the same user again keeps one row and the first name', async () => {
   await createUser(db, 'twice@example.com', 'Eerste');
   await createUser(db, 'twice@example.com', 'Tweede');

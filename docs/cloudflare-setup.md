@@ -57,7 +57,9 @@ curl -sI https://cookbook.rhythm-coder.dev/
 
 The `Location` header points at the team domain, and its `kid` parameter is the AUD tag.
 
-Put both in `wrangler.jsonc` and run `pnpm run deploy` again. If either is missing or wrong, signed-in users get a 403 from the app.
+`wrangler.jsonc` also has `SUPERADMIN_EMAIL`: the member with that email becomes superadmin when welcomed, if no superadmin exists yet. That address must be on the Access allow policy too.
+
+Put the first two in `wrangler.jsonc` and run `pnpm run deploy` again. If either is missing or wrong, signed-in users get a 403 from the app.
 
 ## 7. Check
 

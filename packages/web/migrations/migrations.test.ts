@@ -298,6 +298,11 @@ test('a user gets a creation time in the same format as a recipe', async () => {
   assert.match(row!.created_at, /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/);
 });
 
+test('users › Unknown role is refused', async () => {
+  await assert.rejects(db.prepare("INSERT INTO users (email, calling_name, role) VALUES ('x@example.com', 'X', 'owner')").run());
+  assert.equal(await count("SELECT id FROM users WHERE email = 'x@example.com'"), 0);
+});
+
 const addView = (user: number, recipe: number) => db.prepare('INSERT INTO recipe_views (user_id, recipe_id) VALUES (?, ?)').bind(user, recipe).run();
 const userId = async (email: string) =>
   (await db.prepare('INSERT INTO users (email, calling_name) VALUES (?, ?) RETURNING id').bind(email, 'X').first<{ id: number }>())!.id;

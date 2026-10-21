@@ -29,7 +29,8 @@ export async function action({ request, context }: Route.ActionArgs) {
   const { name, error } = checkName(form.get('callingName'));
   if (error) return data({ error, name }, { status: 400 });
   // Idempotent: a second submit (another tab) changes nothing and keeps the first name.
-  await createUser(context.get(envContext).DB, context.get(userEmailContext), name);
+  const env = context.get(envContext);
+  await createUser(env.DB, context.get(userEmailContext), name, env.SUPERADMIN_EMAIL);
   return redirect(safeReturnUrl(form.get('returnUrl') as string | null));
 }
 
