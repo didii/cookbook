@@ -3,9 +3,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
 
 const app = new URL('../app/', import.meta.url);
-const files = (readdirSync(app, { recursive: true, encoding: 'utf8' }) as string[]).filter(
-  (f) => f.endsWith('.tsx') && !f.endsWith('.test.tsx'),
-);
+const files = (readdirSync(app, { recursive: true, encoding: 'utf8' }) as string[]).filter((f) => f.endsWith('.tsx') && !f.endsWith('.test.tsx'));
 
 test('test ids are named ComponentName-role after a component of their file, and no two files share one', () => {
   const owner = new Map<string, string>();

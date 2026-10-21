@@ -25,5 +25,5 @@
 
 ## 6. Finish
 
-- [ ] 6.1 Confirm no test finds elements by role, text or label: `grep -rE "getBy(Role|Text|LabelText|PlaceholderText)|getAllBy(Role|Text)" packages/web/app packages/web/testing` returns only assertions on an element already found by id (justify any that remain).
-- [ ] 6.2 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check` and `pnpm test:ai`: all pass.
+- [x] 6.1 Confirm no test finds elements by role, text or label: `grep -rE "getBy(Role|Text|LabelText|PlaceholderText)|getAllBy(Role|Text)" packages/web/app packages/web/testing` returns only assertions on an element already found by id (justify any that remain).
+- [x] 6.2 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check` and `pnpm test:ai`: all pass.

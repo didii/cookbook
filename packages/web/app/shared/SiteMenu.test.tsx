@@ -16,7 +16,7 @@ const show = () => {
       ),
       children: [
         { path: '/', element: <p>Start</p> },
-        { path: '/over', element: <p>Over pagina</p> },
+        { path: '/over', element: <p data-testid="about">Over pagina</p> },
       ],
     },
   ]);
@@ -60,7 +60,7 @@ test('site-menu › Following a link closes the menu', async () => {
   const { dialog } = show();
   fireEvent.click(screen.getByTestId('SiteMenu-open'));
   fireEvent.click(screen.getAllByTestId('SiteMenu-link')[2]!);
-  await screen.findByText('Over pagina');
+  await screen.findByTestId('about');
   assert.equal(dialog.isConnected, true);
   assert.equal(dialog.hasAttribute('open'), false);
 });
