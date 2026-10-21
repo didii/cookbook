@@ -15,6 +15,9 @@ export const fireEvent: typeof testing.fireEvent = testing.fireEvent;
 export const within: typeof testing.within = testing.within;
 afterEach(() => testing.cleanup());
 
+/** Whether `a` comes before `b` in the document. */
+export const precedes = (a: Node, b: Node) => !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+
 /** Opens the popup of a Base UI Autocomplete. A change event alone does not: it opens from the pointer or the arrow key. */
 export function openAutocomplete(input: HTMLElement) {
   input.focus();

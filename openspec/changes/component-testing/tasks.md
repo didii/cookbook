@@ -6,7 +6,7 @@
 
 ## 2. Home route tests
 
-- [ ] 2.1 Convert `routes/home/RecipeCard.test.ts` to a rendered DOM (image class via `getByRole('img')`, tile band after the image via `compareDocumentPosition`). Verify: `pnpm test:ai` passes, scenario names unchanged.
+- [x] 2.1 Convert `routes/home/RecipeCard.test.ts` to a rendered DOM (image class via `getByRole('img')`, tile band after the image via `compareDocumentPosition`). Verify: `pnpm test:ai` passes, scenario names unchanged.
 - [ ] 2.2 Convert `routes/home/route.test.ts` (`recipe-browsing` and `recipe-filtering`): replace `shownTitles`, `text()`, the `<output>` count regex, the `<input ... value>` alternations and the `</output>` slice with role and text queries. Replace the `readFileSync('./RecipeCard.tsx')` check in `Recipe without time or image` with a rendered card that has no time element. Verify: `pnpm test:ai` passes and `grep -n "readFileSync\|renderToStaticMarkup" routes/home/route.test.ts` shows nothing outside the loader helpers.
 - [ ] 2.3 Convert `routes/home/FilterBar.test.ts`: replace `classOf` and the `aria-pressed` and `checked` regexes with `getByRole('button', { pressed })`, `getByRole('radio')` and `el.className` fed to `cssFor`. Verify: `pnpm test:ai` passes.
 - [ ] 2.4 Spike and implement `recipe-filtering › Opening the sheet` and `Closing the sheet` (click Filter, Escape, Filter again, focus returns to the Filter button). If a part needs layout (search box not moving), keep that part as a todo with the reason rewritten. Verify: `pnpm test:ai` passes; no remaining todo says "needs a browser" for click or focus.
