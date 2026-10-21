@@ -190,20 +190,12 @@ export function RecipePage({ recipe: r, tile, steps, liked = false, note: savedN
         </div>
 
         <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-10 min-[52rem]:grid-cols-[minmax(16rem,22rem)_1fr] min-[52rem]:items-start">
-          <section
-            id="panel-ingredients"
-            aria-labelledby="ing"
-            className={panel('ingredients')}
-          >
+          <section id="panel-ingredients" aria-labelledby="ing" className={panel('ingredients')}>
             <TimerSidebar timers={timers.active} onJump={jump} onPeek={setPeek} />
             <h2 id="ing" className="mb-4 scroll-mt-[calc(var(--stack-h,0px)+0.75rem)] text-2xl font-black">
               Ingrediënten
             </h2>
-            <IngredientList
-              ingredients={scaled.ingredients}
-              ticked={ticked}
-              onToggle={(i) => setTicked((prev) => toggled(prev, i))}
-            />
+            <IngredientList ingredients={scaled.ingredients} ticked={ticked} onToggle={(i) => setTicked((prev) => toggled(prev, i))} />
             <NotePanel note={note} />
           </section>
 

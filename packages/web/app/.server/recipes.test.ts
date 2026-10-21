@@ -525,7 +525,10 @@ test('recipe-note › Emptied note is removed', async () => {
   await setNote(db, 'oma@example.com', slug, 'minder zout');
   assert.equal(await setNote(db, 'oma@example.com', slug, ' \n '), true);
   assert.equal((await getMemberRecipeData(db, 'oma@example.com', slug)).note, '');
-  const rows = await db.prepare('SELECT COUNT(*) AS n FROM recipe_notes n JOIN recipes r ON r.id = n.recipe_id WHERE r.slug = ?').bind(slug).first<{ n: number }>();
+  const rows = await db
+    .prepare('SELECT COUNT(*) AS n FROM recipe_notes n JOIN recipes r ON r.id = n.recipe_id WHERE r.slug = ?')
+    .bind(slug)
+    .first<{ n: number }>();
   assert.equal(rows!.n, 0);
 });
 

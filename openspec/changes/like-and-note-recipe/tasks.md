@@ -28,7 +28,7 @@ Each scenario test is named `<capability> › <Scenario title>`; run `pnpm test:
 
 ## 6. Finish
 
-- [ ] 6.1 Run `pnpm format:fix`, `pnpm lint:fix`, then confirm `pnpm format:check`, `pnpm lint:check`, `pnpm test:ai` and `pnpm test:spec like-and-note-recipe` are clean. Verify by their output.
+- [x] 6.1 Run `pnpm format:fix`, `pnpm lint:fix`, then confirm `pnpm format:check`, `pnpm lint:check`, `pnpm test:ai` and `pnpm test:spec like-and-note-recipe` are clean. Verify by their output.
 
 ## Workflow follow-up
 

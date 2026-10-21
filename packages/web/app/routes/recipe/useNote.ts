@@ -47,31 +47,33 @@ export function useNote(slug: string, saved: string, narrow: boolean) {
     clearTimeout(pause.current);
     if (latest.current === stored.current || inFlight.current) return;
     inFlight.current = true;
-    const sent = latest.current;
-    let ok = false;
-    try {
-      // keepalive lets the request outlive the page (pagehide, leaving the route).
-      const response = await fetch(`/recepten/${slug}/notitie`, { method: 'POST', body: new URLSearchParams({ note: sent }), keepalive: true });
-      ok = response.ok;
-    } catch {
-      ok = false;
+    // Typing may go on while a request is out, so repeat until what was stored is the current text.
+    while (latest.current !== stored.current) {
+      const sent = latest.current;
+      let ok = false;
+      try {
+        // keepalive lets the request outlive the page (pagehide, leaving the route).
+        const response = await fetch(`/recepten/${slug}/notitie`, { method: 'POST', body: new URLSearchParams({ note: sent }), keepalive: true });
+        ok = response.ok;
+      } catch {
+        ok = false;
+      }
+      if (!ok) {
+        inFlight.current = false;
+        setFailed(true);
+        // A failed save must not vanish with the closed field: the text is still there, so the field comes back.
+        if (narrowNow.current) {
+          open.current = true;
+          setIsOpen(true);
+        }
+        return;
+      }
+      stored.current = sent;
+      setFailed(false);
+      setSavedSinceOpen(latest.current === sent);
+      if (!open.current) showCue();
     }
     inFlight.current = false;
-    if (!ok) {
-      setFailed(true);
-      // A failed save must not vanish with the closed field: the text is still there, so the field comes back.
-      if (narrowNow.current) {
-        open.current = true;
-        setIsOpen(true);
-      }
-      return;
-    }
-    stored.current = sent;
-    setFailed(false);
-    setSavedSinceOpen(latest.current === sent);
-    if (!open.current) showCue();
-    // Typing went on while the request was out.
-    if (latest.current !== sent) await save();
   }, [slug]);
 
   const change = (next: string) => {

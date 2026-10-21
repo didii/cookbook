@@ -30,11 +30,11 @@ function Harness({ saved = 'oud', narrow = false }: { saved?: string; narrow?: b
       <output data-testid="state">
         {JSON.stringify({ open: note.isOpen, failed: note.failed, savedSinceOpen: note.savedSinceOpen, cue: note.cue })}
       </output>
-      <button data-testid="open" onClick={note.open} />
-      <button data-testid="dismiss" onClick={note.dismiss} />
-      <button data-testid="blur" onClick={note.blur} />
-      <button data-testid="clear-cue" onClick={note.clearCue} />
-      <button data-testid="end-cue" onClick={note.endCue} />
+      <button data-testid="open" aria-label="open" onClick={note.open} />
+      <button data-testid="dismiss" aria-label="dismiss" onClick={note.dismiss} />
+      <button data-testid="blur" aria-label="blur" onClick={note.blur} />
+      <button data-testid="clear-cue" aria-label="clear-cue" onClick={note.clearCue} />
+      <button data-testid="end-cue" aria-label="end-cue" onClick={note.endCue} />
     </div>
   );
 }

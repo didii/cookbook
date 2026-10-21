@@ -51,7 +51,7 @@ test('recipe-note › Recipe with a note', async () => {
 test('recipe-note › Opening the note field', async () => {
   await open();
   assert.equal(field().value, 'oud');
-  assert.equal(sheet()!.getAttribute('role'), 'dialog');
+  assert.equal(sheet()!.tagName, 'DIALOG');
   assert.equal(sheet()!.getAttribute('aria-label'), 'Mijn notitie');
   assert.equal(button().getAttribute('aria-label'), 'Sluit mijn notitie');
   assert.equal(button().getAttribute('aria-expanded'), 'true');
@@ -99,7 +99,7 @@ test('recipe-note › Saved replaces the hint', async () => {
   await act(async () => mock.timers.tick(5000));
   assert.equal(screen.queryByTestId('NoteSheet-hint'), null);
   assert.equal(screen.getByTestId('NoteSheet-saved').textContent?.trim(), 'Bewaard');
-  assert.equal(screen.getByTestId('NoteSheet-status').getAttribute('role'), 'status');
+  assert.equal(screen.getByTestId('NoteSheet-status').tagName, 'OUTPUT');
 });
 
 test('recipe-note › Typing brings the hint back', async () => {
@@ -123,7 +123,7 @@ test('the cue sits next to the closed button after a change and a tap removes it
   await act(async () => void fireEvent.click(button()));
   const cue = screen.getByTestId('NoteCue-cue');
   assert.equal(cue.textContent?.trim(), 'Notitie bewaard');
-  assert.equal(screen.getByTestId('NoteCue-status').getAttribute('role'), 'status');
+  assert.equal(screen.getByTestId('NoteCue-status').tagName, 'OUTPUT');
   await act(async () => void fireEvent.click(cue));
   assert.equal(screen.queryByTestId('NoteCue-cue'), null);
 });

@@ -330,7 +330,8 @@ test('views are removed with their recipe or member', async () => {
   assert.equal(await count('SELECT user_id FROM recipe_views WHERE recipe_id = ?', other), 0);
 });
 
-const addLike = (user: number, recipe: number) => db.prepare('INSERT OR IGNORE INTO recipe_likes (user_id, recipe_id) VALUES (?, ?)').bind(user, recipe).run();
+const addLike = (user: number, recipe: number) =>
+  db.prepare('INSERT OR IGNORE INTO recipe_likes (user_id, recipe_id) VALUES (?, ?)').bind(user, recipe).run();
 const addNote = (user: number, recipe: number, body = 'minder zout') =>
   db.prepare('INSERT INTO recipe_notes (user_id, recipe_id, body) VALUES (?, ?, ?)').bind(user, recipe, body).run();
 

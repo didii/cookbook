@@ -269,7 +269,9 @@ export async function setLike(db: D1Database, email: string, slug: string, liked
 export async function setNote(db: D1Database, email: string, slug: string, body: string): Promise<boolean> {
   if (body.trim() === '') {
     await db
-      .prepare('DELETE FROM recipe_notes WHERE user_id = (SELECT id FROM users WHERE email = ?) AND recipe_id = (SELECT id FROM recipes WHERE slug = ?)')
+      .prepare(
+        'DELETE FROM recipe_notes WHERE user_id = (SELECT id FROM users WHERE email = ?) AND recipe_id = (SELECT id FROM recipes WHERE slug = ?)',
+      )
       .bind(email, slug)
       .run();
     return known(db, email, slug);

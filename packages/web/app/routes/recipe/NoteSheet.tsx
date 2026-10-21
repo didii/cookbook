@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react';
 import { maxNoteLength } from '~/lib/note';
 import { cn } from '~/shared/cn';
 import { Check, Cross, Lock, StickyNote } from '~/shared/icons';
-import { press } from '~/shared/press';
 import { NoteCue } from './NoteCue';
 import type { Note } from './useNote';
 
@@ -11,7 +10,7 @@ type Props = { note: Note };
 /** Narrow screens: a floating button at the bottom right that opens the note field above it. Hidden from 52rem, where `NotePanel` takes over. */
 export function NoteSheet({ note }: Props) {
   const button = useRef<HTMLButtonElement>(null);
-  const sheet = useRef<HTMLDivElement>(null);
+  const sheet = useRef<HTMLDialogElement>(null);
   const field = useRef<HTMLTextAreaElement>(null);
   const wasOpen = useRef(false);
   const { isOpen, dismiss } = note;
@@ -43,12 +42,12 @@ export function NoteSheet({ note }: Props) {
     <div className="min-[52rem]:hidden">
       {isOpen && <div className="fixed inset-0 z-30 bg-ink/30" aria-hidden="true" />}
       {isOpen && (
-        <div
+        <dialog
+          open
           ref={sheet}
-          role="dialog"
           aria-label="Mijn notitie"
           data-testid="NoteSheet-sheet"
-          className="fixed inset-x-4 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-40 animate-rise rounded-xl border-3 border-ink bg-white px-4 pt-3.5 pb-4 shadow-hard motion-reduce:animate-none"
+          className="fixed inset-x-4 m-0 w-[calc(100%-2rem)] text-ink bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-40 animate-rise rounded-xl border-3 border-ink bg-white px-4 pt-3.5 pb-4 shadow-hard motion-reduce:animate-none"
         >
           <div className="flex items-baseline justify-between gap-2">
             <b className="text-xl font-black">Mijn notitie</b>
@@ -65,7 +64,7 @@ export function NoteSheet({ note }: Props) {
             onChange={(e) => note.change(e.target.value)}
             className="mt-2.5 box-border min-h-36 w-full resize-none rounded-[10px] border-3 border-ink bg-[#fffdf7] px-3 py-2.5 text-lg leading-snug font-semibold text-ink"
           />
-          <div role="status" data-testid="NoteSheet-status" className="mt-2">
+          <output data-testid="NoteSheet-status" className="mt-2 block">
             {note.failed ? (
               <p data-testid="NoteSheet-failed" role="alert" className="text-sm font-bold text-red">
                 Notitie niet bewaard. Sluit of typ verder om het opnieuw te proberen.
@@ -79,11 +78,16 @@ export function NoteSheet({ note }: Props) {
                 Wordt vanzelf bewaard. Tik buiten het veld om te sluiten.
               </p>
             )}
-          </div>
-        </div>
+          </output>
+        </dialog>
       )}
       <div className="fixed right-4 bottom-[calc(6.5rem+env(safe-area-inset-bottom))] z-40">
-        <NoteCue cue={note.cue} onClear={note.clearCue} onEnd={note.endCue} className="rounded-[10px] border-3 border-ink bg-jade px-3.5 text-white shadow-hard-sm" />
+        <NoteCue
+          cue={note.cue}
+          onClear={note.clearCue}
+          onEnd={note.endCue}
+          className="rounded-[10px] border-3 border-ink bg-jade px-3.5 text-white shadow-hard-sm"
+        />
       </div>
       <button
         ref={button}
