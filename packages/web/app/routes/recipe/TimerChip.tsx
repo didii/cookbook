@@ -21,6 +21,7 @@ export function TimerChip({ id, minutes, label }: Props) {
       <li>
         <button
           type="button"
+          data-testid="TimerChip-start"
           onClick={() => timers.start(id)}
           aria-label={`Start timer van ${formatMinutes(minutes)}${label ? `, ${label}` : ''}`}
           className={cn(
@@ -41,6 +42,7 @@ export function TimerChip({ id, minutes, label }: Props) {
     <li className="max-[51.99rem]:hidden">
       <span
         role="timer"
+        data-testid="TimerChip-countdown"
         title={label}
         className={cn(
           'inline-flex min-h-10 items-center rounded-lg border-3 px-3 text-[0.9375rem] font-black tabular-nums',

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { fireEvent, precedes, render, screen } from '~testing/dom';
+import { fireEvent, precedes, render, screen, within } from '~testing/dom';
 import type { Step } from '~/lib/recipe';
 import { activeTimers, start, timerDefs } from '~/lib/timers';
 import { TimerDock } from './TimerDock';
@@ -17,25 +17,33 @@ const timers = activeTimers(defs, start(start({}, defs[1], T0), defs[0], T0), T0
 
 test('the dock holds a pill per timer, earlier steps first, and is hidden when empty', () => {
   const jumped: number[] = [];
-  const { container } = render(<TimerDock timers={timers} onJump={(step) => jumped.push(step)} />);
-  const second = screen.getByRole('button', { name: /^Stap 2, Deeg rust, 29:00/ });
-  const tenth = screen.getByRole('button', { name: /^Stap 10, Bakken, 49:00/ });
+  render(<TimerDock timers={timers} onJump={(step) => jumped.push(step)} />);
+  const [second, tenth] = screen.getAllByTestId('TimerDock-pill');
+  assert.equal(screen.getAllByTestId('TimerDock-pill').length, 2);
+  assert.match(second.getAttribute('aria-label')!, /^Stap 2, Deeg rust, 29:00/);
+  assert.match(tenth.getAttribute('aria-label')!, /^Stap 10, Bakken, 49:00/);
   assert.ok(precedes(second, tenth));
-  assert.equal(container.querySelector('nav')!.hidden, false);
+  assert.equal(screen.getByTestId('TimerDock-dock').hidden, false);
   // A pill goes to the step of its timer.
   fireEvent.click(tenth);
   assert.deepEqual(jumped, [9]);
-  assert.equal(render(<TimerDock timers={[]} onJump={() => {}} />).container.querySelector('nav')!.hidden, true);
+  assert.equal(within(render(<TimerDock timers={[]} onJump={() => {}} />).container).getByTestId('TimerDock-dock').hidden, true);
 });
 
 test('the sidebar lists the timers with their controls and a jump to the step', () => {
   const jumped: number[] = [];
   const { container } = render(<TimerSidebar timers={timers} onJump={(step) => jumped.push(step)} onPeek={() => {}} />);
-  assert.equal(screen.getAllByRole('button', { name: /^Ga naar stap/ }).length, 2);
-  assert.equal(screen.getAllByRole('button', { name: 'Eén minuut erbij' }).length, 2);
-  assert.equal(screen.getAllByRole('button', { name: 'Vijf minuten erbij' }).length, 2);
-  assert.equal(screen.getAllByRole('button', { name: 'Stop timer' }).length, 2);
-  fireEvent.click(screen.getByRole('button', { name: 'Ga naar stap 2' }));
+  const jump = screen.getAllByTestId('SidebarCard-jump');
+  assert.equal(jump.length, 2);
+  assert.ok(jump.every((b) => b.getAttribute('aria-label')!.startsWith('Ga naar stap')));
+  assert.equal(screen.getAllByTestId('SidebarCard-add1').length, 2);
+  assert.equal(screen.getAllByTestId('SidebarCard-add5').length, 2);
+  assert.equal(screen.getAllByTestId('SidebarCard-stop').length, 2);
+  assert.ok(screen.getAllByTestId('SidebarCard-add1').every((b) => b.getAttribute('aria-label') === 'Eén minuut erbij'));
+  assert.ok(screen.getAllByTestId('SidebarCard-add5').every((b) => b.getAttribute('aria-label') === 'Vijf minuten erbij'));
+  assert.ok(screen.getAllByTestId('SidebarCard-stop').every((b) => b.getAttribute('aria-label') === 'Stop timer'));
+  assert.equal(jump[0].getAttribute('aria-label'), 'Ga naar stap 2');
+  fireEvent.click(jump[0]);
   assert.deepEqual(jumped, [1]);
   assert.equal(container.querySelectorAll('li').length, 2);
   assert.equal(render(<TimerSidebar timers={[]} onJump={() => {}} onPeek={() => {}} />).container.firstChild, null);

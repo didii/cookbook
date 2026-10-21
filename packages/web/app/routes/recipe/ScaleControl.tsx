@@ -28,11 +28,16 @@ export function ScaleControl({ value, onChange, servings }: Props) {
 
   return (
     <span className="inline-flex items-center gap-2">
-      <button type="button" aria-label="Minder" onClick={() => step(-1)} className={button}>
+      <button data-testid="ScaleControl-less" type="button" aria-label="Minder" onClick={() => step(-1)} className={button}>
         −
       </button>
-      {!servings && <span aria-hidden="true">×</span>}
+      {!servings && (
+        <span data-testid="ScaleControl-times" aria-hidden="true">
+          ×
+        </span>
+      )}
       <input
+        data-testid="ScaleControl-field"
         type="text"
         inputMode="decimal"
         aria-label={servings ? 'Personen' : 'Vermenigvuldiger'}
@@ -46,8 +51,8 @@ export function ScaleControl({ value, onChange, servings }: Props) {
         onKeyDown={(e) => e.key === 'Enter' && setDraft(undefined)}
         className="min-h-11 w-16 rounded-lg border-3 border-ink bg-white px-2 text-center font-extrabold tabular-nums"
       />
-      {servings && <span>personen</span>}
-      <button type="button" aria-label="Meer" onClick={() => step(1)} className={button}>
+      {servings && <span data-testid="ScaleControl-unit">personen</span>}
+      <button data-testid="ScaleControl-more" type="button" aria-label="Meer" onClick={() => step(1)} className={button}>
         +
       </button>
     </span>

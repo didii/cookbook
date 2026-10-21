@@ -14,11 +14,12 @@ export function TabBar({ tab, onSelect }: Props) {
   };
 
   return (
-    <div role="tablist" aria-label="Recept" className="flex gap-2 border-b-3 border-ink bg-por px-[max(1rem,4vw)] py-2">
+    <div data-testid="TabBar-list" role="tablist" aria-label="Recept" className="flex gap-2 border-b-3 border-ink bg-por px-[max(1rem,4vw)] py-2">
       {tabs.map((t) => (
         <button
           key={t.id}
           id={`tab-${t.id}`}
+          data-testid="TabBar-tab"
           type="button"
           role="tab"
           aria-selected={tab === t.id}

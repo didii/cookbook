@@ -16,7 +16,7 @@
 
 ## 4. Recipe view
 
-- [ ] 4.1 Add ids to `RecipePage`, `StepList`, `TimerCard`, `TimerDock` and convert their tests: verify with `pnpm test:ai`.
+- [x] 4.1 Add ids to `RecipePage`, `StepList`, `TimerCard`, `TimerDock` and convert their tests: verify with `pnpm test:ai`.
 
 ## 5. Recipe editor and forms
 

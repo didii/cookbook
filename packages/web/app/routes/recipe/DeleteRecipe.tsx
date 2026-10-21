@@ -10,6 +10,7 @@ export function DeleteRecipe({ title }: Props) {
     <div className="mt-10 flex justify-center">
       <button
         type="button"
+        data-testid="DeleteRecipe-open"
         onClick={() => dialog.current?.showModal()}
         className="inline-flex min-h-11 items-center font-extrabold text-muted underline underline-offset-[0.25em] hover:text-ink"
       >
@@ -19,24 +20,30 @@ export function DeleteRecipe({ title }: Props) {
       {/* oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- a mouse shortcut for the backdrop; keyboard users have Escape and "Annuleren" */}
       <dialog
         ref={dialog}
+        data-testid="DeleteRecipe-dialog"
         aria-labelledby="delete-title"
         onClick={(e) => e.target === e.currentTarget && e.currentTarget.close()}
         className="m-auto w-[min(26rem,calc(100vw-2rem))] rounded-xl border-3 border-ink bg-white p-0 text-ink shadow-hard backdrop:bg-ink/40"
       >
         <Form method="post" className="grid gap-5 p-6">
-          <h2 id="delete-title" className="text-xl font-black text-balance">
+          <h2 id="delete-title" data-testid="DeleteRecipe-title" className="text-xl font-black text-balance">
             Recept “{title}” verwijderen?
           </h2>
           <p>Het recept met zijn foto wordt verwijderd. Dit kan niet ongedaan worden gemaakt.</p>
           <div className="flex flex-wrap justify-end gap-3">
             <button
               type="button"
+              data-testid="DeleteRecipe-cancel"
               onClick={() => dialog.current?.close()}
               className="min-h-11 rounded-full border-3 border-ink bg-white px-5 font-extrabold hover:bg-yel"
             >
               Annuleren
             </button>
-            <button type="submit" className="min-h-11 rounded-full border-3 border-ink bg-red px-5 font-extrabold text-white">
+            <button
+              type="submit"
+              data-testid="DeleteRecipe-confirm"
+              className="min-h-11 rounded-full border-3 border-ink bg-red px-5 font-extrabold text-white"
+            >
               Verwijderen
             </button>
           </div>
