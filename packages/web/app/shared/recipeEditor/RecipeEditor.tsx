@@ -31,7 +31,7 @@ import {
   purgeDrafts,
   resolveStart,
 } from '~/lib/draftStore';
-import { defaultRules, type Rules } from '~/lib/rules';
+import type { Rules } from '~/lib/rules';
 import { AuthorInput } from '~/shared/AuthorInput';
 import { cn } from '~/shared/cn';
 import { ChevronBack } from '~/shared/icons';
@@ -59,6 +59,8 @@ type Props = {
   seal?: string;
   /** Where "Terug" leads: the recipe, or the home page for a new recipe. */
   cancelTo: string;
+  /** The recognition rules in force; the editor keeps the ones it was first given. */
+  rules: Rules;
   /** The recipe's slug, or none for a new recipe: what its draft on the device belongs to. */
   slug?: string;
   /** When the stored recipe was last saved (none for a new recipe): a draft started from another version is flagged. */
@@ -75,9 +77,9 @@ const asterisk = (
 );
 
 /** The one page for creating and editing a recipe; the routes only differ in the values, heading and cancel target they pass. */
-export function RecipeEditor({ heading, authors, initial, values, errors, tile, seal, cancelTo, slug, updatedAt }: Props) {
-  // The recognition rules come with the root data; a test that renders the editor alone has none and gets the defaults.
-  const rules = useRouteLoaderData<{ rules?: Rules }>('root')?.rules ?? defaultRules;
+export function RecipeEditor({ rules: rulesNow, heading, authors, initial, values, errors, tile, seal, cancelTo, slug, updatedAt }: Props) {
+  // The rules the edit started with stay for the whole edit: a save by an admin meanwhile does not change an open draft.
+  const [rules] = useState(rulesNow);
   const [current, setCurrent] = useState(() => startingDraft(rules, values));
   const [photo, setPhoto] = useState<PhotoState>('ready');
   // Bumped by Herstel so the photo field starts over: it drops a running upload and its preview.

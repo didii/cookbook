@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { fireEvent, render, screen } from '~testing/dom';
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router';
-import type { Role } from '~/.server/users';
+import type { Role } from '~/lib/role';
 import { SiteMenu } from './SiteMenu';
 
 const show = (role: Role = 'user') => {

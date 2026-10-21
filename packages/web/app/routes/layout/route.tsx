@@ -1,5 +1,5 @@
 import { Outlet, useRouteLoaderData } from 'react-router';
-import type { Role } from '~/.server/users';
+import type { Role } from '~/lib/role';
 import { Header } from '~/shared/Header';
 
 /** Pages with the site header; the welcome screen sits outside it. */

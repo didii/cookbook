@@ -1,9 +1,10 @@
-import { data, redirect } from 'react-router';
+import { data, redirect, useRouteLoaderData } from 'react-router';
 import { envContext } from '~/.server/context';
 import { acceptImage, deletePhoto } from '~/.server/photos';
 import { getRecipe, listAuthors, updateRecipe } from '~/.server/recipes';
 import { getRules } from '~/.server/rules';
 import { joinIngredient } from '~/lib/ingredients';
+import { defaultRules, type Rules } from '~/lib/rules';
 import { tileFor } from '~/lib/tile';
 import { endDraftAfterSave } from '~/shared/recipeEditor/endDraftAfterSave';
 import { RecipeEditor } from '~/shared/recipeEditor/RecipeEditor';
@@ -68,6 +69,7 @@ export function meta({ loaderData }: Route.MetaArgs) {
 export default function EditRecipe({ loaderData, actionData }: Route.ComponentProps) {
   return (
     <RecipeEditor
+      rules={useRouteLoaderData<{ rules?: Rules }>('root')?.rules ?? defaultRules}
       key={loaderData.slug}
       slug={loaderData.slug}
       updatedAt={loaderData.updatedAt}

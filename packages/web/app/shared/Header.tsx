@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import type { Role } from '~/.server/users';
+import type { Role } from '~/lib/role';
 import { Fret } from '~/shared/Fret';
 import { SiteMenu } from '~/shared/SiteMenu';
 

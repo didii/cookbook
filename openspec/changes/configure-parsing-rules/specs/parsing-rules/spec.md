@@ -16,7 +16,7 @@ The system SHALL keep the words it recognises in recipe text as stored rules of 
 - **THEN** the step gets no oven temperature
 
 #### Scenario: Unreadable saved rules
-- **WHEN** the saved rules are not valid JSON or do not have the shape of the rules
+- **WHEN** the saved rules are not valid JSON or do not have the shape of the rules (including an empty word list)
 - **THEN** the default rules are used and the pages still work
 
 ### Requirement: Admins see the rules menu link
@@ -58,7 +58,7 @@ The system SHALL refuse every request for the rules page, and every request that
 - **THEN** the page shows the stored rules, one word per line, per kind
 
 ### Requirement: An admin changes the rules as plain words
-The system SHALL let an admin edit each kind of rule as a list of words, one per line, with spoken durations written as `phrase = minutes`, and save all lists at once. Words SHALL be matched literally, never as regular expressions, ignoring letter case. The system SHALL refuse the whole save, store nothing and say what is wrong when a spoken duration has no whole number of minutes above 0, a list is empty (spoken durations may be empty), a word is in two lists, or a word has characters other than letters, `°` and spaces.
+The system SHALL let an admin edit each kind of rule as a list of words, one per line, with spoken durations written as `phrase = minutes`, and save all lists at once. Words SHALL be matched literally, never as regular expressions, ignoring letter case. The system SHALL refuse the whole save, store nothing and say what is wrong when a spoken duration has no whole number of minutes from 1 to 1440, a list is empty (spoken durations may be empty), a word is in two lists, a word has characters other than letters, `°` and spaces, or a unit has anything but letters (a unit is matched as one word).
 
 #### Scenario: Add a unit
 - **WHEN** an admin adds the line "kopje" to the units and saves
@@ -74,7 +74,7 @@ The system SHALL let an admin edit each kind of rule as a list of words, one per
 
 #### Scenario: Spoken duration without minutes
 - **WHEN** an admin saves the line "een tijdje" or "een tijdje = 0" as a spoken duration
-- **THEN** the page stays, says the line needs a whole number of minutes above 0, and no rules change
+- **THEN** the page stays, says the line needs a whole number of minutes from 1 to 1440, and no rules change
 
 #### Scenario: Empty list
 - **WHEN** an admin saves with no units left

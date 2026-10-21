@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { Link } from 'react-router';
-import type { Role } from '~/.server/users';
+import type { Role } from '~/lib/role';
 import { Cross, Menu } from '~/shared/icons';
 
 const links = [

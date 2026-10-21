@@ -50,7 +50,16 @@ test('parsing-rules › Grams are not degrees', () => {
 
 test('parsing-rules › Unreadable saved rules', async () => {
   // The schema refuses text that is not JSON, so "unreadable" is JSON of the wrong shape.
-  for (const value of ['"text"', '{"units":"g"}', '{"spoken":{"x":0}}', 'null', '[1]']) {
+  for (const value of [
+    '"text"',
+    '{"units":"g"}',
+    '{"spoken":{"x":0}}',
+    'null',
+    '[1]',
+    '{"units":[]}',
+    '{"degreeWords":[""]}',
+    '{"spoken":{"x":99999999999999999999}}',
+  ]) {
     await stored(value);
     assert.deepEqual(await getRules(db), defaultRules, value);
   }
@@ -89,7 +98,14 @@ test('parsing-rules › Spoken duration', async () => {
 });
 
 test('parsing-rules › Spoken duration without minutes', async () => {
-  for (const line of ['een tijdje', 'een tijdje = 0', 'een tijdje = x', 'een tijdje = 1,5']) {
+  for (const line of [
+    'een tijdje',
+    'een tijdje = 0',
+    'een tijdje = x',
+    'een tijdje = 1,5',
+    'een tijdje = 1441',
+    'een tijdje = 999999999999999999999',
+  ]) {
     const errors = await edit({ spoken: line });
     assert.match(errors?.spoken ?? '', /heel aantal minuten/, line);
   }
@@ -118,6 +134,9 @@ test('parsing-rules › Saving the unchanged defaults succeeds', async () => {
 test('parsing-rules › Word with other characters', async () => {
   const errors = await edit({ units: 'g\na+' });
   assert.match(errors?.units ?? '', /letters/);
+  // A unit is one word: no space or degree sign.
+  assert.match((await edit({ units: 'g\neetlepel vol' }))?.units ?? '', /letters/);
+  assert.match((await edit({ units: 'g\n°' }))?.units ?? '', /letters/);
   assert.equal(await rowCount(), 0);
 });
 
@@ -157,12 +176,4 @@ test('parsing-rules › Scaling uses the stored units', () => {
   const rows = [{ id: '0', quantityText: '2 kopje', name: 'rijst' }];
   assert.equal(scaleBody('doe 2 kopje bloem erbij', 2, [], rules), 'doe 4 kopje bloem erbij');
   assert.equal(scaleBody('doe 2 kopje bloem erbij', 2, rows, defaultRules), 'doe 2 kopje bloem erbij');
-});
-
-test('parsing-rules › Saved change applies at once', async () => {
-  // The root loader returns `getRules(db)` on every navigation, so a save is seen by the next one.
-  assert.equal(parseIngredient('2 kopje rijst', await getRules(db)).unit, undefined);
-  await edit({ units: toFields(defaultRules).units + '\nkopje' });
-  assert.equal(parseIngredient('2 kopje rijst', await getRules(db)).unit, 'kopje');
-  await resetRules(db);
 });

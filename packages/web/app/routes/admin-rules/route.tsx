@@ -24,10 +24,12 @@ export async function action({ request, context }: Route.ActionArgs) {
   const db = context.get(envContext).DB;
   await requireAdmin(db, context.get(userEmailContext));
   const form = await request.formData();
-  if (form.get('intent') === 'reset') {
+  const intent = form.get('intent');
+  if (intent === 'reset') {
     await resetRules(db);
     return data({ saved: true as const });
   }
+  if (intent !== 'save') throw data('Onbekende actie.', { status: 400 });
   const values = Object.fromEntries(fields.map(({ name }) => [name, String(form.get(name) ?? '')])) as RulesFields;
   const { errors } = await saveRules(db, values);
   if (errors) return data({ errors, values }, { status: 400 });
@@ -85,7 +87,15 @@ export default function AdminRules({ loaderData, actionData }: Route.ComponentPr
           <Button main type="submit" name="intent" value="save" data-testid="AdminRules-save">
             Opslaan
           </Button>
-          <Button type="submit" name="intent" value="reset" data-testid="AdminRules-reset">
+          <Button
+            type="submit"
+            name="intent"
+            value="reset"
+            data-testid="AdminRules-reset"
+            onClick={(e) => {
+              if (!confirm('Alle eigen woorden verwijderen en de standaardwaarden herstellen?')) e.preventDefault();
+            }}
+          >
             Standaardwaarden herstellen
           </Button>
         </div>

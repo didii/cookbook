@@ -2,15 +2,21 @@ import { defaultRules, type Rules } from '~/lib/rules';
 
 const key = 'parsing-rules';
 
-const isWords = (v: unknown): v is string[] => Array.isArray(v) && v.every((w) => typeof w === 'string');
+const valid = /^[\p{L}° ]+$/u;
+const maxMinutes = 1440;
+const isWords = (v: unknown): v is string[] => Array.isArray(v) && v.length > 0 && v.every((w) => typeof w === 'string' && valid.test(w));
 const isSpoken = (v: unknown): v is Record<string, number> =>
-  typeof v === 'object' && v !== null && !Array.isArray(v) && Object.values(v).every((m) => typeof m === 'number' && Number.isInteger(m) && m > 0);
+  typeof v === 'object' &&
+  v !== null &&
+  !Array.isArray(v) &&
+  Object.values(v).every((m) => typeof m === 'number' && Number.isSafeInteger(m) && m > 0 && m <= maxMinutes);
 
-/** The saved rules. Never throws: no row, invalid JSON or a value of the wrong shape gives the defaults, and a field an older value lacks takes its default. */
+/** The saved rules. No row, invalid JSON or a value of the wrong shape gives the defaults, and a field an older value lacks takes its default. */
 export async function getRules(db: D1Database): Promise<Rules> {
+  // A failing query is a real failure and surfaces; only an unreadable value gives the defaults.
+  const row = await db.prepare('SELECT value FROM settings WHERE key = ?').bind(key).first<{ value: string }>();
+  if (!row) return defaultRules;
   try {
-    const row = await db.prepare('SELECT value FROM settings WHERE key = ?').bind(key).first<{ value: string }>();
-    if (!row) return defaultRules;
     const saved: Record<string, unknown> = JSON.parse(row.value);
     if (typeof saved !== 'object' || saved === null || Array.isArray(saved)) return defaultRules;
     const rules = { ...defaultRules, ...saved };
@@ -26,7 +32,6 @@ export type RulesFields = Record<'units' | 'minuteWords' | 'hourWords' | 'degree
 export type RulesErrors = Partial<Record<keyof RulesFields, string>>;
 
 const label = { units: 'Eenheden', minuteWords: 'Minuutwoorden', hourWords: 'Uurwoorden', degreeWords: 'Graadwoorden', spoken: 'Uitgesproken duur' };
-const valid = /^[\p{L}° ]+$/u;
 const clean = (line: string) => line.trim().replace(/\s+/g, ' ').toLowerCase();
 const lines = (text: string) => text.split(/\r?\n/).map(clean).filter(Boolean);
 
@@ -36,8 +41,10 @@ export function readRules(fields: RulesFields): { rules: Rules } | { errors: Rul
   const words = (field: 'units' | 'minuteWords' | 'hourWords' | 'degreeWords') => {
     const list = [...new Set(lines(fields[field]))];
     if (!list.length) errors[field] = `${label[field]} mogen niet leeg zijn.`;
-    const bad = list.find((w) => !valid.test(w));
-    if (bad) errors[field] = `"${bad}" mag alleen letters, ° en spaties bevatten.`;
+    // Units match as one letters-only word, so they take no spaces or °.
+    const ok = field === 'units' ? /^\p{L}+$/u : valid;
+    const bad = list.find((w) => !ok.test(w));
+    if (bad) errors[field] = field === 'units' ? `"${bad}" mag alleen letters bevatten.` : `"${bad}" mag alleen letters, ° en spaties bevatten.`;
     return list;
   };
   const rules: Rules = {
@@ -52,7 +59,8 @@ export function readRules(fields: RulesFields): { rules: Rules } | { errors: Rul
     const phrase = clean(at < 0 ? line : line.slice(0, at));
     const minutes = at < 0 ? '' : line.slice(at + 1).trim();
     if (!valid.test(phrase)) errors.spoken = `"${line}": de zin mag alleen letters, ° en spaties bevatten.`;
-    else if (!/^\d+$/.test(minutes) || Number(minutes) < 1) errors.spoken = `"${line}": schrijf "zin = minuten" met een heel aantal minuten boven 0.`;
+    else if (!/^\d+$/.test(minutes) || Number(minutes) < 1 || Number(minutes) > maxMinutes)
+      errors.spoken = `"${line}": schrijf "zin = minuten" met een heel aantal minuten van 1 tot en met ${maxMinutes}.`;
     else rules.spoken[phrase] = Number(minutes);
   }
   // A word means one thing: it is in one list only.

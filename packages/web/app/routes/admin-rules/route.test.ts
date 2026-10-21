@@ -90,3 +90,11 @@ test('an admin saves and restores through the action', async () => {
   await post('admin@example.com', { intent: 'reset' });
   assert.deepEqual(await getRules(db), defaultRules);
 });
+
+// The root loader imports app.css, which node:test cannot load; the revalidation after an action is router behaviour.
+test.todo('parsing-rules › Saved change applies at once');
+
+test('an unknown intent is refused and changes nothing', async () => {
+  for (const fields of [{} as Record<string, string>, { intent: 'bogus' }]) assert.equal(await refused(post('admin@example.com', fields)), 400);
+  assert.deepEqual(await getRules(db), defaultRules);
+});

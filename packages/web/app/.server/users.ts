@@ -1,6 +1,7 @@
 import { data } from 'react-router';
+import type { Role } from '~/lib/role';
 
-export type Role = 'user' | 'admin' | 'superadmin';
+export type { Role };
 export type User = { id: number; email: string; callingName: string; createdAt: string; role: Role };
 
 /** The member with this email (letter case does not matter), if they have been welcomed (or seeded) before. */
