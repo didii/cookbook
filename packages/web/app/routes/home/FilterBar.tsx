@@ -28,11 +28,12 @@ export function FilterBar({ filters, authors, detailed, onChange }: Props) {
   const toggle = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
   // The box keeps its own text so typing never waits for the address to update; it follows the address when that changes otherwise.
-  const [text, setText] = useState(filters.q);
-  const [seen, setSeen] = useState(filters.q);
-  if (filters.q !== seen) {
-    setSeen(filters.q);
-    setText(filters.q);
+  const q = filters.q ?? '';
+  const [text, setText] = useState(q);
+  const [seen, setSeen] = useState(q);
+  if (q !== seen) {
+    setSeen(q);
+    setText(q);
   }
   const count = activeFilterCount(filters);
   useKeyboardOffset();
@@ -59,11 +60,15 @@ export function FilterBar({ filters, authors, detailed, onChange }: Props) {
           <fieldset className="m-0 mb-4 min-w-0 border-0 p-0 md:mr-6 md:mb-3 md:inline-flex md:items-center md:gap-3">
             <legend className="mb-2 p-0 font-black md:float-left md:mb-0">Van wie</legend>
             <div className="flex flex-wrap gap-2">
-              <Chip pressed={filters.author === null} onClick={() => onChange({ ...filters, author: null })}>
+              <Chip pressed={filters.author === undefined} onClick={() => onChange({ ...filters, author: undefined })}>
                 Iedereen
               </Chip>
               {authors.map((a) => (
-                <Chip key={a} pressed={filters.author !== null && sameAuthor(filters.author, a)} onClick={() => onChange({ ...filters, author: a })}>
+                <Chip
+                  key={a}
+                  pressed={filters.author !== undefined && sameAuthor(filters.author, a)}
+                  onClick={() => onChange({ ...filters, author: a })}
+                >
                   {a}
                 </Chip>
               ))}
@@ -79,7 +84,7 @@ export function FilterBar({ filters, authors, detailed, onChange }: Props) {
                     name="sort"
                     id={`${sheetId}-${value}`}
                     value={value}
-                    checked={filters.sort === value}
+                    checked={(filters.sort ?? 'nieuwste') === value}
                     onChange={() => onChange({ ...filters, sort: value })}
                     className="peer sr-only"
                   />
