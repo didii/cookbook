@@ -1,26 +1,10 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
+import { cssFor } from '~testing/css';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { compile } from 'tailwindcss';
 import { Button } from './Button';
 import { press } from './press';
-
-/** The CSS Tailwind generates for the given classes, compiled with the app's own theme. */
-async function cssFor(classes: string) {
-  const read = (path: string | URL) => readFileSync(path, 'utf8');
-  const { build } = await compile(read(new URL('../app.css', import.meta.url)), {
-    base: process.cwd(),
-    loadStylesheet: async (id, base) => ({
-      path: id,
-      base,
-      content: id === 'tailwindcss' ? read(new URL(import.meta.resolve('tailwindcss/index.css'))) : '',
-    }),
-  });
-  const css = build(classes.split(/\s+/));
-  return css.slice(css.indexOf('@layer utilities'), css.indexOf('@property'));
-}
 
 /** Rules whose selector ends in the given pseudo-classes (or nothing), as [selector, body]. */
 const rules = (css: string) => [...css.matchAll(/^\s*(\.[^{\n]+)\{([^}]*)\}/gm)].map(([, s, b]) => [s.trim(), b] as const);
