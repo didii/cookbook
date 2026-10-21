@@ -8,7 +8,7 @@ Each scenario test is named `<capability> › <Scenario title>`; run `pnpm test:
 
 ## 2. Server
 
-- [ ] 2.1 Add `getMemberRecipeData`, `setLike` and `setNote` (note: trimmed-empty deletes the row; refused above 4000 characters) next to `recordView` in `app/.server`. Verify with DB tests in `recipes.test.ts`: `recipe-like › Liking a recipe`, `recipe-like › Unliking a recipe`, `recipe-like › Another member's like`, `recipe-note › Another member's note`, `recipe-note › Changed note is stored`, `recipe-note › Emptied note is removed`, and unknown recipe or member being refused. Also in `migrations.test.ts`: `recipe-like › Removing a member removes their likes`, `recipe-note › Removing a member removes their notes`.
+- [x] 2.1 Add `getMemberRecipeData`, `setLike` and `setNote` (note: trimmed-empty deletes the row; refused above 4000 characters) next to `recordView` in `app/.server`. Verify with DB tests in `recipes.test.ts`: `recipe-like › Liking a recipe`, `recipe-like › Unliking a recipe`, `recipe-like › Another member's like`, `recipe-note › Another member's note`, `recipe-note › Changed note is stored`, `recipe-note › Emptied note is removed`, and unknown recipe or member being refused. Also in `migrations.test.ts`: `recipe-like › Removing a member removes their likes`, `recipe-note › Removing a member removes their notes`.
 - [ ] 2.2 Add the action-only routes `recepten/:slug/favoriet` and `recepten/:slug/notitie` in `app/routes.ts` (404 unknown recipe, 403 member without a user row, 413 too long, 400 invalid `liked`) and return `{ liked, note }` from the recipe loader. Verify with route tests calling the real `action` and `loader` against an in-memory D1 (pattern: `routes/recipe/route.test.ts`).
 
 ## 3. Like button

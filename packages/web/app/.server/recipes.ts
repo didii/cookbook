@@ -239,3 +239,49 @@ export async function deleteRecipe(db: D1Database, slug: string): Promise<{ imag
   const row = await db.prepare('DELETE FROM recipes WHERE slug = ? RETURNING image').bind(slug).first<{ image: string | null }>();
   return row ?? undefined;
 }
+
+export const maxNoteLength = 4000;
+
+/** The member's own like and note for a recipe; `liked: false` and `note: ''` when there are none (or the member or recipe is unknown). */
+export async function getMemberRecipeData(db: D1Database, email: string, slug: string): Promise<{ liked: boolean; note: string }> {
+  const row = await db
+    .prepare(
+      `SELECT EXISTS (SELECT 1 FROM recipe_likes l WHERE l.user_id = u.id AND l.recipe_id = r.id) AS liked,
+              (SELECT body FROM recipe_notes n WHERE n.user_id = u.id AND n.recipe_id = r.id) AS note
+       FROM users u, recipes r WHERE u.email = ? AND r.slug = ?`,
+    )
+    .bind(email, slug)
+    .first<{ liked: number; note: string | null }>();
+  return { liked: !!row?.liked, note: row?.note ?? '' };
+}
+
+const known = async (db: D1Database, email: string, slug: string) =>
+  (await db.prepare('SELECT 1 AS ok FROM users u, recipes r WHERE u.email = ? AND r.slug = ?').bind(email, slug).first()) !== null;
+
+/** Stores or removes the member's like. Idempotent. Returns false for an unknown recipe or member. */
+export async function setLike(db: D1Database, email: string, slug: string, liked: boolean): Promise<boolean> {
+  const sql = liked
+    ? 'INSERT OR IGNORE INTO recipe_likes (user_id, recipe_id) SELECT u.id, r.id FROM users u, recipes r WHERE u.email = ? AND r.slug = ?'
+    : 'DELETE FROM recipe_likes WHERE user_id = (SELECT id FROM users WHERE email = ?) AND recipe_id = (SELECT id FROM recipes WHERE slug = ?)';
+  await db.prepare(sql).bind(email, slug).run();
+  return known(db, email, slug);
+}
+
+/** Stores the member's note, as typed. Text that is empty or only whitespace removes the note. Returns false for an unknown recipe or member. */
+export async function setNote(db: D1Database, email: string, slug: string, body: string): Promise<boolean> {
+  if (body.trim() === '') {
+    await db
+      .prepare('DELETE FROM recipe_notes WHERE user_id = (SELECT id FROM users WHERE email = ?) AND recipe_id = (SELECT id FROM recipes WHERE slug = ?)')
+      .bind(email, slug)
+      .run();
+    return known(db, email, slug);
+  }
+  await db
+    .prepare(
+      `INSERT INTO recipe_notes (user_id, recipe_id, body) SELECT u.id, r.id, ? FROM users u, recipes r WHERE u.email = ? AND r.slug = ?
+       ON CONFLICT (user_id, recipe_id) DO UPDATE SET body = excluded.body, updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now')`,
+    )
+    .bind(body, email, slug)
+    .run();
+  return known(db, email, slug);
+}
