@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { Form } from 'react-router';
-import type { Role, UserListItem } from '~/.server/users';
+import type { UserListItem } from '~/.server/users';
+import type { Role } from '~/lib/role';
 import { Button } from '~/shared/Button';
 import { DeleteUser } from './DeleteUser';
 
