@@ -6,6 +6,7 @@ import { fake } from '~testing/fake';
 import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
 import { envContext, userEmailContext } from '~/.server/context';
 import { getRecipe } from '~/.server/recipes';
+import { createUser } from '~/.server/users';
 import { emptyDraftSeed } from '~/lib/draft';
 import type { Route } from './+types/route';
 import NewRecipe, { action, loader } from './route';
@@ -56,7 +57,7 @@ test('recipe-creation › Servings left empty', async () => {
 
 /** The new recipe page as the router shows it, with what a refused submit hands back (nothing on first opening). */
 const form = (actionData?: { errors: Record<string, string>; values: typeof emptyDraftSeed }) => {
-  const props = fake<Route.ComponentProps>({ loaderData: { authors: ['Oma', 'Mama'], tile: 0, seal: undefined }, actionData });
+  const props = fake<Route.ComponentProps>({ loaderData: { callingName: '', authors: ['Oma', 'Mama'], tile: 0, seal: undefined }, actionData });
   return render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <NewRecipe {...props} /> }])} />);
 };
 
@@ -104,6 +105,7 @@ test('recipe-form › Nothing stored before saving', async () => {
   const before = await count();
   const context = new RouterContextProvider();
   context.set(envContext, fake<Env>({ DB: db }));
+  context.set(userEmailContext, 'oma@example.com');
   await loader(fake<Route.LoaderArgs>({ context }));
   assert.equal(await count(), before);
 });
@@ -114,4 +116,39 @@ test('a new recipe stores its non-blank steps in order', async () => {
     (await getRecipe(db, 'met-stappen'))?.steps.map((s) => s.body),
     ['een', 'twee'],
   );
+});
+
+const openFormAs = async (email: string) => {
+  cleanup();
+  window.localStorage.clear();
+  const context = new RouterContextProvider();
+  context.set(envContext, fake<Env>({ DB: db }));
+  context.set(userEmailContext, email);
+  const loaderData = await loader(fake<Route.LoaderArgs>({ context }));
+  const props = fake<Route.ComponentProps>({ loaderData });
+  return render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <NewRecipe {...props} /> }])} />);
+};
+
+test('recipe-creation › Author is prefilled', async () => {
+  await createUser(db, 'jos@example.com', 'Jos');
+  await openFormAs('jos@example.com');
+  assert.equal((document.getElementById('author') as HTMLInputElement).value, 'Jos');
+});
+
+test('recipe-creation › Prefilled author can be changed', async () => {
+  await createUser(db, 'jos2@example.com', 'Jos');
+  await openFormAs('jos2@example.com');
+  const author = document.getElementById('author') as HTMLInputElement;
+  fireEvent.change(author, { target: { value: 'Oma' } });
+  assert.equal(author.value, 'Oma');
+  // What the form posts is stored as typed.
+  await submit({ title: 'Oma kookt', author: author.value });
+  assert.equal((await getRecipe(db, 'oma-kookt'))?.author, 'Oma');
+});
+
+test('recipe-creation › Prefill alone is not a draft', async () => {
+  await createUser(db, 'jos3@example.com', 'Jos');
+  await openFormAs('jos3@example.com');
+  cleanup();
+  assert.equal(window.localStorage.length, 0);
 });

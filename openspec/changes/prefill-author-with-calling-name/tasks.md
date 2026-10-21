@@ -5,7 +5,7 @@
 
 ## 2. Tests
 
-- [ ] 2.1 Route tests for the three `recipe-creation` scenarios (`recipe-creation › Author is prefilled`, `… › Prefilled author can be changed`, `… › Prefill alone is not a draft`)
+- [x] 2.1 Route tests for the three `recipe-creation` scenarios (`recipe-creation › Author is prefilled`, `… › Prefilled author can be changed`, `… › Prefill alone is not a draft`)
 
 ## 3. Finish
 
