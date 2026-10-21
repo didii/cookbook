@@ -18,7 +18,7 @@ const fromSm = /@media \(width >= 40rem\) \{ [^{]*\{ display: (\w+)/;
 
 test('recipe-creation › Link to the form', () => {
   show();
-  assert.equal(screen.getByRole('link', { name: /Nieuw/ }).getAttribute('href'), '/recepten/nieuw');
+  assert.equal(screen.getByText('+ Nieuw').closest('a')?.getAttribute('href'), '/recepten/nieuw');
   // The route table serves it.
   assert.ok(routePaths.includes('recepten/nieuw'));
 });
@@ -31,7 +31,7 @@ test('recipe-creation › Link on a narrow screen', async () => {
   assert.equal(fromSm.exec(short)?.[1], 'none');
   assert.doesNotMatch(short.replace(fromSm, ''), /display: none/);
   // The long form and the email: hidden by default, shown from the breakpoint.
-  for (const el of [screen.getByText('Nieuw recept'), screen.getByText('oma@example.com')]) {
+  for (const el of [screen.getByText('Nieuw recept', { selector: 'span' }), screen.getByText('oma@example.com')]) {
     const css = flat(await cssFor(el.className));
     assert.match(css, /\.hidden \{ display: none;/);
     assert.equal(fromSm.exec(css)?.[1], 'inline');

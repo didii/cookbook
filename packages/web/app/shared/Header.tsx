@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import { Fret } from '~/shared/Fret';
+import { SiteMenu } from '~/shared/SiteMenu';
 
 export function Header({ email }: { email: string }) {
   return (
@@ -18,6 +19,7 @@ export function Header({ email }: { email: string }) {
             <span className="sm:hidden">+ Nieuw</span>
             <span className="hidden sm:inline">Nieuw recept</span>
           </Link>
+          <SiteMenu />
         </div>
       </div>
       <Fret size={14} className="mb-1.5 text-yel" />
