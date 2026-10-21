@@ -36,18 +36,18 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     <main id="main" className="mx-auto max-w-272 px-[max(1rem,4vw)] pt-8 pb-[calc(7rem+env(safe-area-inset-bottom))] md:pb-16">
       <h1 className="text-[clamp(2rem,6vw,3.5rem)] leading-[1.05] font-black tracking-[-0.03em] text-balance">Wat eten we vandaag?</h1>
       {recipes.length === 0 ? (
-        <p className="mt-2 max-w-[60ch] text-lg text-muted">
+        <p className="mt-2 text-lg text-muted">
           Er zijn nog geen recepten. <Link to="/recepten/nieuw">Voeg het eerste recept toe.</Link>
         </p>
       ) : (
         <>
-          <p className="mt-2 max-w-[34ch] text-lg text-pretty text-muted">{intro}</p>
+          <p className="mt-2 text-lg text-pretty text-muted">{intro}</p>
           <FilterBar filters={filters} authors={authorsOf(recipes)} detailed={detailed} onChange={change} />
           <output className="mt-6 mb-4 block font-extrabold text-muted">
             {isFiltered(filters) ? `${shown.length} van ${recipes.length}` : shown.length} {recipes.length === 1 ? 'recept' : 'recepten'}
           </output>
           {shown.length === 0 ? (
-            <div className="flex max-w-[60ch] flex-col items-start gap-4">
+            <div className="flex flex-col items-start gap-4">
               <p className="text-lg">Niets gevonden voor deze zoekopdracht.</p>
               <Button type="button" className="flex-none px-4" onClick={() => change(noFilters)}>
                 Wis filters

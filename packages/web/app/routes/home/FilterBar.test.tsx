@@ -74,7 +74,7 @@ test('recipe-filtering › Selected and unselected chips', async () => {
   assert.match(css, /background-color: transparent/);
   assert.doesNotMatch(css, /box-shadow/);
   assert.match(css, /aria-pressed[^{]*\{[^}]*border-style: solid/);
-  assert.match(css, /aria-pressed[^{]*\{[^}]*background-color: var\(--color-ink\)/);
+  assert.match(css, /aria-pressed[^{]*\{[^}]*background-color: var\(--color-red\)/);
   assert.match(css, /aria-pressed[^{]*\{[^}]*color: var\(--color-white\)/);
 });
 
