@@ -6,6 +6,7 @@ export const pauseMs = (narrow: boolean) => (narrow ? 5000 : 2000);
 const cueMs = 3000;
 
 export type Cue = 'off' | 'shown' | 'fading';
+export type Note = ReturnType<typeof useNote>;
 
 /**
  * The member's note on the recipe page: the text, saving it, and the saved cue. One state for both presentations (narrow sheet, wide panel).

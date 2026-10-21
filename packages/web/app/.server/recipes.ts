@@ -240,8 +240,6 @@ export async function deleteRecipe(db: D1Database, slug: string): Promise<{ imag
   return row ?? undefined;
 }
 
-export const maxNoteLength = 4000;
-
 /** The member's own like and note for a recipe; `liked: false` and `note: ''` when there are none (or the member or recipe is unknown). */
 export async function getMemberRecipeData(db: D1Database, email: string, slug: string): Promise<{ liked: boolean; note: string }> {
   const row = await db

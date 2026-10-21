@@ -29,6 +29,13 @@
       transform: translateY(0.75rem);
     }
   }
+  /* The saved cue of a note fades out; with motion-reduce it is removed without fading. */
+  --animate-fade: fade 0.6s ease-out forwards;
+  @keyframes fade {
+    to {
+      opacity: 0;
+    }
+  }
   /* The highlight of a step reached from a timer: in by 20%, held until 60%, out at the end. */
   --animate-flash: flash 3s ease-in-out forwards;
   @keyframes flash {

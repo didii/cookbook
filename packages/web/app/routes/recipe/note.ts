@@ -1,6 +1,7 @@
 import { envContext, userEmailContext } from '~/.server/context';
-import { maxNoteLength, setNote } from '~/.server/recipes';
+import { setNote } from '~/.server/recipes';
 import { getUser } from '~/.server/users';
+import { maxNoteLength } from '~/lib/note';
 import type { Route } from './+types/note';
 
 /** POST /recepten/:slug/notitie with `note=<text>`. Answers 204, 400 (no text field), 403 (no user row), 404 (unknown recipe) or 413 (too long). */

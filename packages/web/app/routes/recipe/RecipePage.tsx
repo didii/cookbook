@@ -15,6 +15,7 @@ import { CookSwitch } from './CookSwitch';
 import { DeleteRecipe } from './DeleteRecipe';
 import { IngredientList } from './IngredientList';
 import { LikeButton } from './LikeButton';
+import { NoteSheet } from './NoteSheet';
 import { ScaleControl } from './ScaleControl';
 import { StepList } from './StepList';
 import { TabBar } from './TabBar';
@@ -22,6 +23,7 @@ import { TimerDock } from './TimerDock';
 import { TimersContext } from './timersContext';
 import { TimerSidebar } from './TimerSidebar';
 import { useNarrow } from './useNarrow';
+import { useNote } from './useNote';
 import { useStackHeight } from './useStackHeight';
 import { useStepsInView } from './useStepsInView';
 import { useTimers } from './useTimers';
@@ -29,7 +31,7 @@ import { useWakeLock } from './useWakeLock';
 
 type Props = { recipe: Omit<Recipe, 'steps'>; tile: number; steps: Step[]; liked?: boolean; note?: string };
 
-export function RecipePage({ recipe: r, tile, steps, liked = false, note = '' }: Props) {
+export function RecipePage({ recipe: r, tile, steps, liked = false, note: savedNote = '' }: Props) {
   const [tab, setTab] = useState<TabId>('ingredients');
   // Lives here, not in the list, because both tabs stay mounted and cook mode reads it.
   const [ticked, setTicked] = useState<ReadonlySet<number>>(new Set());
@@ -109,6 +111,7 @@ export function RecipePage({ recipe: r, tile, steps, liked = false, note = '' }:
   // Cook mode: starts by itself once cooking has started (the open tab's first item is past the middle of the screen, or an ingredient is ticked)
   // until the switch is used. Narrow screens only.
   const narrow = useNarrow();
+  const note = useNote(r.slug, savedNote, narrow);
   const [cook, setCook] = useState(initialCook);
   const tickedCount = ticked.size;
   useEffect(() => {
@@ -217,6 +220,7 @@ export function RecipePage({ recipe: r, tile, steps, liked = false, note = '' }:
         <div className="max-[51.99rem]:pb-16">
           <DeleteRecipe title={r.title} />
         </div>
+        <NoteSheet note={note} />
       </main>
     </TimersContext>
   );
