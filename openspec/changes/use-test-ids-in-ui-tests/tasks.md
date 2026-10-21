@@ -7,7 +7,7 @@
 
 ## 2. Shared components
 
-- [ ] 2.1 Add ids to `Header`, `SiteMenu`, `WorkInProgress`, `press` and the shared `Button` pass-through, and convert `Header.test.tsx`, `SiteMenu.test.tsx`, `WorkInProgress.test.tsx`, `press.test.tsx`, `testing/dom.test.tsx`: verify with `pnpm test:ai`, no `getByRole`/`getByText`/`getByLabelText` left for finding elements in those files.
+- [x] 2.1 Add ids to `Header`, `SiteMenu`, `WorkInProgress`, `press` and the shared `Button` pass-through, and convert `Header.test.tsx`, `SiteMenu.test.tsx`, `WorkInProgress.test.tsx`, `press.test.tsx`, `testing/dom.test.tsx`: verify with `pnpm test:ai`, no `getByRole`/`getByText`/`getByLabelText` left for finding elements in those files.
 
 ## 3. Home and welcome
 

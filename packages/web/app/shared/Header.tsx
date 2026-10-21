@@ -11,13 +11,20 @@ export function Header({ email }: { email: string }) {
         </Link>
         <div className="flex min-w-0 items-center gap-4">
           {/* The email is hidden on phones: the row has no room for both it and the link. */}
-          <span className="hidden truncate text-sm font-bold sm:inline">{email}</span>
+          <span data-testid="Header-email" className="hidden truncate text-sm font-bold sm:inline">
+            {email}
+          </span>
           <Link
             to="/recepten/nieuw"
+            data-testid="Header-new"
             className="flex min-h-11 shrink-0 items-center rounded-[0.625rem] border-3 border-white px-3 font-black no-underline focus-visible:outline-white"
           >
-            <span className="sm:hidden">+ Nieuw</span>
-            <span className="hidden sm:inline">Nieuw recept</span>
+            <span data-testid="Header-newShort" className="sm:hidden">
+              + Nieuw
+            </span>
+            <span data-testid="Header-newLong" className="hidden sm:inline">
+              Nieuw recept
+            </span>
           </Link>
           <SiteMenu />
         </div>
