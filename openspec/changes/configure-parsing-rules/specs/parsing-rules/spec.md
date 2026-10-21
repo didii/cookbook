@@ -11,6 +11,10 @@ The system SHALL keep the words it recognises in recipe text as stored rules of 
 - **WHEN** no rules have been saved
 - **THEN** "180°", "180 °C" and "180 graden" are recognised as oven temperatures
 
+#### Scenario: Grams are not degrees
+- **WHEN** no rules have been saved and a step's text contains "180 gr"
+- **THEN** the step gets no oven temperature
+
 #### Scenario: Unreadable saved rules
 - **WHEN** the saved rules are not valid JSON or do not have the shape of the rules
 - **THEN** the default rules are used and the pages still work
@@ -54,7 +58,7 @@ The system SHALL refuse every request for the rules page, and every request that
 - **THEN** the page shows the stored rules, one word per line, per kind
 
 ### Requirement: An admin changes the rules as plain words
-The system SHALL let an admin edit each kind of rule as a list of words, one per line, with spoken durations written as `phrase = minutes`, and save all lists at once. Words SHALL be matched literally, never as regular expressions, ignoring letter case. The system SHALL refuse the whole save, store nothing and say what is wrong when a spoken duration has no whole number of minutes above 0, a list is empty, a word is in two of the minute, hour and degree lists, or a word has characters other than letters, `°` and spaces.
+The system SHALL let an admin edit each kind of rule as a list of words, one per line, with spoken durations written as `phrase = minutes`, and save all lists at once. Words SHALL be matched literally, never as regular expressions, ignoring letter case. The system SHALL refuse the whole save, store nothing and say what is wrong when a spoken duration has no whole number of minutes above 0, a list is empty (spoken durations may be empty), a word is in two lists, or a word has characters other than letters, `°` and spaces.
 
 #### Scenario: Add a unit
 - **WHEN** an admin adds the line "kopje" to the units and saves
@@ -77,16 +81,20 @@ The system SHALL let an admin edit each kind of rule as a list of words, one per
 - **THEN** the page stays, says the units cannot be empty, and no rules change
 
 #### Scenario: Word in two lists
-- **WHEN** an admin puts "u" in both the minute words and the hour words (units may share a word with another list)
+- **WHEN** an admin puts "u" in both the minute words and the hour words
 - **THEN** the page stays, says the word is in two lists, and no rules change
 
 #### Scenario: Saving the unchanged defaults succeeds
 - **WHEN** an admin opens the page and saves without changing anything
-- **THEN** the save succeeds, although "gr" is both a unit and a degree word
+- **THEN** the save succeeds and the same rules are stored
+
+#### Scenario: Word with other characters
+- **WHEN** an admin adds the line "a+" to the units and saves
+- **THEN** the page stays, says the word may only hold letters, ° and spaces, and no rules change
 
 #### Scenario: Words are not regular expressions
-- **WHEN** an admin adds the line "a+" to the units and saves
-- **THEN** it is stored as the literal word "a+", and the text "2 aaa" does not match it
+- **WHEN** the stored minute words hold the word "m+" (for example written by hand)
+- **THEN** it matches only the literal text "m+", so "20 m+" gives a timer of 20 minutes and "20 mmm" gives none
 
 ### Requirement: An admin restores the default rules
 The system SHALL let an admin restore the default rules with one button on the rules page, which removes the saved rules.

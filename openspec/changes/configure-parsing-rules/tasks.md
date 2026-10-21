@@ -2,8 +2,8 @@
 
 ## 1. Rules in the database
 
-- [ ] 1.1 Add `packages/web/migrations/0007_settings.sql`: table `settings` (`key` primary key, `value` JSON text with `json_valid` check), no data. Verify with `migrations.test.ts` (a non-JSON value is refused).
-- [ ] 1.2 Add `app/lib/rules.ts` (`Rules`, `defaultRules` holding today's words from `ingredients.ts` and `stepParsers.ts`) and `app/.server/rules.ts`: `getRules(db)` (defaults when the row is missing or unreadable, missing fields filled from defaults), `saveRules(db, fields)` (validate, then upsert the `parsing-rules` row) and `resetRules(db)` (delete the row). Verify with `rules.test.ts` tests `parsing-rules › Default rules`, `parsing-rules › Unreadable saved rules`, `parsing-rules › Restore defaults`, `parsing-rules › Add a unit`, `parsing-rules › Remove a word`, `parsing-rules › Spoken duration`, `parsing-rules › Spoken duration without minutes`, `parsing-rules › Empty list`, `parsing-rules › Word in two lists`, `parsing-rules › Saving the unchanged defaults succeeds`.
+- [x] 1.1 Add `packages/web/migrations/0007_settings.sql`: table `settings` (`key` primary key, `value` JSON text with `json_valid` check), no data. Verify with `migrations.test.ts` (a non-JSON value is refused).
+- [x] 1.2 Add `app/lib/rules.ts` (`Rules`, `defaultRules` holding today's words from `ingredients.ts` and `stepParsers.ts`) and `app/.server/rules.ts`: `getRules(db)` (defaults when the row is missing or unreadable, missing fields filled from defaults), `saveRules(db, fields)` (validate, then upsert the `parsing-rules` row) and `resetRules(db)` (delete the row). Verify with `rules.test.ts` tests `parsing-rules › Default rules`, `parsing-rules › Unreadable saved rules`, `parsing-rules › Restore defaults`, `parsing-rules › Add a unit`, `parsing-rules › Remove a word`, `parsing-rules › Spoken duration`, `parsing-rules › Spoken duration without minutes`, `parsing-rules › Empty list`, `parsing-rules › Word in two lists`, `parsing-rules › Saving the unchanged defaults succeeds`.
 
 ## 2. Parsers take rules
 
