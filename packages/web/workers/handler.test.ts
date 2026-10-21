@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { after, test } from 'node:test';
 import { createTestDb } from '~testing/db';
+import { fake } from '~testing/fake';
 import { generateKeyPair, SignJWT } from 'jose';
 import type { RouterContextProvider } from 'react-router';
 import { envContext, userEmailContext } from '~/.server/context';
@@ -12,7 +13,7 @@ import { createFetch } from './handler';
 const teamDomain: string = 'team.cloudflareaccess.com';
 const audience: string = 'aud-tag';
 const { publicKey, privateKey } = await generateKeyPair('RS256');
-const env = { ACCESS_TEAM_DOMAIN: teamDomain, ACCESS_AUD: audience, DEV_USER_EMAIL: 'dev@example.com' } as Partial<Env> as Env;
+const env = fake<Env>({ ACCESS_TEAM_DOMAIN: teamDomain, ACCESS_AUD: audience, DEV_USER_EMAIL: 'dev@example.com' });
 
 const token = () =>
   new SignJWT({ email: 'mum@example.com' })

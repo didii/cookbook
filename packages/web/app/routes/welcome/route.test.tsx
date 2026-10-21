@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
 import { render, screen } from '~testing/dom';
+import { fake } from '~testing/fake';
 import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
 import { envContext, userEmailContext } from '~/.server/context';
 import { getUser } from '~/.server/users';
@@ -20,21 +21,25 @@ after(() => dispose());
 
 const contextFor = (email: string) => {
   const context = new RouterContextProvider();
-  context.set(envContext, { DB: db } as Partial<Env> as Env);
+  context.set(envContext, fake<Env>({ DB: db }));
   context.set(userEmailContext, email);
   return context;
 };
 const submit = (email: string, fields: Record<string, string>) =>
-  action({
-    request: new Request('http://localhost/welkom', { method: 'POST', body: new URLSearchParams(fields) }),
-    context: contextFor(email),
-  } as Partial<Route.ActionArgs> as Route.ActionArgs);
+  action(
+    fake<Route.ActionArgs>({
+      request: new Request('http://localhost/welkom', { method: 'POST', body: new URLSearchParams(fields) }),
+      context: contextFor(email),
+    }),
+  );
 const open = async (email: string, search = '') => {
   try {
-    return await loader({
-      request: new Request(`http://localhost/welkom${search}`),
-      context: contextFor(email),
-    } as Partial<Route.LoaderArgs> as Route.LoaderArgs);
+    return await loader(
+      fake<Route.LoaderArgs>({
+        request: new Request(`http://localhost/welkom${search}`),
+        context: contextFor(email),
+      }),
+    );
   } catch (thrown) {
     return thrown as Response; // a redirect is thrown
   }

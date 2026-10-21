@@ -3,6 +3,7 @@ import { after, before, test } from 'node:test';
 import { cssFor } from '~testing/css';
 import { createTestDb } from '~testing/db';
 import { act, cleanup, fireEvent, precedes, render, screen, within } from '~testing/dom';
+import { fake } from '~testing/fake';
 import { createMemoryRouter, MemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
 import { envContext, userEmailContext } from '~/.server/context';
 import { createRecipe } from '~/.server/recipes';
@@ -23,9 +24,9 @@ after(() => dispose());
 
 const load = async () => {
   const context = new RouterContextProvider();
-  context.set(envContext, { DB: db } as Partial<Env> as Env);
+  context.set(envContext, fake<Env>({ DB: db }));
   context.set(userEmailContext, 'oma@example.com');
-  return (await loader({ context } as Partial<Route.LoaderArgs> as Route.LoaderArgs)).recipes;
+  return (await loader(fake<Route.LoaderArgs>({ context }))).recipes;
 };
 
 /** The page for a list of recipes at an address. */

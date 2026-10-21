@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
 import { defined } from '~testing/defined';
+import { fake } from '~testing/fake';
 import { RouterContextProvider } from 'react-router';
 import { envContext, userEmailContext } from '~/.server/context';
 import { createRecipe, listRecipes } from '~/.server/recipes';
@@ -21,9 +22,9 @@ after(() => dispose());
 
 const load = (slug: string, email = 'oma@example.com') => {
   const context = new RouterContextProvider();
-  context.set(envContext, { DB: db } as Partial<Env> as Env);
+  context.set(envContext, fake<Env>({ DB: db }));
   context.set(userEmailContext, email);
-  return loader({ params: { slug }, context } as Partial<Route.LoaderArgs> as Route.LoaderArgs);
+  return loader(fake<Route.LoaderArgs>({ params: { slug }, context }));
 };
 
 test('recipe-viewing › Unknown slug', async () => {

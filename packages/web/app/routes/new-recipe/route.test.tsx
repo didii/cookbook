@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
 import { cleanup, fireEvent, openAutocomplete, render, screen } from '~testing/dom';
+import { fake } from '~testing/fake';
 import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
 import { envContext, userEmailContext } from '~/.server/context';
 import { getRecipe } from '~/.server/recipes';
@@ -21,12 +22,14 @@ after(() => dispose());
 
 const submit = (fields: Record<string, string>) => {
   const context = new RouterContextProvider();
-  context.set(envContext, { DB: db } as Partial<Env> as Env);
+  context.set(envContext, fake<Env>({ DB: db }));
   context.set(userEmailContext, 'oma@example.com');
-  return action({
-    request: new Request('http://localhost/recepten/nieuw', { method: 'POST', body: new URLSearchParams(fields) }),
-    context,
-  } as Partial<Route.ActionArgs> as Route.ActionArgs);
+  return action(
+    fake<Route.ActionArgs>({
+      request: new Request('http://localhost/recepten/nieuw', { method: 'POST', body: new URLSearchParams(fields) }),
+      context,
+    }),
+  );
 };
 
 test('recipe-creation › Recipe is created', async () => {
@@ -53,7 +56,7 @@ test('recipe-creation › Servings left empty', async () => {
 
 /** The new recipe page as the router shows it, with what a refused submit hands back (nothing on first opening). */
 const form = (actionData?: { errors: Record<string, string>; values: typeof emptyDraftSeed }) => {
-  const props = { loaderData: { authors: ['Oma', 'Mama'], tile: 0, seal: undefined }, actionData } as unknown as Route.ComponentProps;
+  const props = fake<Route.ComponentProps>({ loaderData: { authors: ['Oma', 'Mama'], tile: 0, seal: undefined }, actionData });
   return render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <NewRecipe {...props} /> }])} />);
 };
 
@@ -100,8 +103,8 @@ test('recipe-form › Nothing stored before saving', async () => {
   const count = async () => (await db.prepare('SELECT COUNT(*) AS n FROM recipes').first<{ n: number }>())?.n;
   const before = await count();
   const context = new RouterContextProvider();
-  context.set(envContext, { DB: db } as Partial<Env> as Env);
-  await loader({ context } as Partial<Route.LoaderArgs> as Route.LoaderArgs);
+  context.set(envContext, fake<Env>({ DB: db }));
+  await loader(fake<Route.LoaderArgs>({ context }));
   assert.equal(await count(), before);
 });
 
