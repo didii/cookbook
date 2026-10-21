@@ -15,24 +15,28 @@ The system SHALL give every user exactly one role: `user`, `admin` or `superadmi
 - **WHEN** a role other than `user`, `admin` or `superadmin` is stored for a member
 - **THEN** it is refused and nothing is stored
 
-### Requirement: The first superadmin is seeded
-The system SHALL make `info@rhythm-coder.dev` a user with the role `superadmin` and the calling name `Dieter` from the moment the database is set up, before that person has signed in. Because their user record already exists, they SHALL NOT see the welcome screen. When that address already belongs to a member, that member SHALL become `superadmin` and keep their calling name. Letter case of the address SHALL NOT matter.
+### Requirement: The first superadmin is configured
+The system SHALL read the email of the first superadmin from configuration. When a new member is created with that email and no superadmin exists yet, they SHALL become `superadmin`; every other new member SHALL become `user`. Letter case of the address SHALL NOT matter. Without a configured email nobody SHALL be promoted. A member who already has a user record SHALL NOT be promoted by this rule.
 
-#### Scenario: Seeded superadmin
-- **WHEN** a fresh database is set up
-- **THEN** a user record for `info@rhythm-coder.dev` exists with the calling name `Dieter` and the role `superadmin`
+#### Scenario: Configured email becomes superadmin
+- **WHEN** a new member with the configured email is welcomed and no superadmin exists
+- **THEN** their user record has the role `superadmin`
 
-#### Scenario: Seeded address in another case
-- **WHEN** the member `Info@Rhythm-Coder.dev` is looked up
-- **THEN** their role is `superadmin`
+#### Scenario: Configured email in another letter case becomes superadmin
+- **WHEN** a new member whose email differs from the configured email only in letter case is welcomed and no superadmin exists
+- **THEN** their user record has the role `superadmin`
 
-#### Scenario: Seed promotes an existing member
-- **WHEN** `info@rhythm-coder.dev` was already a member with another calling name and the seed is applied
-- **THEN** their role is `superadmin` and their calling name is unchanged
+#### Scenario: Configured email is not promoted when a superadmin exists
+- **WHEN** a new member with the configured email is welcomed and a superadmin already exists
+- **THEN** their user record has the role `user`
 
-#### Scenario: Seeded superadmin is known without the welcome screen
-- **WHEN** `info@rhythm-coder.dev` signs in for the first time
-- **THEN** they are a known member and are not asked for a calling name
+#### Scenario: Other emails become users
+- **WHEN** a new member with another email than the configured one is welcomed
+- **THEN** their user record has the role `user`
+
+#### Scenario: No configured email promotes nobody
+- **WHEN** a new member is welcomed and no email is configured
+- **THEN** their user record has the role `user`
 
 ### Requirement: Roles define what a member may do
 The system SHALL define what each role may do as follows: a `user` may do user things only, an `admin` may do user things and admin things, and a `superadmin` may do user things, admin things, and give or take away the admin role of other members. Everything the cookbook offers today is a user thing. This requirement states the intended meaning of the roles; this change does not check roles on any page or data endpoint, and every signed-in member keeps the access they have today.

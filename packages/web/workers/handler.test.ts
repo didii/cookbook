@@ -88,7 +88,7 @@ test('users › Forged identity', async () => {
   const res = await fetch(get('forged'), { ...env, DB: db });
   assert.equal(res.status, 403);
   assert.deepEqual(reached, []);
-  assert.equal((await db.prepare("SELECT COUNT(*) AS n FROM users WHERE email <> 'info@rhythm-coder.dev'").first<{ n: number }>())?.n, 0);
+  assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM users').first<{ n: number }>())?.n, 0);
 });
 
 // Not automated: sign-in happens at Cloudflare Access, outside this code.

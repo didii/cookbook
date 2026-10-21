@@ -2,23 +2,26 @@
 
 ## Context
 
-`users` rows are made when a member submits the welcome screen, and `calling_name` is `NOT NULL`: a row normally only exists after the member has been welcomed. See proposal.md for the why.
+`users` rows are made when a member submits the welcome screen, and `calling_name` is `NOT NULL`: a row only exists after the member has been welcomed. See proposal.md for the why.
 
 ## Goals / Non-Goals
 
 **Goals:**
-- Store a role per member, default `user`, with the first superadmin seeded by migration.
+- Store a role per member, default `user`.
+- Make the configured first member superadmin when they are welcomed.
 - Expose the role on `User` for later changes.
 
 **Non-Goals:**
 - Role checks, admin features, a role-changing screen, any rule on who may change roles. All come later.
+- Promoting a member who already has a user record.
 
 ## Decisions
 
 **The role is a column on `users`: `role TEXT NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin', 'superadmin'))`.** A role only means something for a member, and the scope is small, so no separate table. The default gives every existing member `user` without a data change, and the `CHECK` refuses unknown roles. `getUser` reads the column directly.
-- Alternative: separate `roles` table keyed by email (an earlier version of this change). Rejected: a role has no use without a user, and it needed a `LEFT JOIN` and `COALESCE` for no gain.
 
-**The superadmin is seeded as a user.** The migration upserts `info@rhythm-coder.dev` with calling name `Dieter` and role `superadmin`: `INSERT ... ON CONFLICT (email) DO UPDATE SET role = 'superadmin'`. The seeded row already satisfies `calling_name NOT NULL`, so the person never sees the welcome screen (intended). If they had already signed in, the conflict branch promotes them and keeps their calling name. `users.email` is `COLLATE NOCASE`, so letter case does not matter.
+**No data in the migration; the superadmin is decided when a user is created.** A Worker has no startup hook with database access, and a hardcoded seed in a migration puts a row in every database (and every test), cannot be configured, and cannot be recovered when removed. Instead `createUser(db, email, callingName, superadminEmail)` takes the configured email as a parameter (the welcome route passes `env.SUPERADMIN_EMAIL`, so the function does not read the environment itself) and sets the role in the same `INSERT`: `superadmin` iff the email equals `superadminEmail` (`COLLATE NOCASE`) and `NOT EXISTS (SELECT 1 FROM users WHERE role = 'superadmin')`, else `user`. It is one statement, so two concurrent creations cannot both become superadmin. The member still sees the welcome screen and types their own calling name. An empty or missing `superadminEmail` promotes nobody.
+
+**`SUPERADMIN_EMAIL` is a `vars` entry in `wrangler.jsonc`** next to `ACCESS_TEAM_DOMAIN` and `ACCESS_AUD`; `wrangler types` generates its type. It is not a secret.
 
 **`User.role` is a union type `'user' | 'admin' | 'superadmin'`.** No helper such as `can()` yet: without a caller it is speculative. The later change that first checks roles adds it.
 
@@ -26,5 +29,5 @@
 
 ## Risks / Trade-offs
 
-- Seeded email is not on the Cloudflare Access allowlist → superadmin cannot sign in. Mitigation: add it there before or with deploying; noted in tasks.
-- Seeded address and name are fixed in a migration; changing the superadmin later needs a new migration or a (future) admin screen. Accepted.
+- Configured email is not on the Cloudflare Access allowlist → the superadmin cannot sign in. Mitigation: add it there before or with deploying; noted in tasks.
+- A member who already has a `users` row before this ships is not promoted by the rule, since the rule only runs on creation. Recovery for that, or for a lost superadmin, is a manual database update for now. If the superadmin's row is deleted, they are promoted again when they re-welcome (while no other superadmin exists).
