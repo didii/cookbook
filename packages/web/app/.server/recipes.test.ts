@@ -3,7 +3,7 @@ import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
 import { defined } from '~testing/defined';
 import { seals } from '~/lib/seals';
-import { createRecipe, getRecipe, listAuthors, listRecipes, slugify, updateRecipe, type StepInput } from './recipes';
+import { createRecipe, deleteRecipe, getRecipe, listAuthors, listRecipes, slugify, updateRecipe, type StepInput } from './recipes';
 import { createUser } from './users';
 
 /** Steps with only a text, as they are stored and as they come back. */
@@ -435,4 +435,33 @@ test('a recipe without a creator can be new to everyone', async () => {
   const slug = await createRecipe(db, { title: 'Zonder maker', author: 'Oma' });
   await addedAt(slug, '2026-03-14T12:00:00Z');
   assert.equal(await newFor('kind@example.com', slug), true);
+});
+
+test('deleteRecipe removes the recipe with its ingredients, steps and views, and returns its image', async () => {
+  await createUser(db, 'wis@example.com', 'Wis');
+  const slug = await createRecipe(db, {
+    title: 'Weg ermee',
+    author: 'Oma',
+    image: '/foto/x.jpg',
+    ingredients: [{ name: 'bloem' }],
+    steps: [{ body: 'Bak 30 minuten.', ingredients: [{ quantityText: '1', name: 'bloem' }], timer: { minutes: 30 } }],
+  });
+  await db
+    .prepare('INSERT INTO recipe_views (user_id, recipe_id) SELECT u.id, r.id FROM users u, recipes r WHERE u.email = ? AND r.slug = ?')
+    .bind('wis@example.com', slug)
+    .run();
+  const stepId = (await db
+    .prepare('SELECT s.id FROM steps s JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ?')
+    .bind(slug)
+    .first<{ id: number }>())!.id;
+  const chips = () => db.prepare('SELECT COUNT(*) AS n FROM step_ingredient_chips WHERE step_id = ?').bind(stepId).first<{ n: number }>();
+  assert.equal((await chips())!.n, 1);
+  const id = (await db.prepare('SELECT id FROM recipes WHERE slug = ?').bind(slug).first<{ id: number }>())!.id;
+  assert.deepEqual(await deleteRecipe(db, slug), { image: '/foto/x.jpg' });
+  assert.equal(await getRecipe(db, slug), undefined);
+  assert.equal((await chips())!.n, 0);
+  for (const table of ['ingredients', 'steps', 'recipe_views']) {
+    assert.equal((await db.prepare(`SELECT COUNT(*) AS n FROM ${table} WHERE recipe_id = ?`).bind(id).first<{ n: number }>())!.n, 0, table);
+  }
+  assert.equal(await deleteRecipe(db, slug), undefined);
 });

@@ -5,24 +5,26 @@ import { defined } from '~testing/defined';
 import { fake } from '~testing/fake';
 import { RouterContextProvider } from 'react-router';
 import { envContext, userEmailContext } from '~/.server/context';
+import { getPhoto, storePhoto } from '~/.server/photos';
 import { createRecipe, listRecipes } from '~/.server/recipes';
 import { createUser } from '~/.server/users';
 import type { Route } from './+types/route';
-import { loader } from './route';
+import { action, loader } from './route';
 
-// Real loader against an in-memory D1 holding a recipe the test inserted.
+// Real loader and action against an in-memory D1 holding a recipe the test inserted.
 let db: D1Database;
+let photos: R2Bucket;
 let dispose: () => Promise<void>;
 
 before(async () => {
-  ({ db, dispose } = await createTestDb());
+  ({ db, photos, dispose } = await createTestDb());
 });
 
 after(() => dispose());
 
 const load = (slug: string, email = 'oma@example.com') => {
   const context = new RouterContextProvider();
-  context.set(envContext, fake<Env>({ DB: db }));
+  context.set(envContext, fake<Env>({ DB: db, PHOTOS: photos }));
   context.set(userEmailContext, email);
   return loader(fake<Route.LoaderArgs>({ params: { slug }, context }));
 };
@@ -70,4 +72,35 @@ test('the page gets the steps of the database with their chips', async () => {
   const { recipe, steps: loaded } = await load(slug);
   assert.equal(recipe.title, 'Uit de database');
   assert.deepEqual(defined(loaded), steps);
+});
+
+const remove = (slug: string) => {
+  const context = new RouterContextProvider();
+  context.set(envContext, fake<Env>({ DB: db, PHOTOS: photos }));
+  return action(fake<Route.ActionArgs>({ params: { slug }, context }));
+};
+
+test('recipe-deletion › Recipe is deleted', async () => {
+  const slug = await createRecipe(db, { title: 'Te verwijderen', author: 'Oma', ingredients: [{ name: 'bloem' }], steps: [{ body: 'Mengen.' }] });
+  const response = await remove(slug);
+  assert.equal(response.status, 302);
+  assert.equal(response.headers.get('Location'), '/');
+  await assert.rejects(load(slug), (thrown: { init?: { status?: number } }) => thrown.init?.status === 404);
+  assert.equal(
+    (await db.prepare('SELECT COUNT(*) AS n FROM ingredients WHERE recipe_id NOT IN (SELECT id FROM recipes)').first<{ n: number }>())!.n,
+    0,
+  );
+  assert.ok(!(await listRecipes(db, 'oma@example.com', new Date())).some((r) => r.slug === slug));
+});
+
+test('recipe-deletion › Photo is deleted', async () => {
+  const stored = await storePhoto(photos, new Uint8Array([0xff, 0xd8, 0xff, 0xe0]).buffer);
+  assert.ok('path' in stored);
+  const slug = await createRecipe(db, { title: 'Met foto', author: 'Oma', image: stored.path });
+  await remove(slug);
+  assert.equal(await getPhoto(photos, stored.path.slice('/foto/'.length)), null);
+});
+
+test('recipe-deletion › Unknown recipe', async () => {
+  await assert.rejects(remove('does-not-exist'), (thrown: { init?: { status?: number } }) => thrown.init?.status === 404);
 });
