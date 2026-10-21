@@ -25,6 +25,32 @@ test('a created user is found with name and creation time', async () => {
   assert.match(user!.createdAt, /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/);
 });
 
+test('users › New member is a user', async () => {
+  await createUser(db, 'new@example.com', 'Nieuw');
+  assert.equal((await getUser(db, 'new@example.com'))?.role, 'user');
+});
+
+test('users › Existing member is a user', async () => {
+  await db.prepare('INSERT INTO users (email, calling_name) VALUES (?, ?)').bind('old@example.com', 'Oud').run();
+  assert.equal((await getUser(db, 'old@example.com'))?.role, 'user');
+});
+
+test('users › Seeded superadmin', async () => {
+  await createUser(db, 'info@rhythm-coder.dev', 'Info');
+  assert.equal((await getUser(db, 'info@rhythm-coder.dev'))?.role, 'superadmin');
+});
+
+test('users › Seeded address in another case', async () => {
+  await createUser(db, 'Info@Rhythm-Coder.dev', 'Info');
+  assert.equal((await getUser(db, 'INFO@rhythm-coder.dev'))?.role, 'superadmin');
+});
+
+test('an admin role is read from the roles table', async () => {
+  await db.prepare("INSERT INTO roles (email, role) VALUES ('adm@example.com', 'admin')").run();
+  await createUser(db, 'adm@example.com', 'Adm');
+  assert.equal((await getUser(db, 'adm@example.com'))?.role, 'admin');
+});
+
 test('creating the same user again keeps one row and the first name', async () => {
   await createUser(db, 'twice@example.com', 'Eerste');
   await createUser(db, 'twice@example.com', 'Tweede');
