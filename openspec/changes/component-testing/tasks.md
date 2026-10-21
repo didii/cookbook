@@ -2,7 +2,7 @@
 
 - [x] 1.1 Add `@testing-library/react`, `@testing-library/dom`, `happy-dom` and `@happy-dom/global-registrator` as dev dependencies of `packages/web`. Verify: `pnpm install` leaves the lockfile consistent and `pnpm test:ai` still passes.
 - [x] 1.2 Add `testing/dom.ts`: register happy-dom globals, restore Node's `fetch`, `Request`, `Response`, `Headers` and `FormData`, call `cleanup()` after each test, and export `openAutocomplete(input)` (`pointerDown`, `mouseDown`, `click`, `ArrowDown`) for Base UI. Verify: a small `testing/dom.test.ts` renders an element and finds it by role, cleanup leaves `document.body` empty, and `new Response(null, { status: 303 }).headers` is still Node's.
-- [ ] 1.3 Update the "What to test how" bullet in `packages/web/STRUCTURE.md`: component tests render into a DOM and query by role and text; regexes on HTML strings are out; `cssFor` takes `el.className`; scenarios needing real layout stay `test.todo`. Verify: `pnpm format:check` passes.
+- [x] 1.3 Update the "What to test how" bullet in `packages/web/STRUCTURE.md`: component tests render into a DOM and query by role and text; regexes on HTML strings are out; `cssFor` takes `el.className`; scenarios needing real layout stay `test.todo`. Verify: `pnpm format:check` passes.
 
 ## 2. Home route tests
 
