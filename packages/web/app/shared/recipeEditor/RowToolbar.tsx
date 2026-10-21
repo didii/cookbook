@@ -90,6 +90,7 @@ export function RowToolbar({
     // oxlint-disable-next-line jsx-a11y/interactive-supports-focus
     <div
       role="toolbar"
+      data-testid="RowToolbar-toolbar"
       aria-label={label}
       onKeyDown={keyDown}
       className={cn(
@@ -105,6 +106,7 @@ export function RowToolbar({
             buttons.current[i] = el;
           }}
           type="button"
+          data-testid="RowToolbar-button"
           aria-label={{ insert: insertLabel, up: 'Omhoog', down: 'Omlaag', delete: deleteLabel }[action]}
           disabled={!enabled[i]}
           tabIndex={i === stop ? 0 : -1}

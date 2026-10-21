@@ -52,6 +52,7 @@ function NumberField({
       <input
         id={id}
         ref={first}
+        data-testid="NumberField-input"
         value={text}
         inputMode="numeric"
         autoComplete="off"
@@ -83,7 +84,15 @@ function TextField({
       <label htmlFor={id} className={labelClass}>
         {label}
       </label>
-      <input id={id} ref={first} value={value} autoComplete="off" onChange={(e) => onValue(e.target.value)} className={inputClass} />
+      <input
+        id={id}
+        ref={first}
+        data-testid="TextField-input"
+        value={value}
+        autoComplete="off"
+        onChange={(e) => onValue(e.target.value)}
+        className={inputClass}
+      />
     </div>
   );
 }
@@ -136,6 +145,7 @@ export function ChipPopup({ chip, values, anchor, onValues, onLabel, onMode, onR
       open
       ref={popup}
       aria-label={title}
+      data-testid="ChipPopup-dialog"
       onKeyDown={keyDown}
       className="absolute top-(--pop-top) m-0 z-20 grid overflow-visible gap-3 rounded-xl border-3 border-ink bg-white p-3.5 font-bold text-ink shadow-hard max-sm:inset-x-0 max-sm:w-auto sm:right-auto sm:left-(--pop-left) sm:w-80"
     >
@@ -174,6 +184,7 @@ export function ChipPopup({ chip, values, anchor, onValues, onLabel, onMode, onR
               <button
                 key={mode}
                 type="button"
+                data-testid="ChipPopup-mode"
                 aria-pressed={follows === (mode === 'auto')}
                 onClick={() => onMode(mode)}
                 className="flex min-h-10 cursor-pointer items-center justify-center gap-1.5 border-2 border-ink bg-white text-sm font-black hover:not-aria-pressed:bg-[color-mix(in_srgb,var(--color-ink)_5%,white)] first-of-type:rounded-l-lg last:-ml-0.5 last:rounded-r-lg aria-pressed:bg-red aria-pressed:text-white"
@@ -195,6 +206,7 @@ export function ChipPopup({ chip, values, anchor, onValues, onLabel, onMode, onR
       )}
       <button
         type="button"
+        data-testid="ChipPopup-remove"
         onClick={onRemove}
         className="flex min-h-9 cursor-pointer items-center gap-1.5 border-0 bg-transparent p-0 font-black text-red hover:underline"
       >

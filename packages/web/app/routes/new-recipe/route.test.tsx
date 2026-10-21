@@ -63,10 +63,10 @@ const form = (actionData?: { errors: Record<string, string>; values: typeof empt
 
 test('recipe-creation › Suggestions ignore letter case', async () => {
   form();
-  const author = screen.getByRole('combobox');
+  const author = screen.getByTestId('AuthorInput-field');
   openAutocomplete(author);
   fireEvent.change(author, { target: { value: 'oma' } });
-  const options = await screen.findAllByRole('option');
+  const options = await screen.findAllByTestId('AuthorInput-option');
   assert.deepEqual(
     options.map((o) => o.textContent),
     ['Oma'],
@@ -80,7 +80,7 @@ test('recipe-creation › Required fields are marked', () => {
   assert.match(label('title') ?? '', /\*$/);
   assert.match(label('author') ?? '', /\*$/);
   assert.doesNotMatch(label('servings') ?? '', /\*/);
-  assert.ok(screen.getByText(/zijn verplicht/).textContent?.includes('*'));
+  assert.ok(screen.getByTestId('RecipeEditor-required').textContent?.includes('*'));
 });
 
 test('recipe-creation › Errors are announced and focused', () => {

@@ -148,10 +148,10 @@ test('recipe-editing › Same form for new and existing recipes', () => {
     const router = createMemoryRouter([{ path: '/', element }]);
     const { container, unmount } = render(<RouterProvider router={router} />);
     const found = {
-      heading: screen.getByRole('heading', { level: 1 }).textContent,
-      title: screen.getByRole<HTMLInputElement>('textbox', { name: /Titel/ }).value,
+      heading: screen.getByTestId('RecipeEditor-heading').textContent,
+      title: screen.getByTestId<HTMLInputElement>('RecipeEditor-title').value,
       controls: [...container.querySelectorAll('form [name]')].map((el) => el.getAttribute('name')).sort(),
-      cancel: screen.getByRole('link', { name: /Terug/ }).getAttribute('href'),
+      cancel: screen.getByTestId('RecipeEditor-cancel').getAttribute('href'),
     };
     unmount();
     return found;

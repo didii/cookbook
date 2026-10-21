@@ -32,6 +32,7 @@ export function AuthorInput({ authors, value, onValueChange, invalid, describedB
     >
       <Autocomplete.Input
         id="author"
+        data-testid="AuthorInput-field"
         required
         autoComplete="off"
         aria-invalid={invalid ? true : undefined}
@@ -46,6 +47,7 @@ export function AuthorInput({ authors, value, onValueChange, invalid, describedB
                 <Autocomplete.Item
                   key={author}
                   value={author}
+                  data-testid="AuthorInput-option"
                   className="flex min-h-11 cursor-pointer items-center px-3 text-lg font-bold data-highlighted:bg-yel"
                 >
                   {author}

@@ -6,33 +6,37 @@ import { RowToolbar } from './RowToolbar';
 
 const props = { label: 'Acties', deleteLabel: 'Verwijder', canUp: true, canDown: true, onMove: () => {}, onDelete: () => {} };
 const show = (extra: Partial<ComponentProps<typeof RowToolbar>> = {}) => render(<RowToolbar {...props} {...extra} />);
-const inTabOrder = () => screen.getAllByRole('button').filter((b) => b.getAttribute('tabindex') === '0');
+const buttons = () => screen.getAllByTestId<HTMLButtonElement>('RowToolbar-button');
+const inTabOrder = () => buttons().filter((b) => b.getAttribute('tabindex') === '0');
 
 test('a toolbar without insert has three buttons, one in the tab order', () => {
   show();
-  assert.equal(screen.getAllByRole('button').length, 3);
+  assert.equal(buttons().length, 3);
   assert.equal(inTabOrder().length, 1);
-  assert.equal(screen.queryByRole('button', { name: /Voeg/ }), null);
+  assert.equal(
+    buttons().some((b) => b.getAttribute('aria-label')?.startsWith('Voeg')),
+    false,
+  );
 });
 
 test('a toolbar with insert has four buttons, one in the tab order, inert when disabled', () => {
   const insert = { onInsert: () => {}, insertLabel: 'Voeg toe' };
   show(insert);
-  assert.equal(screen.getAllByRole('button').length, 4);
+  assert.equal(buttons().length, 4);
   assert.equal(inTabOrder().length, 1);
   assert.deepEqual(
-    screen.getAllByRole('button').map((b) => b.getAttribute('aria-label')),
+    buttons().map((b) => b.getAttribute('aria-label')),
     ['Voeg toe', 'Omhoog', 'Omlaag', 'Verwijder'],
   );
-  assert.equal(screen.getAllByRole<HTMLButtonElement>('button').filter((b) => b.disabled).length, 0);
+  assert.equal(buttons().filter((b) => b.disabled).length, 0);
   cleanup();
   show({ ...insert, disabled: true });
-  assert.equal(screen.getAllByRole<HTMLButtonElement>('button').filter((b) => b.disabled).length, 4);
+  assert.equal(buttons().filter((b) => b.disabled).length, 4);
 });
 
 test('the arrow keys move between the enabled buttons, and Home and End jump to the ends', () => {
   show({ canUp: false });
-  const [up, down, remove] = screen.getAllByRole('button');
+  const [up, down, remove] = buttons();
   // Up cannot be used, so the tab stop is the next button; the arrows skip the disabled one.
   assert.equal(inTabOrder()[0], down);
   down.focus();

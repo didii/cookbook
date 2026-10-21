@@ -20,8 +20,8 @@
 
 ## 5. Recipe editor and forms
 
-- [ ] 5.1 Add ids to `IngredientList`, `StepChips`, `ChipPopup`, `OpenProposals` and convert their tests: verify with `pnpm test:ai`.
-- [ ] 5.2 Add ids to the new-recipe and edit-recipe routes and convert `new-recipe/route.test.tsx`, `edit-recipe/route.test.tsx`: verify with `pnpm test:ai`.
+- [x] 5.1 Add ids to `IngredientList`, `StepChips`, `ChipPopup`, `OpenProposals` and convert their tests: verify with `pnpm test:ai`.
+- [x] 5.2 Add ids to the new-recipe and edit-recipe routes and convert `new-recipe/route.test.tsx`, `edit-recipe/route.test.tsx`: verify with `pnpm test:ai`.
 
 ## 6. Finish
 
