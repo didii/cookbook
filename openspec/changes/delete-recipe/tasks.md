@@ -11,7 +11,7 @@
 ## 3. Tests
 
 - [x] 3.1 Component tests for the `recipe-deletion` button and popup scenarios (`recipe-deletion › Delete button is shown`, `… › Popup asks for confirmation`, `… › Cancel closes the popup`, `… › Click outside closes the popup`, `… › Escape closes the popup`)
-- [ ] 3.2 Route tests for `recipe-deletion › Recipe is deleted`, `… › Photo is deleted`, `… › Unknown recipe`
+- [x] 3.2 Route tests for `recipe-deletion › Recipe is deleted`, `… › Photo is deleted`, `… › Unknown recipe`
 
 ## 4. Finish
 
