@@ -45,6 +45,9 @@ test('users › Seeded address in another case', async () => {
   assert.equal((await getUser(db, 'INFO@rhythm-coder.dev'))?.role, 'superadmin');
 });
 
+// Nothing checks roles yet; the existing route tests already show the pages to a plain member.
+test.todo("users › Today's features need no role");
+
 test('an admin role is read from the roles table', async () => {
   await db.prepare("INSERT INTO roles (email, role) VALUES ('adm@example.com', 'admin')").run();
   await createUser(db, 'adm@example.com', 'Adm');
