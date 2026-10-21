@@ -70,7 +70,7 @@ test('recipe-scaling › Multiplier starts at one', () => {
 
 test('recipe-scaling › Buttons walk the steps', () => {
   setup(1, false);
-  const walk = (name: string, n: number) =>
+  const walk = (name: 'Meer' | 'Minder', n: number) =>
     Array.from({ length: n }, () => {
       press(name);
       return field().value;

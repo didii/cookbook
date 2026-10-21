@@ -156,7 +156,6 @@ export function RecipePage({ recipe: r, tile, steps }: Props) {
           </span>
           {r.time && <span data-testid="RecipePage-time">{r.time}</span>}
           <ScaleControl value={amount} onChange={setAmount} servings={r.servings != null} />
-
         </p>
         <p className="mt-2 max-w-[60ch] text-lg text-muted">{r.intro}</p>
 
