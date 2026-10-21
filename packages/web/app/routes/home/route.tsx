@@ -33,28 +33,41 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   const change = (next: Filters) => setParams(filterParams(next), { replace: true });
   const shown = filterRecipes(recipes, filters);
   return (
-    <main id="main" className="mx-auto max-w-272 px-[max(1rem,4vw)] pt-8 pb-[calc(7rem+env(safe-area-inset-bottom))] md:pb-16">
-      <h1 className="text-[clamp(2rem,6vw,3.5rem)] leading-[1.05] font-black tracking-[-0.03em] text-balance">Wat eten we vandaag?</h1>
+    <main
+      id="main"
+      data-testid="Home-main"
+      className="mx-auto max-w-272 px-[max(1rem,4vw)] pt-8 pb-[calc(7rem+env(safe-area-inset-bottom))] md:pb-16"
+    >
+      <h1 data-testid="Home-title" className="text-[clamp(2rem,6vw,3.5rem)] leading-[1.05] font-black tracking-[-0.03em] text-balance">
+        Wat eten we vandaag?
+      </h1>
       {recipes.length === 0 ? (
-        <p className="mt-2 text-lg text-muted">
-          Er zijn nog geen recepten. <Link to="/recepten/nieuw">Voeg het eerste recept toe.</Link>
+        <p data-testid="Home-empty" className="mt-2 text-lg text-muted">
+          Er zijn nog geen recepten.{' '}
+          <Link to="/recepten/nieuw" data-testid="Home-add">
+            Voeg het eerste recept toe.
+          </Link>
         </p>
       ) : (
         <>
-          <p className="mt-2 text-lg text-pretty text-muted">{intro}</p>
+          <p data-testid="Home-intro" className="mt-2 text-lg text-pretty text-muted">
+            {intro}
+          </p>
           <FilterBar filters={filters} authors={authorsOf(recipes)} detailed={detailed} onChange={change} />
-          <output className="mt-6 mb-4 block font-extrabold text-muted">
+          <output data-testid="Home-count" className="mt-6 mb-4 block font-extrabold text-muted">
             {isFiltered(filters) ? `${shown.length} van ${recipes.length}` : shown.length} {recipes.length === 1 ? 'recept' : 'recepten'}
           </output>
           {shown.length === 0 ? (
             <div className="flex flex-col items-start gap-4">
-              <p className="text-lg">Niets gevonden voor deze zoekopdracht.</p>
-              <Button type="button" className="flex-none px-4" onClick={() => change(noFilters)}>
+              <p data-testid="Home-none" className="text-lg">
+                Niets gevonden voor deze zoekopdracht.
+              </p>
+              <Button type="button" data-testid="Home-clear" className="flex-none px-4" onClick={() => change(noFilters)}>
                 Wis filters
               </Button>
             </div>
           ) : (
-            <ul className="grid list-none grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] gap-6 p-0">
+            <ul data-testid="Home-list" className="grid list-none grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] gap-6 p-0">
               {shown.map((r, i) => (
                 <li key={r.slug}>
                   <RecipeCard recipe={r} tile={tileFor(i)} eager={i < 3} />

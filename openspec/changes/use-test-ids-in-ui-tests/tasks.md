@@ -11,8 +11,8 @@
 
 ## 3. Home and welcome
 
-- [ ] 3.1 Add ids to `FilterBar`, `RecipeCard` and the home route, convert `FilterBar.test.tsx`, `RecipeCard.test.tsx`, `routes/home/route.test.tsx`: verify with `pnpm test:ai`.
-- [ ] 3.2 Add ids to the welcome route and convert `routes/welcome/route.test.tsx`: verify with `pnpm test:ai`.
+- [x] 3.1 Add ids to `FilterBar`, `RecipeCard` and the home route, convert `FilterBar.test.tsx`, `RecipeCard.test.tsx`, `routes/home/route.test.tsx`: verify with `pnpm test:ai`.
+- [x] 3.2 Add ids to the welcome route and convert `routes/welcome/route.test.tsx`: verify with `pnpm test:ai`.
 
 ## 4. Recipe view
 
