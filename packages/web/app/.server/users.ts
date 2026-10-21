@@ -11,7 +11,18 @@ export async function getUser(db: D1Database, email: string): Promise<User | und
   );
 }
 
-/** Stores the member. Idempotent: when the email already has a row (in any letter case), nothing changes and the first calling name stays. */
-export async function createUser(db: D1Database, email: string, callingName: string): Promise<void> {
-  await db.prepare('INSERT INTO users (email, calling_name) VALUES (?, ?) ON CONFLICT (email) DO NOTHING').bind(email, callingName).run();
+/**
+ * Stores the member. Idempotent: when the email already has a row (in any letter case), nothing changes and the first calling name stays.
+ * The member becomes `superadmin` when their email is `superadminEmail` (letter case does not matter) and no superadmin exists yet; otherwise `user`.
+ * One statement, so two members cannot both become superadmin.
+ */
+export async function createUser(db: D1Database, email: string, callingName: string, superadminEmail?: string): Promise<void> {
+  await db
+    .prepare(
+      `INSERT INTO users (email, calling_name, role) VALUES (?1, ?2,
+         CASE WHEN ?3 <> '' AND ?1 = ?3 COLLATE NOCASE AND NOT EXISTS (SELECT 1 FROM users WHERE role = 'superadmin') THEN 'superadmin' ELSE 'user' END)
+       ON CONFLICT (email) DO NOTHING`,
+    )
+    .bind(email, callingName, superadminEmail ?? '')
+    .run();
 }

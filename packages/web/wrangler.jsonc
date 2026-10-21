@@ -16,6 +16,8 @@
     "ACCESS_TEAM_DOMAIN": "dawn-rice-f776.cloudflareaccess.com",
     // Audience (AUD) tag of the Access application
     "ACCESS_AUD": "3834480a19a3287e47ddbcfbc78fc8e89bf885accf907ddc0e6970bed203de81",
+    // Email of the member who becomes superadmin when they are welcomed, as long as no superadmin exists yet
+    "SUPERADMIN_EMAIL": "info@rhythm-coder.dev",
   },
   "d1_databases": [
     {
