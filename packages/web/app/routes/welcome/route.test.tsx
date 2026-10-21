@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
 import { render, screen } from '~testing/dom';
-import { createElement } from 'react';
+import { fake } from '~testing/fake';
 import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
 import { envContext, userEmailContext } from '~/.server/context';
 import { getUser } from '~/.server/users';
@@ -21,29 +21,33 @@ after(() => dispose());
 
 const contextFor = (email: string) => {
   const context = new RouterContextProvider();
-  context.set(envContext, { DB: db } as Partial<Env> as Env);
+  context.set(envContext, fake<Env>({ DB: db }));
   context.set(userEmailContext, email);
   return context;
 };
 const submit = (email: string, fields: Record<string, string>) =>
-  action({
-    request: new Request('http://localhost/welkom', { method: 'POST', body: new URLSearchParams(fields) }),
-    context: contextFor(email),
-  } as Partial<Route.ActionArgs> as Route.ActionArgs);
+  action(
+    fake<Route.ActionArgs>({
+      request: new Request('http://localhost/welkom', { method: 'POST', body: new URLSearchParams(fields) }),
+      context: contextFor(email),
+    }),
+  );
 const open = async (email: string, search = '') => {
   try {
-    return await loader({
-      request: new Request(`http://localhost/welkom${search}`),
-      context: contextFor(email),
-    } as Partial<Route.LoaderArgs> as Route.LoaderArgs);
+    return await loader(
+      fake<Route.LoaderArgs>({
+        request: new Request(`http://localhost/welkom${search}`),
+        context: contextFor(email),
+      }),
+    );
   } catch (thrown) {
     return thrown as Response; // a redirect is thrown
   }
 };
 // The Form needs a data router, so the screen is rendered inside one.
 const show = (props: object) => {
-  const router = createMemoryRouter([{ path: '/', element: createElement(Welcome, props as Route.ComponentProps) }]);
-  return render(createElement(RouterProvider, { router }));
+  const router = createMemoryRouter([{ path: '/', element: <Welcome {...(props as Route.ComponentProps)} /> }]);
+  return render(<RouterProvider router={router} />);
 };
 const countRows = async (email: string) => (await db.prepare('SELECT id FROM users WHERE email = ?').bind(email).all()).results.length;
 

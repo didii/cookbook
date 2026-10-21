@@ -3,12 +3,12 @@ import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { cssFor } from '~testing/css';
 import { cleanup, fireEvent, precedes, render, screen, within } from '~testing/dom';
-import { createElement } from 'react';
 import { noFilters, type Filters } from '~/lib/filterRecipes';
 import { FilterBar } from './FilterBar';
 
 const authors = ['Mama', 'Oma', 'Papa'];
-const show = (filters: Filters = noFilters, detailed = true) => render(createElement(FilterBar, { filters, authors, detailed, onChange: () => {} }));
+const show = (filters: Filters = noFilters, detailed = true) =>
+  render(<FilterBar filters={filters} authors={authors} detailed={detailed} onChange={() => {}} />);
 
 const bar = () => document.querySelector('search')!;
 const searchBox = () => screen.getByRole('searchbox');

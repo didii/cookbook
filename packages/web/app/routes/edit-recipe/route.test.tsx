@@ -3,7 +3,8 @@ import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
 import { defined } from '~testing/defined';
 import { render, screen } from '~testing/dom';
-import { createElement, type ReactElement } from 'react';
+import { fake } from '~testing/fake';
+import type { ReactElement } from 'react';
 import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
 import { envContext } from '~/.server/context';
 import { getPhoto, storePhoto } from '~/.server/photos';
@@ -29,18 +30,20 @@ after(() => dispose());
 
 const contextWithDb = () => {
   const context = new RouterContextProvider();
-  context.set(envContext, { DB: db, PHOTOS: photos } as Partial<Env> as Env);
+  context.set(envContext, fake<Env>({ DB: db, PHOTOS: photos }));
   return context;
 };
 
-const load = (slug: string) => loader({ params: { slug }, context: contextWithDb() } as Partial<Route.LoaderArgs> as Route.LoaderArgs);
+const load = (slug: string) => loader(fake<Route.LoaderArgs>({ params: { slug }, context: contextWithDb() }));
 
 const submit = (slug: string, fields: Record<string, string>) =>
-  action({
-    params: { slug },
-    request: new Request(`http://localhost/recepten/${slug}/bewerken`, { method: 'POST', body: new URLSearchParams(fields) }),
-    context: contextWithDb(),
-  } as Partial<Route.ActionArgs> as Route.ActionArgs);
+  action(
+    fake<Route.ActionArgs>({
+      params: { slug },
+      request: new Request(`http://localhost/recepten/${slug}/bewerken`, { method: 'POST', body: new URLSearchParams(fields) }),
+      context: contextWithDb(),
+    }),
+  );
 
 const status = async (run: Promise<unknown>) => {
   try {
@@ -143,7 +146,7 @@ test('recipe-editing › Same form for new and existing recipes', () => {
   const values = { title: 'Soep', author: 'Oma', servings: '4', time: '1u', intro: 'Warm', image: '', ingredients: [], steps: [] };
   const form = (element: ReactElement) => {
     const router = createMemoryRouter([{ path: '/', element }]);
-    const { container, unmount } = render(createElement(RouterProvider, { router }));
+    const { container, unmount } = render(<RouterProvider router={router} />);
     const found = {
       heading: screen.getByRole('heading', { level: 1 }).textContent,
       title: screen.getByRole<HTMLInputElement>('textbox', { name: /Titel/ }).value,
@@ -153,12 +156,12 @@ test('recipe-editing › Same form for new and existing recipes', () => {
     unmount();
     return found;
   };
-  const edit = form(
-    createElement(EditRecipe, {
-      loaderData: { slug: 'soep', updatedAt: '2026-01-01T00:00:00Z', authors: ['Oma'], tile: 0, seal: undefined, values },
-    } as unknown as Route.ComponentProps),
-  );
-  const create = form(createElement(NewRecipe, { loaderData: { authors: ['Oma'], tile: 0, seal: undefined } } as unknown as NewRoute.ComponentProps));
+  const editProps = fake<Route.ComponentProps>({
+    loaderData: { slug: 'soep', updatedAt: '2026-01-01T00:00:00Z', authors: ['Oma'], tile: 0, seal: undefined, values },
+  });
+  const newProps = fake<NewRoute.ComponentProps>({ loaderData: { authors: ['Oma'], tile: 0, seal: undefined } });
+  const edit = form(<EditRecipe {...editProps} />);
+  const create = form(<NewRecipe {...newProps} />);
   // The same fields, in the same form.
   assert.deepEqual(edit.controls, create.controls);
   // Only the starting values, the heading and the way back differ.

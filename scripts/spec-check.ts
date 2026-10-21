@@ -86,7 +86,7 @@ export function checkRepo(root = join(import.meta.dirname, '..'), change?: strin
   if (change && required.length === main.length) return [`no delta specs found for change: ${change}`];
   const all = [...main, ...load('openspec/changes/*/specs/*/spec.md', true)];
   // `**` skips dot directories, so `.server/` is listed explicitly
-  const testFiles = globSync(['packages/**/*.test.ts', 'packages/*/app/.server/*.test.ts'], {
+  const testFiles = globSync(['packages/**/*.test.{ts,tsx}', 'packages/*/app/.server/*.test.ts'], {
     cwd: root,
     exclude: (p) => basename(String(p)) === 'node_modules',
   });

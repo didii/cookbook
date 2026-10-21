@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
+import { fake } from '~testing/fake';
 import { RouterContextProvider } from 'react-router';
 import { envContext } from '~/.server/context';
 import type { Route as FileRoute } from './+types/file';
@@ -18,18 +19,19 @@ after(() => dispose());
 
 const context = () => {
   const c = new RouterContextProvider();
-  c.set(envContext, { PHOTOS: photos } as Partial<Env> as Env);
+  c.set(envContext, fake<Env>({ PHOTOS: photos }));
   return c;
 };
 
 const upload = (body: BodyInit, headers: HeadersInit = {}) =>
-  action({
-    request: new Request('http://localhost/foto', { method: 'POST', body, headers }),
-    context: context(),
-  } as Partial<UploadRoute.ActionArgs> as UploadRoute.ActionArgs) as Promise<Response>;
+  action(
+    fake<UploadRoute.ActionArgs>({
+      request: new Request('http://localhost/foto', { method: 'POST', body, headers }),
+      context: context(),
+    }),
+  ) as Promise<Response>;
 
-const serve = (file: string) =>
-  loader({ params: { file }, context: context() } as Partial<FileRoute.LoaderArgs> as FileRoute.LoaderArgs) as Promise<Response>;
+const serve = (file: string) => loader(fake<FileRoute.LoaderArgs>({ params: { file }, context: context() })) as Promise<Response>;
 
 const jpeg = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3]);
 

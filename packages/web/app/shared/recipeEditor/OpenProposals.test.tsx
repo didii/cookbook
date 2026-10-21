@@ -1,10 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { fireEvent, render, screen } from '~testing/dom';
-import { ChipsHarness, noRows, stepOf } from '~testing/stepChips';
-import { createElement } from 'react';
 import { proposals, reconcile, setMode } from '~/lib/chips';
 import { OpenProposals } from './OpenProposals';
+import { ChipsHarness, noRows, stepOf } from './StepChips.test';
 
 const following = stepOf({ body: 'Bak 30 minuten op 180 graden.', ingredients: [], ovenTemperature: 180, timer: { minutes: 30 } });
 /** Both chips pinned, then the words changed: each pinned chip now has a proposal. */
@@ -14,7 +13,7 @@ const withProposals = reconcile(
 );
 
 const show = (initial = withProposals) =>
-  render(createElement(ChipsHarness, { initial, extra: (step) => createElement(OpenProposals, { count: proposals(step, noRows).length }) }));
+  render(<ChipsHarness initial={initial} extra={(step) => <OpenProposals count={proposals(step, noRows).length} />} />);
 const link = () => screen.getByRole('button', { name: /voorstel/ });
 const accepts = () => [...document.querySelectorAll<HTMLElement>('[data-proposal]')];
 

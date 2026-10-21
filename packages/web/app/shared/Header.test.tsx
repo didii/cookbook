@@ -3,11 +3,15 @@ import { test } from 'node:test';
 import { cssFor } from '~testing/css';
 import { render, screen } from '~testing/dom';
 import { routePaths } from '~testing/routes';
-import { createElement } from 'react';
 import { MemoryRouter } from 'react-router';
 import { Header } from './Header';
 
-const show = () => render(createElement(MemoryRouter, null, createElement(Header, { email: 'oma@example.com' })));
+const show = () =>
+  render(
+    <MemoryRouter>
+      <Header email="oma@example.com" />
+    </MemoryRouter>,
+  );
 const flat = (css: string) => css.replace(/\s+/g, ' ');
 /** The `sm` breakpoint, where the header has room for both the long link and the email. */
 const fromSm = /@media \(width >= 40rem\) \{ [^{]*\{ display: (\w+)/;

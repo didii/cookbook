@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { cleanup, fireEvent, render, screen } from '~testing/dom';
-import { createElement } from 'react';
+import type { ComponentProps } from 'react';
 import { RowToolbar } from './RowToolbar';
 
 const props = { label: 'Acties', deleteLabel: 'Verwijder', canUp: true, canDown: true, onMove: () => {}, onDelete: () => {} };
-const show = (extra: object = {}) => render(createElement(RowToolbar, { ...props, ...extra }));
+const show = (extra: Partial<ComponentProps<typeof RowToolbar>> = {}) => render(<RowToolbar {...props} {...extra} />);
 const inTabOrder = () => screen.getAllByRole('button').filter((b) => b.getAttribute('tabindex') === '0');
 
 test('a toolbar without insert has three buttons, one in the tab order', () => {

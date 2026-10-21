@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { fake } from '~testing/fake';
 import { addStep, editStep, emptyDraftSeed, startingDraft, typeIngredient } from './draft';
 import { clearDraft, describeSavedAt, draftKey, isFresh, loadDraft, purgeDrafts, resolveStart, saveDraft, type DraftStorage } from './draftStore';
 
@@ -204,7 +205,7 @@ test('a restored draft whose anchors no longer fit is fitted to its text', () =>
       }),
     ],
   };
-  const { draft } = draftOf(state as unknown as typeof edited);
+  const { draft } = draftOf(fake<typeof edited>(state));
   const [fitted] = start({ draft, updatedAt: 'v1' }).state.steps;
   const byId = Object.fromEntries(fitted.chips.map((c) => [c.id, c]));
   assert.deepEqual(byId.c0, state.steps[0].chips[0], 'a fitting chip is untouched');

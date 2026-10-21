@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { fake } from '~testing/fake';
 import { soundAlarm } from './alarm';
 import type { Step } from './recipe';
 import { activeTimers, add, finishTitle, formatCountdown, newlyFinished, restore, serialize, start, stop, timerDefs, timerView } from './timers';
@@ -73,7 +74,7 @@ test('step-timers › Timer ends', () => {
   const calls: unknown[] = [];
   const nodes = { connect() {}, frequency: {}, gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} }, start() {}, stop() {} };
   const audio = { currentTime: 0, destination: {}, createOscillator: () => (calls.push('osc'), nodes) as never, createGain: () => nodes as never };
-  soundAlarm(audio as unknown as AudioContext, { vibrate: (p) => (calls.push(p), true) });
+  soundAlarm(fake<AudioContext>(audio), { vibrate: (p) => (calls.push(p), true) });
   assert.deepEqual(calls.at(-1), [200, 100, 200]);
   assert.equal(calls.filter((c) => c === 'osc').length, 3);
   // Without audio or vibration support nothing throws.

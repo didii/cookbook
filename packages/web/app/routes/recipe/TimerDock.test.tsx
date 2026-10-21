@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { fireEvent, precedes, render, screen } from '~testing/dom';
-import { createElement } from 'react';
 import type { Step } from '~/lib/recipe';
 import { activeTimers, start, timerDefs } from '~/lib/timers';
 import { TimerDock } from './TimerDock';
@@ -18,7 +17,7 @@ const timers = activeTimers(defs, start(start({}, defs[1], T0), defs[0], T0), T0
 
 test('the dock holds a pill per timer, earlier steps first, and is hidden when empty', () => {
   const jumped: number[] = [];
-  const { container } = render(createElement(TimerDock, { timers, onJump: (step) => jumped.push(step) }));
+  const { container } = render(<TimerDock timers={timers} onJump={(step) => jumped.push(step)} />);
   const second = screen.getByRole('button', { name: /^Stap 2, Deeg rust, 29:00/ });
   const tenth = screen.getByRole('button', { name: /^Stap 10, Bakken, 49:00/ });
   assert.ok(precedes(second, tenth));
@@ -26,12 +25,12 @@ test('the dock holds a pill per timer, earlier steps first, and is hidden when e
   // A pill goes to the step of its timer.
   fireEvent.click(tenth);
   assert.deepEqual(jumped, [9]);
-  assert.equal(render(createElement(TimerDock, { timers: [], onJump() {} })).container.querySelector('nav')!.hidden, true);
+  assert.equal(render(<TimerDock timers={[]} onJump={() => {}} />).container.querySelector('nav')!.hidden, true);
 });
 
 test('the sidebar lists the timers with their controls and a jump to the step', () => {
   const jumped: number[] = [];
-  const { container } = render(createElement(TimerSidebar, { timers, onJump: (step) => jumped.push(step), onPeek() {} }));
+  const { container } = render(<TimerSidebar timers={timers} onJump={(step) => jumped.push(step)} onPeek={() => {}} />);
   assert.equal(screen.getAllByRole('button', { name: /^Ga naar stap/ }).length, 2);
   assert.equal(screen.getAllByRole('button', { name: 'Eén minuut erbij' }).length, 2);
   assert.equal(screen.getAllByRole('button', { name: 'Vijf minuten erbij' }).length, 2);
@@ -39,7 +38,7 @@ test('the sidebar lists the timers with their controls and a jump to the step', 
   fireEvent.click(screen.getByRole('button', { name: 'Ga naar stap 2' }));
   assert.deepEqual(jumped, [1]);
   assert.equal(container.querySelectorAll('li').length, 2);
-  assert.equal(render(createElement(TimerSidebar, { timers: [], onJump() {}, onPeek() {} })).container.firstChild, null);
+  assert.equal(render(<TimerSidebar timers={[]} onJump={() => {}} onPeek={() => {}} />).container.firstChild, null);
 });
 
 // Need a browser: they depend on which steps are on screen, which IntersectionObserver reports from real layout; a DOM without layout reports nothing.
