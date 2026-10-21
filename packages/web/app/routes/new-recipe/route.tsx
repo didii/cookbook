@@ -2,6 +2,7 @@ import { data, redirect } from 'react-router';
 import { envContext, userEmailContext } from '~/.server/context';
 import { acceptImage } from '~/.server/photos';
 import { chooseSeal, createRecipe, listAuthors } from '~/.server/recipes';
+import { getUser } from '~/.server/users';
 import { emptyDraftSeed } from '~/lib/draft';
 import { seals } from '~/lib/seals';
 import { tiles } from '~/lib/tile';
@@ -12,8 +13,10 @@ import type { Route } from './+types/route';
 
 export async function loader({ context }: Route.LoaderArgs) {
   const db = context.get(envContext).DB;
+  // The author field starts as the member's calling name; the welcome gate means there is a user (empty only when it is bypassed).
+  const callingName = (await getUser(db, context.get(userEmailContext)))?.callingName ?? '';
   // The tile is picked here rather than while rendering, so the server and the browser agree. The seal is posted back, so the recipe gets the one the editor showed.
-  return { authors: await listAuthors(db), tile: Math.floor(Math.random() * tiles.length), seal: await chooseSeal(db) };
+  return { callingName, authors: await listAuthors(db), tile: Math.floor(Math.random() * tiles.length), seal: await chooseSeal(db) };
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
@@ -46,14 +49,15 @@ export function meta() {
 }
 
 export default function NewRecipe({ loaderData, actionData }: Route.ComponentProps) {
+  const seed = { ...emptyDraftSeed, author: loaderData.callingName };
   return (
     <RecipeEditor
       heading="Nieuw recept"
       authors={loaderData.authors}
       tile={loaderData.tile}
       seal={loaderData.seal}
-      initial={emptyDraftSeed}
-      values={actionData?.values ?? emptyDraftSeed}
+      initial={seed}
+      values={actionData?.values ?? seed}
       errors={actionData?.errors ?? {}}
       cancelTo="/"
     />
