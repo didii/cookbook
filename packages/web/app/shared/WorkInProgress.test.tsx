@@ -11,7 +11,8 @@ const banner = 'Dit scherm is nog in aanbouw';
 test('site-menu › Settings page', () => {
   assert.ok(routePaths.includes('instellingen'));
   const { container } = render(<Settings />);
-  assert.equal(screen.getByRole('status').textContent, banner);
+  assert.equal(screen.getByTestId('WorkInProgress-banner').textContent, banner);
+  assert.equal(screen.getByTestId('WorkInProgress-banner').tagName, 'OUTPUT'); // implicit role status
   assert.equal(container.querySelector('main#main h1')?.textContent, 'Instellingen');
   assert.equal(container.querySelector('input, form, button'), null);
 });
@@ -19,7 +20,7 @@ test('site-menu › Settings page', () => {
 test('site-menu › About page', () => {
   assert.ok(routePaths.includes('over'));
   const { container } = render(<About />);
-  assert.equal(screen.getByRole('status').textContent, banner);
+  assert.equal(screen.getByTestId('WorkInProgress-banner').textContent, banner);
   assert.deepEqual(
     [...container.querySelectorAll('main > *')].map((el) => el.tagName),
     ['H1', 'OUTPUT'],

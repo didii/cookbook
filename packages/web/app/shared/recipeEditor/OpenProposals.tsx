@@ -19,7 +19,12 @@ export function OpenProposals({ count }: Props) {
     next.current = (next.current + 1) % accept.length;
   };
   return (
-    <button type="button" onClick={jump} className="min-h-11 cursor-pointer border-0 bg-transparent p-0 font-black text-blu underline">
+    <button
+      type="button"
+      data-testid="OpenProposals-link"
+      onClick={jump}
+      className="min-h-11 cursor-pointer border-0 bg-transparent p-0 font-black text-blu underline"
+    >
       {count === 1 ? '1 voorstel open' : `${count} voorstellen open`}
     </button>
   );

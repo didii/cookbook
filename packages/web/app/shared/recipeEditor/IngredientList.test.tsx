@@ -33,22 +33,27 @@ function Harness({ start }: { start: string[] }) {
 }
 
 const show = (...start: string[]) => render(<Harness start={start} />);
-const field = (n: number) => screen.getByRole<HTMLInputElement>('textbox', { name: `Ingrediënt ${n}` });
-const toolbar = (n: number) => screen.getByRole('toolbar', { name: `Acties voor ingrediënt ${n}` });
+const fields = () => screen.getAllByTestId<HTMLInputElement>('IngredientItem-field');
+const field = (n: number) => fields()[n - 1];
+const toolbar = (n: number) => screen.getAllByTestId('RowToolbar-toolbar')[n - 1];
+const buttonsOf = (n: number) => within(toolbar(n)).getAllByTestId<HTMLButtonElement>('RowToolbar-button');
 const press = (el: Element, key: string, init: object = {}) => fireEvent.keyDown(el, { key, ...init });
 
 test('recipe-ingredient-editing › Quantity is highlighted while typing', async () => {
   show();
   fireEvent.change(field(1), { target: { value: '250 g bloem' } });
   // The field's own text is transparent; a layer under it paints the same text with the quantity in blue.
-  const quantity = screen.getByText('250 g');
+  const quantity = screen.getByTestId('IngredientItem-quantity');
   assert.equal(quantity.tagName, 'B');
+  assert.equal(field(1).getAttribute('aria-label'), 'Ingrediënt 1');
+  assert.equal(toolbar(1).getAttribute('aria-label'), 'Acties voor ingrediënt 1');
+  assert.equal(quantity.textContent, '250 g');
   assert.equal(quantity.parentElement?.textContent, '250 g bloem');
   assert.match(await cssFor(quantity.className), /color: var\(--color-blu\)/);
   assert.match(await cssFor(field(1).className), /color: transparent/);
   // Without a quantity, nothing is highlighted.
   fireEvent.change(field(1), { target: { value: 'bruine suiker' } });
-  assert.equal(screen.queryByText('250 g'), null);
+  assert.equal(screen.queryByTestId('IngredientItem-quantity'), null);
   assert.equal(document.querySelector('b'), null);
 });
 
@@ -82,12 +87,12 @@ test('recipe-ingredient-editing › Arrow keys move between rows', () => {
 
 test('recipe-ingredient-editing › Backspace removes an empty row', () => {
   show('250 g bloem', '', '2 eieren');
-  assert.equal(screen.getAllByRole('textbox').length, 4);
+  assert.equal(fields().length, 4);
   field(2).focus();
   press(field(2), 'Backspace');
-  assert.equal(screen.getAllByRole('textbox').length, 3);
+  assert.equal(fields().length, 3);
   assert.deepEqual(
-    screen.getAllByRole<HTMLInputElement>('textbox').map((f) => f.value),
+    fields().map((f) => f.value),
     ['250 g bloem', '2 eieren', ''],
   );
   // Focus is at the end of the row above.
@@ -96,17 +101,12 @@ test('recipe-ingredient-editing › Backspace removes an empty row', () => {
   // The last row is not removed, and neither is a row with text.
   press(field(3), 'Backspace');
   press(field(2), 'Backspace');
-  assert.equal(screen.getAllByRole('textbox').length, 3);
+  assert.equal(fields().length, 3);
 });
 
 test('recipe-ingredient-editing › Edge rows cannot move out of the list', () => {
   show('250 g bloem', '2 eieren', 'zout');
-  const disabled = (n: number) =>
-    Object.fromEntries(
-      within(toolbar(n))
-        .getAllByRole<HTMLButtonElement>('button')
-        .map((b) => [b.getAttribute('aria-label'), b.disabled]),
-    );
+  const disabled = (n: number) => Object.fromEntries(buttonsOf(n).map((b) => [b.getAttribute('aria-label'), b.disabled]));
   // The first row cannot go up, the last filled row cannot go down; in between both work.
   assert.equal(disabled(1)['Omhoog'], true);
   assert.equal(disabled(1)['Omlaag'], false);
@@ -120,15 +120,13 @@ test('recipe-ingredient-editing › Row buttons are one tab stop', () => {
   show('250 g bloem', '2 eieren', 'zout');
   for (const n of [1, 2, 3]) {
     // The group comes before the field, has one button in the tab order, and the field is in the tab order after it.
-    const stops = within(toolbar(n))
-      .getAllByRole('button')
-      .filter((b) => b.getAttribute('tabindex') === '0');
+    const stops = buttonsOf(n).filter((b) => b.getAttribute('tabindex') === '0');
     assert.equal(stops.length, 1);
     assert.ok(precedes(toolbar(n), field(n)));
     assert.notEqual(field(n).getAttribute('tabindex'), '-1');
   }
   // The arrow keys move between the buttons of the group.
-  const [up, down] = within(toolbar(2)).getAllByRole('button');
+  const [up, down] = buttonsOf(2);
   up.focus();
   press(up, 'ArrowRight');
   assert.ok(document.activeElement === down, 'focus');
@@ -140,7 +138,7 @@ test('recipe-ingredient-editing › Alt and arrow move the row', () => {
   field(1).setSelectionRange(3, 3);
   press(field(1), 'ArrowDown', { altKey: true });
   assert.deepEqual(
-    screen.getAllByRole<HTMLInputElement>('textbox').map((f) => f.value),
+    fields().map((f) => f.value),
     ['2 eieren', '250 g bloem', 'zout', ''],
   );
   // Focus stays in the field of the moved row, with the cursor where it was.
@@ -156,9 +154,11 @@ test('recipe-ingredient-editing › Alt and arrow move the row', () => {
 
 test('recipe-ingredient-editing › Move is announced', () => {
   show('250 g bloem', '2 eieren', 'zout');
-  const live = document.querySelector('[aria-live=polite]')!;
+  const live = screen.getByTestId('Announcement-live');
+  assert.equal(live.getAttribute('aria-live'), 'polite');
   assert.equal(live.textContent, '');
-  fireEvent.click(within(toolbar(1)).getByRole('button', { name: 'Omlaag' }));
+  // The buttons of a row are up, down and delete.
+  fireEvent.click(buttonsOf(1)[1]);
   assert.equal(live.textContent, "Ingrediënt '250 g bloem' staat nu op plaats 2 van 3");
   press(field(2), 'ArrowDown', { altKey: true });
   assert.equal(live.textContent, "Ingrediënt '250 g bloem' staat nu op plaats 3 van 3");

@@ -14,24 +14,24 @@ const withProposals = reconcile(
 
 const show = (initial = withProposals) =>
   render(<ChipsHarness initial={initial} extra={(step) => <OpenProposals count={proposals(step, noRows).length} />} />);
-const link = () => screen.getByRole('button', { name: /voorstel/ });
-const accepts = () => [...document.querySelectorAll<HTMLElement>('[data-proposal]')];
+const link = () => screen.getByTestId('OpenProposals-link');
+const accepts = () => screen.getAllByTestId('StepChips-accept').filter((b) => b.getAttribute('aria-label') === 'Wijziging overnemen');
 
 test('recipe-step-chips › Suggestions are counted in the save bar', () => {
   assert.equal(proposals(withProposals, noRows).length, 2);
   show();
   assert.equal(link().textContent, '2 voorstellen open');
   // Taking one over leaves one; and nothing is said about proposals while there are none.
-  fireEvent.click(screen.getAllByRole('button', { name: 'Wijziging overnemen' })[0]);
+  fireEvent.click(accepts()[0]);
   assert.equal(link().textContent, '1 voorstel open');
-  fireEvent.click(screen.getByRole('button', { name: 'Wijziging overnemen' }));
-  assert.equal(screen.queryByText(/voorstel/), null);
+  fireEvent.click(accepts()[0]);
+  assert.equal(screen.queryByTestId('OpenProposals-link'), null);
 });
 
 test('recipe-step-chips › The count jumps to the next suggestion', () => {
   show();
-  assert.equal(accepts().length, 2);
   const [first, second] = accepts();
+  assert.equal(accepts().length, 2);
   // The link moves focus to the accept button of the first open proposal, then to the next on each use, and round again.
   fireEvent.click(link());
   assert.ok(document.activeElement === first, 'first');

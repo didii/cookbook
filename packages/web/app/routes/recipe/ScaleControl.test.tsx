@@ -13,8 +13,8 @@ function Harness({ start, servings, seen }: { start: number; servings: boolean; 
   return <ScaleControl value={value} onChange={setValue} servings={servings} />;
 }
 
-const field = () => screen.getByRole<HTMLInputElement>('textbox');
-const press = (name: string) => fireEvent.click(screen.getByRole('button', { name }));
+const field = () => screen.getByTestId<HTMLInputElement>('ScaleControl-field');
+const press = (name: 'Meer' | 'Minder') => fireEvent.click(screen.getByTestId(name === 'Meer' ? 'ScaleControl-more' : 'ScaleControl-less'));
 const type = (text: string) => fireEvent.change(field(), { target: { value: text } });
 const setup = (start: number, servings: boolean) => {
   const seen: number[] = [];
@@ -25,7 +25,8 @@ const setup = (start: number, servings: boolean) => {
 test('recipe-scaling › Control starts at the stored servings', () => {
   setup(4, true);
   assert.equal(field().value, '4');
-  assert.ok(screen.getByText('personen'));
+  assert.equal(screen.getByTestId('ScaleControl-unit').textContent, 'personen');
+  assert.equal(field().getAttribute('aria-label'), 'Personen');
 });
 
 test('recipe-scaling › Plus and minus change by one serving', () => {
@@ -64,12 +65,12 @@ test('recipe-scaling › Invalid typing is undone', () => {
 test('recipe-scaling › Multiplier starts at one', () => {
   setup(1, false);
   assert.equal(field().value, '1');
-  assert.ok(screen.getByText('×'));
+  assert.ok(screen.getByTestId('ScaleControl-times'));
 });
 
 test('recipe-scaling › Buttons walk the steps', () => {
   setup(1, false);
-  const walk = (name: string, n: number) =>
+  const walk = (name: 'Meer' | 'Minder', n: number) =>
     Array.from({ length: n }, () => {
       press(name);
       return field().value;

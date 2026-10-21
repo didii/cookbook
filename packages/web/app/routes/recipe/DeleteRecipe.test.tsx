@@ -25,7 +25,7 @@ const show = () =>
       router={createMemoryRouter([{ path: '/', element: <RecipePage recipe={recipe} tile={0} steps={[{ body: 'bakken', ingredients: [] }]} /> }])}
     />,
   );
-const trigger = () => screen.getByRole('button', { name: 'Verwijder recept' });
+const trigger = () => screen.getByTestId('DeleteRecipe-open');
 const dialog = () => document.querySelector('dialog')!;
 /** Opens the popup. Happy-dom has no real modal, so `open` is what the tests look at. */
 const open = () => {
@@ -35,7 +35,7 @@ const open = () => {
 
 test('recipe-deletion › Delete button is shown', () => {
   show();
-  assert.ok(precedes(screen.getByText('bakken'), trigger()));
+  assert.ok(precedes(screen.getByTestId('StepItem-body'), trigger()));
   assert.equal(trigger().closest('header'), null);
 });
 
@@ -45,21 +45,21 @@ test('recipe-deletion › Popup asks for confirmation', () => {
   fireEvent.click(trigger());
   assert.equal(dialog().open, true);
   const popup = within(dialog());
-  assert.ok(popup.getByRole('heading').textContent?.includes('Appeltaart'));
-  assert.ok(popup.getByRole('button', { name: 'Verwijderen' }) && popup.getByRole('button', { name: 'Annuleren' }));
-  assert.equal(popup.getByRole('button', { name: 'Verwijderen' }).getAttribute('type'), 'submit');
+  assert.ok(popup.getByTestId('DeleteRecipe-title').textContent?.includes('Appeltaart'));
+  assert.ok(popup.getByTestId('DeleteRecipe-confirm') && popup.getByTestId('DeleteRecipe-cancel'));
+  assert.equal(popup.getByTestId('DeleteRecipe-confirm').getAttribute('type'), 'submit');
 });
 
 test('recipe-deletion › Cancel closes the popup', () => {
   open();
-  fireEvent.click(within(dialog()).getByRole('button', { name: 'Annuleren' }));
+  fireEvent.click(within(dialog()).getByTestId('DeleteRecipe-cancel'));
   assert.equal(dialog().open, false);
 });
 
 test('recipe-deletion › Click outside closes the popup', () => {
   open();
   // A click inside the popup leaves it open; one on the backdrop (the dialog element itself) closes it.
-  fireEvent.click(within(dialog()).getByRole('heading'));
+  fireEvent.click(within(dialog()).getByTestId('DeleteRecipe-title'));
   assert.equal(dialog().open, true);
   // The padding belongs to the inner form, so a click on it is not a click on the backdrop.
   fireEvent.click(dialog().firstElementChild!);

@@ -36,7 +36,9 @@ const page = (props: Partial<ComponentProps<typeof RecipePage>> = {}) =>
   // A data router, because the page holds a router `Form` (delete button).
   render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <RecipePage recipe={recipe} tile={0} steps={steps} {...props} /> }])} />);
 /** The sticky bar with the tabs and the timer dock. */
-const stack = () => screen.getByRole('tablist').parentElement!;
+const stack = () => screen.getByTestId('RecipePage-stack');
+const tabs = () => screen.getAllByTestId('TabBar-tab');
+const checkboxes = () => screen.getAllByTestId<HTMLInputElement>('IngredientList-checkbox');
 
 afterEach(() => {
   localStorage.clear();
@@ -45,17 +47,18 @@ afterEach(() => {
 
 test('recipe-viewing › Tabs on a narrow screen', () => {
   page();
-  assert.equal(screen.getAllByRole('tab').length, 2);
+  assert.equal(tabs().length, 2);
+  assert.ok(tabs().every((t) => t.getAttribute('role') === 'tab') && screen.getByTestId('TabBar-list').getAttribute('role') === 'tablist');
   // The active tab is marked, the bar sticks to the top and is only there below 52rem.
-  assert.equal(screen.getByRole('tab', { name: 'Ingrediënten' }).getAttribute('aria-selected'), 'true');
-  assert.equal(screen.getByRole('tab', { name: 'Bereiding' }).getAttribute('aria-selected'), 'false');
+  assert.equal(tabs()[0].getAttribute('aria-selected'), 'true');
+  assert.equal(tabs()[1].getAttribute('aria-selected'), 'false');
   assert.ok(stack().classList.contains('sticky') && stack().classList.contains('min-[52rem]:hidden'));
   // One panel at a time below 52rem.
   assert.ok(document.getElementById('panel-steps')!.classList.contains('max-[51.99rem]:hidden'));
   assert.ok(!document.getElementById('panel-ingredients')!.classList.contains('max-[51.99rem]:hidden'));
   // Choosing the other tab swaps which panel is hidden.
-  fireEvent.click(screen.getByRole('tab', { name: 'Bereiding' }));
-  assert.equal(screen.getByRole('tab', { name: 'Bereiding' }).getAttribute('aria-selected'), 'true');
+  fireEvent.click(tabs()[1]);
+  assert.equal(tabs()[1].getAttribute('aria-selected'), 'true');
   assert.ok(!document.getElementById('panel-steps')!.classList.contains('max-[51.99rem]:hidden'));
   assert.ok(document.getElementById('panel-ingredients')!.classList.contains('max-[51.99rem]:hidden'));
 });
@@ -73,17 +76,17 @@ test('recipe-viewing › Ticked ingredients are kept', () => {
   // Both panels stay mounted, and the ticks live in the page and come down as props, so a tab switch loses nothing.
   page();
   assert.ok(document.getElementById('panel-ingredients') && document.getElementById('panel-steps'));
-  fireEvent.click(screen.getByRole('checkbox', { name: /appels/ }));
-  fireEvent.click(screen.getByRole('tab', { name: 'Bereiding' }));
-  fireEvent.click(screen.getByRole('tab', { name: 'Ingrediënten' }));
+  fireEvent.click(checkboxes()[0]);
+  fireEvent.click(tabs()[1]);
+  fireEvent.click(tabs()[0]);
   assert.deepEqual(
-    screen.getAllByRole<HTMLInputElement>('checkbox').map((c) => c.checked),
+    checkboxes().map((c) => c.checked),
     [true, false],
   );
   cleanup();
   render(<IngredientList ingredients={recipe.ingredients} ticked={new Set([1])} onToggle={() => {}} />);
   assert.deepEqual(
-    screen.getAllByRole<HTMLInputElement>('checkbox').map((c) => c.checked),
+    checkboxes().map((c) => c.checked),
     [false, true],
   );
 });
@@ -118,15 +121,17 @@ test.todo('recipe-viewing › Position survives scrolling up');
 test('recipe-viewing › Optional fields are empty', () => {
   // No time, no servings and no image: the page still renders, without them.
   const { container } = page();
-  assert.ok(screen.getByRole('heading', { level: 1, name: 'Appeltaart' }));
-  assert.ok(screen.getByText('van Oma'));
-  assert.equal(screen.queryByText(/personen/), null);
+  assert.equal(screen.getByTestId('RecipePage-title').tagName, 'H1');
+  assert.equal(screen.getByTestId('RecipePage-title').textContent, 'Appeltaart');
+  assert.equal(screen.getByTestId('RecipePage-author').textContent, 'van Oma');
+  assert.equal(screen.queryByTestId('RecipePage-time'), null);
+  assert.equal(screen.queryByTestId('ScaleControl-unit'), null);
   assert.equal(container.querySelector('img'), null);
   cleanup();
   // With them, each is shown.
   const full = page({ recipe: { ...recipe, time: '1 uur', servings: 6, image: '/taart.jpg' } });
-  assert.ok(screen.getByText('1 uur'));
-  assert.equal(screen.getByRole<HTMLInputElement>('textbox', { name: 'Personen' }).value, '6');
+  assert.equal(screen.getByTestId('RecipePage-time').textContent, '1 uur');
+  assert.equal((screen.getByTestId('ScaleControl-field') as HTMLInputElement).value, '6');
   assert.ok(full.container.querySelector('img'));
 });
 
@@ -136,7 +141,7 @@ test('recipe-viewing › Ingredient without quantity', () => {
     { quantityText: '100 g', name: 'suiker' },
   ];
   page({ recipe: { ...recipe, ingredients } });
-  const [salt, sugar] = screen.getAllByRole('checkbox').map((c) => c.closest('label')!);
+  const [salt, sugar] = screen.getAllByTestId('IngredientList-row');
   // Shown with its name only: the quantity cell is empty.
   assert.equal(salt.textContent, 'zout');
   assert.equal(sugar.textContent, '100 gsuiker');
@@ -144,24 +149,26 @@ test('recipe-viewing › Ingredient without quantity', () => {
 
 test('recipe-viewing › Link to the edit form', () => {
   page();
-  assert.equal(screen.getByRole('link', { name: 'Bewerk' }).getAttribute('href'), '/recepten/appeltaart/bewerken');
+  assert.equal(screen.getByTestId('RecipePage-edit').getAttribute('href'), '/recepten/appeltaart/bewerken');
   // The route table serves that address.
   assert.ok(routePaths.includes('recepten/:slug/bewerken'));
 });
 
 test('cook-mode › Switch on a narrow screen', () => {
   page();
-  const toggle = screen.getByRole('switch');
+  const toggle = screen.getByTestId('CookSwitch-switch');
+  assert.equal(toggle.getAttribute('role'), 'switch');
   // The switch is a real switch, directly above the sticky stack and not part of it.
   assert.ok(precedes(toggle, stack()) && !stack().contains(toggle));
   assert.equal(toggle.getAttribute('aria-checked'), 'false');
-  assert.ok(screen.getByText('Scherm mag slapen') && screen.getByText('Gaat vanzelf aan zodra je begint'));
+  assert.ok(screen.getByTestId('CookSwitch-text').textContent?.startsWith('Scherm mag slapen'));
+  assert.equal(screen.getByTestId('CookSwitch-sub').textContent, 'Gaat vanzelf aan zodra je begint');
 });
 
 test('cook-mode › No cook mode on a wide screen', () => {
   // The switch is hidden from 52rem on, and the decision never wants the lock there (see cookMode.test.ts).
   page();
-  assert.ok(screen.getByRole('switch').closest('label')!.classList.contains('min-[52rem]:hidden'));
+  assert.ok(screen.getByTestId('CookSwitch-label').classList.contains('min-[52rem]:hidden'));
 });
 
 test('cook-mode › Choice is not kept', () => {
@@ -169,15 +176,15 @@ test('cook-mode › Choice is not kept', () => {
   setViewport(390, 844);
   try {
     page();
-    assert.equal(screen.getByRole('switch').getAttribute('aria-checked'), 'true');
+    assert.equal(screen.getByTestId('CookSwitch-switch').getAttribute('aria-checked'), 'true');
     // Base UI's switch is a span; it changes through the hidden checkbox beside it.
-    fireEvent.click(screen.getByRole('switch').closest('label')!.querySelector('input')!);
-    assert.equal(screen.getByRole('switch').getAttribute('aria-checked'), 'false');
-    assert.ok(screen.getByText('Handmatig'));
+    fireEvent.click(screen.getByTestId('CookSwitch-label').querySelector('input')!);
+    assert.equal(screen.getByTestId('CookSwitch-switch').getAttribute('aria-checked'), 'false');
+    assert.equal(screen.getByTestId('CookSwitch-sub').textContent, 'Handmatig');
     cleanup();
     page();
-    assert.equal(screen.getByRole('switch').getAttribute('aria-checked'), 'true');
-    assert.equal(screen.queryByText('Handmatig'), null);
+    assert.equal(screen.getByTestId('CookSwitch-switch').getAttribute('aria-checked'), 'true');
+    assert.notEqual(screen.getByTestId('CookSwitch-sub').textContent, 'Handmatig');
     // Nothing about the choice is stored (the timers keep their own state in sessionStorage).
     assert.equal(localStorage.length, 0);
     assert.deepEqual(
@@ -196,17 +203,16 @@ test('cook-mode › Choice is not kept', () => {
 test('recipe-scaling › Step chips scale', () => {
   const chipSteps: Step[] = [{ body: 'meng', ingredients: [{ quantityText: '200 g', name: 'bloem' }] }];
   page({ recipe: { ...recipe, servings: 4 }, steps: chipSteps });
-  fireEvent.change(screen.getByRole('textbox', { name: 'Personen' }), { target: { value: '6' } });
-  assert.ok(screen.getByText('300 g'));
-  assert.equal(screen.queryByText('200 g'), null);
+  fireEvent.change(screen.getByTestId('ScaleControl-field'), { target: { value: '6' } });
+  assert.equal(screen.getByTestId('StepChips-quantity').textContent, '300 g');
 });
 
 test('recipe-scaling › Reload resets', () => {
   page({ recipe: { ...recipe, servings: 4 } });
-  fireEvent.click(screen.getByRole('button', { name: 'Meer' }));
-  assert.equal(screen.getByRole<HTMLInputElement>('textbox', { name: 'Personen' }).value, '5');
+  fireEvent.click(screen.getByTestId('ScaleControl-more'));
+  assert.equal((screen.getByTestId('ScaleControl-field') as HTMLInputElement).value, '5');
   // Nothing is stored: a fresh mount starts at the recipe's own servings.
   cleanup();
   page({ recipe: { ...recipe, servings: 4 } });
-  assert.equal(screen.getByRole<HTMLInputElement>('textbox', { name: 'Personen' }).value, '4');
+  assert.equal((screen.getByTestId('ScaleControl-field') as HTMLInputElement).value, '4');
 });

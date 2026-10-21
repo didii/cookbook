@@ -16,14 +16,25 @@ export function TimerCard({ view }: Props) {
     return (
       <output className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border-3 border-dashed border-ink py-2 pr-2 pl-3.5">
         <span className="grid">
-          <span className="font-black tabular-nums">In je app · {formatCountdown(view.remainingMs)}</span>
-          {view.label && <small className="font-extrabold text-muted">{view.label}</small>}
+          <span data-testid="TimerCard-note" className="font-black tabular-nums">
+            In je app · {formatCountdown(view.remainingMs)}
+          </span>
+          {view.label && (
+            <small data-testid="TimerCard-noteLabel" className="font-extrabold text-muted">
+              {view.label}
+            </small>
+          )}
         </span>
         <span className="ml-auto flex gap-1.5">
-          <TimerButton onClick={() => timers.undoHandOver(view.id)} aria-label="Laat de timer hier verder lopen (de timer in je app loopt door)">
+          <TimerButton
+            data-testid="TimerCard-restore"
+            onClick={() => timers.undoHandOver(view.id)}
+            aria-label="Laat de timer hier verder lopen (de timer in je app loopt door)"
+          >
             {timers.clock.auto ? 'Hier laten lopen' : 'Herstel'}
           </TimerButton>
           <TimerButton
+            data-testid="TimerCard-wipe"
             onClick={() => timers.stop(view.id)}
             aria-label="Wis deze notitie (de timer in je app loopt door)"
             className="hover:bg-red hover:text-white"
@@ -37,6 +48,7 @@ export function TimerCard({ view }: Props) {
 
   return (
     <div
+      data-testid="TimerCard-card"
       role={finished ? 'alert' : 'group'}
       aria-label={finished ? undefined : `Timer${view.label ? ` ${view.label}` : ''}`}
       className={cn(
@@ -50,24 +62,29 @@ export function TimerCard({ view }: Props) {
       </span>
       {view.label && <small className={cn('min-w-16 flex-1 font-extrabold', finished ? 'text-white' : 'text-muted')}>{view.label}</small>}
       <span className="ml-auto flex gap-1.5">
-        <TimerButton onClick={() => timers.add(view.id, 1)} aria-label="Eén minuut erbij">
+        <TimerButton data-testid="TimerCard-add1" onClick={() => timers.add(view.id, 1)} aria-label="Eén minuut erbij">
           +1
         </TimerButton>
-        <TimerButton onClick={() => timers.add(view.id, 5)} aria-label="Vijf minuten erbij">
+        <TimerButton data-testid="TimerCard-add5" onClick={() => timers.add(view.id, 5)} aria-label="Vijf minuten erbij">
           +5
         </TimerButton>
         {!finished && timers.clock.available && (
-          <TimerButton onClick={() => timers.handOver(view.id)} aria-label="Geef de resterende tijd aan je klok-app">
+          <TimerButton data-testid="TimerCard-app" onClick={() => timers.handOver(view.id)} aria-label="Geef de resterende tijd aan je klok-app">
             <Alarm className="size-4" />
             App
           </TimerButton>
         )}
         {finished ? (
-          <TimerButton main onClick={() => timers.stop(view.id)}>
+          <TimerButton main data-testid="TimerCard-done" onClick={() => timers.stop(view.id)}>
             Klaar
           </TimerButton>
         ) : (
-          <TimerButton onClick={() => timers.stop(view.id)} aria-label="Stop timer" className="hover:bg-red hover:text-white">
+          <TimerButton
+            data-testid="TimerCard-stop"
+            onClick={() => timers.stop(view.id)}
+            aria-label="Stop timer"
+            className="hover:bg-red hover:text-white"
+          >
             <Stop className="size-4" />
             Stop
           </TimerButton>

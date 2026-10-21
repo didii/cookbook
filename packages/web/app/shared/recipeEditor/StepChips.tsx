@@ -183,6 +183,7 @@ export function StepChips({ step, context, number, hotId, onHot, onChange }: Pro
       <div
         ref={toolbar}
         role="toolbar"
+        data-testid="StepChips-toolbar"
         aria-label={`Chips van stap ${number}`}
         onKeyDown={keyDown}
         className="mt-2.5 flex flex-wrap items-center gap-2"
@@ -221,6 +222,7 @@ export function StepChips({ step, context, number, hotId, onHot, onChange }: Pro
                   <button
                     type="button"
                     {...{ [proposalAttribute]: '' }}
+                    data-testid="StepChips-accept"
                     aria-label={removing ? `${kindName[chip.kind]} verwijderen` : 'Wijziging overnemen'}
                     {...roving(`ok:${chip.id}`)}
                     onClick={() => accept(chip.id)}
@@ -252,6 +254,7 @@ export function StepChips({ step, context, number, hotId, onHot, onChange }: Pro
                 <button
                   type="button"
                   tabIndex={-1}
+                  data-testid="StepChips-icon"
                   aria-label={pinned ? 'Laten volgen en openen' : 'Vastzetten en openen'}
                   onClick={() => switchMode(chip)}
                   className={cn(modeClass, pinned && 'text-blu')}
@@ -262,6 +265,7 @@ export function StepChips({ step, context, number, hotId, onHot, onChange }: Pro
               <button
                 type="button"
                 aria-haspopup="dialog"
+                data-testid="StepChips-chip"
                 aria-expanded={openId === chip.id}
                 {...roving(`chip:${chip.id}`)}
                 onClick={() => setOpenId(openId === chip.id ? undefined : chip.id)}

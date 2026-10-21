@@ -29,10 +29,12 @@ export function StepItem({ step, number, done, onToggle, highlight, peek }: Prop
       {peek && <span aria-hidden="true" className={tint} />}
       <div className="mb-1.5 flex flex-wrap items-center gap-x-2 gap-y-1.5">
         <span
+          data-testid="StepItem-label"
           className={cn('inline-flex items-center gap-1.5 text-[0.8125rem] font-black tracking-[0.08em] uppercase', done ? 'text-jade' : 'text-red')}
         >
           <span
             aria-hidden="true"
+            data-testid="StepItem-mark"
             className={cn(
               'grid size-3.5 shrink-0 place-items-center rounded-[0.25rem] border-2 text-[0.625rem] leading-none text-white',
               done ? 'border-jade bg-jade' : 'border-muted',
@@ -54,6 +56,7 @@ export function StepItem({ step, number, done, onToggle, highlight, peek }: Prop
       <button
         type="button"
         aria-pressed={done}
+        data-testid="StepItem-body"
         onClick={onToggle}
         className={cn(
           '-mx-2.5 block w-[calc(100%+1.25rem)] cursor-pointer rounded-[0.625rem] border-0 bg-transparent px-2.5 py-1 text-left text-[clamp(1.25rem,5.4vw,1.5rem)] leading-[1.35] font-extrabold hover:bg-white/70',

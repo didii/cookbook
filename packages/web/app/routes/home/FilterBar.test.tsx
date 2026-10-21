@@ -10,11 +10,25 @@ const authors = ['Mama', 'Oma', 'Papa'];
 const show = (filters: Filters = noFilters, detailed = true) =>
   render(<FilterBar filters={filters} authors={authors} detailed={detailed} onChange={() => {}} />);
 
-const bar = () => document.querySelector('search')!;
-const searchBox = () => screen.getByRole('searchbox');
-const filterButton = () => screen.getByRole('button', { name: /^Filter/ });
+const bar = () => screen.getByTestId('FilterBar-bar');
+const searchBox = () => screen.getByTestId('FilterBar-search');
+const filterButton = () => screen.getByTestId('FilterBar-toggle');
+const chips = () => screen.getAllByTestId('FilterBar-chip');
+const chip = (name: string, root: HTMLElement = document.body) =>
+  within(root)
+    .getAllByTestId('FilterBar-chip')
+    .find((c) => c.textContent === name)!;
+const pressed = (el: Element) => el.getAttribute('aria-pressed') === 'true';
+const sortInput = (value: string, root: HTMLElement = document.body) =>
+  within(root)
+    .getAllByTestId<HTMLInputElement>('FilterBar-sort')
+    .find((i) => i.value === value)!;
 /** The detailed filters: what the Filter button controls. */
-const sheet = () => document.getElementById(filterButton().getAttribute('aria-controls')!)!;
+const sheet = () => {
+  const el = screen.getByTestId('FilterBar-sheet');
+  assert.equal(filterButton().getAttribute('aria-controls'), el.id);
+  return el;
+};
 const flat = (css: string) => css.replace(/\s+/g, ' ');
 /** The rules inside the 48rem media query. */
 const wide = (css: string) => /@media \(width >= 48rem\) \{(.*?)\} \}/.exec(flat(css))?.[1] ?? '';
@@ -27,7 +41,7 @@ test('recipe-filtering › Scrolling on a phone', async () => {
   assert.match(css, /bottom: var\(--kb,0px\)/);
   assert.match(css, /padding-bottom: calc\(.*env\(safe-area-inset-bottom\)\)/);
   // The search box is the last thing in the bar, so the bar's bottom edge is the box's edge.
-  assert.ok(precedes(screen.getByText('Van wie'), searchBox()));
+  assert.ok(precedes(screen.getByTestId('FilterBar-authors'), searchBox()));
 });
 
 test('search box and Filter button are at least 48px high with text of at least 16px', async () => {
@@ -63,12 +77,13 @@ test('recipe-filtering › Reduced motion', async () => {
 
 test('recipe-filtering › Selected and unselected chips', async () => {
   show({ ...noFilters, author: 'Oma' });
-  const selected = screen.getAllByRole('button', { pressed: true });
+  const selected = chips().filter(pressed);
   assert.deepEqual(
     selected.map((b) => b.textContent),
     ['Oma'],
   );
-  const css = flat(await cssFor(screen.getByRole('button', { name: 'Mama', pressed: false }).className));
+  assert.equal(pressed(chip('Mama')), false);
+  const css = flat(await cssFor(chip('Mama').className));
   // Unselected: dashed, no fill, no shadow. Selected: solid, dark fill, white text.
   assert.match(css, /border-style: dashed/);
   assert.match(css, /background-color: transparent/);
@@ -114,20 +129,22 @@ test('with few recipes only the search box is offered', () => {
   const { container } = show(noFilters, false);
   assert.ok(searchBox());
   assert.equal(container.querySelector('[aria-pressed], [type=radio], [aria-controls]'), null);
-  assert.equal(screen.queryByText('Wis filters'), null);
+  assert.equal(screen.queryByTestId('FilterBar-clear'), null);
 });
 
 test('the chosen order is checked, and Iedereen is chosen by default', () => {
   show({ ...noFilters, sort: 'az' });
-  assert.equal(screen.getByRole<HTMLInputElement>('radio', { name: 'A–Z' }).checked, true);
-  assert.equal(screen.getByRole<HTMLInputElement>('radio', { name: 'Nieuwste' }).checked, false);
-  assert.ok(screen.getByRole('button', { name: 'Iedereen', pressed: true }));
+  assert.equal(sortInput('az').checked, true);
+  assert.equal(sortInput('nieuwste').checked, false);
+  assert.equal(sortInput('az').labels?.[0]?.textContent, 'A–Z');
+  assert.equal(sortInput('nieuwste').labels?.[0]?.textContent, 'Nieuwste');
+  assert.equal(pressed(chip('Iedereen')), true);
 });
 
 test('button-press › Pressing a chip', async () => {
   show();
   // Chips and the segments of the sort control have no hard shadow, so nothing in their classes moves or unshadows them on :active.
-  const classes = [screen.getByRole('button', { name: 'Iedereen' }).className, screen.getByText('Nieuwste').className].join(' ');
+  const classes = [chip('Iedereen').className, screen.getAllByTestId('FilterBar-sortLabel')[0].className].join(' ');
   const css = await cssFor(classes);
   assert.doesNotMatch(css, /:active/);
   assert.doesNotMatch(css, /translate|box-shadow|shadow-hard/);
@@ -143,9 +160,9 @@ test('recipe-filtering › Opening the sheet', () => {
   assert.equal(filterButton().getAttribute('aria-expanded'), 'true');
   assert.equal(sheet().hasAttribute('data-open'), true);
   assert.ok(precedes(sheet(), searchBox()));
-  assert.ok(within(sheet()).getByRole('button', { name: 'Iedereen' }));
-  assert.ok(within(sheet()).getByRole('radio', { name: 'A–Z' }));
-  assert.ok(within(sheet()).getByRole('button', { name: 'Wis filters' }));
+  assert.ok(chip('Iedereen', sheet()));
+  assert.ok(sortInput('az', sheet()));
+  assert.ok(within(sheet()).getByTestId('FilterBar-clear'));
 });
 
 test('recipe-filtering › Closing the sheet', () => {

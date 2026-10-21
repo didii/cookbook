@@ -7,6 +7,7 @@ type Props = { timers: TimerView[]; onJump: (step: number) => void };
 export function TimerDock({ timers, onJump }: Props) {
   return (
     <nav
+      data-testid="TimerDock-dock"
       hidden={timers.length === 0}
       aria-label="Lopende timers"
       className="absolute inset-x-0 top-full flex gap-2 overflow-x-auto border-b-3 border-ink bg-yel px-[max(1rem,4vw)] py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
@@ -17,6 +18,7 @@ export function TimerDock({ timers, onJump }: Props) {
           <button
             key={t.id}
             type="button"
+            data-testid="TimerDock-pill"
             onClick={() => onJump(t.step)}
             aria-label={`Stap ${t.step + 1}${t.label ? `, ${t.label}` : ''}, ${finished ? 'klaar' : `${formatCountdown(t.remainingMs)} over`}. Ga naar de stap`}
             className={cn(

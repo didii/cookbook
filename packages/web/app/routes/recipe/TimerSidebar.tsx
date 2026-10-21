@@ -53,13 +53,18 @@ function SidebarCard({ timer: t, onJump, onPeek }: { timer: TimerView; onJump: (
       </span>
       {t.label && <small className={cn('col-span-2 col-start-2 font-extrabold', finished ? 'text-white' : 'text-muted')}>{t.label}</small>}
       <span className="col-span-3 mt-1 flex gap-1.5 *:flex-1">
-        <TimerButton onClick={() => controls.add(t.id, 1)} aria-label="Eén minuut erbij">
+        <TimerButton data-testid="SidebarCard-add1" onClick={() => controls.add(t.id, 1)} aria-label="Eén minuut erbij">
           +1
         </TimerButton>
-        <TimerButton onClick={() => controls.add(t.id, 5)} aria-label="Vijf minuten erbij">
+        <TimerButton data-testid="SidebarCard-add5" onClick={() => controls.add(t.id, 5)} aria-label="Vijf minuten erbij">
           +5
         </TimerButton>
-        <TimerButton onClick={() => onJump(t.step)} aria-label={`Ga naar stap ${t.step + 1}`} title={`Ga naar stap ${t.step + 1}`}>
+        <TimerButton
+          data-testid="SidebarCard-jump"
+          onClick={() => onJump(t.step)}
+          aria-label={`Ga naar stap ${t.step + 1}`}
+          title={`Ga naar stap ${t.step + 1}`}
+        >
           →
         </TimerButton>
         {finished ? (
@@ -67,7 +72,12 @@ function SidebarCard({ timer: t, onJump, onPeek }: { timer: TimerView; onJump: (
             Klaar
           </TimerButton>
         ) : (
-          <TimerButton onClick={() => controls.stop(t.id)} aria-label="Stop timer" className="hover:bg-red hover:text-white">
+          <TimerButton
+            data-testid="SidebarCard-stop"
+            onClick={() => controls.stop(t.id)}
+            aria-label="Stop timer"
+            className="hover:bg-red hover:text-white"
+          >
             <Stop className="size-4" />
             Stop
           </TimerButton>

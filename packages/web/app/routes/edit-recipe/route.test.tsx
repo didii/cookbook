@@ -148,10 +148,12 @@ test('recipe-editing › Same form for new and existing recipes', () => {
     const router = createMemoryRouter([{ path: '/', element }]);
     const { container, unmount } = render(<RouterProvider router={router} />);
     const found = {
-      heading: screen.getByRole('heading', { level: 1 }).textContent,
-      title: screen.getByRole<HTMLInputElement>('textbox', { name: /Titel/ }).value,
+      heading: screen.getByTestId('RecipeEditor-heading').textContent,
+      headingTag: screen.getByTestId('RecipeEditor-heading').tagName,
+      titleLabel: screen.getByTestId<HTMLInputElement>('RecipeEditor-title').labels?.[0]?.textContent,
+      title: screen.getByTestId<HTMLInputElement>('RecipeEditor-title').value,
       controls: [...container.querySelectorAll('form [name]')].map((el) => el.getAttribute('name')).sort(),
-      cancel: screen.getByRole('link', { name: /Terug/ }).getAttribute('href'),
+      cancel: screen.getByTestId('RecipeEditor-cancel').getAttribute('href'),
     };
     unmount();
     return found;
@@ -166,6 +168,10 @@ test('recipe-editing › Same form for new and existing recipes', () => {
   assert.deepEqual(edit.controls, create.controls);
   // Only the starting values, the heading and the way back differ.
   assert.deepEqual([edit.heading, edit.title, edit.cancel], ['Recept bewerken', 'Soep', '/recepten/soep']);
+  for (const f of [edit, create]) {
+    assert.equal(f.headingTag, 'H1');
+    assert.match(f.titleLabel ?? '', /Titel/);
+  }
   assert.deepEqual([create.heading, create.title, create.cancel], ['Nieuw recept', '', '/']);
 });
 

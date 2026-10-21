@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { openAutocomplete, render, screen } from './dom';
 
-test('renders into a DOM that is queried by role', () => {
-  render(<button>Ja</button>);
-  assert.equal(screen.getByRole('button', { name: 'Ja' }).tagName, 'BUTTON');
+test('renders into a DOM that is queried by test id', () => {
+  render(<button data-testid="ja">Ja</button>);
+  assert.equal(screen.getByTestId('ja').tagName, 'BUTTON');
 });
 
 test('the previous render is cleaned up', () => assert.equal(document.body.innerHTML, ''));
@@ -18,7 +18,7 @@ test('keeps Node networking classes', () => {
 
 test('opens an autocomplete popup from the pointer and the arrow key', () => {
   const opened: string[] = [];
-  render(<input aria-label="x" onPointerDown={() => opened.push('pointer')} onKeyDown={(e) => opened.push(e.key)} />);
-  openAutocomplete(screen.getByRole('textbox'));
+  render(<input data-testid="field" aria-label="x" onPointerDown={() => opened.push('pointer')} onKeyDown={(e) => opened.push(e.key)} />);
+  openAutocomplete(screen.getByTestId('field'));
   assert.deepEqual(opened, ['pointer', 'ArrowDown']);
 });

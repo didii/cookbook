@@ -50,14 +50,18 @@ export function FilterBar({ filters, authors, detailed, onChange }: Props) {
   }, [open]);
 
   return (
-    <search className="fixed inset-x-0 bottom-[var(--kb,0px)] z-10 border-t-3 border-ink bg-por px-[max(1rem,4vw)] pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:static md:z-auto md:mt-6 md:flex md:flex-col-reverse md:gap-4 md:border-0 md:bg-transparent md:p-0">
+    <search
+      data-testid="FilterBar-bar"
+      className="fixed inset-x-0 bottom-[var(--kb,0px)] z-10 border-t-3 border-ink bg-por px-[max(1rem,4vw)] pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:static md:z-auto md:mt-6 md:flex md:flex-col-reverse md:gap-4 md:border-0 md:bg-transparent md:p-0"
+    >
       {detailed && (
         <div
           id={sheetId}
+          data-testid="FilterBar-sheet"
           data-open={open || undefined}
           className="hidden pb-3 data-open:block data-open:animate-rise max-md:mb-3 max-md:border-b-3 max-md:border-ink/15 motion-reduce:animate-none md:block md:animate-none md:p-0"
         >
-          <fieldset className="m-0 mb-4 min-w-0 border-0 p-0 md:mr-6 md:mb-3 md:inline-flex md:items-center md:gap-3">
+          <fieldset data-testid="FilterBar-authors" className="m-0 mb-4 min-w-0 border-0 p-0 md:mr-6 md:mb-3 md:inline-flex md:items-center md:gap-3">
             <legend className="mb-2 p-0 font-black md:float-left md:mb-0">Van wie</legend>
             <div className="flex flex-wrap gap-2">
               <Chip pressed={filters.author === undefined} onClick={() => onChange({ ...filters, author: undefined })}>
@@ -81,6 +85,7 @@ export function FilterBar({ filters, authors, detailed, onChange }: Props) {
                 <span key={value} className="flex">
                   <input
                     type="radio"
+                    data-testid="FilterBar-sort"
                     name="sort"
                     id={`${sheetId}-${value}`}
                     value={value}
@@ -89,6 +94,7 @@ export function FilterBar({ filters, authors, detailed, onChange }: Props) {
                     className="peer sr-only"
                   />
                   <label
+                    data-testid="FilterBar-sortLabel"
                     htmlFor={`${sheetId}-${value}`}
                     className={cn(
                       control,
@@ -103,7 +109,7 @@ export function FilterBar({ filters, authors, detailed, onChange }: Props) {
             </div>
           </fieldset>
           <div className="flex gap-3 md:hidden">
-            <Button type="button" className="min-h-11 text-base" onClick={() => onChange(noFilters)}>
+            <Button type="button" data-testid="FilterBar-clear" className="min-h-11 text-base" onClick={() => onChange(noFilters)}>
               Wis filters
             </Button>
           </div>
@@ -115,6 +121,7 @@ export function FilterBar({ filters, authors, detailed, onChange }: Props) {
           <Search className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2" />
           <input
             type="search"
+            data-testid="FilterBar-search"
             value={text}
             placeholder="Zoek op naam of kok"
             enterKeyHint="search"
@@ -130,6 +137,7 @@ export function FilterBar({ filters, authors, detailed, onChange }: Props) {
         {detailed && (
           <button
             ref={toggle}
+            data-testid="FilterBar-toggle"
             type="button"
             aria-expanded={open}
             aria-controls={sheetId}
@@ -158,6 +166,7 @@ function Chip({ pressed, onClick, children }: ChipProps) {
   return (
     <button
       type="button"
+      data-testid="FilterBar-chip"
       aria-pressed={pressed}
       onClick={onClick}
       className={cn(control, 'border-dashed bg-transparent hover:bg-ink/8 aria-pressed:border-solid aria-pressed:bg-red aria-pressed:text-white')}

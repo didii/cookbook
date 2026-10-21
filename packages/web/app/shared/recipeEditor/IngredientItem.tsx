@@ -131,7 +131,9 @@ export function IngredientItem({
             ) : (
               <>
                 {text.slice(0, at)}
-                <b className="font-[inherit] text-blu">{quantity}</b>
+                <b data-testid="IngredientItem-quantity" className="font-[inherit] text-blu">
+                  {quantity}
+                </b>
                 {text.slice(at + quantity.length)}
               </>
             )}
@@ -140,6 +142,7 @@ export function IngredientItem({
         <input
           ref={input}
           type="text"
+          data-testid="IngredientItem-field"
           value={text}
           placeholder={placeholder}
           aria-label={label}

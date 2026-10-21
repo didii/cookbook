@@ -24,8 +24,8 @@ test('button-press › Pressing a shadowed button', async () => {
   assert.match(body, /translate:\s*3px 3px/);
   assert.match(body, /--tw-shadow:\s*0 0 #0000/);
   // The real components carry every press class after class merging.
-  render(<Button />);
-  const button = screen.getByRole('button').className;
+  render(<Button data-testid="button" />);
+  const button = screen.getByTestId('button').className;
   for (const c of press.split(' ')) assert.ok(button.includes(c), c);
 });
 
@@ -41,10 +41,10 @@ test('button-press › Releasing a pressed button', async () => {
 test('button-press › Expanded button at rest', async () => {
   // Expanded is colour only: no rule reacts to aria attributes, and aria-expanded changes no class.
   assert.doesNotMatch(await cssFor(press), /aria-/);
-  const rest = render(<Button />).getByRole('button').className;
+  const rest = render(<Button data-testid="button" />).getByTestId('button').className;
   cleanup();
-  render(<Button aria-expanded />);
-  assert.equal(screen.getByRole('button').className, rest);
+  render(<Button data-testid="button" aria-expanded />);
+  assert.equal(screen.getByTestId('button').className, rest);
 });
 
 test('button-press › Disabled button', async () => {
