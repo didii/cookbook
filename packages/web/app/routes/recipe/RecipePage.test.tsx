@@ -63,11 +63,28 @@ test('recipe-viewing › Tabs on a narrow screen', () => {
   assert.ok(document.getElementById('panel-ingredients')!.classList.contains('max-[51.99rem]:hidden'));
 });
 
-// Needs layout: from 52rem both panels are shown side by side and the ingredient column is sticky.
+// Needs layout: from 52rem both panels are shown side by side and the ingredients scroll away with the page.
 test.todo('recipe-viewing › Two columns on a wide screen');
 
-// Needs layout: the list scrolls by itself when the column is taller than the window.
-test.todo('recipe-viewing › Long ingredient list on a wide screen');
+// The page scrolling as a whole needs layout; checked here: the column has no sticky or scrolling behaviour of its own.
+test('recipe-viewing › Long ingredient list on a wide screen', () => {
+  page();
+  const column = document.getElementById('panel-ingredients')!;
+  for (const el of [column, ...column.querySelectorAll('ul')]) {
+    assert.doesNotMatch(el.className, /sticky|overflow|max-h/);
+  }
+});
+
+test('the note is shown beside the heart: heart before "Bewerk", note panel under the ingredients', () => {
+  page({ liked: true, note: 'minder zout' });
+  assert.ok(precedes(screen.getByTestId('LikeButton-heart'), screen.getByTestId('RecipePage-edit')));
+  assert.equal(screen.getByTestId('LikeButton-heart').getAttribute('aria-pressed'), 'true');
+  const column = document.getElementById('panel-ingredients')!;
+  assert.ok(column.contains(screen.getByTestId('NotePanel-panel')));
+  assert.ok(precedes(column.querySelector('ul')!, screen.getByTestId('NotePanel-panel')));
+  assert.equal(screen.getByTestId<HTMLTextAreaElement>('NotePanel-field').value, 'minder zout');
+  assert.ok(screen.getByTestId('NoteSheet-marker'));
+});
 
 // Needs layout: a tab is at least the screen height minus the measured sticky stack, so a short list sits at the top of its panel.
 test.todo('recipe-viewing › Short tab content');

@@ -329,3 +329,53 @@ test('views are removed with their recipe or member', async () => {
   await db.prepare('DELETE FROM users WHERE id = ?').bind(user).run();
   assert.equal(await count('SELECT user_id FROM recipe_views WHERE recipe_id = ?', other), 0);
 });
+
+const addLike = (user: number, recipe: number) =>
+  db.prepare('INSERT OR IGNORE INTO recipe_likes (user_id, recipe_id) VALUES (?, ?)').bind(user, recipe).run();
+const addNote = (user: number, recipe: number, body = 'minder zout') =>
+  db.prepare('INSERT INTO recipe_notes (user_id, recipe_id, body) VALUES (?, ?, ?)').bind(user, recipe, body).run();
+
+test('recipe-like › Liking twice stores one like', async () => {
+  const user = await userId('liker@example.com');
+  const recipe = await addRecipe('like-twice');
+  await addLike(user, recipe);
+  await addLike(user, recipe);
+  assert.equal(await count('SELECT user_id FROM recipe_likes WHERE recipe_id = ?', recipe), 1);
+  await assert.rejects(db.prepare('INSERT INTO recipe_likes (user_id, recipe_id) VALUES (?, ?)').bind(user, recipe).run());
+});
+
+test('recipe-like › Deleting a recipe removes its likes', async () => {
+  const recipe = await addRecipe('like-recipe-cascade');
+  await addLike(await userId('like-cascade-a@example.com'), recipe);
+  await db.prepare('DELETE FROM recipes WHERE id = ?').bind(recipe).run();
+  assert.equal(await count('SELECT user_id FROM recipe_likes WHERE recipe_id = ?', recipe), 0);
+});
+
+test('recipe-like › Removing a member removes their likes', async () => {
+  const user = await userId('like-user-cascade@example.com');
+  await addLike(user, await addRecipe('like-user-cascade'));
+  await db.prepare('DELETE FROM users WHERE id = ?').bind(user).run();
+  assert.equal(await count('SELECT recipe_id FROM recipe_likes WHERE user_id = ?', user), 0);
+});
+
+test('recipe-note › Deleting a recipe removes its notes', async () => {
+  const recipe = await addRecipe('note-recipe-cascade');
+  await addNote(await userId('note-cascade-a@example.com'), recipe);
+  await db.prepare('DELETE FROM recipes WHERE id = ?').bind(recipe).run();
+  assert.equal(await count('SELECT user_id FROM recipe_notes WHERE recipe_id = ?', recipe), 0);
+});
+
+test('recipe-note › Removing a member removes their notes', async () => {
+  const user = await userId('note-user-cascade@example.com');
+  await addNote(user, await addRecipe('note-user-cascade'));
+  await db.prepare('DELETE FROM users WHERE id = ?').bind(user).run();
+  assert.equal(await count('SELECT recipe_id FROM recipe_notes WHERE user_id = ?', user), 0);
+});
+
+test('a blank note body and a second note per member and recipe are refused', async () => {
+  const user = await userId('blank-note@example.com');
+  const recipe = await addRecipe('blank-note');
+  await assert.rejects(addNote(user, recipe, '  \n '));
+  await addNote(user, recipe);
+  await assert.rejects(addNote(user, recipe, 'andere'));
+});

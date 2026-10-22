@@ -14,6 +14,9 @@ import { ClockSetting } from './ClockSetting';
 import { CookSwitch } from './CookSwitch';
 import { DeleteRecipe } from './DeleteRecipe';
 import { IngredientList } from './IngredientList';
+import { LikeButton } from './LikeButton';
+import { NotePanel } from './NotePanel';
+import { NoteSheet } from './NoteSheet';
 import { ScaleControl } from './ScaleControl';
 import { StepList } from './StepList';
 import { TabBar } from './TabBar';
@@ -21,14 +24,15 @@ import { TimerDock } from './TimerDock';
 import { TimersContext } from './timersContext';
 import { TimerSidebar } from './TimerSidebar';
 import { useNarrow } from './useNarrow';
+import { useNote } from './useNote';
 import { useStackHeight } from './useStackHeight';
 import { useStepsInView } from './useStepsInView';
 import { useTimers } from './useTimers';
 import { useWakeLock } from './useWakeLock';
 
-type Props = { recipe: Omit<Recipe, 'steps'>; tile: number; steps: Step[] };
+type Props = { recipe: Omit<Recipe, 'steps'>; tile: number; steps: Step[]; liked?: boolean; note?: string };
 
-export function RecipePage({ recipe: r, tile, steps }: Props) {
+export function RecipePage({ recipe: r, tile, steps, liked = false, note: savedNote = '' }: Props) {
   const [tab, setTab] = useState<TabId>('ingredients');
   // Lives here, not in the list, because both tabs stay mounted and cook mode reads it.
   const [ticked, setTicked] = useState<ReadonlySet<number>>(new Set());
@@ -108,6 +112,7 @@ export function RecipePage({ recipe: r, tile, steps }: Props) {
   // Cook mode: starts by itself once cooking has started (the open tab's first item is past the middle of the screen, or an ingredient is ticked)
   // until the switch is used. Narrow screens only.
   const narrow = useNarrow();
+  const note = useNote(r.slug, savedNote, narrow);
   const [cook, setCook] = useState(initialCook);
   const tickedCount = ticked.size;
   useEffect(() => {
@@ -138,14 +143,17 @@ export function RecipePage({ recipe: r, tile, steps }: Props) {
           <Link to="/" className="inline-flex min-h-11 items-center gap-1 font-extrabold underline-offset-[0.25em] hover:underline">
             <ChevronBack className="-ml-1.5" /> Alle recepten
           </Link>
-          <Link
-            to={`/recepten/${r.slug}/bewerken`}
-            state={{ fresh: true }}
-            data-testid="RecipePage-edit"
-            className="inline-flex min-h-11 items-center font-extrabold underline-offset-[0.25em] hover:underline"
-          >
-            Bewerk
-          </Link>
+          <div className="flex items-center gap-3.5">
+            <LikeButton slug={r.slug} initialLiked={liked} />
+            <Link
+              to={`/recepten/${r.slug}/bewerken`}
+              state={{ fresh: true }}
+              data-testid="RecipePage-edit"
+              className="inline-flex min-h-11 items-center font-extrabold underline-offset-[0.25em] hover:underline"
+            >
+              Bewerk
+            </Link>
+          </div>
         </div>
         <h1 data-testid="RecipePage-title" className="text-[clamp(2rem,6vw,3.5rem)] leading-[1.05] font-black tracking-[-0.03em] text-balance">
           {r.title}
@@ -182,24 +190,13 @@ export function RecipePage({ recipe: r, tile, steps }: Props) {
         </div>
 
         <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-10 min-[52rem]:grid-cols-[minmax(16rem,22rem)_1fr] min-[52rem]:items-start">
-          <section
-            id="panel-ingredients"
-            aria-labelledby="ing"
-            className={cn(
-              panel('ingredients'),
-              'min-[52rem]:sticky min-[52rem]:top-4 min-[52rem]:flex min-[52rem]:max-h-[calc(100svh-2rem)] min-[52rem]:flex-col',
-            )}
-          >
+          <section id="panel-ingredients" aria-labelledby="ing" className={panel('ingredients')}>
             <TimerSidebar timers={timers.active} onJump={jump} onPeek={setPeek} />
-            <h2 id="ing" className="mb-4 shrink-0 scroll-mt-[calc(var(--stack-h,0px)+0.75rem)] text-2xl font-black">
+            <h2 id="ing" className="mb-4 scroll-mt-[calc(var(--stack-h,0px)+0.75rem)] text-2xl font-black">
               Ingrediënten
             </h2>
-            <IngredientList
-              ingredients={scaled.ingredients}
-              ticked={ticked}
-              onToggle={(i) => setTicked((prev) => toggled(prev, i))}
-              className="min-[52rem]:min-h-0 min-[52rem]:flex-1 min-[52rem]:overflow-y-auto min-[52rem]:overscroll-contain min-[52rem]:pr-1 min-[52rem]:pb-1"
-            />
+            <IngredientList ingredients={scaled.ingredients} ticked={ticked} onToggle={(i) => setTicked((prev) => toggled(prev, i))} />
+            <NotePanel note={note} />
           </section>
 
           <section id="panel-steps" aria-labelledby="bereiding" className={panel('steps')}>
@@ -213,6 +210,7 @@ export function RecipePage({ recipe: r, tile, steps }: Props) {
         <div className="max-[51.99rem]:pb-16">
           <DeleteRecipe title={r.title} />
         </div>
+        <NoteSheet note={note} />
       </main>
     </TimersContext>
   );
