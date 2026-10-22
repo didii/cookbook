@@ -36,5 +36,5 @@ export default function Recipe({ loaderData }: Route.ComponentProps) {
   const { recipe, steps, tile, liked, note } = loaderData;
   const rules = useRouteLoaderData<{ rules: Rules }>('root')?.rules ?? defaultRules;
   // Keyed by recipe, so another recipe starts with fresh page state (ticks, marks, timers, cook mode).
-  return <RecipePage key={recipe.slug} recipe={recipe} tile={tile} steps={steps} rules={rules} liked={liked} note={note}  />;
+  return <RecipePage key={recipe.slug} recipe={recipe} tile={tile} steps={steps} rules={rules} liked={liked} note={note} />;
 }
