@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
-import { createUser, getUser, requireAdmin } from './users';
+import { createUser, deleteUser, getUser, listUsers, requireAdmin, requireSuperadmin, updateUser, type Role } from './users';
 
 let db: D1Database;
 let dispose: () => Promise<void>;
@@ -112,3 +112,131 @@ test('requireAdmin lets admin and superadmin through and refuses a user, an unkn
   for (const email of ['ra-user@example.com', 'ra-nobody@example.com'])
     await assert.rejects(requireAdmin(db, email), (thrown: { init?: { status?: number } }) => thrown.init?.status === 403);
 });
+
+const add = async (d: D1Database, email: string, name = 'X', role: Role = 'user') =>
+  (await d.prepare('INSERT INTO users (email, calling_name, role) VALUES (?, ?, ?) RETURNING id').bind(email, name, role).first<{ id: number }>())!
+    .id;
+const refused = (thrown: { init?: { status?: number } }) => thrown.init?.status === 403;
+
+test('requireSuperadmin lets a superadmin through and refuses others with 403', () =>
+  withFreshDb(async (d) => {
+    await add(d, 'rs-super@example.com', 'S', 'superadmin');
+    await add(d, 'rs-admin@example.com', 'A', 'admin');
+    await add(d, 'rs-user@example.com');
+    assert.equal((await requireSuperadmin(d, 'RS-SUPER@example.com')).role, 'superadmin');
+    for (const email of ['rs-admin@example.com', 'rs-user@example.com', 'rs-nobody@example.com'])
+      await assert.rejects(requireSuperadmin(d, email), refused);
+  }));
+
+test('user-management › Users sorted by email', () =>
+  withFreshDb(async (d) => {
+    for (const email of ['zoe@example.com', 'Anna@example.com', 'mark@example.com']) await add(d, email, email.slice(0, 3));
+    const { users, capped } = await listUsers(d);
+    assert.deepEqual(
+      users.map((u) => u.email),
+      ['Anna@example.com', 'mark@example.com', 'zoe@example.com'],
+    );
+    assert.equal(capped, false);
+  }));
+
+const fill = (d: D1Database, n: number) =>
+  d.batch(
+    Array.from({ length: n }, (_, i) =>
+      d.prepare('INSERT INTO users (email, calling_name) VALUES (?, ?)').bind(`u${String(i).padStart(3, '0')}@example.com`, `U${i}`),
+    ),
+  );
+
+test('user-management › Exactly 100 users', () =>
+  withFreshDb(async (d) => {
+    await fill(d, 100);
+    const { users, capped } = await listUsers(d);
+    assert.deepEqual([users.length, capped], [100, false]);
+  }));
+
+test('user-management › More than 100 users', () =>
+  withFreshDb(async (d) => {
+    await fill(d, 101);
+    const { users, capped } = await listUsers(d);
+    assert.deepEqual([users.length, capped, users.at(-1)?.email], [100, true, 'u099@example.com']);
+  }));
+
+test('user-management › Save a new calling name', () =>
+  withFreshDb(async (d) => {
+    const id = await add(d, 'jos@example.com', 'Jos');
+    assert.equal(await updateUser(d, id, { callingName: 'Josje', role: 'user' }), true);
+    const user = await getUser(d, 'jos@example.com');
+    assert.deepEqual([user?.callingName, user?.email], ['Josje', 'jos@example.com']);
+  }));
+
+test('user-management › Give the admin role', () =>
+  withFreshDb(async (d) => {
+    const id = await add(d, 'jos@example.com', 'Jos');
+    await updateUser(d, id, { callingName: 'Jos', role: 'admin' });
+    assert.equal(await roleOf(d, 'jos@example.com'), 'admin');
+  }));
+
+test('user-management › Missing role keeps the role', () =>
+  withFreshDb(async (d) => {
+    const id = await add(d, 'jos@example.com', 'Jos', 'admin');
+    assert.equal(await updateUser(d, id, { callingName: 'Josje' }), true);
+    const user = await getUser(d, 'jos@example.com');
+    assert.deepEqual([user?.callingName, user?.role], ['Josje', 'admin']);
+  }));
+
+test('user-management › Unknown role', () =>
+  withFreshDb(async (d) => {
+    const id = await add(d, 'jos@example.com', 'Jos');
+    await assert.rejects(updateUser(d, id, { callingName: 'Jos', role: 'owner' as Role }));
+    assert.equal(await roleOf(d, 'jos@example.com'), 'user');
+  }));
+
+test('user-management › Delete a user', () =>
+  withFreshDb(async (d) => {
+    const id = await add(d, 'jos@example.com', 'Jos');
+    const recipe = (await d
+      .prepare("INSERT INTO recipes (slug, title, author, servings) VALUES ('t', 't', 'Oma', 4) RETURNING id")
+      .first<{ id: number }>())!.id;
+    await d.prepare('INSERT INTO recipe_views (user_id, recipe_id) VALUES (?, ?)').bind(id, recipe).run();
+    assert.equal(await deleteUser(d, id), true);
+    assert.equal(await getUser(d, 'jos@example.com'), undefined);
+    const count = (sql: string) =>
+      d
+        .prepare(sql)
+        .first<{ n: number }>()
+        .then((r) => r!.n);
+    assert.deepEqual([await count('SELECT COUNT(*) AS n FROM recipes'), await count('SELECT COUNT(*) AS n FROM recipe_views')], [1, 0]);
+    assert.equal(await deleteUser(d, id), false);
+  }));
+
+test('user-management › Promote another member', () =>
+  withFreshDb(async (d) => {
+    await add(d, 'boss@example.com', 'Baas', 'superadmin');
+    const id = await add(d, 'jos@example.com', 'Jos');
+    assert.equal(await updateUser(d, id, { callingName: 'Jos', role: 'superadmin' }), true);
+    assert.equal(await roleOf(d, 'jos@example.com'), 'superadmin');
+  }));
+
+test('user-management › Sole superadmin demotion is refused', () =>
+  withFreshDb(async (d) => {
+    const id = await add(d, 'boss@example.com', 'Baas', 'superadmin');
+    assert.equal(await updateUser(d, id, { callingName: 'Baas', role: 'admin' }), false);
+    assert.equal(await roleOf(d, 'boss@example.com'), 'superadmin');
+    // Keeping the role (or leaving it out) while changing the name is fine.
+    assert.equal(await updateUser(d, id, { callingName: 'Chef' }), true);
+  }));
+
+test('user-management › Sole superadmin deletion is refused', () =>
+  withFreshDb(async (d) => {
+    const id = await add(d, 'boss@example.com', 'Baas', 'superadmin');
+    assert.equal(await deleteUser(d, id), false);
+    assert.notEqual(await getUser(d, 'boss@example.com'), undefined);
+  }));
+
+test('user-management › Two superadmins demote each other', () =>
+  withFreshDb(async (d) => {
+    const a = await add(d, 'a@example.com', 'A', 'superadmin');
+    const b = await add(d, 'b@example.com', 'B', 'superadmin');
+    const results = await Promise.all([updateUser(d, a, { callingName: 'A', role: 'user' }), updateUser(d, b, { callingName: 'B', role: 'user' })]);
+    assert.equal(results.filter(Boolean).length, 1);
+    assert.equal((await d.prepare("SELECT COUNT(*) AS n FROM users WHERE role = 'superadmin'").first<{ n: number }>())?.n, 1);
+  }));

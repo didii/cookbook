@@ -10,6 +10,7 @@ export default [
     index('routes/home/route.tsx'),
     route('instellingen', 'routes/settings/route.tsx'),
     route('beheer/herkenning', 'routes/admin-rules/route.tsx'),
+    route('beheer/gebruikers', 'routes/admin-users/route.tsx', [route(':id', 'routes/admin-users/user/route.tsx')]),
     route('over', 'routes/about/route.tsx'),
     route('recepten/nieuw', 'routes/new-recipe/route.tsx'),
     route('recepten/:slug/bewerken', 'routes/edit-recipe/route.tsx'),
