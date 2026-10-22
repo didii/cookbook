@@ -64,7 +64,6 @@ test('site-menu › Menu lists the links for a superadmin', () => {
 
 test('site-menu › Menu lists the links for an admin', () => {
   assert.deepEqual(labels('admin'), ['Nieuw recept', 'Instellingen', 'Over', 'Herkenning']);
-  assert.deepEqual(labels('superadmin'), ['Nieuw recept', 'Instellingen', 'Over', 'Herkenning']);
 });
 
 // Needs a browser: the slide is a CSS transition on the open dialog.
