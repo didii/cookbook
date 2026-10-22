@@ -1,17 +1,19 @@
 import { useRef } from 'react';
 import { Link } from 'react-router';
+import type { Role } from '~/lib/role';
 import { Cross, Menu } from '~/shared/icons';
 
 const links = [
   { to: '/recepten/nieuw', label: 'Nieuw recept' },
   { to: '/instellingen', label: 'Instellingen' },
   { to: '/over', label: 'Over' },
+  { to: '/beheer/herkenning', label: 'Herkenning', admin: true },
 ];
 const focus = 'focus-visible:outline-white';
 const iconButton = `flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-[0.625rem] hover:bg-white/15 ${focus}`;
 
 /** Menu button with a sidebar that slides in from the left. A modal `<dialog>` gives the focus trap, Escape and backdrop. */
-export function SiteMenu() {
+export function SiteMenu({ role }: { role: Role }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const close = () => dialog.current?.close();
   return (
@@ -39,17 +41,19 @@ export function SiteMenu() {
             <Cross />
           </button>
           <nav className="flex flex-col gap-2">
-            {links.map(({ to, label }) => (
-              <Link
-                key={to}
-                to={to}
-                onClick={close}
-                data-testid="SiteMenu-link"
-                className={`flex min-h-11 items-center rounded-[0.625rem] px-2 text-lg font-black no-underline hover:bg-white/15 ${focus}`}
-              >
-                {label}
-              </Link>
-            ))}
+            {links
+              .filter((l) => !l.admin || role !== 'user')
+              .map(({ to, label }) => (
+                <Link
+                  key={to}
+                  to={to}
+                  onClick={close}
+                  data-testid="SiteMenu-link"
+                  className={`flex min-h-11 items-center rounded-[0.625rem] px-2 text-lg font-black no-underline hover:bg-white/15 ${focus}`}
+                >
+                  {label}
+                </Link>
+              ))}
           </nav>
         </div>
       </dialog>

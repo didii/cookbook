@@ -1,9 +1,11 @@
-import { data, redirect } from 'react-router';
+import { data, redirect, useRouteLoaderData } from 'react-router';
 import { envContext, userEmailContext } from '~/.server/context';
 import { acceptImage } from '~/.server/photos';
 import { chooseSeal, createRecipe, listAuthors } from '~/.server/recipes';
+import { getRules } from '~/.server/rules';
 import { getUser } from '~/.server/users';
 import { emptyDraftSeed } from '~/lib/draft';
+import { defaultRules, type Rules } from '~/lib/rules';
 import { seals } from '~/lib/seals';
 import { tiles } from '~/lib/tile';
 import { endDraftAfterSave } from '~/shared/recipeEditor/endDraftAfterSave';
@@ -22,7 +24,7 @@ export async function loader({ context }: Route.LoaderArgs) {
 export async function action({ request, context }: Route.ActionArgs) {
   const form = await request.formData();
   const values = readForm(form);
-  const { lines, ingredients, errors: ingredientErrors } = readIngredients(form);
+  const { lines, ingredients, errors: ingredientErrors } = readIngredients(form, await getRules(context.get(envContext).DB));
   const { lines: stepLines, steps } = readSteps(form);
 
   const errors: RecipeFormErrors = validate(values);
@@ -52,6 +54,7 @@ export default function NewRecipe({ loaderData, actionData }: Route.ComponentPro
   const seed = { ...emptyDraftSeed, author: loaderData.callingName };
   return (
     <RecipeEditor
+      rules={useRouteLoaderData<{ rules?: Rules }>('root')?.rules ?? defaultRules}
       heading="Nieuw recept"
       authors={loaderData.authors}
       tile={loaderData.tile}

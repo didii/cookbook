@@ -318,6 +318,13 @@ test('a member and a recipe have one view row', async () => {
   await assert.rejects(addView(9999, recipe));
 });
 
+test('settings keep one JSON value per key', async () => {
+  await db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').bind('k', '{"a":1}').run();
+  await assert.rejects(db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').bind('k', '{}').run());
+  await assert.rejects(db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').bind('bad', 'not json').run());
+  assert.equal(await count("SELECT key FROM settings WHERE key = 'bad'"), 0);
+});
+
 test('views are removed with their recipe or member', async () => {
   const user = await userId('cascade-viewer@example.com');
   const recipe = await addRecipe('view-cascade');

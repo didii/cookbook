@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { fireEvent, precedes, render, screen, within } from '~testing/dom';
 import { createMemoryRouter, RouterProvider } from 'react-router';
+import { defaultRules } from '~/lib/rules';
 import { RecipePage } from './RecipePage';
 
 const recipe = {
@@ -22,7 +23,9 @@ const recipe = {
 const show = () =>
   render(
     <RouterProvider
-      router={createMemoryRouter([{ path: '/', element: <RecipePage recipe={recipe} tile={0} steps={[{ body: 'bakken', ingredients: [] }]} /> }])}
+      router={createMemoryRouter([
+        { path: '/', element: <RecipePage recipe={recipe} tile={0} steps={[{ body: 'bakken', ingredients: [] }]} rules={defaultRules} /> },
+      ])}
     />,
   );
 const trigger = () => screen.getByTestId('DeleteRecipe-open');

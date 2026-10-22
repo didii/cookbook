@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { defaultRules } from '~/lib/rules';
 import { formatNumber, nextMultiplier, parseNumber, scaleBody, scaleQuantity } from './scale';
 
 const rows = [
@@ -13,20 +14,20 @@ test('recipe-scaling › Ingredient list scales', () => {
 });
 
 test('recipe-scaling › Amounts in step text scale', () => {
-  assert.equal(scaleBody('Meng 200 g bloem met 2 eieren', 2, rows), 'Meng 400 g bloem met 4 eieren');
+  assert.equal(scaleBody('Meng 200 g bloem met 2 eieren', 2, rows, defaultRules), 'Meng 400 g bloem met 4 eieren');
   // A unit alone is enough, also without a matching row.
-  assert.equal(scaleBody('Voeg 1,5 el suiker toe', 2, []), 'Voeg 3 el suiker toe');
+  assert.equal(scaleBody('Voeg 1,5 el suiker toe', 2, [], defaultRules), 'Voeg 3 el suiker toe');
 });
 
 test('recipe-scaling › Times and temperatures do not scale', () => {
-  assert.equal(scaleBody('Bak 20 minuten op 180 graden', 2, rows), 'Bak 20 minuten op 180 graden');
-  assert.equal(scaleBody('Bak 1 uur op 200 °C', 2, rows), 'Bak 1 uur op 200 °C');
-  assert.equal(scaleBody('Bak op 180°', 2, rows), 'Bak op 180°');
+  assert.equal(scaleBody('Bak 20 minuten op 180 graden', 2, rows, defaultRules), 'Bak 20 minuten op 180 graden');
+  assert.equal(scaleBody('Bak 1 uur op 200 °C', 2, rows, defaultRules), 'Bak 1 uur op 200 °C');
+  assert.equal(scaleBody('Bak op 180°', 2, rows, defaultRules), 'Bak op 180°');
 });
 
 test('recipe-scaling › Ranges scale', () => {
   assert.equal(scaleQuantity('2-3 el', 2), '4-6 el');
-  assert.equal(scaleBody('Neem 2-3 el olie', 2, []), 'Neem 4-6 el olie');
+  assert.equal(scaleBody('Neem 2-3 el olie', 2, [], defaultRules), 'Neem 4-6 el olie');
 });
 
 test('recipe-scaling › Quantity without a number', () => {
@@ -36,7 +37,7 @@ test('recipe-scaling › Quantity without a number', () => {
 
 test('recipe-scaling › Original at factor one', () => {
   assert.equal(scaleQuantity('1 ½ el', 1), '1 ½ el');
-  assert.equal(scaleBody('Meng 1 ½ el suiker', 1, []), 'Meng 1 ½ el suiker');
+  assert.equal(scaleBody('Meng 1 ½ el suiker', 1, [], defaultRules), 'Meng 1 ½ el suiker');
   assert.equal(scaleQuantity('1 ½ el', 2), '3 el');
 });
 

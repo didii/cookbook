@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { initialCook, observe, setByHand, wantsCookMode } from '~/lib/cookMode';
 import type { Recipe, Step } from '~/lib/recipe';
+import type { Rules } from '~/lib/rules';
 import { scaleBody, scaleQuantity } from '~/lib/scale';
 import { arrive, tabFromHash, type Positions, type TabId } from '~/lib/tabs';
 import { toggled } from '~/lib/toggled';
@@ -30,9 +31,9 @@ import { useStepsInView } from './useStepsInView';
 import { useTimers } from './useTimers';
 import { useWakeLock } from './useWakeLock';
 
-type Props = { recipe: Omit<Recipe, 'steps'>; tile: number; steps: Step[]; liked?: boolean; note?: string };
+type Props = { recipe: Omit<Recipe, 'steps'>; tile: number; steps: Step[]; rules: Rules; liked?: boolean; note?: string };
 
-export function RecipePage({ recipe: r, tile, steps, liked = false, note: savedNote = '' }: Props) {
+export function RecipePage({ recipe: r, tile, steps, rules, liked = false, note: savedNote = '' }: Props) {
   const [tab, setTab] = useState<TabId>('ingredients');
   // Lives here, not in the list, because both tabs stay mounted and cook mode reads it.
   const [ticked, setTicked] = useState<ReadonlySet<number>>(new Set());
@@ -46,11 +47,11 @@ export function RecipePage({ recipe: r, tile, steps, liked = false, note: savedN
       ingredients: r.ingredients.map((x) => ({ ...x, quantityText: scaleQuantity(x.quantityText, factor) })),
       steps: steps.map((s) => ({
         ...s,
-        body: scaleBody(s.body, factor, rows),
+        body: scaleBody(s.body, factor, rows, rules),
         ingredients: s.ingredients.map((x) => ({ ...x, quantityText: scaleQuantity(x.quantityText, factor) })),
       })),
     };
-  }, [r.ingredients, steps, factor]);
+  }, [r.ingredients, steps, factor, rules]);
 
   const timers = useTimers(r.slug, steps);
   const stack = useRef<HTMLDivElement>(null);

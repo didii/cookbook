@@ -1,4 +1,5 @@
-import { numberPattern, numberValue, units } from '~/lib/ingredients';
+import { numberPattern, numberValue } from '~/lib/ingredients';
+import type { Rules } from '~/lib/rules';
 import { findIngredients, type Row } from '~/lib/stepParsers';
 
 // TODO: placeholder logic. Scaling parses the quantity text with the parser of `ingredients.ts`; once `quantityValue` and `quantityUnit` are saved in the DB it multiplies those instead.
@@ -33,14 +34,14 @@ export function scaleQuantity(text: string, factor: number): string {
   return scaled + text.slice(all.length);
 }
 
-/** A step text with its amounts multiplied: those followed by an ingredient unit and those written right before the name of one of the rows. Durations and temperatures are not touched. */
-export function scaleBody(body: string, factor: number, rows: Row[]): string {
+/** A step text with its amounts multiplied: those followed by a unit of the rules and those written right before the name of one of the rows. Durations and temperatures are not touched. */
+export function scaleBody(body: string, factor: number, rows: Row[], rules: Rules): string {
   if (factor === 1) return body;
   const spans: [number, number][] = [];
   for (const m of body.matchAll(beforeWord)) {
-    if (units.includes(m[3].toLowerCase())) spans.push([m.index, m.index + m[0].length - m[3].length]);
+    if (rules.units.includes(m[3].toLowerCase())) spans.push([m.index, m.index + m[0].length - m[3].length]);
   }
-  for (const f of findIngredients(body, rows, () => '')) {
+  for (const f of findIngredients(body, rows, () => '', rules)) {
     if (f.values.quantity) spans.push([f.start, f.start + f.values.quantity.length]);
   }
   // From the end, so earlier positions stay valid; a span that overlaps a later one is skipped.

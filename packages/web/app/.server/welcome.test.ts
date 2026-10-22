@@ -17,7 +17,7 @@ const rows = async (email: string) => (await db.prepare('SELECT id FROM users WH
 
 // The root loader throws what redirectToWelcome returns, for every page document.
 const welcome = async (email: string, path: string) =>
-  (await redirectToWelcome(db, email, new URL(`http://localhost${path}`)))?.headers.get('Location');
+  redirectToWelcome(await getUser(db, email), new URL(`http://localhost${path}`))?.headers.get('Location');
 
 test('users › First visit', async () => {
   assert.equal(await welcome('new@example.com', '/'), '/welkom?returnUrl=%2F');

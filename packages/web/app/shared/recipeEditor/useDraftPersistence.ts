@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { RecipeDraft } from '~/lib/draft';
 import { browserStorage, saveDraft } from '~/lib/draftStore';
+import type { Rules } from '~/lib/rules';
 
 const delayMs = 400;
 
@@ -9,6 +10,7 @@ type Keeping = {
   /** The editor's state, and the state it started from (a draft equal to it is not kept). */
   state: RecipeDraft;
   initial: RecipeDraft;
+  rules: Rules;
   /** The version of the stored recipe the draft is based on. */
   base: { updatedAt?: string };
   /** Whether a photo is still going up. */
@@ -35,9 +37,9 @@ export function useDraftPersistence(keeping: Keeping) {
   const [kept, setKept] = useState(() => browserStorage() !== undefined);
 
   const keepNow = useCallback(() => {
-    const { key, state, initial, base, uploading, ready, isSaving } = latest.current;
+    const { key, state, initial, base, uploading, ready, isSaving, rules } = latest.current;
     if (!ready || isSaving()) return true;
-    const { ok } = saveDraft(browserStorage(), key, { state, initial, base, uploading, settledImage: settledImage.current, now: new Date() });
+    const { ok } = saveDraft(browserStorage(), key, { state, initial, base, uploading, settledImage: settledImage.current, now: new Date(), rules });
     setKept(ok);
     return ok;
   }, []);

@@ -1,5 +1,6 @@
 import { classifyStored, reconcile, rowsOf, toStored, type Context, type StepChips } from '~/lib/chips';
 import type { Step } from '~/lib/recipe';
+import type { Rules } from '~/lib/rules';
 import type { TextEdit } from '~/lib/textEdit';
 import type { RecipeForm } from '~/shared/recipeValidation';
 
@@ -46,46 +47,46 @@ export function withFreeRow(rows: IngredientLine[]): IngredientLine[] {
 const freeId = (rows: IngredientLine[]) => `i${Math.max(-1, ...rows.map((r) => Number(r.id.slice(1)))) + 1}`;
 
 /** Brings the chips of every step in line with the texts of all steps and the ingredient list; `edited` is the step whose text was just edited, with the edit that its anchors have not followed yet. */
-function reconcileSteps(draft: RecipeDraft, edited?: { id: string; edit: TextEdit }, rowsChanged = false): RecipeDraft {
-  const contexts = stepContexts(draft);
+function reconcileSteps(draft: RecipeDraft, rules: Rules, edited?: { id: string; edit: TextEdit }, rowsChanged = false): RecipeDraft {
+  const contexts = stepContexts(draft, rules);
   return { ...draft, steps: draft.steps.map((s, i) => reconcile(s, contexts[i], edited?.id === s.id ? edited.edit : undefined, rowsChanged)) };
 }
 
-const setRows = (draft: RecipeDraft, rows: IngredientLine[]): RecipeDraft =>
-  reconcileSteps({ ...draft, ingredients: withFreeRow(rows) }, undefined, true);
+const setRows = (draft: RecipeDraft, rows: IngredientLine[], rules: Rules): RecipeDraft =>
+  reconcileSteps({ ...draft, ingredients: withFreeRow(rows) }, rules, undefined, true);
 
 /** The starting draft: the stored content when there is any, otherwise empty. Stored chips are tied to their words again. */
-export function startingDraft(stored: DraftSeed = emptyDraftSeed): RecipeDraft {
+export function startingDraft(rules: Rules, stored: DraftSeed = emptyDraftSeed): RecipeDraft {
   const ingredients = withFreeRow(stored.ingredients.map((text, i) => ({ id: `i${i}`, text })));
-  const ctx = { rows: rowsOf(ingredients) };
+  const ctx = { rows: rowsOf(ingredients, rules), rules };
   const steps = stored.steps.map((step, i) => ({ id: `s${i}`, ...classifyStored(step, ctx) }));
   return { ...stored, ingredients, steps: withFreeStep(steps) };
 }
 
-export const emptyDraft: RecipeDraft = startingDraft();
-
 /** Sets the text of a row; typing in the empty last row adds the next one. */
-export const typeIngredient = (draft: RecipeDraft, id: string, text: string): RecipeDraft =>
+export const typeIngredient = (draft: RecipeDraft, id: string, text: string, rules: Rules): RecipeDraft =>
   setRows(
     draft,
     draft.ingredients.map((r) => (r.id === id ? { ...r, text } : r)),
+    rules,
   );
 
 /** Removes a row; the other rows keep their order. */
-export const removeIngredient = (draft: RecipeDraft, id: string): RecipeDraft =>
+export const removeIngredient = (draft: RecipeDraft, id: string, rules: Rules): RecipeDraft =>
   setRows(
     draft,
     draft.ingredients.filter((r) => r.id !== id),
+    rules,
   );
 
 /** Moves a row to a place in the list; the empty row at the end is not a place to move to. Unknown ids and no-op moves return the draft as it was. */
-export function moveIngredient(draft: RecipeDraft, id: string, to: number): RecipeDraft {
+export function moveIngredient(draft: RecipeDraft, id: string, to: number, rules: Rules): RecipeDraft {
   const from = draft.ingredients.findIndex((r) => r.id === id);
   const target = Math.min(Math.max(to, 0), draft.ingredients.length - 2);
   if (from < 0 || target < 0 || target === from) return draft;
   const rows = [...draft.ingredients];
   rows.splice(target, 0, ...rows.splice(from, 1));
-  return setRows(draft, rows);
+  return setRows(draft, rows, rules);
 }
 
 /** Adds an empty step at a place (the end when omitted). */
@@ -102,12 +103,12 @@ export const editStep = (draft: RecipeDraft, id: string, body: string): RecipeDr
 });
 
 /** A step's text became `body` by an edit: its chips follow the words by the edit. */
-export const editedStep = (draft: RecipeDraft, id: string, body: string, edit: TextEdit): RecipeDraft =>
-  reconcileSteps(editStep(draft, id, body), { id, edit });
+export const editedStep = (draft: RecipeDraft, id: string, body: string, edit: TextEdit, rules: Rules): RecipeDraft =>
+  reconcileSteps(editStep(draft, id, body), rules, { id, edit });
 
 /** Removes a step; the empty step at the end stays. */
-export const removeStep = (draft: RecipeDraft, id: string): RecipeDraft =>
-  reconcileSteps({ ...draft, steps: withFreeStep(draft.steps.filter((s) => s.id !== id)) });
+export const removeStep = (draft: RecipeDraft, id: string, rules: Rules): RecipeDraft =>
+  reconcileSteps({ ...draft, steps: withFreeStep(draft.steps.filter((s) => s.id !== id)) }, rules);
 
 /** Moves a step to a place in the list; the empty step at the end is not a place to move to. Unknown ids and no-op moves return the draft as it was. */
 export function moveStep(draft: RecipeDraft, id: string, to: number): RecipeDraft {
@@ -120,40 +121,40 @@ export function moveStep(draft: RecipeDraft, id: string, to: number): RecipeDraf
 }
 
 /** Puts a removed step back at the place it had. Only a lone untouched empty step (what removing the only step with text leaves) makes room for it; the id changes if another step took it meanwhile. */
-export function restoreStep(draft: RecipeDraft, step: StepDraft, at: number): RecipeDraft {
+export function restoreStep(draft: RecipeDraft, step: StepDraft, at: number, rules: Rules): RecipeDraft {
   const steps = draft.steps.length === 1 && blankStep(draft.steps[0]) ? [] : [...draft.steps];
   steps.splice(Math.min(Math.max(at, 0), steps.length), 0, steps.some((s) => s.id === step.id) ? { ...step, id: freeStepId(steps) } : step);
-  return reconcileSteps({ ...draft, steps: withFreeStep(steps) });
+  return reconcileSteps({ ...draft, steps: withFreeStep(steps) }, rules);
 }
 
 /** What each step's chips are read against (see `lib/chips`). */
-export function stepContexts(draft: RecipeDraft): Context[] {
-  const ctx = { rows: rowsOf(draft.ingredients) };
+export function stepContexts(draft: RecipeDraft, rules: Rules): Context[] {
+  const ctx = { rows: rowsOf(draft.ingredients, rules), rules };
   return draft.steps.map(() => ctx);
 }
 
 /** The steps as they are posted and stored: their text and the chips as they stand (see `toStored`), without the empty ones. */
-export function storedSteps(draft: RecipeDraft): Step[] {
-  const contexts = stepContexts(draft);
+export function storedSteps(draft: RecipeDraft, rules: Rules): Step[] {
+  const contexts = stepContexts(draft, rules);
   return draft.steps.flatMap((s, i) => (blankStep(s) ? [] : [toStored(s, contexts[i])]));
 }
 
 /** Changes the chips of one step (pinning, removing, accepting a proposal, …) with a function of the chip logic. */
-export const changeChips = (draft: RecipeDraft, id: string, change: (step: StepDraft, context: Context) => StepDraft): RecipeDraft => {
-  const contexts = stepContexts(draft);
+export const changeChips = (draft: RecipeDraft, id: string, change: (step: StepDraft, context: Context) => StepDraft, rules: Rules): RecipeDraft => {
+  const contexts = stepContexts(draft, rules);
   return { ...draft, steps: draft.steps.map((s, i) => (s.id === id ? change(s, contexts[i]) : s)) };
 };
 
 /** Only what is stored matters: no ids, no blank rows, no surrounding whitespace. */
-const normalize = (draft: RecipeDraft) =>
+const normalize = (draft: RecipeDraft, rules: Rules) =>
   JSON.stringify(
     {
       ...draft,
       ingredients: draft.ingredients.filter((r) => !blank(r)).map((r) => r.text),
-      steps: storedSteps(draft),
+      steps: storedSteps(draft, rules),
     },
     (_, v) => (typeof v === 'string' ? v.trim() : v),
   );
 
 /** Whether the draft differs from where it started; surrounding whitespace and the empty row at the end are not a difference. */
-export const isDirty = (initial: RecipeDraft, current: RecipeDraft) => normalize(initial) !== normalize(current);
+export const isDirty = (initial: RecipeDraft, current: RecipeDraft, rules: Rules) => normalize(initial, rules) !== normalize(current, rules);

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { fake } from '~testing/fake';
+import { defaultRules } from '~/lib/rules';
 import { addStep, editStep, emptyDraftSeed, startingDraft, typeIngredient } from './draft';
 import { clearDraft, describeSavedAt, draftKey, isFresh, loadDraft, purgeDrafts, resolveStart, saveDraft, type DraftStorage } from './draftStore';
 
@@ -25,7 +26,7 @@ function fakeStorage(fail: { read?: boolean; write?: boolean } = {}) {
   return { storage, items };
 }
 
-const initial = startingDraft({ ...emptyDraftSeed, title: 'Soep', author: 'Oma' });
+const initial = startingDraft(defaultRules, { ...emptyDraftSeed, title: 'Soep', author: 'Oma' });
 const edited = { ...initial, title: 'Stamppot' };
 const now = new Date('2026-10-19T12:00:00Z');
 const keeping = (state = edited, extra: object = {}) => ({
@@ -35,6 +36,7 @@ const keeping = (state = edited, extra: object = {}) => ({
   uploading: false,
   settledImage: '',
   now,
+  rules: defaultRules,
   ...extra,
 });
 const key = draftKey('Oma@Example.com', 'soep');
@@ -42,7 +44,7 @@ const daysAgo = (days: number) => new Date(now.getTime() - days * 24 * 3600 * 10
 
 test('recipe-draft › Edits are kept as they are made', () => {
   const { storage } = fakeStorage();
-  const withChips = editStep(addStep(typeIngredient(edited, 'i0', '2 el suiker'), 0), 's1', 'Bak 20 minuten');
+  const withChips = editStep(addStep(typeIngredient(edited, 'i0', '2 el suiker', defaultRules), 0), 's1', 'Bak 20 minuten');
   assert.deepEqual(saveDraft(storage, key, keeping(withChips)), { ok: true });
   const draft = loadDraft(storage, key);
   assert.deepEqual(draft?.state, withChips);
@@ -54,7 +56,9 @@ test('recipe-draft › An unchanged recipe keeps no draft', () => {
   const { storage } = fakeStorage();
   saveDraft(storage, key, keeping());
   assert.ok(loadDraft(storage, key));
-  assert.deepEqual(saveDraft(storage, key, keeping(startingDraft({ ...emptyDraftSeed, title: ' Soep ', author: 'Oma' }))), { ok: true });
+  assert.deepEqual(saveDraft(storage, key, keeping(startingDraft(defaultRules, { ...emptyDraftSeed, title: ' Soep ', author: 'Oma' }))), {
+    ok: true,
+  });
   assert.equal(loadDraft(storage, key), undefined);
 });
 

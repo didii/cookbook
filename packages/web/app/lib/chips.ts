@@ -1,6 +1,7 @@
 import { mapRange, type Range } from '~/lib/anchors';
 import { parseIngredient } from '~/lib/ingredients';
 import type { Step } from '~/lib/recipe';
+import type { Rules } from '~/lib/rules';
 import {
   findIngredients,
   findOven,
@@ -43,13 +44,13 @@ export type Ghost = { id: string; kind: Kind; anchor: Range; rowId?: string };
 /** What the chip logic needs of a step. */
 export type StepChips = { body: string; chips: Chip[]; ghosts: Ghost[] };
 
-/** What a step's chips are read against: the ingredient rows of the recipe. */
-export type Context = { rows: Row[] };
+/** What a step's chips are read against: the ingredient rows of the recipe and the recognition rules. */
+export type Context = { rows: Row[]; rules: Rules };
 
 /** The rows of the ingredient list that have a name, in the form the finders take. */
-export const rowsOf = (lines: { id: string; text: string }[]): Row[] =>
+export const rowsOf = (lines: { id: string; text: string }[], rules: Rules): Row[] =>
   lines.flatMap(({ id, text }) => {
-    const { quantityText, name } = parseIngredient(text);
+    const { quantityText, name } = parseIngredient(text, rules);
     return name ? [{ id, quantityText, name }] : [];
   });
 
@@ -67,10 +68,10 @@ const sameValues = (a: ChipValues, b: ChipValues) => {
 
 /** What words say for a kind of chip (and a row, for an ingredient), or undefined when they say nothing of that kind. */
 function read({ kind, rowId }: { kind: Kind; rowId?: string }, words: string, ctx: Context): ChipValues | undefined {
-  if (kind === 'timer') return findTimer(words)?.values;
-  if (kind === 'oven') return findOven(words)?.values;
+  if (kind === 'timer') return findTimer(words, ctx.rules)?.values;
+  if (kind === 'oven') return findOven(words, ctx.rules)?.values;
   const row = ctx.rows.find((r) => r.id === rowId);
-  return row && findIngredients(words, [row], quantityOf)[0]?.values;
+  return row && findIngredients(words, [row], quantityOf, ctx.rules)[0]?.values;
 }
 
 /** The values a chip shows: a following chip reads its words (and keeps its last values if they say nothing), a pinned chip has its own. */
@@ -105,9 +106,9 @@ const range = ({ start, end }: Range): Range => ({ start, end });
  */
 export function reconcile<S extends StepChips>(step: S, ctx: Context, edit?: TextEdit, rowsChanged = !edit): S {
   const { body } = step;
-  const timer = findTimer(body);
-  const oven = findOven(body);
-  const ingredients = findIngredients(body, ctx.rows, quantityOf);
+  const timer = findTimer(body, ctx.rules);
+  const oven = findOven(body, ctx.rules);
+  const ingredients = findIngredients(body, ctx.rows, quantityOf, ctx.rules);
   const mapped = (anchor?: Range) => anchor && (edit ? mapRange(anchor, edit) : anchor);
 
   const chips: Chip[] = [];
@@ -276,10 +277,10 @@ export function classifyStored(stored: Step, ctx: Context): StepChips {
       ...(label && { label }),
     } as Chip);
   };
-  single('oven', stored.ovenTemperature ? { degrees: stored.ovenTemperature } : undefined, findOven(body));
-  single('timer', stored.timer ? { minutes: stored.timer.minutes } : undefined, findTimer(body), stored.timer?.label);
+  single('oven', stored.ovenTemperature ? { degrees: stored.ovenTemperature } : undefined, findOven(body, ctx.rules));
+  single('timer', stored.timer ? { minutes: stored.timer.minutes } : undefined, findTimer(body, ctx.rules), stored.timer?.label);
 
-  const mentions = findIngredients(body, ctx.rows, quantityOf);
+  const mentions = findIngredients(body, ctx.rows, quantityOf, ctx.rules);
   const linked = new Set<string>();
   for (const { quantityText, name } of stored.ingredients) {
     const free = ctx.rows.filter((r) => !linked.has(r.id));

@@ -4,6 +4,7 @@ import { cssFor } from '~testing/css';
 import { fireEvent, precedes, render, screen, within } from '~testing/dom';
 import { useState } from 'react';
 import type { IngredientLine } from '~/lib/draft';
+import { defaultRules } from '~/lib/rules';
 import { IngredientList } from './IngredientList';
 
 /** The list as the editor holds it: a few rows and the free row at the end. */
@@ -12,6 +13,7 @@ function Harness({ start }: { start: string[] }) {
   return (
     <IngredientList
       rows={rows}
+      rules={defaultRules}
       onType={(id, text) => setRows((r) => r.map((x) => (x.id === id ? { ...x, text } : x)))}
       onRemove={(id) => setRows((r) => r.filter((x) => x.id !== id))}
       onMove={(id, to) =>

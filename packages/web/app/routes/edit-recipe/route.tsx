@@ -1,8 +1,10 @@
-import { data, redirect } from 'react-router';
+import { data, redirect, useRouteLoaderData } from 'react-router';
 import { envContext } from '~/.server/context';
 import { acceptImage, deletePhoto } from '~/.server/photos';
 import { getRecipe, listAuthors, updateRecipe } from '~/.server/recipes';
+import { getRules } from '~/.server/rules';
 import { joinIngredient } from '~/lib/ingredients';
+import { defaultRules, type Rules } from '~/lib/rules';
 import { tileFor } from '~/lib/tile';
 import { endDraftAfterSave } from '~/shared/recipeEditor/endDraftAfterSave';
 import { RecipeEditor } from '~/shared/recipeEditor/RecipeEditor';
@@ -39,7 +41,7 @@ export async function loader({ params, context }: Route.LoaderArgs) {
 export async function action({ request, params, context }: Route.ActionArgs) {
   const form = await request.formData();
   const values = readForm(form);
-  const { lines, ingredients, errors: ingredientErrors } = readIngredients(form);
+  const { lines, ingredients, errors: ingredientErrors } = readIngredients(form, await getRules(context.get(envContext).DB));
   const { lines: stepLines, steps } = readSteps(form);
 
   const errors: RecipeFormErrors = validate(values);
@@ -67,6 +69,7 @@ export function meta({ loaderData }: Route.MetaArgs) {
 export default function EditRecipe({ loaderData, actionData }: Route.ComponentProps) {
   return (
     <RecipeEditor
+      rules={useRouteLoaderData<{ rules?: Rules }>('root')?.rules ?? defaultRules}
       key={loaderData.slug}
       slug={loaderData.slug}
       updatedAt={loaderData.updatedAt}

@@ -2,15 +2,16 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { fireEvent, render, screen } from '~testing/dom';
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router';
+import type { Role } from '~/lib/role';
 import { SiteMenu } from './SiteMenu';
 
-const show = () => {
+const show = (role: Role = 'user') => {
   const router = createMemoryRouter([
     // The menu sits in a layout, as in the app, so it survives the navigation.
     {
       element: (
         <>
-          <SiteMenu />
+          <SiteMenu role={role} />
           <Outlet />
         </>
       ),
@@ -35,6 +36,29 @@ test('site-menu › Menu lists the links', () => {
     ['Instellingen', '/instellingen'],
     ['Over', '/over'],
   ]);
+});
+
+const labels = (role: Role) => {
+  const { dialog } = show(role);
+  fireEvent.click(screen.getByTestId('SiteMenu-open'));
+  return links(dialog).map(([label]) => label);
+};
+
+test('parsing-rules › Admin sees the link', () => {
+  assert.deepEqual(labels('admin'), ['Nieuw recept', 'Instellingen', 'Over', 'Herkenning']);
+  assert.deepEqual(links(screen.getByTestId('SiteMenu-dialog')).at(-1), ['Herkenning', '/beheer/herkenning']);
+});
+
+test('parsing-rules › Superadmin sees the link', () => {
+  assert.equal(labels('superadmin').includes('Herkenning'), true);
+});
+
+test('parsing-rules › User does not see the link', () => {
+  assert.equal(labels('user').includes('Herkenning'), false);
+});
+
+test('site-menu › Menu lists the links for a superadmin', () => {
+  assert.deepEqual(labels('superadmin'), ['Nieuw recept', 'Instellingen', 'Over', 'Herkenning']);
 });
 
 // Needs a browser: the slide is a CSS transition on the open dialog.

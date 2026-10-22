@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
-import { createUser, getUser } from './users';
+import { createUser, getUser, requireAdmin } from './users';
 
 let db: D1Database;
 let dispose: () => Promise<void>;
@@ -98,4 +98,17 @@ test('an email in a different letter case is the same user', async () => {
   await createUser(db, 'case@example.com', 'Caspar');
   assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM users WHERE email = ?').bind('CASE@EXAMPLE.COM').first<{ n: number }>())?.n, 1);
   assert.equal((await getUser(db, 'CASE@example.com'))?.callingName, 'Cas');
+});
+
+test('requireAdmin lets admin and superadmin through and refuses a user, an unknown email and a missing row with 403', async () => {
+  await db
+    .prepare(
+      "INSERT INTO users (email, calling_name, role) VALUES ('ra-admin@example.com', 'A', 'admin'), ('ra-super@example.com', 'S', 'superadmin')",
+    )
+    .run();
+  await createUser(db, 'ra-user@example.com', 'U');
+  assert.equal((await requireAdmin(db, 'ra-admin@example.com')).role, 'admin');
+  assert.equal((await requireAdmin(db, 'RA-SUPER@example.com')).role, 'superadmin');
+  for (const email of ['ra-user@example.com', 'ra-nobody@example.com'])
+    await assert.rejects(requireAdmin(db, email), (thrown: { init?: { status?: number } }) => thrown.init?.status === 403);
 });
