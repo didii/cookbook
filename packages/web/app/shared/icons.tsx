@@ -8,12 +8,15 @@ import {
   ChevronDown as LucideChevronDown,
   ChevronLeft as LucideChevronLeft,
   ChevronUp as LucideChevronUp,
+  Heart as LucideHeart,
   Link as LucideLink,
+  Lock as LucideLock,
   Menu as LucideMenu,
   Pin as LucidePin,
   Play as LucidePlay,
   Plus as LucidePlus,
   Search as LucideSearch,
+  StickyNote as LucideStickyNote,
   Thermometer as LucideThermometer,
   SlidersHorizontal,
   Square,
@@ -54,3 +57,6 @@ export const Search = icon(LucideSearch);
 export const Sliders = icon(SlidersHorizontal);
 export const Clock = icon(Timer);
 export const Ingredient = icon(Utensils);
+export const Heart = icon(LucideHeart);
+export const Lock = icon(LucideLock);
+export const StickyNote = icon(LucideStickyNote);

@@ -3,7 +3,19 @@ import { after, before, test } from 'node:test';
 import { createTestDb } from '~testing/db';
 import { defined } from '~testing/defined';
 import { seals } from '~/lib/seals';
-import { createRecipe, deleteRecipe, getRecipe, listAuthors, listRecipes, slugify, updateRecipe, type StepInput } from './recipes';
+import {
+  createRecipe,
+  deleteRecipe,
+  getMemberRecipeData,
+  getRecipe,
+  listAuthors,
+  listRecipes,
+  setLike,
+  setNote,
+  slugify,
+  updateRecipe,
+  type StepInput,
+} from './recipes';
 import { createUser } from './users';
 
 /** Steps with only a text, as they are stored and as they come back. */
@@ -464,4 +476,68 @@ test('deleteRecipe removes the recipe with its ingredients, steps and views, and
     assert.equal((await db.prepare(`SELECT COUNT(*) AS n FROM ${table} WHERE recipe_id = ?`).bind(id).first<{ n: number }>())!.n, 0, table);
   }
   assert.equal(await deleteRecipe(db, slug), undefined);
+});
+
+const memberSetup = async () => {
+  await createUser(db, 'oma@example.com', 'Oma');
+  await createUser(db, 'papa@example.com', 'Papa');
+  return createRecipe(db, { title: 'Persoonlijk', author: 'Oma' });
+};
+
+test('recipe-like › Liking a recipe', async () => {
+  const slug = await memberSetup();
+  assert.equal(await setLike(db, 'oma@example.com', slug, true), true);
+  assert.equal((await getMemberRecipeData(db, 'oma@example.com', slug)).liked, true);
+  // Idempotent: a repeat keeps the like.
+  await setLike(db, 'oma@example.com', slug, true);
+  assert.equal((await getMemberRecipeData(db, 'oma@example.com', slug)).liked, true);
+});
+
+test('recipe-like › Unliking a recipe', async () => {
+  const slug = await memberSetup();
+  await setLike(db, 'oma@example.com', slug, true);
+  await setLike(db, 'oma@example.com', slug, false);
+  assert.equal((await getMemberRecipeData(db, 'oma@example.com', slug)).liked, false);
+});
+
+test("recipe-like › Another member's like", async () => {
+  const slug = await memberSetup();
+  await setLike(db, 'oma@example.com', slug, true);
+  assert.equal((await getMemberRecipeData(db, 'papa@example.com', slug)).liked, false);
+});
+
+test("recipe-note › Another member's note", async () => {
+  const slug = await memberSetup();
+  await setNote(db, 'oma@example.com', slug, 'minder zout');
+  assert.deepEqual(await getMemberRecipeData(db, 'papa@example.com', slug), { liked: false, note: '' });
+});
+
+test('recipe-note › Changed note is stored', async () => {
+  const slug = await memberSetup();
+  await setNote(db, 'oma@example.com', slug, 'minder zout');
+  await setNote(db, 'oma@example.com', slug, 'minder zout,  10 minuten langer \n');
+  // Stored as typed, trailing whitespace included.
+  assert.equal((await getMemberRecipeData(db, 'oma@example.com', slug)).note, 'minder zout,  10 minuten langer \n');
+});
+
+test('recipe-note › Emptied note is removed', async () => {
+  const slug = await memberSetup();
+  await setNote(db, 'oma@example.com', slug, 'minder zout');
+  assert.equal(await setNote(db, 'oma@example.com', slug, ' \n '), true);
+  assert.equal((await getMemberRecipeData(db, 'oma@example.com', slug)).note, '');
+  const rows = await db
+    .prepare('SELECT COUNT(*) AS n FROM recipe_notes n JOIN recipes r ON r.id = n.recipe_id WHERE r.slug = ?')
+    .bind(slug)
+    .first<{ n: number }>();
+  assert.equal(rows!.n, 0);
+});
+
+test('a like or note for an unknown recipe or member is refused', async () => {
+  const slug = await memberSetup();
+  assert.equal(await setLike(db, 'oma@example.com', 'nope', true), false);
+  assert.equal(await setLike(db, 'niemand@example.com', slug, true), false);
+  assert.equal(await setNote(db, 'oma@example.com', 'nope', 'x'), false);
+  assert.equal(await setNote(db, 'niemand@example.com', slug, 'x'), false);
+  assert.equal(await setNote(db, 'niemand@example.com', slug, ' '), false);
+  assert.deepEqual(await getMemberRecipeData(db, 'niemand@example.com', slug), { liked: false, note: '' });
 });

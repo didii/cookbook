@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Receptpagina smal</title>
+  </head>
+  <body>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@500;700;800;900&display=swap" rel="stylesheet" />
+    <style>
+      body {
+        margin: 0;
+        font-family: 'Mulish', ui-sans-serif, system-ui, sans-serif;
+        color: #1c1512;
+        font-size: 17px;
+        line-height: 1.45;
+      }
+      .ic {
+        width: 22px;
+        height: 22px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2.2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        flex: none;
+      }
+      .fill {
+        fill: currentColor;
+      }
+      .phone {
+        position: relative;
+        width: 390px;
+        height: 844px;
+        overflow: hidden;
+        box-sizing: border-box;
+        background: #f4eee0;
+        border: 3px solid #1c1512;
+        border-radius: 30px;
+      }
+      .pad {
+        padding: 16px;
+      }
+      .top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        min-height: 44px;
+      }
+      .back {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        font-weight: 800;
+        min-height: 44px;
+      }
+      .right {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-weight: 800;
+      }
+      .heart {
+        width: 44px;
+        height: 44px;
+        display: grid;
+        place-items: center;
+        box-sizing: border-box;
+        border: 3px solid #1c1512;
+        border-radius: 10px;
+        background: #fff;
+        color: #1c1512;
+        box-shadow: 3px 3px 0 #1c1512;
+        padding: 0;
+        cursor: pointer;
+      }
+      .heart.liked {
+        background: #9c2419;
+        color: #fff;
+      }
+      h1 {
+        margin: 6px 0 0;
+        font-size: 34px;
+        line-height: 1.05;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 14px;
+        align-items: center;
+        margin-top: 10px;
+        font-weight: 800;
+      }
+      .by {
+        border: 3px solid #1c1512;
+        background: #c9a04a;
+        border-radius: 99px;
+        padding: 1px 12px;
+      }
+      .hero {
+        margin-top: 14px;
+        border: 3px solid #1c1512;
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: 5px 5px 0 #1c1512;
+        overflow: hidden;
+      }
+      .photo {
+        height: 150px;
+        border-bottom: 3px solid #1c1512;
+        background: repeating-linear-gradient(45deg, #d9c9a8, #d9c9a8 10px, #cdbb96 10px, #cdbb96 20px);
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        font-size: 13px;
+        color: #5c4f48;
+      }
+      .band {
+        aspect-ratio: 7/1;
+        background: url(../../packages/web/public/img/tile/tile1.svg) repeat-x;
+        background-size: 14.2857% 100%;
+      }
+      .tabs {
+        display: flex;
+        margin-top: 18px;
+      }
+      .tab {
+        flex: 1;
+        min-height: 48px;
+        display: grid;
+        place-items: center;
+        border: 3px solid #1c1512;
+        background: #fff;
+        font-weight: 900;
+        font-size: 17px;
+        box-sizing: border-box;
+      }
+      .tab.on {
+        background: #9c2419;
+        color: #fff;
+      }
+      .tab:first-child {
+        border-radius: 10px 0 0 10px;
+      }
+      .tab:last-child {
+        border-radius: 0 10px 10px 0;
+        margin-left: -3px;
+      }
+      h2 {
+        margin: 16px 0 10px;
+        font-size: 24px;
+        font-weight: 900;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-height: 52px;
+        box-sizing: border-box;
+        border: 3px solid #1c1512;
+        border-radius: 10px;
+        background: #fff;
+        padding: 6px 14px;
+        font-weight: 700;
+        font-size: 19px;
+        margin-bottom: 8px;
+      }
+      .dot {
+        width: 24px;
+        height: 24px;
+        border: 3px solid #1c1512;
+        border-radius: 99px;
+        box-sizing: border-box;
+        background: #fff;
+        flex: none;
+      }
+      .qty {
+        min-width: 56px;
+        font-weight: 900;
+        color: #1f4e79;
+      }
+      .fab {
+        position: absolute;
+        right: 16px;
+        bottom: 18px;
+        width: 56px;
+        height: 56px;
+        display: grid;
+        place-items: center;
+        box-sizing: border-box;
+        border: 3px solid #1c1512;
+        border-radius: 14px;
+        background: #c9a04a;
+        color: #1c1512;
+        box-shadow: 4px 4px 0 #1c1512;
+        padding: 0;
+        cursor: pointer;
+      }
+      .fab.open {
+        background: #9c2419;
+        color: #fff;
+      }
+      .badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        width: 18px;
+        height: 18px;
+        border-radius: 99px;
+        border: 2px solid #1c1512;
+        background: #9c2419;
+      }
+      .panel {
+        position: absolute;
+        left: 16px;
+        right: 16px;
+        bottom: 90px;
+        box-sizing: border-box;
+        background: #fff;
+        border: 3px solid #1c1512;
+        border-radius: 12px;
+        box-shadow: 5px 5px 0 #1c1512;
+        padding: 14px 16px 16px;
+      }
+      .panel-h {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .panel-h b {
+        font-size: 20px;
+        font-weight: 900;
+      }
+      .private {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 14px;
+        font-weight: 700;
+        color: #5c4f48;
+      }
+      .private .ic {
+        width: 15px;
+        height: 15px;
+      }
+      .field {
+        margin-top: 10px;
+        box-sizing: border-box;
+        width: 100%;
+        min-height: 150px;
+        border: 3px solid #1c1512;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font: inherit;
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 1.4;
+        background: #fffdf7;
+        color: #1c1512;
+        resize: none;
+      }
+      .hint {
+        margin-top: 8px;
+        font-size: 14px;
+        font-weight: 700;
+        color: #5c4f48;
+      }
+      .hint.saved {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 15px;
+        font-weight: 900;
+        color: #2f6f5e;
+      }
+      .hint .ic {
+        width: 18px;
+        height: 18px;
+      }
+      .scrim {
+        position: absolute;
+        inset: 0;
+        background: rgba(28, 21, 18, 0.28);
+      }
+      .toast {
+        position: absolute;
+        right: 16px;
+        bottom: 88px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-sizing: border-box;
+        min-height: 44px;
+        padding: 6px 14px;
+        background: #2f6f5e;
+        color: #fff;
+        border: 3px solid #1c1512;
+        border-radius: 10px;
+        box-shadow: 3px 3px 0 #1c1512;
+        font-weight: 900;
+        font-size: 16px;
+      }
+      .cap {
+        margin: 0 0 14px;
+        font-weight: 900;
+        font-size: 18px;
+      }
+      .sub {
+        margin: 0 0 14px;
+        font-weight: 600;
+        font-size: 15px;
+        color: #5c4f48;
+      }
+    </style>
+    <div
+      style="
+        width: 1760px;
+        height: 924px;
+        box-sizing: border-box;
+        padding: 40px;
+        background: #e9e1cc;
+        display: flex;
+        gap: 40px;
+        align-items: flex-start;
+      "
+    >
+      <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+        <defs>
+          <symbol id="heart" viewBox="0 0 24 24">
+            <path
+              d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
+            />
+          </symbol>
+          <symbol id="note" viewBox="0 0 24 24">
+            <path d="M15.5 3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2V8.5L15.5 3Z" />
+            <path d="M15 3v6h6" />
+            <path d="M8 13h8" />
+            <path d="M8 17h5" />
+          </symbol>
+          <symbol id="chev" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6" /></symbol>
+          <symbol id="x" viewBox="0 0 24 24">
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </symbol>
+          <symbol id="check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></symbol>
+          <symbol id="lock" viewBox="0 0 24 24">
+            <rect width="18" height="11" x="3" y="11" rx="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </symbol>
+        </defs>
+      </svg>
+
+      <!-- 1: dicht, gelikt, notitie bestaat -->
+      <div>
+        <p class="cap">1. Dicht</p>
+        <p class="sub">Hart gelikt. Notitieknop met stip: er staat een notitie.</p>
+        <div class="phone">
+          <div class="pad">
+            <div class="top">
+              <span class="back"
+                ><svg class="ic"><use href="#chev" /></svg> Alle recepten</span
+              >
+              <span class="right"
+                ><button class="heart liked" aria-label="Verwijder uit favorieten" aria-pressed="true">
+                  <svg class="ic fill"><use href="#heart" /></svg>
+                </button>
+                Bewerk</span
+              >
+            </div>
+            <h1>Tomatensoep met balletjes</h1>
+            <div class="chips"><span class="by">van Oma</span><span>45 min</span><span>4 personen</span></div>
+            <div class="hero">
+              <div class="photo">voorbeeldfoto</div>
+              <div class="band"></div>
+            </div>
+            <div class="tabs">
+              <div class="tab on">Ingrediënten</div>
+              <div class="tab">Bereiding</div>
+            </div>
+            <h2>Ingrediënten</h2>
+            <div class="row"><span class="dot"></span><b class="qty">500 g</b><span>tomaten</span></div>
+            <div class="row"><span class="dot"></span><b class="qty">250 g</b><span>gehakt</span></div>
+            <div class="row"><span class="dot"></span><b class="qty">1</b><span>ui</span></div>
+            <div class="row"><span class="dot"></span><b class="qty">1 l</b><span>bouillon</span></div>
+          </div>
+          <button class="fab" aria-label="Open mijn notitie">
+            <svg class="ic"><use href="#note" /></svg><span class="badge"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2: open -->
+      <div>
+        <p class="cap">2. Open, aan het typen</p>
+        <p class="sub">
+          Tik op de knop: veld verschijnt. Er is nog tekst die niet bewaard is, dus de hint blijft staan. Na een lange pauze bewaart het veld vanzelf.
+        </p>
+        <div class="phone">
+          <div class="pad">
+            <div class="top">
+              <span class="back"
+                ><svg class="ic"><use href="#chev" /></svg> Alle recepten</span
+              >
+              <span class="right"
+                ><button class="heart liked" aria-label="Verwijder uit favorieten" aria-pressed="true">
+                  <svg class="ic fill"><use href="#heart" /></svg>
+                </button>
+                Bewerk</span
+              >
+            </div>
+            <h1>Tomatensoep met balletjes</h1>
+            <div class="chips"><span class="by">van Oma</span><span>45 min</span><span>4 personen</span></div>
+            <div class="hero">
+              <div class="photo">voorbeeldfoto</div>
+              <div class="band"></div>
+            </div>
+            <div class="tabs">
+              <div class="tab on">Ingrediënten</div>
+              <div class="tab">Bereiding</div>
+            </div>
+            <h2>Ingrediënten</h2>
+            <div class="row"><span class="dot"></span><b class="qty">500 g</b><span>tomaten</span></div>
+            <div class="row"><span class="dot"></span><b class="qty">250 g</b><span>gehakt</span></div>
+          </div>
+          <div class="scrim"></div>
+          <div class="panel" role="dialog" aria-label="Mijn notitie">
+            <div class="panel-h">
+              <b>Mijn notitie</b
+              ><span class="private"
+                ><svg class="ic"><use href="#lock" /></svg> Alleen voor jou</span
+              >
+            </div>
+            <textarea class="field" aria-label="Mijn notitie">Minder zout. De soep mag 10 min langer sudderen.</textarea>
+            <div class="hint">Wordt vanzelf bewaard. Tik buiten het veld om te sluiten.</div>
+          </div>
+          <button class="fab open" aria-label="Sluit mijn notitie">
+            <svg class="ic"><use href="#x" /></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 3: open, bewaard -->
+      <div>
+        <p class="cap">3. Open, bewaard</p>
+        <p class="sub">
+          Er valt niets meer te bewaren (net vanzelf bewaard): "Bewaard" neemt de plaats van de hint in. Weer typen brengt de hint terug. Alleen
+          openen en niets wijzigen toont dit niet.
+        </p>
+        <div class="phone">
+          <div class="pad">
+            <div class="top">
+              <span class="back"
+                ><svg class="ic"><use href="#chev" /></svg> Alle recepten</span
+              >
+              <span class="right"
+                ><button class="heart liked" aria-label="Verwijder uit favorieten" aria-pressed="true">
+                  <svg class="ic fill"><use href="#heart" /></svg>
+                </button>
+                Bewerk</span
+              >
+            </div>
+            <h1>Tomatensoep met balletjes</h1>
+            <div class="chips"><span class="by">van Oma</span><span>45 min</span><span>4 personen</span></div>
+            <div class="hero">
+              <div class="photo">voorbeeldfoto</div>
+              <div class="band"></div>
+            </div>
+            <div class="tabs">
+              <div class="tab on">Ingrediënten</div>
+              <div class="tab">Bereiding</div>
+            </div>
+            <h2>Ingrediënten</h2>
+            <div class="row"><span class="dot"></span><b class="qty">500 g</b><span>tomaten</span></div>
+            <div class="row"><span class="dot"></span><b class="qty">250 g</b><span>gehakt</span></div>
+          </div>
+          <div class="scrim"></div>
+          <div class="panel" role="dialog" aria-label="Mijn notitie">
+            <div class="panel-h">
+              <b>Mijn notitie</b
+              ><span class="private"
+                ><svg class="ic"><use href="#lock" /></svg> Alleen voor jou</span
+              >
+            </div>
+            <textarea class="field" aria-label="Mijn notitie">Minder zout. De soep mag 10 min langer sudderen. Gehakt van de slager.</textarea>
+            <div class="hint saved" role="status">
+              <svg class="ic"><use href="#check" /></svg> Bewaard
+            </div>
+          </div>
+          <button class="fab open" aria-label="Sluit mijn notitie">
+            <svg class="ic"><use href="#x" /></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 4: bewaard -->
+      <div>
+        <p class="cap">4. Net bewaard, veld dicht</p>
+        <p class="sub">Alleen na een echte wijziging: korte melding naast de knop. Hart nu niet gelikt.</p>
+        <div class="phone">
+          <div class="pad">
+            <div class="top">
+              <span class="back"
+                ><svg class="ic"><use href="#chev" /></svg> Alle recepten</span
+              >
+              <span class="right"
+                ><button class="heart" aria-label="Markeer als favoriet" aria-pressed="false">
+                  <svg class="ic"><use href="#heart" /></svg>
+                </button>
+                Bewerk</span
+              >
+            </div>
+            <h1>Tomatensoep met balletjes</h1>
+            <div class="chips"><span class="by">van Oma</span><span>45 min</span><span>4 personen</span></div>
+            <div class="hero">
+              <div class="photo">voorbeeldfoto</div>
+              <div class="band"></div>
+            </div>
+            <div class="tabs">
+              <div class="tab on">Ingrediënten</div>
+              <div class="tab">Bereiding</div>
+            </div>
+            <h2>Ingrediënten</h2>
+            <div class="row"><span class="dot"></span><b class="qty">500 g</b><span>tomaten</span></div>
+            <div class="row"><span class="dot"></span><b class="qty">250 g</b><span>gehakt</span></div>
+            <div class="row"><span class="dot"></span><b class="qty">1</b><span>ui</span></div>
+            <div class="row"><span class="dot"></span><b class="qty">1 l</b><span>bouillon</span></div>
+          </div>
+          <span class="toast" role="status"
+            ><svg class="ic"><use href="#check" /></svg> Notitie bewaard</span
+          >
+          <button class="fab" aria-label="Open mijn notitie">
+            <svg class="ic"><use href="#note" /></svg><span class="badge"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
