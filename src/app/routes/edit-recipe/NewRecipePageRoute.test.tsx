@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
-import { afterAll, beforeAll, describe, test } from 'vitest';
+import { beforeAll, describe } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { getRecipe } from '~app/shared/recipes.server';
 import { createUser } from '~app/shared/users.server';
-import { createTestDb } from '~testing/db';
+import { test } from '~testing/db';
 import { cleanup, fireEvent, openAutocomplete, render, screen } from '~testing/dom';
 import { fake } from '~testing/fake';
 import type { Route } from './+types/NewRecipePageRoute';
@@ -13,13 +13,10 @@ import NewRecipePage, { action, loader } from './NewRecipePageRoute';
 
 // Action-level tests: real action, real queries against an in-memory D1.
 let db: D1Database;
-let dispose: () => Promise<void>;
 
-beforeAll(async () => {
-  ({ db, dispose } = await createTestDb());
+test.beforeAll(({ testDb }) => {
+  ({ db } = testDb);
 });
-
-afterAll(() => dispose());
 
 const submit = (fields: Record<string, string>) => {
   const context = new RouterContextProvider();

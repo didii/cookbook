@@ -1,21 +1,20 @@
 import assert from 'node:assert/strict';
 import { RouterContextProvider } from 'react-router';
-import { afterEach, beforeEach, describe, test } from 'vitest';
+import { beforeEach, describe } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { getUser } from '~app/shared/users.server';
 import { redirectToWelcome } from '~app/shared/welcome.server';
-import { createTestDb } from '~testing/db';
+import { test } from '~testing/db';
 import { fake } from '~testing/fake';
 import type { Route } from './+types/AdminUserPageRoute';
 import { action, loader } from './AdminUserPageRoute';
 
 // Real loader and action against an in-memory D1, fresh for every test so none depends on another. `boss` and `other` are superadmins.
 let db: D1Database;
-let dispose: () => Promise<void>;
 const ids: Record<string, number> = {};
 
-beforeEach(async () => {
-  ({ db, dispose } = await createTestDb());
+test.beforeEach(async ({ freshDb }) => {
+  ({ db } = freshDb);
   for (const [name, role] of [
     ['user', 'user'],
     ['admin', 'admin'],
@@ -29,8 +28,6 @@ beforeEach(async () => {
       .first<{ id: number }>())!.id;
   }
 });
-
-afterEach(() => dispose());
 
 const contextFor = (as: string) => {
   const context = new RouterContextProvider();

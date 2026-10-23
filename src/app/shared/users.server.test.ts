@@ -1,16 +1,13 @@
 import assert from 'node:assert/strict';
-import { afterAll, beforeAll, describe, test } from 'vitest';
-import { createTestDb } from '~testing/db';
+import { beforeAll, describe } from 'vitest';
+import { createTestDb, test } from '~testing/db';
 import { createUser, deleteUser, getUser, listUsers, requireAdmin, requireSuperadmin, updateUser, type Role } from './users.server';
 
 let db: D1Database;
-let dispose: () => Promise<void>;
 
-beforeAll(async () => {
-  ({ db, dispose } = await createTestDb());
+test.beforeAll(({ testDb }) => {
+  ({ db } = testDb);
 });
-
-afterAll(() => dispose());
 
 const rows = async (email: string) => (await db.prepare('SELECT id FROM users WHERE email = ?').bind(email).all()).results.length;
 

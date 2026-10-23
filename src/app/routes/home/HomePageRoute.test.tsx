@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { createMemoryRouter, MemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
-import { afterAll, beforeAll, beforeEach, describe, test } from 'vitest';
+import { beforeEach, describe } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import type { RecipeSummary } from '~app/shared/recipe';
 import { createRecipe } from '~app/shared/recipes.server';
 import { cssFor } from '~testing/css';
-import { createTestDb } from '~testing/db';
+import { test } from '~testing/db';
 import { act, fireEvent, precedes, render, screen, within } from '~testing/dom';
 import { fake } from '~testing/fake';
 import type { Route } from './+types/HomePageRoute';
@@ -14,13 +14,10 @@ import { filterParams, noFilters } from './lib/filterRecipes';
 
 // Real loader against an in-memory D1 holding the recipes the test inserted.
 let db: D1Database;
-let dispose: () => Promise<void>;
 
-beforeAll(async () => {
-  ({ db, dispose } = await createTestDb());
+test.beforeAll(({ testDb }) => {
+  ({ db } = testDb);
 });
-
-afterAll(() => dispose());
 
 const load = async () => {
   const context = new RouterContextProvider();

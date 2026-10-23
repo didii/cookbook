@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { RouterContextProvider } from 'react-router';
-import { afterAll, beforeAll, describe, test } from 'vitest';
+import { beforeAll, describe } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { getPhoto, storePhoto } from '~app/shared/photos.server';
 import { createRecipe, listRecipes } from '~app/shared/recipes.server';
 import { createUser } from '~app/shared/users.server';
-import { createTestDb } from '~testing/db';
+import { test } from '~testing/db';
 import { defined } from '~testing/defined';
 import { fake } from '~testing/fake';
 import type { Route as LikeRoute } from './+types/LikeUpdateRoute';
@@ -18,13 +18,10 @@ import { action, loader } from './RecipePageRoute';
 // Real loader and action against an in-memory D1 holding a recipe the test inserted.
 let db: D1Database;
 let photos: R2Bucket;
-let dispose: () => Promise<void>;
 
-beforeAll(async () => {
-  ({ db, photos, dispose } = await createTestDb());
+test.beforeAll(({ testDb }) => {
+  ({ db, photos } = testDb);
 });
-
-afterAll(() => dispose());
 
 const load = (slug: string, email = 'oma@example.com') => {
   const context = new RouterContextProvider();

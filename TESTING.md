@@ -10,6 +10,14 @@ Where tests live: see `STRUCTURE.md`.
 - Scenario about what a component shows or does: component test.
 - Needs real layout, scrolling, viewport width, animation, computed colour or browser history: `test.todo` with the reason on the line above.
 
+## Database tests
+
+- Prefer not to use unless necessary
+- Import `test` from `~testing/db` (a drop-in for vitest's). It boots Miniflare once per worker and empties it between users.
+- `test.beforeAll(({ testDb }) => ...)`: one database for the tests of a file, emptied when the file is done.
+- `test.beforeEach(({ freshDb }) => ...)`: emptied after every test.
+- `createTestDb()` boots an instance of its own; use it only when a test needs a different one.
+
 ## Component tests
 
 - Render with `~testing/dom` (happy-dom + Testing Library). Import `render`, `screen`, `fireEvent` from there, not from the library.

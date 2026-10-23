@@ -1,15 +1,13 @@
 import assert from 'node:assert/strict';
-import { afterAll, beforeAll, beforeEach, describe, test } from 'vitest';
-import { createTestDb } from '~testing/db';
+import { beforeEach, describe } from 'vitest';
+import { test } from '~testing/db';
 import { deletePhoto, getPhoto, isPhotoPath, maxPhotoBytes, storePhoto } from './photos.server';
 
 let photos: R2Bucket;
-let dispose: () => Promise<void>;
 
-beforeAll(async () => {
-  ({ photos, dispose } = await createTestDb());
+test.beforeAll(({ testDb }) => {
+  ({ photos } = testDb);
 });
-afterAll(() => dispose());
 
 const bytes = (...head: number[]) => {
   const b = new Uint8Array(64);
