@@ -1,4 +1,4 @@
--- Dev-only sample data. Run: wrangler d1 execute DB --local --file seed/dev.sql (never against remote).
+-- Dev-only sample data. Run: wrangler d1 execute DB --local --file src/db/seed/dev.sql (never against remote).
 DELETE FROM recipes;
 
 INSERT INTO recipes (slug, title, author, time, servings, intro, image, seal) VALUES ('appeltaart', 'Appeltaart', 'Oma', '1u 20', 8, 'Met een dikke laag zure appels en een rooster van deeg bovenop.', '/img/appeltaart.jpg', 'jia-wei');
