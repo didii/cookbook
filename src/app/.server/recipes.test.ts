@@ -1,0 +1,543 @@
+import assert from 'node:assert/strict';
+import { after, before, test } from 'node:test';
+import { seals } from '~app/lib/seals';
+import { createTestDb } from '~testing/db';
+import { defined } from '~testing/defined';
+import {
+  createRecipe,
+  deleteRecipe,
+  getMemberRecipeData,
+  getRecipe,
+  listAuthors,
+  listRecipes,
+  setLike,
+  setNote,
+  slugify,
+  updateRecipe,
+  type StepInput,
+} from './recipes';
+import { createUser } from './users';
+
+/** Steps with only a text, as they are stored and as they come back. */
+const plain = (...bodies: string[]): StepInput[] => bodies.map((body) => ({ body }));
+const loaded = (...bodies: string[]) => bodies.map((body) => ({ body, ingredients: [] }));
+
+let db: D1Database;
+let dispose: () => Promise<void>;
+
+before(async () => {
+  ({ db, dispose } = await createTestDb());
+  await db.batch([
+    // Ingredients and steps are inserted out of position order, so the tests prove the query sorts.
+    db.prepare("INSERT INTO recipes (slug, title, author, servings) VALUES ('ordering', 'Ordering', 'Oma', 2)"),
+    db.prepare("INSERT INTO ingredients (recipe_id, position, name) VALUES ((SELECT id FROM recipes WHERE slug = 'ordering'), 2, 'zout')"),
+    db.prepare(
+      "INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'ordering'), 1, 'ei', '1')",
+    ),
+    db.prepare("INSERT INTO steps (recipe_id, position, body) VALUES ((SELECT id FROM recipes WHERE slug = 'ordering'), 2, 'twee')"),
+    db.prepare("INSERT INTO steps (recipe_id, position, body) VALUES ((SELECT id FROM recipes WHERE slug = 'ordering'), 1, 'een')"),
+    db.prepare(
+      "INSERT INTO recipes (slug, title, author, time, servings, intro, image, seal) VALUES ('full', 'Full', 'Papa', '1u 20', 8, 'intro', '/full.jpg', 'fu')",
+    ),
+  ]);
+});
+
+after(() => dispose());
+
+test('returns undefined for an unknown slug', async () => {
+  assert.equal(await getRecipe(db, 'nope'), undefined);
+});
+
+test('recipe-viewing › Order is kept', async () => {
+  assert.deepEqual(defined((await getRecipe(db, 'ordering'))?.steps), loaded('een', 'twee'));
+});
+
+test('returns ingredients and steps in position order, and leaves optional fields null', async () => {
+  const r = await getRecipe(db, 'ordering');
+  assert.equal(r?.author, 'Oma');
+  assert.equal(r?.time, null);
+  assert.equal(r?.image, null);
+  assert.deepEqual(r?.ingredients, [
+    { quantityText: '1', name: 'ei' },
+    { quantityText: '', name: 'zout' },
+  ]);
+  assert.deepEqual(defined(r?.steps), loaded('een', 'twee'));
+});
+
+test('recipe-viewing › Existing recipe', async () => {
+  assert.equal((await getRecipe(db, 'full'))?.title, 'Full');
+});
+
+test('maps every recipe column', async () => {
+  const r = await getRecipe(db, 'full');
+  assert.deepEqual(defined({ ...r, id: 0, updated_at: '' }), {
+    id: 0,
+    updated_at: '',
+    slug: 'full',
+    title: 'Full',
+    author: 'Papa',
+    time: '1u 20',
+    servings: 8,
+    intro: 'intro',
+    image: '/full.jpg',
+    seal: 'fu',
+    ingredients: [],
+    steps: [],
+  });
+});
+
+test('getRecipe returns when the recipe was last saved', async () => {
+  assert.match((await getRecipe(db, 'full'))?.updated_at ?? '', /^\d{4}-\d\d-\d\dT/);
+});
+
+test('recipe-creation › Slug from title', async () => {
+  assert.equal(slugify('Kip met Rijst!'), 'kip-met-rijst');
+  assert.equal(slugify('  Crème brûlée  '), 'creme-brulee');
+  assert.equal(slugify('!!!'), 'recept');
+  assert.equal(await createRecipe(db, { title: 'Kip met Rijst!', author: 'Oma', servings: 4 }), 'kip-met-rijst');
+});
+
+test('recipe-creation › Same title twice', async () => {
+  const first = await createRecipe(db, { title: 'Dubbel', author: 'Oma', servings: 2 });
+  const second = await createRecipe(db, { title: 'Dubbel', author: 'Papa', servings: 3 });
+  const third = await createRecipe(db, { title: 'Dubbel', author: 'Opa', servings: 4 });
+  assert.deepEqual([first, second, third], ['dubbel', 'dubbel-2', 'dubbel-3']);
+  assert.equal((await getRecipe(db, 'dubbel'))?.author, 'Oma');
+});
+
+test('recipe-creation › Title that clashes with the form address', async () => {
+  assert.equal(await createRecipe(db, { title: 'Nieuw', author: 'Oma', servings: 2 }), 'nieuw-2');
+});
+
+test('createRecipe stores every property, ingredient and step so getRecipe reads them back', async () => {
+  const slug = await createRecipe(db, {
+    title: 'Alles',
+    author: 'Tante An',
+    servings: 6,
+    time: '1u',
+    intro: 'Intro',
+    image: '/alles.jpg',
+    seal: 'fu',
+    createdBy: 'iemand@example.com',
+    ingredients: [{ name: 'bloem', quantityText: '250 g', amount: 250, unit: 'g' }, { name: 'zout' }],
+    steps: plain('mengen', 'bakken'),
+  });
+  const r = await getRecipe(db, slug);
+  assert.deepEqual(defined({ ...r, id: 0, updated_at: '' }), {
+    id: 0,
+    updated_at: '',
+    slug: 'alles',
+    title: 'Alles',
+    author: 'Tante An',
+    time: '1u',
+    servings: 6,
+    intro: 'Intro',
+    image: '/alles.jpg',
+    seal: 'fu',
+    ingredients: [
+      { quantityText: '250 g', name: 'bloem' },
+      { quantityText: '', name: 'zout' },
+    ],
+    steps: loaded('mengen', 'bakken'),
+  });
+  const row = await db
+    .prepare(
+      "SELECT r.created_by, i.amount, i.unit FROM recipes r JOIN ingredients i ON i.recipe_id = r.id WHERE r.slug = 'alles' AND i.position = 0",
+    )
+    .first();
+  assert.deepEqual(row, { created_by: 'iemand@example.com', amount: 250, unit: 'g' });
+});
+
+test('recipe-creation › Existing authors are suggested', async () => {
+  const fresh = await createTestDb();
+  try {
+    await createRecipe(fresh.db, { title: 'A', author: 'Papa', servings: 1 });
+    await createRecipe(fresh.db, { title: 'B', author: 'Oma', servings: 1 });
+    await fresh.db.prepare("INSERT INTO recipes (slug, title, author, servings) VALUES ('c', 'C', 'OMA', 1)").run();
+    assert.deepEqual(await listAuthors(fresh.db), ['Oma', 'Papa']);
+  } finally {
+    await fresh.dispose();
+  }
+});
+
+test('lists every recipe with its card fields, the most recently added first', async () => {
+  const fresh = await createTestDb();
+  try {
+    assert.deepEqual(await listRecipes(fresh.db, 'x@example.com', new Date()), []);
+    await createRecipe(fresh.db, { title: 'Eerst', author: 'Oma', time: '30 min', image: '/a.jpg', seal: 'fu' });
+    await createRecipe(fresh.db, { title: 'Daarna', author: 'Papa', seal: 'fu' });
+    assert.deepEqual(await listRecipes(fresh.db, 'x@example.com', new Date()), [
+      { slug: 'daarna', title: 'Daarna', author: 'Papa', time: null, image: null, seal: 'fu', isNew: true },
+      { slug: 'eerst', title: 'Eerst', author: 'Oma', time: '30 min', image: '/a.jpg', seal: 'fu', isNew: true },
+    ]);
+  } finally {
+    await fresh.dispose();
+  }
+});
+
+test('recipe-creation › New author is accepted', async () => {
+  const slug = await createRecipe(db, { title: 'Nieuwe auteur', author: 'tante Mieke', servings: 2 });
+  assert.equal((await getRecipe(db, slug))?.author, 'tante Mieke');
+});
+
+test('recipe-creation › Existing spelling is reused', async () => {
+  await createRecipe(db, { title: 'Eerste', author: 'Opa Jos', servings: 2 });
+  const slug = await createRecipe(db, { title: 'Tweede', author: 'opa jos', servings: 2 });
+  assert.equal((await getRecipe(db, slug))?.author, 'Opa Jos');
+});
+
+test('recipe-creation › Seal is assigned', async () => {
+  const slug = await createRecipe(db, { title: 'Met zegel', author: 'Oma' });
+  assert.ok(seals.includes((await getRecipe(db, slug))?.seal ?? ''));
+});
+
+test('recipe-creation › Least used seals are chosen', async () => {
+  const fresh = await createTestDb();
+  try {
+    const left = ['fu', 'jia'];
+    await fresh.db.batch(
+      seals
+        .filter((s) => !left.includes(s))
+        .map((s) => fresh.db.prepare('INSERT INTO recipes (slug, title, author, seal) VALUES (?, ?, ?, ?)').bind(s, s, 'Oma', s)),
+    );
+    for (let i = 0; i < 5; i++) {
+      const slug = await createRecipe(fresh.db, { title: `Nieuw ${i}`, author: 'Oma' });
+      const seal = (await getRecipe(fresh.db, slug))?.seal ?? '';
+      assert.ok(left.includes(seal), seal);
+      // It is now used once like the others, so the next one is one of the remaining unused seals.
+      left.splice(left.indexOf(seal), 1);
+      if (!left.length) left.push(...seals);
+    }
+  } finally {
+    await fresh.dispose();
+  }
+});
+
+test('recipe-creation › Provided seal is used', async () => {
+  const slug = await createRecipe(db, { title: 'Eigen zegel', author: 'Oma', seal: 'fu' });
+  assert.equal((await getRecipe(db, slug))?.seal, 'fu');
+});
+
+const original = { title: 'Origineel', author: 'Papa', servings: 4, time: '1u', intro: 'oud', image: '/oud.jpg', seal: 'fu' };
+
+test('recipe-editing › Recipe is updated', async () => {
+  const slug = await createRecipe(db, { ...original, ingredients: [{ name: 'ei' }], steps: plain('kook') });
+  await db.prepare("UPDATE recipes SET updated_at = '2000-01-01T00:00:00Z' WHERE slug = ?").bind(slug).run();
+  const changed = { title: 'Nieuw', author: 'Mama', servings: 6, time: '2u', intro: 'nieuw', image: '/nieuw.jpg' };
+  assert.ok(await updateRecipe(db, slug, changed));
+  const r = await getRecipe(db, slug);
+  assert.deepEqual([r?.slug, r?.title, r?.author, r?.servings, r?.time, r?.intro, r?.image], [slug, 'Nieuw', 'Mama', 6, '2u', 'nieuw', '/nieuw.jpg']);
+  assert.deepEqual([r?.ingredients.length, defined(r?.steps)], [1, loaded('kook')]);
+  assert.notEqual((await db.prepare('SELECT updated_at FROM recipes WHERE slug = ?').bind(slug).first())?.updated_at, '2000-01-01T00:00:00Z');
+});
+
+test('recipe-editing › Seal kept', async () => {
+  const slug = await createRecipe(db, original);
+  await updateRecipe(db, slug, { title: 'Zelfde zegel', author: 'Papa' });
+  assert.equal((await getRecipe(db, slug))?.seal, 'fu');
+});
+
+test('recipe-editing › Seal provided', async () => {
+  const slug = await createRecipe(db, original);
+  await updateRecipe(db, slug, { title: 'Ander zegel', author: 'Papa', seal: 'jia' });
+  assert.equal((await getRecipe(db, slug))?.seal, 'jia');
+});
+
+test('recipe-editing › Optional field emptied', async () => {
+  const slug = await createRecipe(db, original);
+  await updateRecipe(db, slug, { title: 'Leeg', author: 'Papa' });
+  const r = await getRecipe(db, slug);
+  assert.deepEqual([r?.servings, r?.time, r?.intro, r?.image], [null, null, '', null]);
+});
+
+test('recipe-editing › Edited author reuses spelling', async () => {
+  await createRecipe(db, { title: 'Van Tante', author: 'Tante Rita' });
+  const slug = await createRecipe(db, { title: 'Aan te passen', author: 'Papa' });
+  await updateRecipe(db, slug, { title: 'Aan te passen', author: 'tante rita' });
+  assert.equal((await getRecipe(db, slug))?.author, 'Tante Rita');
+});
+
+test('recipe-editing › Own author can be respelled', async () => {
+  const fresh = await createTestDb();
+  try {
+    const slug = await createRecipe(fresh.db, { title: 'Enige', author: 'Oma' });
+    await updateRecipe(fresh.db, slug, { title: 'Enige', author: 'oma' });
+    assert.equal((await getRecipe(fresh.db, slug))?.author, 'oma');
+  } finally {
+    await fresh.dispose();
+  }
+});
+
+test('updateRecipe reports an unknown slug', async () => {
+  assert.equal(await updateRecipe(db, 'bestaat-niet', { title: 'X', author: 'Y' }), undefined);
+});
+
+test('updateRecipe returns the image the recipe had', async () => {
+  const slug = await createRecipe(db, { title: 'Met foto', author: 'Oma', image: '/foto/oud.jpg' });
+  assert.deepEqual(await updateRecipe(db, slug, { title: 'Met foto', author: 'Oma', image: '/foto/nieuw.jpg' }), { previousImage: '/foto/oud.jpg' });
+  assert.deepEqual(await updateRecipe(db, slug, { title: 'Met foto', author: 'Oma' }), { previousImage: '/foto/nieuw.jpg' });
+});
+
+const storedIngredients = async (slug: string) =>
+  (
+    await db
+      .prepare(
+        'SELECT i.position, i.name, i.quantity_text, i.amount, i.unit FROM ingredients i JOIN recipes r ON r.id = i.recipe_id WHERE r.slug = ? ORDER BY i.position',
+      )
+      .bind(slug)
+      .all()
+  ).results;
+
+test('recipe-ingredient-editing › Ingredients are stored in order', async () => {
+  const slug = await createRecipe(db, {
+    title: 'Volgorde',
+    author: 'Oma',
+    ingredients: [{ name: 'bloem', quantityText: '250 g', amount: 250, unit: 'g' }, { name: 'zout' }, { name: 'ei', quantityText: '1', amount: 1 }],
+  });
+  assert.deepEqual(await storedIngredients(slug), [
+    { position: 0, name: 'bloem', quantity_text: '250 g', amount: 250, unit: 'g' },
+    { position: 1, name: 'zout', quantity_text: '', amount: null, unit: null },
+    { position: 2, name: 'ei', quantity_text: '1', amount: 1, unit: null },
+  ]);
+});
+
+test('recipe-ingredient-editing › Saved list replaces the old one', async () => {
+  const slug = await createRecipe(db, { title: 'Vervangen', author: 'Oma', ingredients: [{ name: 'ei' }, { name: 'melk' }] });
+  const base = { title: 'Vervangen', author: 'Oma' };
+  await updateRecipe(db, slug, { ...base, ingredients: [{ name: 'melk' }, { name: 'boter', quantityText: '50 g', amount: 50, unit: 'g' }] });
+  assert.deepEqual(
+    (await storedIngredients(slug)).map((i) => [i.position, i.name, i.unit]),
+    [
+      [0, 'melk', null],
+      [1, 'boter', 'g'],
+    ],
+  );
+  await updateRecipe(db, slug, base);
+  assert.equal((await storedIngredients(slug)).length, 2, 'omitting the argument leaves ingredients untouched');
+  await updateRecipe(db, slug, { ...base, ingredients: [] });
+  assert.equal((await storedIngredients(slug)).length, 0);
+});
+
+test('replacing ingredients of an unknown recipe stores nothing', async () => {
+  assert.equal(await updateRecipe(db, 'bestaat-niet', { title: 'X', author: 'Y', ingredients: [{ name: 'ei' }] }), undefined);
+});
+
+const storedSteps = async (slug: string) =>
+  (
+    await db
+      .prepare('SELECT s.position, s.body FROM steps s JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ? ORDER BY s.position')
+      .bind(slug)
+      .all()
+  ).results;
+
+test('recipe-step-editing › Steps are stored in order', async () => {
+  const slug = await createRecipe(db, { title: 'Stappen', author: 'Oma', steps: plain('kneed', 'rijs', 'bak') });
+  assert.deepEqual(await storedSteps(slug), [
+    { position: 0, body: 'kneed' },
+    { position: 1, body: 'rijs' },
+    { position: 2, body: 'bak' },
+  ]);
+  await updateRecipe(db, slug, { title: 'Stappen', author: 'Oma', steps: plain('bak', 'kneed') });
+  assert.deepEqual(
+    (await storedSteps(slug)).map((s) => s.body),
+    ['bak', 'kneed'],
+  );
+});
+
+test('recipe-step-editing › Saved steps replace the old ones', async () => {
+  const slug = await createRecipe(db, { title: 'Stappen vervangen', author: 'Oma', steps: plain('a', 'b', 'c') });
+  const base = { title: 'Stappen vervangen', author: 'Oma' };
+  // One removed, one changed, one added.
+  await updateRecipe(db, slug, { ...base, steps: plain('a', 'c aangepast', 'd') });
+  assert.deepEqual(await storedSteps(slug), [
+    { position: 0, body: 'a' },
+    { position: 1, body: 'c aangepast' },
+    { position: 2, body: 'd' },
+  ]);
+  await updateRecipe(db, slug, base);
+  assert.equal((await storedSteps(slug)).length, 3, 'omitting the argument leaves steps untouched');
+  await updateRecipe(db, slug, { ...base, steps: [] });
+  assert.equal((await storedSteps(slug)).length, 0);
+});
+
+test('replacing steps of an unknown recipe stores nothing', async () => {
+  assert.equal(await updateRecipe(db, 'bestaat-niet', { title: 'X', author: 'Y', steps: plain('a') }), undefined);
+  assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM steps WHERE body = ?').bind('a').first())?.n, 0);
+});
+
+const withChips: StepInput[] = [
+  {
+    body: 'Kneed bloem en boter. Laat 30 minuten rusten.',
+    ingredients: [
+      { quantityText: '250 g', name: 'bloem' },
+      { quantityText: '', name: 'boter' },
+    ],
+    timer: { minutes: 30, label: 'Deeg rust' },
+  },
+  { body: 'Bak op 180 graden.', ingredients: [], ovenTemperature: 180, timer: { minutes: 50 } },
+  { body: 'Eet smakelijk.', ingredients: [] },
+];
+
+test('recipe-step-chips › Chips are stored with their step', async () => {
+  const slug = await createRecipe(db, { title: 'Met chips', author: 'Oma', steps: withChips });
+  assert.deepEqual(defined((await getRecipe(db, slug))?.steps), withChips);
+  // Saving again replaces the chips of the old steps instead of adding to them.
+  const fewer: StepInput[] = [{ body: 'Kneed.', ingredients: [{ quantityText: '1', name: 'ei' }] }];
+  await updateRecipe(db, slug, { title: 'Met chips', author: 'Oma', steps: fewer });
+  assert.deepEqual(defined((await getRecipe(db, slug))?.steps), fewer);
+  assert.equal(
+    (
+      await db
+        .prepare(
+          'SELECT COUNT(*) AS n FROM step_ingredient_chips c JOIN steps s ON s.id = c.step_id JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ?',
+        )
+        .bind(slug)
+        .first()
+    )?.n,
+    1,
+  );
+});
+
+// "Nieuw": added less than a month before `now`, not opened by this member, not added by them.
+const now = new Date('2026-03-15T12:00:00Z');
+const newFor = async (email: string, slug: string, at = now) => (await listRecipes(db, email, at)).find((r) => r.slug === slug)?.isNew;
+const addedAt = (slug: string, createdAt: string) => db.prepare('UPDATE recipes SET created_at = ? WHERE slug = ?').bind(createdAt, slug).run();
+const open = (email: string, slug: string) =>
+  db
+    .prepare('INSERT INTO recipe_views (user_id, recipe_id) SELECT u.id, r.id FROM users u, recipes r WHERE u.email = ? AND r.slug = ?')
+    .bind(email, slug)
+    .run();
+
+test('recipe-new-marker › Recent recipe never opened', async () => {
+  const slug = await createRecipe(db, { title: 'Vorige week', author: 'Oma', createdBy: 'oma@example.com' });
+  await addedAt(slug, '2026-03-08T12:00:00Z');
+  assert.equal(await newFor('kind@example.com', slug), true);
+  // Just inside and just outside the month.
+  await addedAt(slug, '2026-02-15T12:00:01Z');
+  assert.equal(await newFor('kind@example.com', slug), true);
+  await addedAt(slug, '2026-02-15T12:00:00Z');
+  assert.equal(await newFor('kind@example.com', slug), false);
+});
+
+test('recipe-new-marker › Marker is per member', async () => {
+  await createUser(db, 'een@example.com', 'Een');
+  await createUser(db, 'twee@example.com', 'Twee');
+  const slug = await createRecipe(db, { title: 'Per lid', author: 'Oma', createdBy: 'oma@example.com' });
+  await addedAt(slug, '2026-03-08T12:00:00Z');
+  await open('een@example.com', slug);
+  assert.equal(await newFor('een@example.com', slug), false);
+  assert.equal(await newFor('EEN@example.com', slug), false);
+  assert.equal(await newFor('twee@example.com', slug), true);
+});
+
+test('recipe-new-marker › Recipe older than a month', async () => {
+  const slug = await createRecipe(db, { title: 'Oud', author: 'Oma', createdBy: 'oma@example.com' });
+  await addedAt(slug, '2026-02-01T12:00:00Z');
+  assert.equal(await newFor('kind@example.com', slug), false);
+});
+
+test('recipe-new-marker › Viewing your own recent recipe', async () => {
+  const slug = await createRecipe(db, { title: 'Eigen', author: 'Oma', createdBy: 'Mama@Example.com' });
+  await addedAt(slug, '2026-03-14T12:00:00Z');
+  assert.equal(await newFor('mama@example.com', slug), false);
+  assert.equal(await newFor('kind@example.com', slug), true);
+});
+
+test('a recipe without a creator can be new to everyone', async () => {
+  const slug = await createRecipe(db, { title: 'Zonder maker', author: 'Oma' });
+  await addedAt(slug, '2026-03-14T12:00:00Z');
+  assert.equal(await newFor('kind@example.com', slug), true);
+});
+
+test('deleteRecipe removes the recipe with its ingredients, steps and views, and returns its image', async () => {
+  await createUser(db, 'wis@example.com', 'Wis');
+  const slug = await createRecipe(db, {
+    title: 'Weg ermee',
+    author: 'Oma',
+    image: '/foto/x.jpg',
+    ingredients: [{ name: 'bloem' }],
+    steps: [{ body: 'Bak 30 minuten.', ingredients: [{ quantityText: '1', name: 'bloem' }], timer: { minutes: 30 } }],
+  });
+  await db
+    .prepare('INSERT INTO recipe_views (user_id, recipe_id) SELECT u.id, r.id FROM users u, recipes r WHERE u.email = ? AND r.slug = ?')
+    .bind('wis@example.com', slug)
+    .run();
+  const stepId = (await db
+    .prepare('SELECT s.id FROM steps s JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ?')
+    .bind(slug)
+    .first<{ id: number }>())!.id;
+  const chips = () => db.prepare('SELECT COUNT(*) AS n FROM step_ingredient_chips WHERE step_id = ?').bind(stepId).first<{ n: number }>();
+  assert.equal((await chips())!.n, 1);
+  const id = (await db.prepare('SELECT id FROM recipes WHERE slug = ?').bind(slug).first<{ id: number }>())!.id;
+  assert.deepEqual(await deleteRecipe(db, slug), { image: '/foto/x.jpg' });
+  assert.equal(await getRecipe(db, slug), undefined);
+  assert.equal((await chips())!.n, 0);
+  for (const table of ['ingredients', 'steps', 'recipe_views']) {
+    assert.equal((await db.prepare(`SELECT COUNT(*) AS n FROM ${table} WHERE recipe_id = ?`).bind(id).first<{ n: number }>())!.n, 0, table);
+  }
+  assert.equal(await deleteRecipe(db, slug), undefined);
+});
+
+const memberSetup = async () => {
+  await createUser(db, 'oma@example.com', 'Oma');
+  await createUser(db, 'papa@example.com', 'Papa');
+  return createRecipe(db, { title: 'Persoonlijk', author: 'Oma' });
+};
+
+test('recipe-like › Liking a recipe', async () => {
+  const slug = await memberSetup();
+  assert.equal(await setLike(db, 'oma@example.com', slug, true), true);
+  assert.equal((await getMemberRecipeData(db, 'oma@example.com', slug)).liked, true);
+  // Idempotent: a repeat keeps the like.
+  await setLike(db, 'oma@example.com', slug, true);
+  assert.equal((await getMemberRecipeData(db, 'oma@example.com', slug)).liked, true);
+});
+
+test('recipe-like › Unliking a recipe', async () => {
+  const slug = await memberSetup();
+  await setLike(db, 'oma@example.com', slug, true);
+  await setLike(db, 'oma@example.com', slug, false);
+  assert.equal((await getMemberRecipeData(db, 'oma@example.com', slug)).liked, false);
+});
+
+test("recipe-like › Another member's like", async () => {
+  const slug = await memberSetup();
+  await setLike(db, 'oma@example.com', slug, true);
+  assert.equal((await getMemberRecipeData(db, 'papa@example.com', slug)).liked, false);
+});
+
+test("recipe-note › Another member's note", async () => {
+  const slug = await memberSetup();
+  await setNote(db, 'oma@example.com', slug, 'minder zout');
+  assert.deepEqual(await getMemberRecipeData(db, 'papa@example.com', slug), { liked: false, note: '' });
+});
+
+test('recipe-note › Changed note is stored', async () => {
+  const slug = await memberSetup();
+  await setNote(db, 'oma@example.com', slug, 'minder zout');
+  await setNote(db, 'oma@example.com', slug, 'minder zout,  10 minuten langer \n');
+  // Stored as typed, trailing whitespace included.
+  assert.equal((await getMemberRecipeData(db, 'oma@example.com', slug)).note, 'minder zout,  10 minuten langer \n');
+});
+
+test('recipe-note › Emptied note is removed', async () => {
+  const slug = await memberSetup();
+  await setNote(db, 'oma@example.com', slug, 'minder zout');
+  assert.equal(await setNote(db, 'oma@example.com', slug, ' \n '), true);
+  assert.equal((await getMemberRecipeData(db, 'oma@example.com', slug)).note, '');
+  const rows = await db
+    .prepare('SELECT COUNT(*) AS n FROM recipe_notes n JOIN recipes r ON r.id = n.recipe_id WHERE r.slug = ?')
+    .bind(slug)
+    .first<{ n: number }>();
+  assert.equal(rows!.n, 0);
+});
+
+test('a like or note for an unknown recipe or member is refused', async () => {
+  const slug = await memberSetup();
+  assert.equal(await setLike(db, 'oma@example.com', 'nope', true), false);
+  assert.equal(await setLike(db, 'niemand@example.com', slug, true), false);
+  assert.equal(await setNote(db, 'oma@example.com', 'nope', 'x'), false);
+  assert.equal(await setNote(db, 'niemand@example.com', slug, 'x'), false);
+  assert.equal(await setNote(db, 'niemand@example.com', slug, ' '), false);
+  assert.deepEqual(await getMemberRecipeData(db, 'niemand@example.com', slug), { liked: false, note: '' });
+});

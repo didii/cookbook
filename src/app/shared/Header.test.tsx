@@ -1,0 +1,23 @@
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import { MemoryRouter } from 'react-router';
+import { fireEvent, render, screen } from '~testing/dom';
+import { routePaths } from '~testing/routes';
+import { Header } from './Header';
+
+const memberRole = 'user' as const;
+
+test('recipe-creation › Link to the form', () => {
+  render(
+    <MemoryRouter>
+      <Header email="oma@example.com" role={memberRole} />
+    </MemoryRouter>,
+  );
+  // The link lives in the menu, not in the header itself.
+  assert.equal(screen.queryByTestId('Header-new'), null);
+  fireEvent.click(screen.getByTestId('SiteMenu-open'));
+  const link = screen.getAllByTestId('SiteMenu-link').find((a) => a.textContent === 'Nieuw recept');
+  assert.equal(link?.getAttribute('href'), '/recepten/nieuw');
+  // The route table serves it.
+  assert.ok(routePaths.includes('recepten/nieuw'));
+});

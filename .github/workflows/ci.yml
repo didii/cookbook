@@ -22,6 +22,7 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm typegen
       - run: pnpm typecheck
       - run: pnpm lint:check --format=github
       - run: pnpm format:check
@@ -29,5 +30,5 @@ jobs:
       - uses: mikepenz/action-junit-report@v6
         if: '!cancelled()'
         with:
-          report_paths: packages/web/junit.xml
+          report_paths: junit.xml
       - run: pnpm build

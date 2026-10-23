@@ -117,40 +117,35 @@ test('a pending change that removes a requirement does not make the tests of its
   const problems = checkFixture({
     [mainFile]: main,
     [changeFile]: delta,
-    'packages/web/a.test.ts': testsFile('cap › Stays', 'cap › Goes away', 'cap › Old wording'),
+    'a.test.ts': testsFile('cap › Stays', 'cap › Goes away', 'cap › Old wording'),
   });
   assert.deepEqual(problems, []);
 });
 
 test('a pending change that adds or modifies scenarios never fails the check, with or without tests for them', () => {
   const base = { [mainFile]: main, [changeFile]: delta };
-  assert.deepEqual(checkFixture({ ...base, 'packages/web/a.test.ts': testsFile('cap › Stays', 'cap › Goes away', 'cap › Old wording') }), []);
-  assert.deepEqual(
-    checkFixture({ ...base, 'packages/web/a.test.ts': testsFile('cap › Stays', 'cap › Goes away', 'cap › Old wording', 'cap › Fresh') }),
-    [],
-  );
+  assert.deepEqual(checkFixture({ ...base, 'a.test.ts': testsFile('cap › Stays', 'cap › Goes away', 'cap › Old wording') }), []);
+  assert.deepEqual(checkFixture({ ...base, 'a.test.ts': testsFile('cap › Stays', 'cap › Goes away', 'cap › Old wording', 'cap › Fresh') }), []);
 });
 
 test('a test naming a scenario that no spec or change has is still reported', () => {
   const problems = checkFixture({
     [mainFile]: main,
     [changeFile]: delta,
-    'packages/web/a.test.ts': testsFile('cap › Stays', 'cap › Goes away', 'cap › Old wording', 'cap › Nowhere'),
+    'a.test.ts': testsFile('cap › Stays', 'cap › Goes away', 'cap › Old wording', 'cap › Nowhere'),
   });
-  assert.deepEqual(problems, ['unknown scenario: cap › Nowhere (packages/web/a.test.ts:4)']);
+  assert.deepEqual(problems, ['unknown scenario: cap › Nowhere (a.test.ts:4)']);
 });
 
 test('a main scenario without a test is still reported when a change is pending', () => {
-  const problems = checkFixture({ [mainFile]: main, [changeFile]: delta, 'packages/web/a.test.ts': testsFile('cap › Stays', 'cap › Goes away') });
+  const problems = checkFixture({ [mainFile]: main, [changeFile]: delta, 'a.test.ts': testsFile('cap › Stays', 'cap › Goes away') });
   assert.deepEqual(problems, ['no test: cap › Old wording']);
 });
 
 test('with a change given, its removed requirement needs no test but its added scenarios do', () => {
   const files = { [mainFile]: main, [changeFile]: delta };
-  assert.deepEqual(checkFixture({ ...files, 'packages/web/a.test.ts': testsFile('cap › Stays', 'cap › Old wording') }, 'later'), [
-    'no test: cap › Fresh',
-  ]);
-  assert.deepEqual(checkFixture({ ...files, 'packages/web/a.test.ts': testsFile('cap › Stays', 'cap › Old wording', 'cap › Fresh') }, 'later'), []);
+  assert.deepEqual(checkFixture({ ...files, 'a.test.ts': testsFile('cap › Stays', 'cap › Old wording') }, 'later'), ['no test: cap › Fresh']);
+  assert.deepEqual(checkFixture({ ...files, 'a.test.ts': testsFile('cap › Stays', 'cap › Old wording', 'cap › Fresh') }, 'later'), []);
 });
 
 test('every spec scenario has a test and every scenario-named test has a spec', () => {

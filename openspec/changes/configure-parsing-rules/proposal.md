@@ -28,8 +28,8 @@ The existing `recipe-step-chips` requirements stay true for the default rules; t
 
 ## Impact
 
-- New migration `packages/web/migrations/0007_settings.sql`: generic table `settings` (key, JSON value), no data.
-- New `packages/web/app/lib/rules.ts` (`Rules` type, `defaultRules`) and `.server/rules.ts` (read, save, reset).
-- `packages/web/app/lib/ingredients.ts`, `stepParsers.ts`, `chips.ts`, `draft.ts`, `scale.ts`, `shared/recipeValidation.ts`, `shared/recipeEditor/IngredientItem.tsx`: take `rules` as a parameter instead of reading module constants.
+- New migration `migrations/0007_settings.sql`: generic table `settings` (key, JSON value), no data.
+- New `app/lib/rules.ts` (`Rules` type, `defaultRules`) and `.server/rules.ts` (read, save, reset).
+- `app/lib/ingredients.ts`, `stepParsers.ts`, `chips.ts`, `draft.ts`, `scale.ts`, `shared/recipeValidation.ts`, `shared/recipeEditor/IngredientItem.tsx`: take `rules` as a parameter instead of reading module constants.
 - `.server/users.ts`: `requireAdmin`. `root.tsx` loader does one `getUser` and returns the role and the rules. `routes/layout/route.tsx` passes `role` to `Header`, which passes it to `shared/SiteMenu.tsx`. New route `routes/admin-rules/route.tsx`, `routes.ts`.
 - Tests next to each changed file, plus the scenario tests.
