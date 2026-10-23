@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { after, before, describe, test } from 'node:test';
 import { RouterContextProvider } from 'react-router';
+import { afterAll, beforeAll, describe, test } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { getPhoto, storePhoto } from '~app/shared/photos.server';
 import { createRecipe, listRecipes } from '~app/shared/recipes.server';
@@ -20,11 +20,11 @@ let db: D1Database;
 let photos: R2Bucket;
 let dispose: () => Promise<void>;
 
-before(async () => {
+beforeAll(async () => {
   ({ db, photos, dispose } = await createTestDb());
 });
 
-after(() => dispose());
+afterAll(() => dispose());
 
 const load = (slug: string, email = 'oma@example.com') => {
   const context = new RouterContextProvider();
@@ -95,7 +95,7 @@ const remove = (slug: string) => {
 describe('recipe-deletion › Recipe is deleted', () => {
   let slug: string;
   let response: Response;
-  before(async () => {
+  beforeAll(async () => {
     slug = await createRecipe(db, { title: 'Te verwijderen', author: 'Oma', ingredients: [{ name: 'bloem' }], steps: [{ body: 'Mengen.' }] });
     response = await remove(slug);
   });
@@ -157,7 +157,7 @@ describe('LikeUpdateRoute', () => {
 
   describe('refuses what it cannot store', () => {
     let slug: string;
-    before(async () => {
+    beforeAll(async () => {
       await createUser(db, 'oma@example.com', 'Oma');
       slug = await createRecipe(db, { title: 'Streng', author: 'Oma' });
     });
@@ -192,7 +192,7 @@ describe('NoteUpdateRoute', () => {
 
   describe('refuses what it cannot store', () => {
     let slug: string;
-    before(async () => {
+    beforeAll(async () => {
       await createUser(db, 'oma@example.com', 'Oma');
       slug = await createRecipe(db, { title: 'Streng', author: 'Oma' });
     });
@@ -217,7 +217,7 @@ describe('NoteUpdateRoute', () => {
 
 describe('recipe-note › Note too long', () => {
   let slug: string;
-  before(async () => {
+  beforeAll(async () => {
     await createUser(db, 'oma@example.com', 'Oma');
     slug = await createRecipe(db, { title: 'Lang', author: 'Oma' });
   });

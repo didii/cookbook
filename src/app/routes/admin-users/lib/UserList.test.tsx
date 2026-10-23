@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { describe, test } from 'node:test';
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router';
+import { describe, test } from 'vitest';
 import { render, screen } from '~testing/dom';
 import { UserList } from './UserList';
 

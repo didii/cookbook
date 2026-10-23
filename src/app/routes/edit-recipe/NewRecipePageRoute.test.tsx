@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { after, before, describe, test } from 'node:test';
 import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
+import { afterAll, beforeAll, describe, test } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { getRecipe } from '~app/shared/recipes.server';
 import { createUser } from '~app/shared/users.server';
@@ -15,11 +15,11 @@ import NewRecipePage, { action, loader } from './NewRecipePageRoute';
 let db: D1Database;
 let dispose: () => Promise<void>;
 
-before(async () => {
+beforeAll(async () => {
   ({ db, dispose } = await createTestDb());
 });
 
-after(() => dispose());
+afterAll(() => dispose());
 
 const submit = (fields: Record<string, string>) => {
   const context = new RouterContextProvider();
@@ -36,7 +36,7 @@ const submit = (fields: Record<string, string>) => {
 describe('recipe-creation › Recipe is created', () => {
   let res: Response;
 
-  before(async () => {
+  beforeAll(async () => {
     res = (await submit({ title: ' Soep ', author: 'Oma', servings: '4' })) as Response;
   });
 
@@ -70,7 +70,7 @@ describe('recipe-creation › Time, intro and image are stored', () => {
 describe('recipe-creation › Servings left empty', () => {
   let res: Response;
 
-  before(async () => {
+  beforeAll(async () => {
     res = (await submit({ title: 'Zonder porties', author: 'Oma', servings: '' })) as Response;
   });
 

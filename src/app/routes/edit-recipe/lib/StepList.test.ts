@@ -1,4 +1,4 @@
-import { test } from 'node:test';
+import { test } from 'vitest';
 
 // Needs a browser: key presses and focus.
 test.todo('recipe-step-editing › Enter moves to the next step');

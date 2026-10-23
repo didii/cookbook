@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { after, afterEach, before, beforeEach, describe, test } from 'node:test';
 import { RouterContextProvider } from 'react-router';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, test } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { defaultRules } from '~app/shared/rules';
 import { getRules } from '~app/shared/rules.server';
@@ -14,14 +14,14 @@ import { action, loader } from './AdminRulesPageRoute';
 let db: D1Database;
 let dispose: () => Promise<void>;
 
-before(async () => {
+beforeAll(async () => {
   ({ db, dispose } = await createTestDb());
   await createUser(db, 'user@example.com', 'Uli');
   for (const role of ['admin', 'superadmin'])
     await db.prepare('INSERT INTO users (email, calling_name, role) VALUES (?, ?, ?)').bind(`${role}@example.com`, role, role).run();
 });
 
-after(() => dispose());
+afterAll(() => dispose());
 
 const contextFor = (email: string) => {
   const context = new RouterContextProvider();
@@ -157,5 +157,5 @@ describe('action', () => {
   });
 });
 
-// The root loader imports app.css, which node:test cannot load; the revalidation after an action is router behaviour.
+// The revalidation after an action is router behaviour.
 test.todo('parsing-rules › Saved change applies at once');

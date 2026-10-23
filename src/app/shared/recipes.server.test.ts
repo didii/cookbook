@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { after, before, describe, test } from 'node:test';
+import { afterAll, beforeAll, describe, test } from 'vitest';
 import { createTestDb } from '~testing/db';
 import { defined } from '~testing/defined';
 import {
@@ -25,7 +25,7 @@ const loaded = (...bodies: string[]) => bodies.map((body) => ({ body, ingredient
 let db: D1Database;
 let dispose: () => Promise<void>;
 
-before(async () => {
+beforeAll(async () => {
   ({ db, dispose } = await createTestDb());
   await db.batch([
     // Ingredients and steps are inserted out of position order, so the tests prove the query sorts.
@@ -42,7 +42,7 @@ before(async () => {
   ]);
 });
 
-after(() => dispose());
+afterAll(() => dispose());
 
 /** Runs the test body against a database of its own. */
 const withFreshDb = async (run: (fresh: D1Database) => Promise<void>) => {
@@ -141,7 +141,7 @@ describe('recipe-creation › Slug from title', () => {
 
 describe('recipe-creation › Same title twice', () => {
   let slugs: string[];
-  before(async () => {
+  beforeAll(async () => {
     slugs = [
       await createRecipe(db, { title: 'Dubbel', author: 'Oma', servings: 2 }),
       await createRecipe(db, { title: 'Dubbel', author: 'Papa', servings: 3 }),
@@ -167,7 +167,7 @@ describe('recipe-creation › Title that clashes with the form address', () => {
 describe('createRecipe', () => {
   describe('stores every property, ingredient and step so getRecipe reads them back', () => {
     let slug: string;
-    before(async () => {
+    beforeAll(async () => {
       slug = await createRecipe(db, {
         title: 'Alles',
         author: 'Tante An',
@@ -295,7 +295,7 @@ const original = { title: 'Origineel', author: 'Papa', servings: 4, time: '1u', 
 describe('recipe-editing › Recipe is updated', () => {
   let slug: string;
   let saved: unknown;
-  before(async () => {
+  beforeAll(async () => {
     slug = await createRecipe(db, { ...original, ingredients: [{ name: 'ei' }], steps: plain('kook') });
     await db.prepare("UPDATE recipes SET updated_at = '2000-01-01T00:00:00Z' WHERE slug = ?").bind(slug).run();
     saved = await updateRecipe(db, slug, { title: 'Nieuw', author: 'Mama', servings: 6, time: '2u', intro: 'nieuw', image: '/nieuw.jpg' });
@@ -589,7 +589,7 @@ describe('recipe-new-marker › Recent recipe never opened', () => {
 
 describe('recipe-new-marker › Marker is per member', () => {
   let slug: string;
-  before(async () => {
+  beforeAll(async () => {
     await createUser(db, 'een@example.com', 'Een');
     await createUser(db, 'twee@example.com', 'Twee');
     slug = await createRecipe(db, { title: 'Per lid', author: 'Oma', createdBy: 'oma@example.com' });
@@ -620,7 +620,7 @@ describe('recipe-new-marker › Recipe older than a month', () => {
 
 describe('recipe-new-marker › Viewing your own recent recipe', () => {
   let slug: string;
-  before(async () => {
+  beforeAll(async () => {
     slug = await createRecipe(db, { title: 'Eigen', author: 'Oma', createdBy: 'Mama@Example.com' });
     await addedAt(slug, '2026-03-14T12:00:00Z');
   });
@@ -650,7 +650,7 @@ describe('deleteRecipe', () => {
     let deleted: unknown;
     const chips = () => db.prepare('SELECT COUNT(*) AS n FROM step_ingredient_chips WHERE step_id = ?').bind(stepId).first<{ n: number }>();
 
-    before(async () => {
+    beforeAll(async () => {
       await createUser(db, 'wis@example.com', 'Wis');
       slug = await createRecipe(db, {
         title: 'Weg ermee',
@@ -756,7 +756,7 @@ describe('recipe-note › Changed note is stored', () => {
 describe('recipe-note › Emptied note is removed', () => {
   let slug: string;
   let result: boolean;
-  before(async () => {
+  beforeAll(async () => {
     slug = await memberSetup();
     await setNote(db, 'oma@example.com', slug, 'minder zout');
     result = await setNote(db, 'oma@example.com', slug, ' \n ');

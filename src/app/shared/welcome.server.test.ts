@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { after, before, describe, test } from 'node:test';
+import { afterAll, beforeAll, describe, test } from 'vitest';
 import { createTestDb } from '~testing/db';
 import { createUser, getUser } from './users.server';
 import { redirectToWelcome } from './welcome.server';
@@ -7,11 +7,11 @@ import { redirectToWelcome } from './welcome.server';
 let db: D1Database;
 let dispose: () => Promise<void>;
 
-before(async () => {
+beforeAll(async () => {
   ({ db, dispose } = await createTestDb());
 });
 
-after(() => dispose());
+afterAll(() => dispose());
 
 const rows = async (email: string) => (await db.prepare('SELECT id FROM users WHERE email = ?').bind(email).all()).results.length;
 

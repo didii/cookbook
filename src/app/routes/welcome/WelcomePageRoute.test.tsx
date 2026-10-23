@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { after, before, beforeEach, describe, test } from 'node:test';
 import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
+import { afterAll, beforeAll, beforeEach, describe, test } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { getUser } from '~app/shared/users.server';
 import { createTestDb } from '~testing/db';
@@ -13,11 +13,11 @@ import WelcomePage, { action, loader } from './WelcomePageRoute';
 let db: D1Database;
 let dispose: () => Promise<void>;
 
-before(async () => {
+beforeAll(async () => {
   ({ db, dispose } = await createTestDb());
 });
 
-after(() => dispose());
+afterAll(() => dispose());
 
 const contextFor = (email: string) => {
   const context = new RouterContextProvider();

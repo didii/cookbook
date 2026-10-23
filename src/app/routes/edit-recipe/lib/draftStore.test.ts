@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { describe, test } from 'node:test';
+import { describe, test } from 'vitest';
 import { defaultRules } from '~app/shared/rules';
 import { fake } from '~testing/fake';
 import { addStep, editStep, emptyDraftSeed, startingDraft, typeIngredient } from './draft';

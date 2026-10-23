@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { describe, test } from 'node:test';
 import type { ComponentProps } from 'react';
+import { describe, test } from 'vitest';
 import { fireEvent, render, screen } from '~testing/dom';
 import { RowToolbar } from './RowToolbar';
 

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { beforeEach, describe, test } from 'node:test';
 import { createMemoryRouter, RouterProvider } from 'react-router';
+import { beforeEach, describe, test } from 'vitest';
 import { fireEvent, render, screen, within } from '~testing/dom';
 import { DeleteUser } from './DeleteUser';
 

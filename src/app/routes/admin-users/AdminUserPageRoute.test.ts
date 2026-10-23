@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { afterEach, beforeEach, describe, test } from 'node:test';
 import { RouterContextProvider } from 'react-router';
+import { afterEach, beforeEach, describe, test } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { getUser } from '~app/shared/users.server';
 import { redirectToWelcome } from '~app/shared/welcome.server';

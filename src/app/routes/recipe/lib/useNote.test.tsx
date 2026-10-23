@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { afterEach, beforeEach, describe, mock, test } from 'node:test';
+import { afterEach, beforeEach, describe, test, vi } from 'vitest';
 import { act, fireEvent, render, screen } from '~testing/dom';
 import { useNote } from './useNote';
 
@@ -10,14 +10,14 @@ let status: number | 'offline';
 beforeEach(() => {
   sent = [];
   status = 204;
-  mock.timers.enable({ apis: ['setTimeout'] });
+  vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
   globalThis.fetch = ((url: string, init: RequestInit) => {
     sent.push({ url, body: String(init.body), keepalive: init.keepalive });
     return status === 'offline' ? Promise.reject(new TypeError('offline')) : Promise.resolve(new Response(null, { status }));
   }) as typeof fetch;
 });
 afterEach(() => {
-  mock.timers.reset();
+  vi.useRealTimers();
   globalThis.fetch = realFetch;
 });
 
@@ -41,7 +41,7 @@ function Harness({ saved = 'oud', narrow = false }: { saved?: string; narrow?: b
 const state = () => JSON.parse(screen.getByTestId('state').textContent!) as { open: boolean; failed: boolean; savedSinceOpen: boolean; cue: string };
 const press = (id: string) => act(async () => void fireEvent.click(screen.getByTestId(id)));
 const type = (value: string) => act(async () => void fireEvent.change(screen.getByTestId('field'), { target: { value } }));
-const wait = (ms: number) => act(async () => mock.timers.tick(ms));
+const wait = (ms: number) => act(async () => vi.advanceTimersByTimeAsync(ms));
 
 describe('recipe-note › Unchanged note is not stored', () => {
   beforeEach(async () => {

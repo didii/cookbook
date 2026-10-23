@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { describe, test } from 'node:test';
+import { describe, test } from 'vitest';
 import { dropIndex } from './dropIndex';
 
 const mids = [10, 70, 130, 190];

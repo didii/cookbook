@@ -1,16 +1,16 @@
 import assert from 'node:assert/strict';
-import { afterEach, beforeEach, describe, mock, test } from 'node:test';
+import { afterEach, beforeEach, describe, test, vi } from 'vitest';
 import { act, fireEvent, render, screen } from '~testing/dom';
 import { NoteSheet } from './NoteSheet';
 import { useNote } from './useNote';
 
 const realFetch = globalThis.fetch;
 beforeEach(() => {
-  mock.timers.enable({ apis: ['setTimeout'] });
+  vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
   globalThis.fetch = (() => Promise.resolve(new Response(null, { status: 204 }))) as typeof fetch;
 });
 afterEach(() => {
-  mock.timers.reset();
+  vi.useRealTimers();
   globalThis.fetch = realFetch;
 });
 
@@ -175,7 +175,7 @@ describe('recipe-note › Saved replaces the hint', () => {
   beforeEach(async () => {
     await open();
     await type('nieuw');
-    await act(async () => mock.timers.tick(5000));
+    await act(async () => vi.advanceTimersByTimeAsync(5000));
   });
 
   test('the hint is gone', () => {
@@ -195,7 +195,7 @@ describe('recipe-note › Typing brings the hint back', () => {
   beforeEach(async () => {
     await open();
     await type('nieuw');
-    await act(async () => mock.timers.tick(5000));
+    await act(async () => vi.advanceTimersByTimeAsync(5000));
     await type('nieuwer');
   });
 

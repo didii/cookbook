@@ -1,5 +1,5 @@
-import { after, afterEach } from 'node:test';
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
+import { afterAll, afterEach } from 'vitest';
 
 // Keep Node's own networking, stream and abort classes: the test database (Miniflare) and the loader and action tests in the same file use the real ones, and they refuse happy-dom's lookalikes.
 const keep = [
@@ -17,6 +17,8 @@ const keep = [
   'AbortSignal',
   'URL',
   'URLSearchParams',
+  'setTimeout',
+  'clearTimeout',
 ] as const;
 const node = Object.fromEntries(keep.map((name) => [name, globalThis[name]]));
 GlobalRegistrator.register({ url: 'http://localhost/' });
@@ -33,8 +35,8 @@ export const act: typeof testing.act = testing.act;
 /** Removes what was rendered; it also happens after each test, so only a test that renders twice needs it. */
 export const cleanup: typeof testing.cleanup = testing.cleanup;
 afterEach(() => cleanup());
-// Happy-dom keeps timers alive that stop `node --test` from exiting.
-after(() => GlobalRegistrator.unregister());
+// Happy-dom keeps timers alive that stop the test run from exiting.
+afterAll(() => GlobalRegistrator.unregister());
 
 /** Sets the size of the window, which media queries (`matchMedia`) answer for. A new DOM is 1024 wide. */
 export const setViewport = (width: number, height = 768) =>

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { after, afterEach, before, describe, test } from 'node:test';
+import { afterAll, afterEach, beforeAll, describe, test } from 'vitest';
 import { createTestDb } from '~testing/db';
 import { parseIngredient } from './ingredients';
 import { defaultRules } from './rules';
@@ -9,11 +9,11 @@ import { findOven, findTimer } from './stepParsers';
 let db: D1Database;
 let dispose: () => Promise<void>;
 
-before(async () => {
+beforeAll(async () => {
   ({ db, dispose } = await createTestDb());
 });
 
-after(() => dispose());
+afterAll(() => dispose());
 
 // Every test starts and ends on the defaults, so the order does not matter.
 afterEach(() => resetRules(db));

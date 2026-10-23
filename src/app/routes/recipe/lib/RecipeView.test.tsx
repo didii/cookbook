@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { afterEach, beforeEach, describe, test } from 'node:test';
 import type { ComponentProps } from 'react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
+import { afterEach, beforeEach, describe, test } from 'vitest';
 import type { Recipe, Step } from '~app/shared/recipe';
 import { defaultRules } from '~app/shared/rules';
 import { cleanup, fireEvent, precedes, render, screen, setViewport } from '~testing/dom';

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { beforeEach, describe, test } from 'node:test';
+import { beforeEach, describe, test } from 'vitest';
 import { cssFor } from '~testing/css';
 import { fireEvent, precedes, render, screen, within } from '~testing/dom';
 import { FilterBar } from './FilterBar';

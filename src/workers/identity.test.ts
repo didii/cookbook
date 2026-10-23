@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { describe, test } from 'node:test';
 import { generateKeyPair, SignJWT } from 'jose';
+import { describe, test } from 'vitest';
 import { accessJwtHeader, identify } from './identity';
 
 const teamDomain = 'team.cloudflareaccess.com';

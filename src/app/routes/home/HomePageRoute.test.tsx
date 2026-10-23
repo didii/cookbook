@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { after, before, beforeEach, describe, test } from 'node:test';
 import { createMemoryRouter, MemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
+import { afterAll, beforeAll, beforeEach, describe, test } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import type { RecipeSummary } from '~app/shared/recipe';
 import { createRecipe } from '~app/shared/recipes.server';
@@ -16,11 +16,11 @@ import { filterParams, noFilters } from './lib/filterRecipes';
 let db: D1Database;
 let dispose: () => Promise<void>;
 
-before(async () => {
+beforeAll(async () => {
   ({ db, dispose } = await createTestDb());
 });
 
-after(() => dispose());
+afterAll(() => dispose());
 
 const load = async () => {
   const context = new RouterContextProvider();

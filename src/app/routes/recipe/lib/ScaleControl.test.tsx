@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { afterEach, describe, test } from 'node:test';
 import { useState } from 'react';
+import { afterEach, describe, test } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '~testing/dom';
 import { ScaleControl } from './ScaleControl';
 

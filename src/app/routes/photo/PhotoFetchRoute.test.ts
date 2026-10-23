@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { after, before, describe, test } from 'node:test';
 import { RouterContextProvider } from 'react-router';
+import { afterAll, beforeAll, describe, test } from 'vitest';
 import { envContext } from '~app/shared/context.server';
 import { createTestDb } from '~testing/db';
 import { fake } from '~testing/fake';
@@ -12,10 +12,10 @@ import { action } from './PhotoUploadRoute';
 let photos: R2Bucket;
 let dispose: () => Promise<void>;
 
-before(async () => {
+beforeAll(async () => {
   ({ photos, dispose } = await createTestDb());
 });
-after(() => dispose());
+afterAll(() => dispose());
 
 const context = () => {
   const c = new RouterContextProvider();

@@ -31,4 +31,5 @@ Where tests live: see `STRUCTURE.md`.
 ## Running
 
 - `pnpm test` fails on a scenario without a test or a test naming an unknown scenario.
-- `pnpm test` runs through `tsx` (resolves `~app/` and JSX). No browser or network needed.
+- Tests run on Vitest (`vitest.config.ts`), which resolves `~app/` and JSX. No browser or network needed.
+- `pnpm test:ui` opens the Vitest UI in the browser: watch mode, filter by file or name, see failures with their source.

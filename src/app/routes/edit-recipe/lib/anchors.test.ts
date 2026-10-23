@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { describe, test } from 'node:test';
+import { describe, test } from 'vitest';
 import type { Range } from '~app/shared/stepParsers';
 import { mapRange } from './anchors';
 import { computeEdit, type TextEdit } from './textEdit';

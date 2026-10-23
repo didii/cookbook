@@ -1,16 +1,16 @@
 import assert from 'node:assert/strict';
-import { after, before, describe, test } from 'node:test';
+import { afterAll, beforeAll, describe, test } from 'vitest';
 import { createTestDb } from '~testing/db';
 
 // Each test uses its own recipe slug, so one database serves the whole file.
 let db: D1Database;
 let dispose: () => Promise<void>;
 
-before(async () => {
+beforeAll(async () => {
   ({ db, dispose } = await createTestDb());
 });
 
-after(() => dispose());
+afterAll(() => dispose());
 
 const addRecipe = async (slug: string) =>
   (await db
@@ -104,7 +104,7 @@ describe('recipe-storage › Ingredients keep their order', () => {
   let r: number;
   let first: number;
   let second: number;
-  before(async () => {
+  beforeAll(async () => {
     r = await addRecipe('ingredient-order');
     second = await addIngredient(r, 2);
     first = await addIngredient(r, 1);
@@ -165,7 +165,7 @@ describe('recipe-storage › Steps keep their order', () => {
   let r: number;
   let first: number;
   let second: number;
-  before(async () => {
+  beforeAll(async () => {
     r = await addRecipe('step-order');
     second = await addStep(r, 2);
     first = await addStep(r, 1);
@@ -256,7 +256,7 @@ describe('recipe-storage › Same ingredient linked twice refused', () => {
 
 describe('recipe-storage › Recipe deleted', () => {
   let r: number;
-  before(async () => {
+  beforeAll(async () => {
     r = await addRecipe('del-recipe');
     await link(await addStep(r, 1), await addIngredient(r, 1), r);
     await db.prepare('DELETE FROM recipes WHERE id = ?').bind(r).run();
@@ -277,7 +277,7 @@ describe('recipe-storage › Recipe deleted', () => {
 
 describe('recipe-storage › Ingredient deleted', () => {
   let step: number;
-  before(async () => {
+  beforeAll(async () => {
     const r = await addRecipe('del-ingredient');
     step = await addStep(r, 1);
     const ing = await addIngredient(r, 1);
@@ -395,7 +395,7 @@ const addUser = (email: string, name: string) => db.prepare('INSERT INTO users (
 
 describe('users table', () => {
   describe('an email address is one user whatever its letter case', () => {
-    before(async () => {
+    beforeAll(async () => {
       await addUser('Jos@Example.com', 'Jos');
     });
 
@@ -451,7 +451,7 @@ describe('recipe_views table', () => {
   describe('a member and a recipe have one view row', () => {
     let user: number;
     let recipe: number;
-    before(async () => {
+    beforeAll(async () => {
       user = await userId('viewer@example.com');
       recipe = await addRecipe('view-once');
       await addView(user, recipe);
@@ -478,7 +478,7 @@ describe('recipe_views table', () => {
   describe('views are removed with their recipe or member', () => {
     let user: number;
     let other: number;
-    before(async () => {
+    beforeAll(async () => {
       user = await userId('cascade-viewer@example.com');
       const recipe = await addRecipe('view-cascade');
       other = await addRecipe('view-cascade-user');
@@ -524,7 +524,7 @@ const addNote = (user: number, recipe: number, body = 'minder zout') =>
 describe('recipe-like › Liking twice stores one like', () => {
   let user: number;
   let recipe: number;
-  before(async () => {
+  beforeAll(async () => {
     user = await userId('liker@example.com');
     recipe = await addRecipe('like-twice');
     await addLike(user, recipe);
