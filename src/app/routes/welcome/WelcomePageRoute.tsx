@@ -45,12 +45,12 @@ export default function WelcomePage({ loaderData, actionData }: Route.ComponentP
           <h1 className="text-[clamp(2rem,6vw,3rem)] leading-[1.05] font-black tracking-[-0.03em] text-balance">Welkom in het Familiekookboek</h1>
           <p className="mt-2 text-lg text-pretty text-muted">Alle familierecepten op één plek. Eén ding nog voordat je begint.</p>
           <input type="hidden" name="returnUrl" value={loaderData.returnUrl} />
-          <label htmlFor="callingName" data-testid="Welcome-label" className="mt-6 block font-extrabold">
+          <label htmlFor="callingName" data-testid="WelcomePage-label" className="mt-6 block font-extrabold">
             Hoe noemen we je?
           </label>
           <input
             id="callingName"
-            data-testid="Welcome-name"
+            data-testid="WelcomePage-name"
             name="callingName"
             type="text"
             autoComplete="off"
@@ -62,7 +62,7 @@ export default function WelcomePage({ loaderData, actionData }: Route.ComponentP
             className="mt-1 block min-h-13 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-lg text-ink hover:not-focus:bg-[color-mix(in_srgb,var(--color-ink)_5%,white)] focus:shadow-focus focus:outline-transparent aria-invalid:border-red"
           />
           {actionData?.error && (
-            <p id="callingName-error" data-testid="Welcome-error" role="alert" className="mt-1 font-bold text-red">
+            <p id="callingName-error" data-testid="WelcomePage-error" role="alert" className="mt-1 font-bold text-red">
               {actionData.error}
             </p>
           )}

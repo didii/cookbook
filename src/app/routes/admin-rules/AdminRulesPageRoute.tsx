@@ -49,7 +49,7 @@ export default function AdminRulesPage({ loaderData, actionData }: Route.Compone
       <h1 className="text-[clamp(2rem,6vw,3rem)] leading-[1.05] font-black tracking-[-0.03em]">Herkenning</h1>
       <p className="mt-2 text-lg text-muted">De woorden die het kookboek herkent in recepten. Eén woord per regel; hoofdletters maken niet uit.</p>
       {saved && (
-        <output data-testid="AdminRules-saved" className="mt-4 block font-extrabold text-blu">
+        <output data-testid="AdminRulesPage-saved" className="mt-4 block font-extrabold text-blu">
           Opgeslagen.
         </output>
       )}
@@ -66,7 +66,7 @@ export default function AdminRulesPage({ loaderData, actionData }: Route.Compone
                 key={values[name]}
                 id={name}
                 name={name}
-                data-testid="AdminRules-field"
+                data-testid="AdminRulesPage-field"
                 rows={Math.min(12, Math.max(3, values[name].split('\n').length))}
                 defaultValue={values[name]}
                 autoCapitalize="none"
@@ -76,7 +76,7 @@ export default function AdminRulesPage({ loaderData, actionData }: Route.Compone
                 className="mt-1 block w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 py-2 text-lg text-ink focus:shadow-focus focus:outline-transparent aria-invalid:border-red"
               />
               {error && (
-                <p id={`${name}-error`} data-testid="AdminRules-error" role="alert" className="mt-1 font-bold text-red">
+                <p id={`${name}-error`} data-testid="AdminRulesPage-error" role="alert" className="mt-1 font-bold text-red">
                   {error}
                 </p>
               )}
@@ -84,14 +84,14 @@ export default function AdminRulesPage({ loaderData, actionData }: Route.Compone
           );
         })}
         <div className="flex flex-wrap gap-3">
-          <Button main type="submit" name="intent" value="save" data-testid="AdminRules-save">
+          <Button main type="submit" name="intent" value="save" data-testid="AdminRulesPage-save">
             Opslaan
           </Button>
           <Button
             type="submit"
             name="intent"
             value="reset"
-            data-testid="AdminRules-reset"
+            data-testid="AdminRulesPage-reset"
             onClick={(e) => {
               if (!confirm('Alle eigen woorden verwijderen en de standaardwaarden herstellen?')) e.preventDefault();
             }}
