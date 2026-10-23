@@ -32,9 +32,9 @@ export async function createTestDb() {
   // generated worker-configuration.d.ts), so getD1Database is typed any. Annotating gives the real D1Database type.
   const db: D1Database = await mf.getD1Database('DB');
   const photos = (await mf.getR2Bucket('PHOTOS')) as unknown as R2Bucket; // typed as Miniflare's own R2Bucket, which differs from the generated one
-  const migrations = readdirSync(join(root, 'migrations'))
+  const migrations = readdirSync(join(root, 'db', 'migrations'))
     .filter((f) => f.endsWith('.sql'))
     .sort();
-  for (const f of migrations) await applySql(db, join(root, 'migrations', f));
+  for (const f of migrations) await applySql(db, join(root, 'db', 'migrations', f));
   return { db, photos, dispose: () => mf.dispose() };
 }
