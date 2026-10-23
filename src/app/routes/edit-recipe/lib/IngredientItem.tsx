@@ -1,7 +1,7 @@
 import { useImperativeHandle, useLayoutEffect, useRef, type ComponentProps, type CSSProperties, type KeyboardEvent, type Ref } from 'react';
-import { parseIngredient } from '~app/routes/recipe/lib/ingredients';
 import { cn } from '~app/shared/cn';
 import { Ingredient } from '~app/shared/icons';
+import { parseIngredient } from '~app/shared/ingredients';
 import type { Rules } from '~app/shared/rules';
 import type { ItemHandle } from './ItemHandle';
 import { RowGrip } from './RowGrip';

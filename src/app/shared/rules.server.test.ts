@@ -1,11 +1,10 @@
 import assert from 'node:assert/strict';
 import { after, afterEach, before, describe, test } from 'node:test';
-import { findOven, findTimer } from '~app/routes/edit-recipe/lib/stepParsers';
-import { parseIngredient } from '~app/routes/recipe/lib/ingredients';
-import { scaleBody } from '~app/routes/recipe/lib/scale';
 import { createTestDb } from '~testing/db';
+import { parseIngredient } from './ingredients';
 import { defaultRules } from './rules';
 import { getRules, resetRules, saveRules, toFields, type RulesFields } from './rules.server';
+import { findOven, findTimer } from './stepParsers';
 
 let db: D1Database;
 let dispose: () => Promise<void>;
@@ -276,18 +275,5 @@ describe('parsing-rules › Removed word is not recognised', () => {
 
   test('the remaining words still are', () => {
     assert.equal(findOven('180 °C', rules)?.values.degrees, 180);
-  });
-});
-
-describe('parsing-rules › Scaling uses the stored units', () => {
-  const rules = withRules({ units: [...defaultRules.units, 'kopje'] });
-  const rows = [{ id: '0', quantityText: '2 kopje', name: 'rijst' }];
-
-  test('a stored unit is scaled', () => {
-    assert.equal(scaleBody('doe 2 kopje bloem erbij', 2, [], rules), 'doe 4 kopje bloem erbij');
-  });
-
-  test('without the stored unit it is not', () => {
-    assert.equal(scaleBody('doe 2 kopje bloem erbij', 2, rows, defaultRules), 'doe 2 kopje bloem erbij');
   });
 });

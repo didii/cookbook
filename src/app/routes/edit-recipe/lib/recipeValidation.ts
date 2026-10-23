@@ -1,6 +1,6 @@
-import { parseIngredient, type ParsedIngredient } from '~app/routes/recipe/lib/ingredients';
-import type { Step } from './recipe';
-import type { Rules } from './rules';
+import { parseIngredient, type ParsedIngredient } from '~app/shared/ingredients';
+import type { Step } from '~app/shared/recipe';
+import type { Rules } from '~app/shared/rules';
 
 export type RecipeFormField = 'title' | 'author' | 'servings' | 'time' | 'intro' | 'image';
 

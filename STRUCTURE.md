@@ -1,6 +1,6 @@
 # Source structure
 
-The folder layout and the rules under "Modules" are rules. The rest are recommendations: deviate when it makes sense. Code that breaks a rule is listed under "Violations" and is a TODO to fix, not an exception.
+The folder layout and the rules under "Modules" are rules. The rest are recommendations: deviate when it makes sense.
 
 ```
 src/
@@ -25,32 +25,9 @@ A module is a folder directly under `routes/` (e.g. `routes/recipe/`, including 
 - **A file used by only one route lives in that route.** Move it to `shared/` when a second route needs it.
 - **Route file names.** `<name>PageRoute` for a route that renders a page, `<name><Action>Route` for a route with only a loader or action (e.g. `PhotoUploadRoute`, `LikeUpdateRoute`); `LayoutRoute` for a layout (`<name>LayoutRoute` once there is more than one). The test sits beside it with the same name plus `.test`.
 
-- **Colocate first.** A component lives in the one route that uses it. Move it to `shared/` when a second route or layout needs it, not earlier. This keeps the blast radius of a change visible from the path.
+- **Colocate first.** A component lives in the one route that uses it. Move it to `shared/` when a second route or layout needs it, not earlier. This works both ways: when removing code leaves a `shared/` file used by only one route, move it back into that route. This keeps the blast radius of a change visible from the path.
 - **Route module vs component.** Only route files (`*Route.tsx`, `root.tsx`) export `loader` (server data, runs before render), `meta` (page title), `links`, `ErrorBoundary` and the default route component. A component file exports one component, with its `Props` type above it, and nothing route-related.
 - **Aliases.** `~app/` is `src/app/`, `~testing/` is the shared test helpers. Aliases only change how an import is resolved; the build bundles what the app and the Worker entry import, so test files and `src/testing/` never ship.
 - **Naming.** PascalCase for component files, camelCase for everything else.
 - **Styling.** Tailwind utilities in the component. Combine with `cn()` (`shared/cn.ts`, tailwind-merge) so a `className` prop can override defaults. Prefer styling from real state (`aria-current`, `has-checked:`, `disabled:`) over parallel state classes. Colours and shadows come from `@theme` tokens in `app.css`; keep component classes out of it.
 - **Tests sit next to the file they test.** `shared/recipes.server.ts` has `shared/recipes.server.test.ts`, so a folder listing shows what is untested. Tests with no single source file sit beside what they cover (`src/db/migrations/migrations.test.ts`, `src/db/seed/dev.test.ts`). `src/testing/` holds shared test helpers (`testing/db.ts`: an empty in-memory D1 with the migrations applied; each test inserts the data it needs, no test relies on shared data). It is not named `test/` because `node --test` runs every file under a `test/` directory. A test that renders a component is `<name>.test.tsx` and writes JSX (the test scripts and `scripts/spec-check.ts` list both extensions); all other tests stay `.test.ts`.
-
-## Violations
-
-TODO: fix each, then remove it from this list.
-
-Imports from a route into another route:
-
-- [ ] `routes/edit-recipe/EditRecipePageRoute.tsx`, `lib/IngredientItem.tsx`, `lib/chips.ts`, `lib/stepParsers.ts` and `lib/stepParsers.test.ts` import `routes/recipe/lib/ingredients`.
-- [ ] `routes/recipe/lib/scale.ts` imports `routes/edit-recipe/lib/stepParsers`.
-
-Imports from `shared/` into a route:
-
-- [ ] `shared/recipeValidation.ts` imports `routes/recipe/lib/ingredients`.
-- [ ] `shared/rules.server.test.ts` imports `routes/edit-recipe/lib/stepParsers`, `routes/recipe/lib/ingredients` and `routes/recipe/lib/scale`.
-- [ ] `shared/components/WorkInProgress.test.tsx` imports `routes/about/AboutPageRoute` and `routes/settings/SettingsPageRoute`.
-
-Used by one route only, so it belongs in that route:
-
-- [ ] `shared/recipeValidation.ts` (only `routes/edit-recipe`). Moving it there makes `recipeValidation.ts` import `routes/recipe/lib/ingredients`, a route to route import: fix that first.
-
-Route file names:
-
-- [ ] `routes/photo/route.test.ts` tests `PhotoFetchRoute` and `PhotoUploadRoute`; split it per route file.

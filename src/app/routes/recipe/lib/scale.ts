@@ -1,6 +1,6 @@
-import { findIngredients, type Row } from '~app/routes/edit-recipe/lib/stepParsers';
+import { numberPattern, numberValue } from '~app/shared/ingredients';
 import type { Rules } from '~app/shared/rules';
-import { numberPattern, numberValue } from './ingredients';
+import { findIngredients, type Row } from '~app/shared/stepParsers';
 
 // TODO: placeholder logic. Scaling parses the quantity text with the parser of `ingredients.ts`; once `quantityValue` and `quantityUnit` are saved in the DB it multiplies those instead.
 /** A number or range at the start of a text: leading space, first number, the dash, second number. */

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { parseIngredient } from '~app/routes/recipe/lib/ingredients';
-import { defaultRules } from '~app/shared/rules';
+import { parseIngredient } from './ingredients';
+import { defaultRules } from './rules';
 import { findIngredients, findOven, findTimer, type Row } from './stepParsers';
 
 const minutes = (text: string) => findTimer(text, defaultRules)?.values.minutes;

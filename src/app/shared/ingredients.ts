@@ -1,4 +1,4 @@
-import type { Rules } from '~app/shared/rules';
+import type { Rules } from './rules';
 
 export type ParsedIngredient = { quantityText: string; amount?: number; unit?: string; name: string };
 

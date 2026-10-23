@@ -3,7 +3,6 @@ import { Form, Link, useLocation, useNavigate, useNavigation, useRouteLoaderData
 import { cn } from '~app/shared/cn';
 import { AuthorInput } from '~app/shared/components';
 import { ChevronBack } from '~app/shared/icons';
-import type { RecipeFormErrors, RecipeFormField } from '~app/shared/recipeValidation';
 import type { Rules } from '~app/shared/rules';
 import { proposals, usedIn } from './chips';
 import {
@@ -39,6 +38,7 @@ import {
 import { IngredientList } from './IngredientList';
 import { OpenProposals } from './OpenProposals';
 import { PhotoField, type PhotoState } from './PhotoField';
+import type { RecipeFormErrors, RecipeFormField } from './recipeValidation';
 import { SaveBar } from './SaveBar';
 import { StepList } from './StepList';
 import { useDraftPersistence } from './useDraftPersistence';

@@ -1,7 +1,5 @@
+import type { Range } from '~app/shared/stepParsers';
 import type { TextEdit } from './textEdit';
-
-/** A range of a step's text: UTF-16 indexes, `end` exclusive. */
-export type Range = { start: number; end: number };
 
 /**
  * Where a range is after an edit, or undefined when the edit took all of its words away. The edit is what `StepText` reports (see `computeEdit`): the characters `[start, start + removed)` were replaced by `inserted` new ones.

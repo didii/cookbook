@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { mapRange, type Range } from './anchors';
+import type { Range } from '~app/shared/stepParsers';
+import { mapRange } from './anchors';
 import { computeEdit, type TextEdit } from './textEdit';
 
 const edit = (start: number, removed: number, inserted: number): TextEdit => ({ start, removed, inserted });

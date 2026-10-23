@@ -2,7 +2,6 @@ import { data, redirect, useRouteLoaderData } from 'react-router';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { acceptImage } from '~app/shared/photos.server';
 import { chooseSeal, createRecipe, listAuthors } from '~app/shared/recipes.server';
-import { readForm, readIngredients, readSteps, toRecipeFields, validate, type RecipeFormErrors } from '~app/shared/recipeValidation';
 import { defaultRules, type Rules } from '~app/shared/rules';
 import { getRules } from '~app/shared/rules.server';
 import { seals } from '~app/shared/seals';
@@ -12,6 +11,7 @@ import type { Route } from './+types/NewRecipePageRoute';
 import { emptyDraftSeed } from './lib/draft';
 import { endDraftAfterSave } from './lib/endDraftAfterSave';
 import { RecipeEditor } from './lib/RecipeEditor';
+import { readForm, readIngredients, readSteps, toRecipeFields, validate, type RecipeFormErrors } from './lib/recipeValidation';
 
 export async function loader({ context }: Route.LoaderArgs) {
   const db = context.get(envContext).DB;
