@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
+import { seals } from '~app/lib/seals';
 import { createTestDb } from '~testing/db';
 import { defined } from '~testing/defined';
-import { seals } from '~app/lib/seals';
 import {
   createRecipe,
   deleteRecipe,

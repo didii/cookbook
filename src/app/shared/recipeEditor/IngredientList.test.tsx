@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { cssFor } from '~testing/css';
-import { fireEvent, precedes, render, screen, within } from '~testing/dom';
 import { useState } from 'react';
 import type { IngredientLine } from '~app/lib/draft';
 import { defaultRules } from '~app/lib/rules';
+import { cssFor } from '~testing/css';
+import { fireEvent, precedes, render, screen, within } from '~testing/dom';
 import { IngredientList } from './IngredientList';
 
 /** The list as the editor holds it: a few rows and the free row at the end. */

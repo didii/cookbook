@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { afterEach, test } from 'node:test';
-import { cleanup, fireEvent, render, screen } from '~testing/dom';
 import { useState } from 'react';
+import { cleanup, fireEvent, render, screen } from '~testing/dom';
 import { ScaleControl } from './ScaleControl';
 
 afterEach(cleanup);

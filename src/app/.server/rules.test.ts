@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
-import { createTestDb } from '~testing/db';
 import { parseIngredient } from '~app/lib/ingredients';
 import { defaultRules } from '~app/lib/rules';
 import { scaleBody } from '~app/lib/scale';
 import { findOven, findTimer } from '~app/lib/stepParsers';
+import { createTestDb } from '~testing/db';
 import { getRules, resetRules, saveRules, toFields, type RulesFields } from './rules';
 
 let db: D1Database;

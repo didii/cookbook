@@ -1,11 +1,6 @@
 {
   "extends": "./tsconfig.json",
-  "include": [
-    ".react-router/types/**/*",
-    "worker-configuration.d.ts",
-    "src/**/*",
-    "src/**/.server/**/*",
-  ],
+  "include": [".react-router/types/**/*", "worker-configuration.d.ts", "src/**/*", "src/**/.server/**/*"],
   "compilerOptions": {
     "baseUrl": "./",
     "composite": true,

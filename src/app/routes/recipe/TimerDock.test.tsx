@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { fireEvent, precedes, render, screen, within } from '~testing/dom';
 import type { Step } from '~app/lib/recipe';
 import { activeTimers, start, timerDefs } from '~app/lib/timers';
+import { fireEvent, precedes, render, screen, within } from '~testing/dom';
 import { TimerDock } from './TimerDock';
 import { TimerSidebar } from './TimerSidebar';
 

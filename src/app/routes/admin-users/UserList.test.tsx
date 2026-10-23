@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { render, screen } from '~testing/dom';
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router';
+import { render, screen } from '~testing/dom';
 import { UserList } from './UserList';
 
 const users = [

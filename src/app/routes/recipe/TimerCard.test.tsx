@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { cleanup, precedes, render, screen } from '~testing/dom';
 import type { Step } from '~app/lib/recipe';
 import { activeTimers, handOver, start, timerDefs, timerView } from '~app/lib/timers';
+import { cleanup, precedes, render, screen } from '~testing/dom';
 import { ClockSetting } from './ClockSetting';
 import { StepItem } from './StepItem';
 import { TimersContext, type TimerControls } from './timersContext';

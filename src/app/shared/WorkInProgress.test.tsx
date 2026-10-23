@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { render, screen } from '~testing/dom';
-import { routePaths } from '~testing/routes';
 import About from '~app/routes/about/route';
 import Settings from '~app/routes/settings/route';
+import { render, screen } from '~testing/dom';
+import { routePaths } from '~testing/routes';
 
 const banner = 'Dit scherm is nog in aanbouw';
 

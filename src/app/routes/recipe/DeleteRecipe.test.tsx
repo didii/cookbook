@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { fireEvent, precedes, render, screen, within } from '~testing/dom';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { defaultRules } from '~app/lib/rules';
+import { fireEvent, precedes, render, screen, within } from '~testing/dom';
 import { RecipePage } from './RecipePage';
 
 const recipe = {

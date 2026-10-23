@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { cleanup, fireEvent, precedes, render, screen } from '~testing/dom';
 import type { Step } from '~app/lib/recipe';
 import { toggled } from '~app/lib/toggled';
+import { cleanup, fireEvent, precedes, render, screen } from '~testing/dom';
 import { StepItem } from './StepItem';
 import { StepList } from './StepList';
 

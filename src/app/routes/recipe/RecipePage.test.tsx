@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { afterEach, test } from 'node:test';
-import { cleanup, fireEvent, precedes, render, screen, setViewport } from '~testing/dom';
-import { routePaths } from '~testing/routes';
 import type { ComponentProps } from 'react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import type { Recipe, Step } from '~app/lib/recipe';
 import { defaultRules } from '~app/lib/rules';
 import { arrive, type Positions, type TabId } from '~app/lib/tabs';
+import { cleanup, fireEvent, precedes, render, screen, setViewport } from '~testing/dom';
+import { routePaths } from '~testing/routes';
 import { IngredientList } from './IngredientList';
 import { RecipePage } from './RecipePage';
 

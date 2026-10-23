@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import { after, test } from 'node:test';
-import { createTestDb } from '~testing/db';
-import { fake } from '~testing/fake';
 import { generateKeyPair, SignJWT } from 'jose';
 import type { RouterContextProvider } from 'react-router';
 import { envContext, userEmailContext } from '~app/.server/context';
 import { accessJwtHeader } from '~app/.server/identity';
 import { createUser } from '~app/.server/users';
+import { createTestDb } from '~testing/db';
+import { fake } from '~testing/fake';
 import { createFetch } from './handler';
 
 // Typed string: the generated Env types these vars as the exact literals from wrangler.jsonc.

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { fireEvent, render, screen } from '~testing/dom';
 import { proposals, reconcile, setMode } from '~app/lib/chips';
+import { fireEvent, render, screen } from '~testing/dom';
 import { OpenProposals } from './OpenProposals';
 import { ChipsHarness, noRows, stepOf } from './StepChips.test';
 

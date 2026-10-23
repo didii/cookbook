@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { fireEvent, render, screen, within } from '~testing/dom';
 import { createMemoryRouter, RouterProvider } from 'react-router';
+import { fireEvent, render, screen, within } from '~testing/dom';
 import { DeleteUser } from './DeleteUser';
 
 // The delete form is a data-router `Form`, so the component needs a data router around it.

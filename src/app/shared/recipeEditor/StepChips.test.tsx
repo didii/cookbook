@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { fireEvent, render, screen, within } from '~testing/dom';
 import { useState, type ReactNode } from 'react';
 import { classifyStored, type StepChips as Chips, type Context } from '~app/lib/chips';
 import type { StepDraft } from '~app/lib/draft';
 import type { Step } from '~app/lib/recipe';
 import { defaultRules } from '~app/lib/rules';
 import { StepChips } from '~app/shared/recipeEditor/StepChips';
+import { fireEvent, render, screen, within } from '~testing/dom';
 
 // Needs a browser: hover, focus and visibility.
 test.todo('recipe-step-chips › A ghost is shown only while its step is active');

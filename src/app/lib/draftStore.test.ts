@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { fake } from '~testing/fake';
 import { defaultRules } from '~app/lib/rules';
+import { fake } from '~testing/fake';
 import { addStep, editStep, emptyDraftSeed, startingDraft, typeIngredient } from './draft';
 import { clearDraft, describeSavedAt, draftKey, isFresh, loadDraft, purgeDrafts, resolveStart, saveDraft, type DraftStorage } from './draftStore';
 

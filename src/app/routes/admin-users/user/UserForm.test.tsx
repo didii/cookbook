@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { fireEvent, render, screen } from '~testing/dom';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import type { Role } from '~app/lib/role';
+import { fireEvent, render, screen } from '~testing/dom';
 import { UserForm } from './UserForm';
 
 const jos = { id: 2, email: 'jos@example.com', callingName: 'Jos', role: 'admin' as Role };

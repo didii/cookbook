@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { cleanup, fireEvent, render, screen } from '~testing/dom';
 import type { ComponentProps } from 'react';
+import { cleanup, fireEvent, render, screen } from '~testing/dom';
 import { RowToolbar } from './RowToolbar';
 
 const props = { label: 'Acties', deleteLabel: 'Verwijder', canUp: true, canDown: true, onMove: () => {}, onDelete: () => {} };

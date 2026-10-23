@@ -1,7 +1,7 @@
+import { ArrowDown, ArrowUp } from '../icons';
 import { useEffect, useRef, type ReactNode } from 'react';
 import type { IngredientLine } from '~app/lib/draft';
 import type { Rules } from '~app/lib/rules';
-import { ArrowDown, ArrowUp } from '../icons';
 import { Announcement } from './Announcement';
 import { IngredientItem } from './IngredientItem';
 import type { ItemHandle } from './ItemHandle';

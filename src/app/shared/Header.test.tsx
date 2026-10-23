@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { MemoryRouter } from 'react-router';
 import { fireEvent, render, screen } from '~testing/dom';
 import { routePaths } from '~testing/routes';
-import { MemoryRouter } from 'react-router';
 import { Header } from './Header';
 
 const memberRole = 'user' as const;
