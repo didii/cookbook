@@ -1,5 +1,5 @@
 import type { KeyboardEvent } from 'react';
-import { tabForKey, tabs, type TabId } from '~app/lib/tabs';
+import { tabForKey, tabs, type TabId } from './tabs';
 
 type Props = { tab: TabId; onSelect: (tab: TabId) => void };
 

@@ -1,15 +1,15 @@
 import { data, redirect, useRouteLoaderData } from 'react-router';
-import { envContext } from '~app/.server/context';
-import { acceptImage, deletePhoto } from '~app/.server/photos';
-import { getRecipe, listAuthors, updateRecipe } from '~app/.server/recipes';
-import { getRules } from '~app/.server/rules';
-import { joinIngredient } from '~app/lib/ingredients';
-import { defaultRules, type Rules } from '~app/lib/rules';
-import { tileFor } from '~app/lib/tile';
-import { endDraftAfterSave } from '~app/shared/recipeEditor/endDraftAfterSave';
-import { RecipeEditor } from '~app/shared/recipeEditor/RecipeEditor';
+import { joinIngredient } from '~app/routes/recipe/lib/ingredients';
+import { envContext } from '~app/shared/context.server';
+import { acceptImage, deletePhoto } from '~app/shared/photos.server';
+import { getRecipe, listAuthors, updateRecipe } from '~app/shared/recipes.server';
 import { readForm, readIngredients, readSteps, toRecipeFields, validate, type RecipeFormErrors } from '~app/shared/recipeValidation';
-import type { Route } from './+types/route';
+import { defaultRules, type Rules } from '~app/shared/rules';
+import { getRules } from '~app/shared/rules.server';
+import { tileFor } from '~app/shared/tile';
+import type { Route } from './+types/EditRecipePageRoute';
+import { endDraftAfterSave } from './lib/endDraftAfterSave';
+import { RecipeEditor } from './lib/RecipeEditor';
 
 const notFound = () => data('Recept niet gevonden', { status: 404 });
 

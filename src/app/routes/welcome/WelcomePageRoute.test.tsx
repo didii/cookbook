@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
-import { envContext, userEmailContext } from '~app/.server/context';
-import { getUser } from '~app/.server/users';
+import { envContext, userEmailContext } from '~app/shared/context.server';
+import { getUser } from '~app/shared/users.server';
 import { createTestDb } from '~testing/db';
 import { render, screen } from '~testing/dom';
 import { fake } from '~testing/fake';
-import type { Route } from './+types/route';
+import type { Route } from './+types/WelcomePageRoute';
 import WelcomePage, { action, loader } from './WelcomePageRoute';
 
 // Real loader and action against an in-memory D1; each test uses its own email.

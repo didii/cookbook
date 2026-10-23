@@ -1,5 +1,5 @@
 import { Switch } from '@base-ui/react/switch';
-import { switchText, type LockState } from '~app/lib/cookMode';
+import { switchText, type LockState } from './cookMode';
 
 type Props = { wanted: boolean; lock: LockState; manual: boolean | undefined; onToggle: () => void };
 

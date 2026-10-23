@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import { RouterContextProvider } from 'react-router';
-import { envContext, userEmailContext } from '~app/.server/context';
-import { getRules } from '~app/.server/rules';
-import { createUser } from '~app/.server/users';
-import { defaultRules } from '~app/lib/rules';
+import { envContext, userEmailContext } from '~app/shared/context.server';
+import { defaultRules } from '~app/shared/rules';
+import { getRules } from '~app/shared/rules.server';
+import { createUser } from '~app/shared/users.server';
 import { createTestDb } from '~testing/db';
 import { fake } from '~testing/fake';
-import type { Route } from './+types/route';
+import type { Route } from './+types/AdminRulesPageRoute';
 import { action, loader } from './AdminRulesPageRoute';
 
 // Real loader and action against an in-memory D1.

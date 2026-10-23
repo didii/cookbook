@@ -1,16 +1,16 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import { createMemoryRouter, MemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
-import { envContext, userEmailContext } from '~app/.server/context';
-import { createRecipe } from '~app/.server/recipes';
-import { filterParams, noFilters } from '~app/lib/filterRecipes';
-import type { RecipeSummary } from '~app/lib/recipe';
+import { envContext, userEmailContext } from '~app/shared/context.server';
+import type { RecipeSummary } from '~app/shared/recipe';
+import { createRecipe } from '~app/shared/recipes.server';
 import { cssFor } from '~testing/css';
 import { createTestDb } from '~testing/db';
 import { act, cleanup, fireEvent, precedes, render, screen, within } from '~testing/dom';
 import { fake } from '~testing/fake';
-import type { Route } from './+types/route';
+import type { Route } from './+types/HomePageRoute';
 import HomePage, { loader, shouldRevalidate } from './HomePageRoute';
+import { filterParams, noFilters } from './lib/filterRecipes';
 
 // Real loader against an in-memory D1 holding the recipes the test inserted.
 let db: D1Database;

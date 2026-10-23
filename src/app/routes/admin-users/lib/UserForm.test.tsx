@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createMemoryRouter, RouterProvider } from 'react-router';
-import type { Role } from '~app/lib/role';
+import type { Role } from '~app/shared/role';
 import { fireEvent, render, screen } from '~testing/dom';
 import { UserForm } from './UserForm';
 

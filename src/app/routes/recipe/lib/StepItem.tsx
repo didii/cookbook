@@ -1,9 +1,9 @@
 import { useContext } from 'react';
-import type { Step } from '~app/lib/recipe';
 import { cn } from '~app/shared/cn';
+import type { Step } from '~app/shared/recipe';
 import { StepChips } from './StepChips';
-import { TimerCard } from './TimerCard';
-import { TimersContext } from './timersContext';
+import { TimerCard } from './timers/TimerCard';
+import { TimersContext } from './timers/timersContext';
 
 const tint = 'pointer-events-none absolute inset-y-0 -inset-x-2 -z-10 rounded-xl bg-yel/55';
 

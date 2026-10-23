@@ -1,5 +1,5 @@
 import { useId, useState } from 'react';
-import { formatNumber, nextMultiplier, parseNumber } from '~app/lib/scale';
+import { formatNumber, nextMultiplier, parseNumber } from './scale';
 
 type Props = { value: number; onChange: (value: number) => void; servings: boolean };
 

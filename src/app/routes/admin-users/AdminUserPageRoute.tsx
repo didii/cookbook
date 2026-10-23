@@ -1,8 +1,8 @@
 import { data, redirect } from 'react-router';
-import { envContext, userEmailContext } from '~app/.server/context';
-import { deleteUser, getUserById, isLastSuperadmin, requireSuperadmin, updateUser } from '~app/.server/users';
-import { roles, type Role } from '~app/lib/role';
-import type { Route } from './user/+types/route';
+import { envContext, userEmailContext } from '~app/shared/context.server';
+import { roles, type Role } from '~app/shared/role';
+import { deleteUser, getUserById, isLastSuperadmin, requireSuperadmin, updateUser } from '~app/shared/users.server';
+import type { Route } from './+types/AdminUserPageRoute';
 import { UserForm } from './lib/UserForm';
 
 /** The role check comes first, so a non-superadmin gets 403 for any id and cannot tell which users exist. */

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { MemoryRouter } from 'react-router';
-import type { RecipeSummary } from '~app/lib/recipe';
+import type { RecipeSummary } from '~app/shared/recipe';
 import { cssFor } from '~testing/css';
 import { precedes, render, screen } from '~testing/dom';
 import { RecipeCard } from './RecipeCard';

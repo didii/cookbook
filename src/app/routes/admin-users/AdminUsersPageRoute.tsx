@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router';
-import { envContext, userEmailContext } from '~app/.server/context';
-import { listUsers, requireSuperadmin, userLimit } from '~app/.server/users';
-import type { Route } from './+types/route';
+import { envContext, userEmailContext } from '~app/shared/context.server';
+import { listUsers, requireSuperadmin, userLimit } from '~app/shared/users.server';
+import type { Route } from './+types/AdminUsersPageRoute';
 import { UserList } from './lib/UserList';
 
 /** Superadmins only; this is the protection, the menu link is only a convenience. */

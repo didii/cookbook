@@ -1,20 +1,11 @@
 import { Link, useSearchParams, type ShouldRevalidateFunctionArgs } from 'react-router';
-import { envContext, userEmailContext } from '~app/.server/context';
-import { listRecipes } from '~app/.server/recipes';
-import {
-  authorsOf,
-  filterParams,
-  filterRecipes,
-  isFiltered,
-  minRecipesForFilters,
-  noFilters,
-  parseFilters,
-  type Filters,
-} from '~app/lib/filterRecipes';
-import { tileFor } from '~app/lib/tile';
-import { Button } from '~app/shared/Button';
-import type { Route } from './+types/route';
+import { Button } from '~app/shared/components';
+import { envContext, userEmailContext } from '~app/shared/context.server';
+import { listRecipes } from '~app/shared/recipes.server';
+import { tileFor } from '~app/shared/tile';
+import type { Route } from './+types/HomePageRoute';
 import { FilterBar } from './lib/FilterBar';
+import { authorsOf, filterParams, filterRecipes, isFiltered, minRecipesForFilters, noFilters, parseFilters, type Filters } from './lib/filterRecipes';
 import { RecipeCard } from './lib/RecipeCard';
 
 export async function loader({ context }: Route.LoaderArgs) {

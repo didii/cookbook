@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import type { TimerView } from '~app/lib/timers';
+import type { TimerView } from './timers/timers';
 
 /** What the steps, the dock and the sidebar need of the page's timers. */
 export type TimerControls = {

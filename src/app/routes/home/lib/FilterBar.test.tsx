@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { noFilters, type Filters } from '~app/lib/filterRecipes';
 import { cssFor } from '~testing/css';
 import { cleanup, fireEvent, precedes, render, screen, within } from '~testing/dom';
 import { FilterBar } from './FilterBar';
+import { noFilters, type Filters } from './filterRecipes';
 
 const authors = ['Mama', 'Oma', 'Papa'];
 const show = (filters: Filters = noFilters, detailed = true) =>

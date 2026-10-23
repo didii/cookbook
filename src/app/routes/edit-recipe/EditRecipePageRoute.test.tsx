@@ -1,18 +1,18 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
-import type { Route as NewRoute } from '../new-recipe/+types/route';
-import NewRecipePage from '../new-recipe/NewRecipePageRoute';
 import type { ReactElement } from 'react';
 import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
-import { envContext } from '~app/.server/context';
-import { getPhoto, storePhoto } from '~app/.server/photos';
-import { getRecipe } from '~app/.server/recipes';
+import { envContext } from '~app/shared/context.server';
+import { getPhoto, storePhoto } from '~app/shared/photos.server';
+import { getRecipe } from '~app/shared/recipes.server';
 import { createTestDb } from '~testing/db';
 import { defined } from '~testing/defined';
 import { render, screen } from '~testing/dom';
 import { fake } from '~testing/fake';
-import type { Route } from './+types/route';
+import type { Route } from './+types/EditRecipePageRoute';
+import type { Route as NewRoute } from './+types/NewRecipePageRoute';
 import EditRecipePage, { action, loader } from './EditRecipePageRoute';
+import NewRecipePage from './NewRecipePageRoute';
 
 // Real loader and action against an in-memory D1 holding a recipe the test inserted.
 let db: D1Database;

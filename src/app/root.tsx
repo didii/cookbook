@@ -1,11 +1,11 @@
 import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router';
 import type { Route } from './+types/root';
 import './app.css';
-import { envContext, userEmailContext } from '~app/.server/context';
-import { getRules } from '~app/.server/rules';
-import { getUser } from '~app/.server/users';
-import { redirectToWelcome } from '~app/.server/welcome';
-import { SkipLink } from '~app/shared/SkipLink';
+import { SkipLink } from './shared/components';
+import { envContext, userEmailContext } from './shared/context.server';
+import { getRules } from './shared/rules.server';
+import { getUser } from './shared/users.server';
+import { redirectToWelcome } from './shared/welcome.server';
 
 export const links: Route.LinksFunction = () => [
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },

@@ -1,6 +1,6 @@
-import { envContext } from '~app/.server/context';
-import { getPhoto } from '~app/.server/photos';
-import type { Route } from './+types/file';
+import { envContext } from '~app/shared/context.server';
+import { getPhoto } from '~app/shared/photos.server';
+import type { Route } from './+types/PhotoFetchRoute';
 
 /** GET /foto/:file: the stored photo, cached for a year because the name changes whenever the photo does. */
 export async function loader({ params, context }: Route.LoaderArgs) {

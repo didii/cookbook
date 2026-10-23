@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import { RouterContextProvider } from 'react-router';
-import { envContext, userEmailContext } from '~app/.server/context';
+import { envContext, userEmailContext } from '~app/shared/context.server';
 import { createTestDb } from '~testing/db';
 import { fake } from '~testing/fake';
-import type { Route } from './+types/route';
+import type { Route } from './+types/AdminUsersPageRoute';
 import { loader } from './AdminUsersPageRoute';
 
 // Real loader against an in-memory D1.

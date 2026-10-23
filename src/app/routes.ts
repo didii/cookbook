@@ -12,7 +12,7 @@ export default [
     route('beheer/herkenning', 'routes/admin-rules/AdminRulesPageRoute.tsx'),
     route('beheer/gebruikers', 'routes/admin-users/AdminUsersPageRoute.tsx', [route(':id', 'routes/admin-users/AdminUserPageRoute.tsx')]),
     route('over', 'routes/about/AboutPageRoute.tsx'),
-    route('recepten/nieuw', 'routes/new-recipe/NewRecipePageRoute.tsx'),
+    route('recepten/nieuw', 'routes/edit-recipe/NewRecipePageRoute.tsx'),
     route('recepten/:slug/bewerken', 'routes/edit-recipe/EditRecipePageRoute.tsx'),
     route('recepten/:slug', 'routes/recipe/RecipePageRoute.tsx'),
   ]),

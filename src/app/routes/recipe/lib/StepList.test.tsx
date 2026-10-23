@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import type { Step } from '~app/lib/recipe';
-import { toggled } from '~app/lib/toggled';
+import type { Step } from '~app/shared/recipe';
 import { cleanup, fireEvent, precedes, render, screen } from '~testing/dom';
 import { StepItem } from './StepItem';
 import { StepList } from './StepList';
+import { toggled } from './toggled';
 
 const plain = (body: string): Step => ({ body, ingredients: [] });
 const steps: Step[] = [

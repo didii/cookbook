@@ -1,4 +1,4 @@
-import { WorkInProgress } from '~app/shared/WorkInProgress';
+import { WorkInProgress } from '~app/shared/components';
 
 export function meta() {
   return [{ title: 'Instellingen · Familiekookboek' }];

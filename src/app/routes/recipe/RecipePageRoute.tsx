@@ -1,10 +1,10 @@
 import { data, redirect, useRouteLoaderData } from 'react-router';
-import { envContext, userEmailContext } from '~app/.server/context';
-import { deletePhoto } from '~app/.server/photos';
-import { deleteRecipe, getMemberRecipeData, getRecipe, recordView } from '~app/.server/recipes';
-import { defaultRules, type Rules } from '~app/lib/rules';
-import { tileFor } from '~app/lib/tile';
-import type { Route } from './+types/route';
+import { envContext, userEmailContext } from '~app/shared/context.server';
+import { deletePhoto } from '~app/shared/photos.server';
+import { deleteRecipe, getMemberRecipeData, getRecipe, recordView } from '~app/shared/recipes.server';
+import { defaultRules, type Rules } from '~app/shared/rules';
+import { tileFor } from '~app/shared/tile';
+import type { Route } from './+types/RecipePageRoute';
 import { RecipeView } from './lib/RecipeView';
 
 export async function loader({ params, context }: Route.LoaderArgs) {

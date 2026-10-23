@@ -1,5 +1,5 @@
-import type { Recipe } from '~app/lib/recipe';
 import { cn } from '~app/shared/cn';
+import type { Recipe } from '~app/shared/recipe';
 
 type Props = { ingredients: Recipe['ingredients']; ticked: ReadonlySet<number>; onToggle: (index: number) => void; className?: string };
 

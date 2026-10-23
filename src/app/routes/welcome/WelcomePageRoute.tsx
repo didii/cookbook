@@ -1,12 +1,10 @@
 import { data, Form, redirect } from 'react-router';
-import { envContext, userEmailContext } from '~app/.server/context';
-import { createUser, getUser } from '~app/.server/users';
-import { safeReturnUrl } from '~app/lib/returnUrl';
-import { tiles } from '~app/lib/tile';
-import { Button } from '~app/shared/Button';
-import { Fret } from '~app/shared/Fret';
-import { TileBand } from '~app/shared/TileBand';
-import type { Route } from './+types/route';
+import { Button, Fret, TileBand } from '~app/shared/components';
+import { envContext, userEmailContext } from '~app/shared/context.server';
+import { safeReturnUrl } from '~app/shared/returnUrl';
+import { tiles } from '~app/shared/tile';
+import { createUser, getUser } from '~app/shared/users.server';
+import type { Route } from './+types/WelcomePageRoute';
 
 const maxNameLength = 40;
 

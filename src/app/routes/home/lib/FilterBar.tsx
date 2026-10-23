@@ -1,9 +1,9 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import { activeFilterCount, noFilters, sameAuthor, type Filters, type Sort } from '~app/lib/filterRecipes';
-import { Button } from '~app/shared/Button';
 import { cn } from '~app/shared/cn';
+import { Button } from '~app/shared/components';
 import { Search, Sliders } from '~app/shared/icons';
 import { press } from '~app/shared/press';
+import { activeFilterCount, noFilters, sameAuthor, type Filters, type Sort } from './filterRecipes';
 import { useKeyboardOffset } from './useKeyboardOffset';
 
 type Props = {

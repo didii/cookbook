@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { createWakeLock, type LockState } from '~app/lib/cookMode';
+import { createWakeLock, type LockState } from './cookMode';
 
 /** Keeps the screen awake while `wanted`; asks again when the page shows after being hidden and lets go when the page is left. */
 export function useWakeLock(wanted: boolean): LockState {

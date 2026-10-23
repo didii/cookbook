@@ -1,9 +1,9 @@
 import { data, Form } from 'react-router';
-import { envContext, userEmailContext } from '~app/.server/context';
-import { getRules, resetRules, saveRules, toFields, type RulesFields } from '~app/.server/rules';
-import { requireAdmin } from '~app/.server/users';
-import { Button } from '~app/shared/Button';
-import type { Route } from './+types/route';
+import { Button } from '~app/shared/components';
+import { envContext, userEmailContext } from '~app/shared/context.server';
+import { getRules, resetRules, saveRules, toFields, type RulesFields } from '~app/shared/rules.server';
+import { requireAdmin } from '~app/shared/users.server';
+import type { Route } from './+types/AdminRulesPageRoute';
 
 const fields = [
   { name: 'units', label: 'Eenheden', help: 'Woorden die na een getal een eenheid zijn, zoals "g" of "el".' },

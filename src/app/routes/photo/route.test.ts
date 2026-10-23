@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import { RouterContextProvider } from 'react-router';
-import { envContext } from '~app/.server/context';
+import { envContext } from '~app/shared/context.server';
 import { createTestDb } from '~testing/db';
 import { fake } from '~testing/fake';
-import type { Route as FileRoute } from './+types/file';
-import type { Route as UploadRoute } from './+types/upload';
+import type { Route as FileRoute } from './+types/PhotoFetchRoute';
+import type { Route as UploadRoute } from './+types/PhotoUploadRoute';
 import { loader } from './PhotoFetchRoute';
 import { action } from './PhotoUploadRoute';
 

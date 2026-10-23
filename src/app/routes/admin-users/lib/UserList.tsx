@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router';
-import type { UserListItem } from '~app/.server/users';
+import type { UserListItem } from '~app/shared/users.server';
 
 type Props = { users: UserListItem[]; capped: boolean; limit: number };
 

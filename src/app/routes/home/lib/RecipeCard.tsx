@@ -1,7 +1,6 @@
 import { Link } from 'react-router';
-import type { RecipeSummary } from '~app/lib/recipe';
-import { Seal } from '~app/shared/Seal';
-import { TileBand } from '~app/shared/TileBand';
+import { Seal, TileBand } from '~app/shared/components';
+import type { RecipeSummary } from '~app/shared/recipe';
 
 type Props = { recipe: RecipeSummary; tile: number; eager?: boolean };
 

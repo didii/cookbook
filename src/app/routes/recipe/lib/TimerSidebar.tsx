@@ -1,9 +1,9 @@
 import { useContext, useEffect, useRef } from 'react';
-import { formatCountdown, type TimerView } from '~app/lib/timers';
 import { cn } from '~app/shared/cn';
 import { Stop } from '~app/shared/icons';
-import { TimerButton } from './TimerButton';
-import { TimersContext } from './timersContext';
+import { TimerButton } from './timers/TimerButton';
+import { formatCountdown, type TimerView } from './timers/timers';
+import { TimersContext } from './timers/timersContext';
 
 type Peek = (step: number | undefined) => void;
 type Props = { timers: TimerView[]; onJump: (step: number) => void; onPeek: Peek };

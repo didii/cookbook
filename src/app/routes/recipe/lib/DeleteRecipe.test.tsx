@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createMemoryRouter, RouterProvider } from 'react-router';
-import { defaultRules } from '~app/lib/rules';
+import { defaultRules } from '~app/shared/rules';
 import { fireEvent, precedes, render, screen, within } from '~testing/dom';
 import { RecipeView } from './RecipeView';
 

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
-import { maxNoteLength } from '~app/lib/note';
 import { cn } from '~app/shared/cn';
 import { Check, Cross, Lock, StickyNote } from '~app/shared/icons';
+import { maxNoteLength } from './note';
 import { NoteCue } from './NoteCue';
 import type { Note } from './useNote';
 

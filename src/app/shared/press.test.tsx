@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { cssFor } from '~testing/css';
 import { cleanup, render, screen } from '~testing/dom';
-import { Button } from './Button';
+import { Button } from './components/Button';
 import { press } from './press';
 
 /** Rules whose selector ends in the given pseudo-classes (or nothing), as [selector, body]. */

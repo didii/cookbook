@@ -1,7 +1,7 @@
-import type { Step } from '~app/lib/recipe';
 import { cn } from '~app/shared/cn';
 import { Thermometer } from '~app/shared/icons';
-import { TimerChip } from './TimerChip';
+import type { Step } from '~app/shared/recipe';
+import { TimerChip } from './timers/TimerChip';
 
 type Props = { step: Step; index: number; done?: boolean };
 

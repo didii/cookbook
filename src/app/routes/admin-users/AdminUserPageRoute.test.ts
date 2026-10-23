@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import { afterEach, beforeEach, test } from 'node:test';
 import { RouterContextProvider } from 'react-router';
-import { envContext, userEmailContext } from '~app/.server/context';
-import { getUser } from '~app/.server/users';
-import { redirectToWelcome } from '~app/.server/welcome';
+import { envContext, userEmailContext } from '~app/shared/context.server';
+import { getUser } from '~app/shared/users.server';
+import { redirectToWelcome } from '~app/shared/welcome.server';
 import { createTestDb } from '~testing/db';
 import { fake } from '~testing/fake';
+import type { Route } from './+types/AdminUserPageRoute';
 import { action, loader } from './AdminUserPageRoute';
-import type { Route } from './user/+types/route';
 
 // Real loader and action against an in-memory D1, fresh for every test so none depends on another. `boss` and `other` are superadmins.
 let db: D1Database;

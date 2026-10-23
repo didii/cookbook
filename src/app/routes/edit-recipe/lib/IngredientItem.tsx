@@ -1,0 +1,182 @@
+import { useImperativeHandle, useLayoutEffect, useRef, type ComponentProps, type CSSProperties, type KeyboardEvent, type Ref } from 'react';
+import { parseIngredient } from '~app/routes/recipe/lib/ingredients';
+import { cn } from '~app/shared/cn';
+import { Ingredient } from '~app/shared/icons';
+import type { Rules } from '~app/shared/rules';
+import { useAfterRender } from '~app/shared/useAfterRender';
+import type { ItemHandle } from './ItemHandle';
+import { RowGrip } from './RowGrip';
+import { RowToolbar } from './RowToolbar';
+
+type Props = {
+  ref?: Ref<ItemHandle>;
+  /** Accessible name of the field and the base of the id of its error. */
+  label: string;
+  /** Accessible name of the row's button group. */
+  toolbarLabel: string;
+  id: string;
+  text: string;
+  /** The words that count as a unit, to tell the quantity from the name. */
+  rules: Rules;
+  placeholder?: string;
+  /** The empty row at the end: it has no buttons yet. */
+  free: boolean;
+  canUp: boolean;
+  canDown: boolean;
+  error?: string;
+  /** Step numbers that use this ingredient: a check in the field, with the numbers as its name. */
+  usedIn: number[];
+  onType: (text: string) => void;
+  onRemove: () => void;
+  /** Move one place up (-1) or down (1). */
+  onMove: (direction: -1 | 1) => void;
+  /** Ask for focus on the row below (1) or above (-1). */
+  onStep: (direction: -1 | 1) => void;
+  /** Pointer handlers for the grip, and the style the row gets while it is dragged or shifted aside. */
+  gripProps: ComponentProps<'span'>;
+  style?: CSSProperties;
+  /** Backspace was pressed in an empty field. */
+  onBackspaceEmpty: () => void;
+};
+
+const field = 'col-start-1 row-start-1 h-13 rounded-[0.625rem] border-3 px-3 text-lg leading-[1.4] font-bold';
+/** One ingredient line: the quantity is painted blue by a mirror layer under the real (transparent-text) input, so editing stays native. */
+export function IngredientItem({
+  ref,
+  label,
+  toolbarLabel,
+  id,
+  text,
+  rules,
+  placeholder,
+  free,
+  canUp,
+  canDown,
+  error,
+  usedIn,
+  onType,
+  onRemove,
+  onMove,
+  onStep,
+  onBackspaceEmpty,
+  gripProps,
+  style,
+}: Props) {
+  const input = useRef<HTMLInputElement>(null);
+  const mirror = useRef<HTMLDivElement>(null);
+  const item = useRef<HTMLLIElement>(null);
+  const syncScroll = () => {
+    if (mirror.current && input.current) mirror.current.scrollLeft = input.current.scrollLeft;
+  };
+  // The text changed: keep the mirror scrolled where the input is.
+  useLayoutEffect(syncScroll, [text]);
+
+  const afterRender = useAfterRender();
+
+  useImperativeHandle(ref, () => ({
+    rect: () => item.current?.getBoundingClientRect(),
+    focusField: (caret) => {
+      const el = input.current;
+      if (!el) return;
+      el.focus();
+      const at = caret === 'end' ? el.value.length : 0;
+      el.setSelectionRange(at, at);
+    },
+  }));
+
+  const keyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.nativeEvent.isComposing) return;
+    if (e.altKey && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+      e.preventDefault();
+      const direction = e.key === 'ArrowDown' ? 1 : -1;
+      if (!(direction === 1 ? canDown : canUp)) return;
+      const selection: [number, number] = [e.currentTarget.selectionStart ?? 0, e.currentTarget.selectionEnd ?? 0];
+      afterRender(() => {
+        input.current?.focus();
+        input.current?.setSelectionRange(...selection);
+      });
+      onMove(direction);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      onStep(1);
+    } else if (!e.altKey && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+      e.preventDefault();
+      onStep(e.key === 'ArrowDown' ? 1 : -1);
+    } else if (e.key === 'Backspace' && !text && !free) {
+      e.preventDefault();
+      onBackspaceEmpty();
+    }
+  };
+
+  const quantity = parseIngredient(text, rules).quantityText;
+  const at = quantity ? text.indexOf(quantity) : -1;
+  const errorId = `${id}-error`;
+
+  return (
+    <li ref={item} style={style} className="relative grid grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-x-1">
+      <RowGrip {...gripProps} className={cn('col-start-1 row-start-1 min-h-11 w-6', free && 'cursor-default opacity-50')} />
+      <RowToolbar
+        label={toolbarLabel}
+        deleteLabel="Verwijder"
+        canUp={canUp}
+        canDown={canDown}
+        disabled={free}
+        stacked
+        className="col-start-2 row-start-1 mr-1"
+        onMove={onMove}
+        onDelete={onRemove}
+      />
+      <div className="col-start-3 row-start-1 grid">
+        <div aria-hidden="true" className={cn(field, 'rounded-[0.625rem] bg-white border-transparent')} />
+        <div ref={mirror} aria-hidden="true" className={cn(field, 'pointer-events-none flex items-center overflow-hidden border-transparent')}>
+          <span className="shrink-0 whitespace-pre text-ink">
+            {at < 0 ? (
+              text
+            ) : (
+              <>
+                {text.slice(0, at)}
+                <b data-testid="IngredientItem-quantity" className="font-[inherit] text-blu">
+                  {quantity}
+                </b>
+                {text.slice(at + quantity.length)}
+              </>
+            )}
+          </span>
+        </div>
+        <input
+          ref={input}
+          type="text"
+          data-testid="IngredientItem-field"
+          value={text}
+          placeholder={placeholder}
+          aria-label={label}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? errorId : undefined}
+          autoComplete="off"
+          enterKeyHint="next"
+          onChange={(e) => onType(e.target.value)}
+          onScroll={syncScroll}
+          onKeyDown={keyDown}
+          className={cn(
+            field,
+            'w-full border-ink bg-transparent text-transparent hover:not-focus:bg-ink/5 caret-ink placeholder:text-ink/50 focus:shadow-focus focus:outline-transparent aria-invalid:border-red',
+            usedIn.length > 0 && 'pr-11',
+          )}
+        />
+      </div>
+      <div className="col-start-3 row-start-2">
+        {error && (
+          <p id={errorId} className="mt-1 font-bold text-red">
+            {error}
+          </p>
+        )}
+      </div>
+      {usedIn.length > 0 && (
+        <span title={`Gebruikt in stap ${usedIn.join(', ')}`} className="z-10 col-start-3 row-start-1 mr-3 justify-self-end text-jade">
+          <Ingredient />
+          <span className="sr-only">Gebruikt in stap {usedIn.join(', ')}</span>
+        </span>
+      )}
+    </li>
+  );
+}

@@ -1,8 +1,8 @@
 import { useRef } from 'react';
 import { Form } from 'react-router';
-import type { UserListItem } from '~app/.server/users';
-import { roles } from '~app/lib/role';
-import { Button } from '~app/shared/Button';
+import { Button } from '~app/shared/components';
+import { roles } from '~app/shared/role';
+import type { UserListItem } from '~app/shared/users.server';
 import { DeleteUser } from './DeleteUser';
 
 type Props = { user: UserListItem; lastSuperadmin: boolean; isSelf: boolean; accessUrl: string; error?: string; refused?: string; saved?: boolean };

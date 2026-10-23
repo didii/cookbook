@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import type { Step } from '~app/lib/recipe';
-import { toggled } from '~app/lib/toggled';
+import type { Step } from '~app/shared/recipe';
 import { StepItem } from './StepItem';
+import { toggled } from './toggled';
 
 type Props = { steps: Step[]; highlight?: { step: number; n: number }; peek?: number };
 

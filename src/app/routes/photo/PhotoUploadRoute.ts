@@ -1,6 +1,6 @@
-import { envContext } from '~app/.server/context';
-import { maxPhotoBytes, storePhoto } from '~app/.server/photos';
-import type { Route } from './+types/upload';
+import { envContext } from '~app/shared/context.server';
+import { maxPhotoBytes, storePhoto } from '~app/shared/photos.server';
+import type { Route } from './+types/PhotoUploadRoute';
 
 /** POST /foto: the request body is the image. Answers `{ path }`, or 413 (too large) / 415 (not a JPEG, PNG or WebP). */
 export async function action({ request, context }: Route.ActionArgs) {
