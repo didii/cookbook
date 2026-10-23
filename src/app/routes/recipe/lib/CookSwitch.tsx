@@ -20,7 +20,7 @@ export function CookSwitch({ wanted, lock, manual, onToggle }: Props) {
         data-unable={unable || undefined}
         className="flex h-6.5 w-11 shrink-0 cursor-pointer items-center rounded-full border-3 border-ink bg-white p-0 transition-colors data-checked:bg-jade data-unable:bg-yel motion-reduce:transition-none"
       >
-        <Switch.Thumb className="block size-4.5 translate-x-px rounded-full bg-ink transition-transform data-checked:translate-x-[1.1875rem] data-checked:bg-white motion-reduce:transition-none" />
+        <Switch.Thumb className="block size-4.5 translate-x-px rounded-full bg-ink transition-transform data-checked:translate-x-4.75 data-checked:bg-white motion-reduce:transition-none" />
       </Switch.Root>
       <span data-testid="CookSwitch-text">
         {title}

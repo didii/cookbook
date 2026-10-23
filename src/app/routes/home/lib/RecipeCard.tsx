@@ -9,7 +9,7 @@ export function RecipeCard({ recipe: r, tile, eager }: Props) {
     <Link
       to={`/recepten/${r.slug}`}
       data-testid="RecipeCard-link"
-      className="relative block overflow-hidden rounded-xl border-3 border-ink bg-white no-underline shadow-hard transition-[transform,box-shadow] duration-180 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-hard-lg motion-reduce:transition-none"
+      className="relative block overflow-hidden rounded-xl border-3 border-ink bg-white no-underline shadow-hard transition-[transform,box-shadow] duration-180 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-0.5  hover:shadow-hard-lg motion-reduce:transition-none"
     >
       {r.isNew && (
         <span

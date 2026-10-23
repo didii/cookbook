@@ -115,8 +115,8 @@ export function RowToolbar({
           className={cn(
             buttonClass,
             action === 'delete' ? 'border-l-2 border-ink/10 hover:not-disabled:bg-red/10 hover:not-disabled:text-red' : '',
-            action === 'delete' && (stacked ? 'col-start-2 row-span-2 row-start-1 h-full w-full' : 'size-9'),
-            (action === 'up' || action === 'down') && (stacked ? 'h-[1.625rem] w-7 text-[0.95rem]' : 'size-9'),
+            action === 'delete' && (stacked ? 'col-start-2 row-span-2 row-start-1 size-full ' : 'size-9'),
+            (action === 'up' || action === 'down') && (stacked ? 'h-6.5 w-7 text-[0.95rem]' : 'size-9'),
             action === 'insert' && 'size-9',
             stacked && action === 'down' && 'row-start-2',
           )}

@@ -36,7 +36,7 @@ export function StepItem({ step, number, done, onToggle, highlight, peek }: Prop
             aria-hidden="true"
             data-testid="StepItem-mark"
             className={cn(
-              'grid size-3.5 shrink-0 place-items-center rounded-[0.25rem] border-2 text-[0.625rem] leading-none text-white',
+              'grid size-3.5 shrink-0 place-items-center rounded-sm border-2 text-[0.625rem] leading-none text-white',
               done ? 'border-jade bg-jade' : 'border-muted',
             )}
           >

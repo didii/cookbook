@@ -28,7 +28,7 @@ export function NotePanel({ note }: Props) {
         value={note.text}
         onChange={(e) => note.change(e.target.value)}
         onBlur={note.blur}
-        className="mt-2.5 box-border min-h-28 w-full resize-y rounded-[10px] border-3 border-ink bg-[#fffdf7] px-3 py-2.5 text-lg leading-snug font-semibold text-ink"
+        className="mt-2.5 box-border min-h-28 w-full resize-y rounded-[10px] border-3 border-ink bg-[#fffdf7] px-3 py-2.5 text-lg/snug  font-semibold text-ink"
       />
       {note.failed && (
         <p data-testid="NotePanel-failed" role="alert" className="mt-2 text-sm font-bold text-red">
