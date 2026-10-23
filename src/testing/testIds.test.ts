@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
-import { describe, test } from 'node:test';
+import { describe, test } from 'vitest';
 
 const app = new URL('../app/', import.meta.url);
 const files = (readdirSync(app, { recursive: true, encoding: 'utf8' }) as string[]).filter((f) => f.endsWith('.tsx') && !f.endsWith('.test.tsx'));

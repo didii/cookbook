@@ -1,4 +1,4 @@
-import { test } from 'node:test';
+import { test } from 'vitest';
 
 // Needs a browser: where the characters are drawn.
 test.todo('recipe-step-editing › Marks sit under their characters');

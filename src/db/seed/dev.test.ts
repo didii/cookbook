@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { describe, test } from 'node:test';
+import { describe, test } from 'vitest';
 import { applySql, createTestDb } from '~testing/db';
 
 describe('dev seed', () => {

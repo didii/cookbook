@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { after, before, describe, test } from 'node:test';
 import { RouterContextProvider } from 'react-router';
+import { afterAll, beforeAll, describe, test } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { createTestDb } from '~testing/db';
 import { fake } from '~testing/fake';
@@ -11,13 +11,13 @@ import { loader } from './AdminUsersPageRoute';
 let db: D1Database;
 let dispose: () => Promise<void>;
 
-before(async () => {
+beforeAll(async () => {
   ({ db, dispose } = await createTestDb());
   for (const role of ['user', 'admin', 'superadmin'])
     await db.prepare('INSERT INTO users (email, calling_name, role) VALUES (?, ?, ?)').bind(`${role}@example.com`, role, role).run();
 });
 
-after(() => dispose());
+afterAll(() => dispose());
 
 const open = (email: string) => {
   const context = new RouterContextProvider();

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { afterEach, beforeEach, describe, test } from 'node:test';
+import { afterEach, beforeEach, describe, test } from 'vitest';
 import { act, fireEvent, render, screen } from '~testing/dom';
 import { NotePanel } from './NotePanel';
 import { useNote } from './useNote';

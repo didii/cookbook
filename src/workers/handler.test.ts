@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { after, describe, test } from 'node:test';
 import { generateKeyPair, SignJWT } from 'jose';
 import type { RouterContextProvider } from 'react-router';
+import { afterAll, describe, test } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { createUser } from '~app/shared/users.server';
 import { createTestDb } from '~testing/db';
@@ -117,7 +117,7 @@ describe('family-access › Stand-in identity configured on a deployed app', () 
 describe('users › Forged identity', () => {
   const forge = async () => {
     const { db, dispose } = await createTestDb();
-    after(dispose);
+    afterAll(dispose);
     const reached: string[] = [];
     const fetch = createFetch({
       requestHandler: async (_request, context) => (

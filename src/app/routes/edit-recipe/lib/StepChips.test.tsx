@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { describe, test } from 'node:test';
 import { useState, type ReactNode } from 'react';
+import { describe, test } from 'vitest';
 import type { Step } from '~app/shared/recipe';
 import { defaultRules } from '~app/shared/rules';
 import { fireEvent, render, screen, within } from '~testing/dom';

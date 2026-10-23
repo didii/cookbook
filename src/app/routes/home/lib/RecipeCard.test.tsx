@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { describe, test } from 'node:test';
 import { MemoryRouter } from 'react-router';
+import { describe, test } from 'vitest';
 import type { RecipeSummary } from '~app/shared/recipe';
 import { cssFor } from '~testing/css';
 import { precedes, render, screen } from '~testing/dom';

@@ -20,6 +20,7 @@ The local database is a SQLite file under `.wrangler`, so no Cloudflare account 
 | `pnpm test`                             | All tests; scenarios of `openspec/specs` need a test                                                   |
 | `pnpm test:ai`                          | Same, compact `dot` reporter                                                                           |
 | `pnpm test:ci`                          | Same, plus `junit.xml` (used by CI)                                                                    |
+| `pnpm test:ui`                          | Vitest UI in the browser (watch mode)                                                                  |
 | `pnpm test:spec <change>`               | Also require tests for the scenarios of an OpenSpec change, e.g. `pnpm test:spec redesign-recipe-view` |
 | `pnpm lint:check` / `pnpm lint:fix`     | Check / fix lint errors                                                                                |
 | `pnpm format:check` / `pnpm format:fix` | Check / fix formatting                                                                                 |

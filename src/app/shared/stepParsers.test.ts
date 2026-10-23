@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { describe, test } from 'node:test';
+import { describe, test } from 'vitest';
 import { parseIngredient } from './ingredients';
 import { defaultRules } from './rules';
 import { findIngredients, findOven, findTimer, type Row } from './stepParsers';

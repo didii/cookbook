@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { after, before, describe, test } from 'node:test';
 import type { ReactElement } from 'react';
 import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
+import { afterAll, beforeAll, describe, test } from 'vitest';
 import { envContext } from '~app/shared/context.server';
 import { getPhoto, storePhoto } from '~app/shared/photos.server';
 import { getRecipe } from '~app/shared/recipes.server';
@@ -19,14 +19,14 @@ let db: D1Database;
 let photos: R2Bucket;
 let dispose: () => Promise<void>;
 
-before(async () => {
+beforeAll(async () => {
   ({ db, photos, dispose } = await createTestDb());
   await db
     .prepare("INSERT INTO recipes (slug, title, author, time, servings, intro, image) VALUES ('soep', 'Soep', 'Oma', '1u', 4, 'Warm', '/soep.jpg')")
     .run();
 });
 
-after(() => dispose());
+afterAll(() => dispose());
 
 const contextWithDb = () => {
   const context = new RouterContextProvider();
@@ -70,7 +70,7 @@ describe('recipe-editing › Form shows the stored values', () => {
 });
 
 describe('recipe-ingredient-editing › Stored ingredients come back as lines', () => {
-  before(async () => {
+  beforeAll(async () => {
     await db.batch([
       db.prepare("INSERT INTO recipes (slug, title, author) VALUES ('lijst', 'Lijst', 'Oma')"),
       db.prepare("INSERT INTO ingredients (recipe_id, position, name, quantity_text) SELECT id, 1, 'zout', '' FROM recipes WHERE slug = 'lijst'"),
@@ -98,7 +98,7 @@ describe('recipe-editing › Unknown recipe', () => {
 describe('recipe-editing › Invalid edit is refused', () => {
   let res: { init?: { status?: number }; data: { errors: object } };
 
-  before(async () => {
+  beforeAll(async () => {
     res = (await submit('soep', { title: '', author: 'Oma' })) as typeof res;
   });
 
@@ -118,7 +118,7 @@ describe('recipe-editing › Invalid edit is refused', () => {
 describe('the edit route', () => {
   let res: Response;
 
-  before(async () => {
+  beforeAll(async () => {
     res = (await submit('soep', { title: 'Tomatensoep', author: 'Oma', servings: '' })) as Response;
   });
 
@@ -145,7 +145,7 @@ describe('recipe-photo › Replaced photo is deleted', () => {
   let old: string;
   let next: string;
 
-  before(async () => {
+  beforeAll(async () => {
     [old, next] = [await upload(), await upload()];
     await addRecipe('vervangen', old);
     await submit('vervangen', { title: 'T', author: 'Oma', image: next });
@@ -175,7 +175,7 @@ describe('recipe-photo › Replaced photo is deleted', () => {
 });
 
 describe('recipe-photo › Non-upload images are never deleted', () => {
-  before(async () => {
+  beforeAll(async () => {
     await addRecipe('voorbeeld', '/img/appeltaart.jpg');
     await photos.put('photos/other', 'x');
     await submit('voorbeeld', { title: 'T', author: 'Oma', image: await upload() });
@@ -297,7 +297,7 @@ describe('an edit posted without an ingredients field', () => {
 });
 
 describe('recipe-step-editing › Stored steps come back in the editor', () => {
-  before(async () => {
+  beforeAll(async () => {
     await db.batch([
       db.prepare("INSERT INTO recipes (slug, title, author) VALUES ('stappen', 'Stappen', 'Oma')"),
       db.prepare("INSERT INTO steps (recipe_id, position, body) SELECT id, 1, 'bak' FROM recipes WHERE slug = 'stappen'"),

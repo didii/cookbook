@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { describe, test } from 'node:test';
+import { describe, test } from 'vitest';
 import { defaultRules } from '~app/shared/rules';
 import { emptyDraftSeed, isDirty, startingDraft } from './draft';
 import { asksBeforeLeaving, draftKey, saveDraft, type DraftStorage } from './draftStore';

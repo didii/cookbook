@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { beforeEach, describe, test } from 'node:test';
 import { createMemoryRouter, RouterProvider } from 'react-router';
+import { beforeEach, describe, test } from 'vitest';
 import type { Role } from '~app/shared/role';
 import { fireEvent, render, screen } from '~testing/dom';
 import { UserForm } from './UserForm';

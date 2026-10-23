@@ -1,4 +1,4 @@
-import { test } from 'node:test';
+import { test } from 'vitest';
 
 // All of these need a browser (file picker, canvas, upload, layout); checked by hand in `pnpm dev`.
 test.todo('recipe-photo › Chosen photo is shown at once');
