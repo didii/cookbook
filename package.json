@@ -18,8 +18,8 @@
     "test:spec": "node scripts/spec-check.ts",
     "lint:check": "oxlint",
     "lint:fix": "oxlint --fix",
-    "format:check": "prettier --check .",
-    "format:fix": "prettier --write ."
+    "format:check": "prettier --check . --list-different",
+    "format:fix": "prettier --write . --list-different"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
