@@ -145,22 +145,22 @@ export function RecipeView({ recipe: r, tile, steps, rules, liked = false, note:
             <Link
               to={`/recepten/${r.slug}/bewerken`}
               state={{ fresh: true }}
-              data-testid="RecipePage-edit"
+              data-testid="RecipeView-edit"
               className="inline-flex min-h-11 items-center font-extrabold underline-offset-[0.25em] hover:underline"
             >
               Bewerk
             </Link>
           </div>
         </div>
-        <h1 data-testid="RecipePage-title" className="text-[clamp(2rem,6vw,3.5rem)] leading-[1.05] font-black tracking-[-0.03em] text-balance">
+        <h1 data-testid="RecipeView-title" className="text-[clamp(2rem,6vw,3.5rem)] leading-[1.05] font-black tracking-[-0.03em] text-balance">
           {r.title}
         </h1>
         <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 font-extrabold">
-          <span data-testid="RecipePage-author" className="rounded-full border-3 border-ink bg-yel px-3.5 py-0.5">
+          <span data-testid="RecipeView-author" className="rounded-full border-3 border-ink bg-yel px-3.5 py-0.5">
             van {r.author}
           </span>
-          {r.time && <span data-testid="RecipePage-time">{r.time}</span>}
-          {r.servings && <span data-testid="RecipePage-servings">{r.servings} personen</span>}
+          {r.time && <span data-testid="RecipeView-time">{r.time}</span>}
+          {r.servings && <span data-testid="RecipeView-servings">{r.servings} personen</span>}
         </p>
         <p className="mt-2 max-w-[60ch] text-lg text-muted">{r.intro}</p>
 
@@ -175,7 +175,7 @@ export function RecipeView({ recipe: r, tile, steps, rules, liked = false, note:
 
         <div
           ref={stack}
-          data-testid="RecipePage-stack"
+          data-testid="RecipeView-stack"
           className="sticky top-[env(safe-area-inset-top)] z-20 mt-6 -mx-[max(1rem,4vw)] min-[52rem]:hidden"
         >
           <TabBar tab={tab} onSelect={select} />

@@ -43,15 +43,15 @@ const shownTitles = () => screen.queryAllByTestId('RecipeCard-link').map((a) => 
 const chip = (name: string) => screen.getAllByTestId('FilterBar-chip').find((c) => c.textContent === name)!;
 const sortInput = (value: string) => screen.getAllByTestId<HTMLInputElement>('FilterBar-sort').find((i) => i.value === value)!;
 /** The "n recepten" line. */
-const count = () => screen.getByTestId('Home-count').textContent;
+const count = () => screen.getByTestId('HomePage-count').textContent;
 const searchBox = () => screen.getByTestId<HTMLInputElement>('FilterBar-search');
 
 // Runs first: the other tests add recipes to the shared database.
 test('recipe-browsing › No recipes yet', async () => {
   assert.deepEqual(await load(), []);
   const { container } = renderAt('/', await load());
-  assert.ok(screen.getByTestId('Home-empty'));
-  assert.equal(screen.getByTestId('Home-add').getAttribute('href'), '/recepten/nieuw');
+  assert.ok(screen.getByTestId('HomePage-empty'));
+  assert.equal(screen.getByTestId('HomePage-add').getAttribute('href'), '/recepten/nieuw');
   assert.equal(container.querySelector('output, input'), null);
 });
 
@@ -93,8 +93,8 @@ test('recipe-browsing › A new recipe appears', async () => {
 
 test('recipe-browsing › Welcome above the recipes', async () => {
   const { container } = renderAt('/', await load());
-  const heading = screen.getByTestId('Home-title');
-  const intro = screen.getByTestId('Home-intro');
+  const heading = screen.getByTestId('HomePage-title');
+  const intro = screen.getByTestId('HomePage-intro');
   assert.ok(precedes(heading, intro) && precedes(intro, container.querySelector('ul')!));
 });
 
@@ -135,9 +135,9 @@ test('recipe-filtering › Count without a filter', () => {
 test('recipe-filtering › Nothing found', () => {
   renderAt('/?q=zzz', family);
   assert.deepEqual(shownTitles(), []);
-  assert.ok(screen.getByTestId('Home-none'));
+  assert.ok(screen.getByTestId('HomePage-none'));
   // The way out sits with the message, after the count, and the search box keeps what was typed.
-  assert.ok(precedes(screen.getByTestId('Home-count'), screen.getByTestId('Home-clear')));
+  assert.ok(precedes(screen.getByTestId('HomePage-count'), screen.getByTestId('HomePage-clear')));
   assert.equal(searchBox().value, 'zzz');
 });
 
@@ -152,7 +152,7 @@ test('recipe-filtering › Clearing all filters', () => {
   cleanup();
   // Using the button from the nothing-found message gets there.
   renderAt('/?q=zzz&auteur=Papa&sort=az', family);
-  const wis = screen.getByTestId('Home-clear');
+  const wis = screen.getByTestId('HomePage-clear');
   fireEvent.click(wis);
   assert.equal(shownTitles().length, family.length);
   assert.equal(searchBox().value, '');
@@ -204,7 +204,7 @@ test('recipe-filtering › Filtering does not fill the history', async () => {
 test('recipe-filtering › Reaching the last recipe', async () => {
   // The page keeps room under the list for the fixed bar and the safe area on phones, and returns to normal spacing from 48rem.
   renderAt('/', family);
-  const css = (await cssFor(screen.getByTestId('Home-main').className)).replace(/\s+/g, ' ');
+  const css = (await cssFor(screen.getByTestId('HomePage-main').className)).replace(/\s+/g, ' ');
   assert.match(css, /padding-bottom: calc\(7rem \+ env\(safe-area-inset-bottom\)\)/);
   assert.match(css, /@media \(width >= 48rem\) \{[^@]*padding-bottom: calc\(var\(--spacing\) \* 16\)/);
 });

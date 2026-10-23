@@ -71,7 +71,7 @@ test('recipe-filtering › Reduced motion', async () => {
   const css = flat(await cssFor(sheet().className));
   // The sheet rises in 0.22 s when open, and not at all when the person prefers reduced motion.
   assert.match(css, /data-open[^{]*\{[^}]*animation: var\(--animate-rise\)/);
-  assert.match(readFileSync(new URL('../../app.css', import.meta.url), 'utf8'), /--animate-rise: rise 0\.22s/);
+  assert.match(readFileSync(new URL('../../../app.css', import.meta.url), 'utf8'), /--animate-rise: rise 0\.22s/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\) \{[^@]*animation: none/);
 });
 

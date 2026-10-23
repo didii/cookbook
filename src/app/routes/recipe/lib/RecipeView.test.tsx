@@ -41,7 +41,7 @@ const page = (props: Partial<ComponentProps<typeof RecipeView>> = {}) =>
     />,
   );
 /** The sticky bar with the tabs and the timer dock. */
-const stack = () => screen.getByTestId('RecipePage-stack');
+const stack = () => screen.getByTestId('RecipeView-stack');
 const tabs = () => screen.getAllByTestId('TabBar-tab');
 const checkboxes = () => screen.getAllByTestId<HTMLInputElement>('IngredientList-checkbox');
 
@@ -82,7 +82,7 @@ test('recipe-viewing › Long ingredient list on a wide screen', () => {
 
 test('the note is shown beside the heart: heart before "Bewerk", note panel under the ingredients', () => {
   page({ liked: true, note: 'minder zout' });
-  assert.ok(precedes(screen.getByTestId('LikeButton-heart'), screen.getByTestId('RecipePage-edit')));
+  assert.ok(precedes(screen.getByTestId('LikeButton-heart'), screen.getByTestId('RecipeView-edit')));
   assert.equal(screen.getByTestId('LikeButton-heart').getAttribute('aria-pressed'), 'true');
   const column = document.getElementById('panel-ingredients')!;
   assert.ok(column.contains(screen.getByTestId('NotePanel-panel')));
@@ -143,17 +143,17 @@ test.todo('recipe-viewing › Position survives scrolling up');
 test('recipe-viewing › Optional fields are empty', () => {
   // No time, no servings and no image: the page still renders, without them.
   const { container } = page();
-  assert.equal(screen.getByTestId('RecipePage-title').tagName, 'H1');
-  assert.equal(screen.getByTestId('RecipePage-title').textContent, 'Appeltaart');
-  assert.equal(screen.getByTestId('RecipePage-author').textContent, 'van Oma');
-  assert.equal(screen.queryByTestId('RecipePage-time'), null);
-  assert.equal(screen.queryByTestId('RecipePage-servings'), null);
+  assert.equal(screen.getByTestId('RecipeView-title').tagName, 'H1');
+  assert.equal(screen.getByTestId('RecipeView-title').textContent, 'Appeltaart');
+  assert.equal(screen.getByTestId('RecipeView-author').textContent, 'van Oma');
+  assert.equal(screen.queryByTestId('RecipeView-time'), null);
+  assert.equal(screen.queryByTestId('RecipeView-servings'), null);
   assert.equal(container.querySelector('img'), null);
   cleanup();
   // With them, each is shown.
   const full = page({ recipe: { ...recipe, time: '1 uur', servings: 6, image: '/taart.jpg' } });
-  assert.equal(screen.getByTestId('RecipePage-time').textContent, '1 uur');
-  assert.equal(screen.getByTestId('RecipePage-servings').textContent, '6 personen');
+  assert.equal(screen.getByTestId('RecipeView-time').textContent, '1 uur');
+  assert.equal(screen.getByTestId('RecipeView-servings').textContent, '6 personen');
   assert.equal((screen.getByTestId('ScaleControl-field') as HTMLInputElement).value, '6');
   assert.ok(full.container.querySelector('img'));
 });
@@ -172,7 +172,7 @@ test('recipe-viewing › Ingredient without quantity', () => {
 
 test('recipe-viewing › Link to the edit form', () => {
   page();
-  assert.equal(screen.getByTestId('RecipePage-edit').getAttribute('href'), '/recepten/appeltaart/bewerken');
+  assert.equal(screen.getByTestId('RecipeView-edit').getAttribute('href'), '/recepten/appeltaart/bewerken');
   // The route table serves that address.
   assert.ok(routePaths.includes('recepten/:slug/bewerken'));
 });
@@ -220,7 +220,7 @@ test('cook-mode › Choice is not kept', () => {
     setViewport(1024);
   }
   // Another recipe gets a fresh page: the route keys the page by the recipe's slug.
-  assert.ok(readFileSync(new URL('./route.tsx', import.meta.url), 'utf8').includes('key={recipe.slug}'));
+  assert.ok(readFileSync(new URL('../RecipePageRoute.tsx', import.meta.url), 'utf8').includes('key={recipe.slug}'));
 });
 
 test('recipe-scaling › Step chips scale', () => {
