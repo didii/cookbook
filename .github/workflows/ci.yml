@@ -22,6 +22,7 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm typegen
       - run: pnpm typecheck
       - run: pnpm lint:check --format=github
       - run: pnpm format:check
