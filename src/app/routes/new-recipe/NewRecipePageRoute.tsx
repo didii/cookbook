@@ -50,7 +50,7 @@ export function meta() {
   return [{ title: 'Nieuw recept · Familiekookboek' }];
 }
 
-export default function NewRecipe({ loaderData, actionData }: Route.ComponentProps) {
+export default function NewRecipePage({ loaderData, actionData }: Route.ComponentProps) {
   const seed = { ...emptyDraftSeed, author: loaderData.callingName };
   return (
     <RecipeEditor

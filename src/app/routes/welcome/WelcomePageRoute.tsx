@@ -38,7 +38,7 @@ export function meta() {
   return [{ title: 'Welkom · Familiekookboek' }];
 }
 
-export default function Welcome({ loaderData, actionData }: Route.ComponentProps) {
+export default function WelcomePage({ loaderData, actionData }: Route.ComponentProps) {
   return (
     <main id="main" className="@container mx-auto max-w-3xl px-[max(1rem,4vw)] pt-8 pb-16 md:pt-16">
       <div className="border-3 border-ink bg-white shadow-hard">

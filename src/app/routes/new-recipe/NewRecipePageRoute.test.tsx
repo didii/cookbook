@@ -9,7 +9,7 @@ import { createTestDb } from '~testing/db';
 import { cleanup, fireEvent, openAutocomplete, render, screen } from '~testing/dom';
 import { fake } from '~testing/fake';
 import type { Route } from './+types/route';
-import NewRecipe, { action, loader } from './route';
+import NewRecipePage, { action, loader } from './NewRecipePageRoute';
 
 // Action-level tests: real action, real queries against an in-memory D1.
 let db: D1Database;
@@ -58,7 +58,7 @@ test('recipe-creation › Servings left empty', async () => {
 /** The new recipe page as the router shows it, with what a refused submit hands back (nothing on first opening). */
 const form = (actionData?: { errors: Record<string, string>; values: typeof emptyDraftSeed }) => {
   const props = fake<Route.ComponentProps>({ loaderData: { callingName: '', authors: ['Oma', 'Mama'], tile: 0, seal: undefined }, actionData });
-  return render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <NewRecipe {...props} /> }])} />);
+  return render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <NewRecipePage {...props} /> }])} />);
 };
 
 test('recipe-creation › Suggestions ignore letter case', async () => {
@@ -126,7 +126,7 @@ const openFormAs = async (email: string) => {
   context.set(userEmailContext, email);
   const loaderData = await loader(fake<Route.LoaderArgs>({ context }));
   const props = fake<Route.ComponentProps>({ loaderData });
-  return render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <NewRecipe {...props} /> }])} />);
+  return render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <NewRecipePage {...props} /> }])} />);
 };
 
 test('recipe-creation › Author is prefilled', async () => {

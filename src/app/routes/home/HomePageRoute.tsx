@@ -14,8 +14,8 @@ import {
 import { tileFor } from '~app/lib/tile';
 import { Button } from '~app/shared/Button';
 import type { Route } from './+types/route';
-import { FilterBar } from './FilterBar';
-import { RecipeCard } from './RecipeCard';
+import { FilterBar } from './lib/FilterBar';
+import { RecipeCard } from './lib/RecipeCard';
 
 export async function loader({ context }: Route.LoaderArgs) {
   return { recipes: await listRecipes(context.get(envContext).DB, context.get(userEmailContext), new Date()) };
@@ -32,7 +32,7 @@ export function meta() {
   return [{ title: 'Familiekookboek' }];
 }
 
-export default function Home({ loaderData }: Route.ComponentProps) {
+export default function HomePage({ loaderData }: Route.ComponentProps) {
   const { recipes } = loaderData;
   const [params, setParams] = useSearchParams();
   const detailed = recipes.length >= minRecipesForFilters;

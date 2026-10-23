@@ -33,7 +33,7 @@ import { useWakeLock } from './useWakeLock';
 
 type Props = { recipe: Omit<Recipe, 'steps'>; tile: number; steps: Step[]; rules: Rules; liked?: boolean; note?: string };
 
-export function RecipePage({ recipe: r, tile, steps, rules, liked = false, note: savedNote = '' }: Props) {
+export function RecipeView({ recipe: r, tile, steps, rules, liked = false, note: savedNote = '' }: Props) {
   const [tab, setTab] = useState<TabId>('ingredients');
   // Lives here, not in the list, because both tabs stay mounted and cook mode reads it.
   const [ticked, setTicked] = useState<ReadonlySet<number>>(new Set());

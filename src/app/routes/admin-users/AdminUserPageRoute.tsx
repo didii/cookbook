@@ -2,8 +2,8 @@ import { data, redirect } from 'react-router';
 import { envContext, userEmailContext } from '~app/.server/context';
 import { deleteUser, getUserById, isLastSuperadmin, requireSuperadmin, updateUser } from '~app/.server/users';
 import { roles, type Role } from '~app/lib/role';
-import type { Route } from './+types/route';
-import { UserForm } from './UserForm';
+import type { Route } from './user/+types/route';
+import { UserForm } from './lib/UserForm';
 
 /** The role check comes first, so a non-superadmin gets 403 for any id and cannot tell which users exist. */
 async function target(context: Route.LoaderArgs['context'], idParam: string) {
@@ -51,7 +51,7 @@ export async function action({ request, params, context }: Route.ActionArgs) {
   return data({ saved: true as const });
 }
 
-export default function AdminUser({ loaderData, actionData }: Route.ComponentProps) {
+export default function AdminUserPage({ loaderData, actionData }: Route.ComponentProps) {
   const { user, lastSuperadmin, isSelf, accessUrl } = loaderData;
   const error = actionData && 'error' in actionData ? actionData.error : undefined;
   const refused = actionData && 'refused' in actionData ? actionData.refused : undefined;

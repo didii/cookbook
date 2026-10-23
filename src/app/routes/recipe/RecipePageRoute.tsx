@@ -5,7 +5,7 @@ import { deleteRecipe, getMemberRecipeData, getRecipe, recordView } from '~app/.
 import { defaultRules, type Rules } from '~app/lib/rules';
 import { tileFor } from '~app/lib/tile';
 import type { Route } from './+types/route';
-import { RecipePage } from './RecipePage';
+import { RecipeView } from './lib/RecipeView';
 
 export async function loader({ params, context }: Route.LoaderArgs) {
   const db = context.get(envContext).DB;
@@ -32,9 +32,9 @@ export function meta({ loaderData }: Route.MetaArgs) {
   return [{ title: `${loaderData?.recipe.title ?? 'Recept'} · Familiekookboek` }];
 }
 
-export default function Recipe({ loaderData }: Route.ComponentProps) {
+export default function RecipePage({ loaderData }: Route.ComponentProps) {
   const { recipe, steps, tile, liked, note } = loaderData;
   const rules = useRouteLoaderData<{ rules: Rules }>('root')?.rules ?? defaultRules;
   // Keyed by recipe, so another recipe starts with fresh page state (ticks, marks, timers, cook mode).
-  return <RecipePage key={recipe.slug} recipe={recipe} tile={tile} steps={steps} rules={rules} liked={liked} note={note} />;
+  return <RecipeView key={recipe.slug} recipe={recipe} tile={tile} steps={steps} rules={rules} liked={liked} note={note} />;
 }

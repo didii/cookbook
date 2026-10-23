@@ -4,6 +4,6 @@ export function meta() {
   return [{ title: 'Over · Familiekookboek' }];
 }
 
-export default function About() {
+export default function AboutPage() {
   return <WorkInProgress title="Over" />;
 }

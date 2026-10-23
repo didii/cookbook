@@ -8,7 +8,7 @@ import { defaultRules } from '~app/lib/rules';
 import { createTestDb } from '~testing/db';
 import { fake } from '~testing/fake';
 import type { Route } from './+types/route';
-import { action, loader } from './route';
+import { action, loader } from './AdminRulesPageRoute';
 
 // Real loader and action against an in-memory D1.
 let db: D1Database;

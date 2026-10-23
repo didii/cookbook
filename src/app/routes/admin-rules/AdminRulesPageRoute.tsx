@@ -40,7 +40,7 @@ export function meta() {
   return [{ title: 'Herkenning · Familiekookboek' }];
 }
 
-export default function AdminRules({ loaderData, actionData }: Route.ComponentProps) {
+export default function AdminRulesPage({ loaderData, actionData }: Route.ComponentProps) {
   const errors = actionData && 'errors' in actionData ? actionData.errors : {};
   const values = actionData && 'values' in actionData ? actionData.values : loaderData.values;
   const saved = actionData && 'saved' in actionData;

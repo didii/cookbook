@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { defaultRules } from '~app/lib/rules';
 import { fireEvent, precedes, render, screen, within } from '~testing/dom';
-import { RecipePage } from './RecipePage';
+import { RecipeView } from './RecipeView';
 
 const recipe = {
   id: 1,
@@ -24,7 +24,7 @@ const show = () =>
   render(
     <RouterProvider
       router={createMemoryRouter([
-        { path: '/', element: <RecipePage recipe={recipe} tile={0} steps={[{ body: 'bakken', ingredients: [] }]} rules={defaultRules} /> },
+        { path: '/', element: <RecipeView recipe={recipe} tile={0} steps={[{ body: 'bakken', ingredients: [] }]} rules={defaultRules} /> },
       ])}
     />,
   );

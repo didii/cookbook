@@ -66,7 +66,7 @@ export function meta({ loaderData }: Route.MetaArgs) {
   return [{ title: `${loaderData?.title ?? 'Recept'} bewerken · Familiekookboek` }];
 }
 
-export default function EditRecipe({ loaderData, actionData }: Route.ComponentProps) {
+export default function EditRecipePage({ loaderData, actionData }: Route.ComponentProps) {
   return (
     <RecipeEditor
       rules={useRouteLoaderData<{ rules?: Rules }>('root')?.rules ?? defaultRules}

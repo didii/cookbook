@@ -10,7 +10,7 @@ import { createTestDb } from '~testing/db';
 import { act, cleanup, fireEvent, precedes, render, screen, within } from '~testing/dom';
 import { fake } from '~testing/fake';
 import type { Route } from './+types/route';
-import Home, { loader, shouldRevalidate } from './route';
+import HomePage, { loader, shouldRevalidate } from './HomePageRoute';
 
 // Real loader against an in-memory D1 holding the recipes the test inserted.
 let db: D1Database;
@@ -34,7 +34,7 @@ const renderAt = (url: string, recipes: RecipeSummary[]) => {
   const props = { loaderData: { recipes } } as Route.ComponentProps;
   return render(
     <MemoryRouter initialEntries={[url]}>
-      <Home {...props} />
+      <HomePage {...props} />
     </MemoryRouter>,
   );
 };
@@ -187,7 +187,7 @@ test('recipe-filtering › Filtering does not fill the history', async () => {
   const props = { loaderData: { recipes: family } } as Route.ComponentProps;
   const router = createMemoryRouter(
     [
-      { path: '/', element: <Home {...props} /> },
+      { path: '/', element: <HomePage {...props} /> },
       { path: '/eerder', element: null },
     ],
     { initialEntries: ['/eerder', '/'], initialIndex: 1 },

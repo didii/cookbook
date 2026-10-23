@@ -5,7 +5,7 @@ import { envContext, userEmailContext } from '~app/.server/context';
 import { createTestDb } from '~testing/db';
 import { fake } from '~testing/fake';
 import type { Route } from './+types/route';
-import { loader } from './route';
+import { loader } from './AdminUsersPageRoute';
 
 // Real loader against an in-memory D1.
 let db: D1Database;

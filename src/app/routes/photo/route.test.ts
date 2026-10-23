@@ -6,8 +6,8 @@ import { createTestDb } from '~testing/db';
 import { fake } from '~testing/fake';
 import type { Route as FileRoute } from './+types/file';
 import type { Route as UploadRoute } from './+types/upload';
-import { loader } from './file';
-import { action } from './upload';
+import { loader } from './PhotoFetchRoute';
+import { action } from './PhotoUploadRoute';
 
 let photos: R2Bucket;
 let dispose: () => Promise<void>;

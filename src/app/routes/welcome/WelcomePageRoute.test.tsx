@@ -7,7 +7,7 @@ import { createTestDb } from '~testing/db';
 import { render, screen } from '~testing/dom';
 import { fake } from '~testing/fake';
 import type { Route } from './+types/route';
-import Welcome, { action, loader } from './route';
+import WelcomePage, { action, loader } from './WelcomePageRoute';
 
 // Real loader and action against an in-memory D1; each test uses its own email.
 let db: D1Database;
@@ -46,7 +46,7 @@ const open = async (email: string, search = '') => {
 };
 // The Form needs a data router, so the screen is rendered inside one.
 const show = (props: object) => {
-  const router = createMemoryRouter([{ path: '/', element: <Welcome {...(props as Route.ComponentProps)} /> }]);
+  const router = createMemoryRouter([{ path: '/', element: <WelcomePage {...(props as Route.ComponentProps)} /> }]);
   return render(<RouterProvider router={router} />);
 };
 const countRows = async (email: string) => (await db.prepare('SELECT id FROM users WHERE email = ?').bind(email).all()).results.length;

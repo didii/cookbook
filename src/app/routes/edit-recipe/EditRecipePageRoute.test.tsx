@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import type { Route as NewRoute } from '../new-recipe/+types/route';
-import NewRecipe from '../new-recipe/route';
+import NewRecipePage from '../new-recipe/NewRecipePageRoute';
 import type { ReactElement } from 'react';
 import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
 import { envContext } from '~app/.server/context';
@@ -12,7 +12,7 @@ import { defined } from '~testing/defined';
 import { render, screen } from '~testing/dom';
 import { fake } from '~testing/fake';
 import type { Route } from './+types/route';
-import EditRecipe, { action, loader } from './route';
+import EditRecipePage, { action, loader } from './EditRecipePageRoute';
 
 // Real loader and action against an in-memory D1 holding a recipe the test inserted.
 let db: D1Database;
@@ -162,8 +162,8 @@ test('recipe-editing › Same form for new and existing recipes', () => {
     loaderData: { slug: 'soep', updatedAt: '2026-01-01T00:00:00Z', authors: ['Oma'], tile: 0, seal: undefined, values },
   });
   const newProps = fake<NewRoute.ComponentProps>({ loaderData: { authors: ['Oma'], tile: 0, seal: undefined } });
-  const edit = form(<EditRecipe {...editProps} />);
-  const create = form(<NewRecipe {...newProps} />);
+  const edit = form(<EditRecipePage {...editProps} />);
+  const create = form(<NewRecipePage {...newProps} />);
   // The same fields, in the same form.
   assert.deepEqual(edit.controls, create.controls);
   // Only the starting values, the heading and the way back differ.

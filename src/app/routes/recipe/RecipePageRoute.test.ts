@@ -11,9 +11,9 @@ import { fake } from '~testing/fake';
 import type { Route as LikeRoute } from './+types/like';
 import type { Route as NoteRoute } from './+types/note';
 import type { Route } from './+types/route';
-import { action as likeAction } from './like';
-import { action as noteAction } from './note';
-import { action, loader } from './route';
+import { action as likeAction } from './LikeUpdateRoute';
+import { action as noteAction } from './NoteUpdateRoute';
+import { action, loader } from './RecipePageRoute';
 
 // Real loader and action against an in-memory D1 holding a recipe the test inserted.
 let db: D1Database;

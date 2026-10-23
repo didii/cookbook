@@ -9,7 +9,7 @@ import { arrive, type Positions, type TabId } from '~app/lib/tabs';
 import { cleanup, fireEvent, precedes, render, screen, setViewport } from '~testing/dom';
 import { routePaths } from '~testing/routes';
 import { IngredientList } from './IngredientList';
-import { RecipePage } from './RecipePage';
+import { RecipeView } from './RecipeView';
 
 const steps: Step[] = [
   { body: 'snijden', ingredients: [] },
@@ -33,11 +33,11 @@ const recipe: Omit<Recipe, 'steps'> = {
   ],
 };
 
-const page = (props: Partial<ComponentProps<typeof RecipePage>> = {}) =>
+const page = (props: Partial<ComponentProps<typeof RecipeView>> = {}) =>
   // A data router, because the page holds a router `Form` (delete button).
   render(
     <RouterProvider
-      router={createMemoryRouter([{ path: '/', element: <RecipePage recipe={recipe} tile={0} steps={steps} rules={defaultRules} {...props} /> }])}
+      router={createMemoryRouter([{ path: '/', element: <RecipeView recipe={recipe} tile={0} steps={steps} rules={defaultRules} {...props} /> }])}
     />,
   );
 /** The sticky bar with the tabs and the timer dock. */

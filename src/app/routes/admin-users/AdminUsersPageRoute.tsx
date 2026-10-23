@@ -2,7 +2,7 @@ import { Outlet } from 'react-router';
 import { envContext, userEmailContext } from '~app/.server/context';
 import { listUsers, requireSuperadmin, userLimit } from '~app/.server/users';
 import type { Route } from './+types/route';
-import { UserList } from './UserList';
+import { UserList } from './lib/UserList';
 
 /** Superadmins only; this is the protection, the menu link is only a convenience. */
 export async function loader({ context }: Route.LoaderArgs) {
@@ -16,7 +16,7 @@ export function meta() {
 }
 
 /** Master: the list on top; the selected user's detail (a child route) renders below it. */
-export default function AdminUsers({ loaderData }: Route.ComponentProps) {
+export default function AdminUsersPage({ loaderData }: Route.ComponentProps) {
   return (
     <main id="main" className="mx-auto max-w-3xl px-[max(1rem,4vw)] pt-6 pb-16">
       <h1 className="text-[clamp(2rem,6vw,3rem)] leading-[1.05] font-black tracking-[-0.03em]">Gebruikers</h1>

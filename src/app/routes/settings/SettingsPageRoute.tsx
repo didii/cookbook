@@ -4,6 +4,6 @@ export function meta() {
   return [{ title: 'Instellingen · Familiekookboek' }];
 }
 
-export default function Settings() {
+export default function SettingsPage() {
   return <WorkInProgress title="Instellingen" />;
 }
