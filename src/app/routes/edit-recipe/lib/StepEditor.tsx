@@ -1,5 +1,4 @@
 import { useImperativeHandle, useRef, useState, type ComponentProps, type CSSProperties, type KeyboardEvent, type Ref } from 'react';
-import { useAfterRender } from '~app/shared/useAfterRender';
 import type { Context } from './chips';
 import type { StepDraft } from './draft';
 import type { ItemHandle } from './ItemHandle';
@@ -8,6 +7,7 @@ import { RowToolbar } from './RowToolbar';
 import { StepChips } from './StepChips';
 import { StepText, type Mark } from './StepText';
 import type { TextEdit } from './textEdit';
+import { useAfterRender } from './useAfterRender';
 
 type Props = {
   ref?: Ref<ItemHandle>;

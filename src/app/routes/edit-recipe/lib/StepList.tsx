@@ -1,11 +1,11 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Announcement } from '~app/shared/components';
-import { useAfterRender } from '~app/shared/useAfterRender';
 import type { Context } from './chips';
 import type { StepDraft } from './draft';
 import type { ItemHandle } from './ItemHandle';
 import { StepEditor } from './StepEditor';
 import type { TextEdit } from './textEdit';
+import { useAfterRender } from './useAfterRender';
 import { useReorder } from './useReorder';
 
 type Props = {

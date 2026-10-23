@@ -4,7 +4,7 @@ import type { Step } from '~app/shared/recipe';
 import { fireEvent, precedes, render, screen, within } from '~testing/dom';
 import { TimerDock } from './TimerDock';
 import { activeTimers, start, timerDefs } from './timers';
-import { TimerSidebar } from '../TimerSidebar';
+import { TimerSidebar } from './TimerSidebar';
 
 const steps: Step[] = Array.from({ length: 10 }, (_, i) => ({
   body: `stap ${i + 1}`,

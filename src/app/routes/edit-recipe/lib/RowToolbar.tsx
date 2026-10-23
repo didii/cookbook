@@ -1,7 +1,7 @@
 import { useRef, useState, type KeyboardEvent } from 'react';
 import { cn } from '~app/shared/cn';
 import { ChevronDown, ChevronUp, Cross, Plus, Trash } from '~app/shared/icons';
-import { useAfterRender } from '~app/shared/useAfterRender';
+import { useAfterRender } from './useAfterRender';
 
 type Props = {
   /** Accessible name of the button group. */

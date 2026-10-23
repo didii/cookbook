@@ -3,7 +3,7 @@ import { cn } from '~app/shared/cn';
 import { Alarm, Stop } from '~app/shared/icons';
 import { TimerButton } from './TimerButton';
 import { formatCountdown, type TimerView } from './timers';
-import { TimersContext } from '../timersContext';
+import { TimersContext } from './timersContext';
 
 type Props = { view: TimerView };
 

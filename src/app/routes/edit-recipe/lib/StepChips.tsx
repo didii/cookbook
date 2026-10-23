@@ -2,7 +2,6 @@ import { useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { cn } from '~app/shared/cn';
 import { formatMinutes } from '~app/shared/formatter';
 import { Arrow, Check, Clock, Cross, Ingredient, Link, Pin, Plus, Thermometer, Trash } from '~app/shared/icons';
-import { useAfterRender } from '~app/shared/useAfterRender';
 import { ChipPopup } from './ChipPopup';
 import {
   acceptProposal,
@@ -28,6 +27,7 @@ import {
 } from './chips';
 import type { StepDraft } from './draft';
 import { proposalAttribute } from './OpenProposals';
+import { useAfterRender } from './useAfterRender';
 
 type Props = {
   step: StepDraft;

@@ -1,4 +1,4 @@
-import type { TextEdit } from '~app/routes/edit-recipe/lib/textEdit';
+import type { TextEdit } from './textEdit';
 
 /** A range of a step's text: UTF-16 indexes, `end` exclusive. */
 export type Range = { start: number; end: number };

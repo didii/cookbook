@@ -4,7 +4,7 @@ import { formatMinutes } from '~app/shared/formatter';
 import { Play } from '~app/shared/icons';
 import { press } from '~app/shared/press';
 import { formatCountdown } from './timers';
-import { TimersContext } from '../timersContext';
+import { TimersContext } from './timersContext';
 
 type Props = { id: string; minutes: number; label?: string };
 

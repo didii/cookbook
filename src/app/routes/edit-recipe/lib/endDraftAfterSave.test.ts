@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { emptyDraftSeed, startingDraft } from '~app/routes/edit-recipe/lib/draft';
-import { draftKey, draftKeyField, loadDraft, saveDraft, type DraftStorage } from '~app/routes/edit-recipe/lib/draftStore';
 import { defaultRules } from '~app/shared/rules';
+import { emptyDraftSeed, startingDraft } from './draft';
+import { draftKey, draftKeyField, loadDraft, saveDraft, type DraftStorage } from './draftStore';
 import { endDraftAfterSave } from './endDraftAfterSave';
 
 const items = new Map<string, string>();

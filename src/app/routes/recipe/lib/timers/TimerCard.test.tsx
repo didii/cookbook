@@ -3,9 +3,9 @@ import { test } from 'node:test';
 import type { Step } from '~app/shared/recipe';
 import { cleanup, precedes, render, screen } from '~testing/dom';
 import { activeTimers, handOver, start, timerDefs, timerView } from './timers';
+import { TimersContext, type TimerControls } from './timersContext';
 import { ClockSetting } from '../ClockSetting';
 import { StepItem } from '../StepItem';
-import { TimersContext, type TimerControls } from '../timersContext';
 
 const steps: Step[] = [
   { body: 'Meng het deeg.', ingredients: [] },

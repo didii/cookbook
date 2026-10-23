@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { useState } from 'react';
-import type { IngredientLine } from '~app/routes/edit-recipe/lib/draft';
 import { defaultRules } from '~app/shared/rules';
 import { cssFor } from '~testing/css';
 import { fireEvent, precedes, render, screen, within } from '~testing/dom';
+import type { IngredientLine } from './draft';
 import { IngredientList } from './IngredientList';
 
 /** The list as the editor holds it: a few rows and the free row at the end. */

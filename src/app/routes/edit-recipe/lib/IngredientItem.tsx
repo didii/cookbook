@@ -3,10 +3,10 @@ import { parseIngredient } from '~app/routes/recipe/lib/ingredients';
 import { cn } from '~app/shared/cn';
 import { Ingredient } from '~app/shared/icons';
 import type { Rules } from '~app/shared/rules';
-import { useAfterRender } from '~app/shared/useAfterRender';
 import type { ItemHandle } from './ItemHandle';
 import { RowGrip } from './RowGrip';
 import { RowToolbar } from './RowToolbar';
+import { useAfterRender } from './useAfterRender';
 
 type Props = {
   ref?: Ref<ItemHandle>;
