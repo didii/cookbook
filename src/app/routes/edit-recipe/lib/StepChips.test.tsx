@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { describe, test } from 'node:test';
 import { useState, type ReactNode } from 'react';
 import type { Step } from '~app/shared/recipe';
 import { defaultRules } from '~app/shared/rules';
@@ -48,44 +48,118 @@ const bar = () => screen.getByTestId('StepChips-toolbar');
 const tabStops = () => [...bar().querySelectorAll('button')].filter((b) => b.getAttribute('tabindex') === '0');
 const items = () => [...bar().querySelectorAll<HTMLElement>('[data-roving]')];
 
-test('recipe-step-chips › Chips are one tab stop', () => {
-  show();
-  assert.equal(tabStops().length, 1);
-  assert.ok(tabStops()[0] === items()[0], 'the first chip is the stop');
+describe('recipe-step-chips › Chips are one tab stop', () => {
+  /** Renders the chips with the first item focused. */
+  const setup = () => {
+    show();
+    const [first, second] = items();
+    first.focus();
+    return { first, second };
+  };
+
+  test('only one chip is in the tab order', () => {
+    show();
+    assert.equal(tabStops().length, 1);
+  });
+
+  test('the first chip is the stop', () => {
+    show();
+    assert.ok(tabStops()[0] === items()[0]);
+  });
+
   // The arrow keys move between the chips (and the add buttons), wrapping at the ends.
-  const [first, second] = items();
-  first.focus();
-  fireEvent.keyDown(first, { key: 'ArrowRight' });
-  assert.ok(document.activeElement === second, 'right');
-  fireEvent.keyDown(second, { key: 'ArrowLeft' });
-  assert.ok(document.activeElement === first, 'left');
-  fireEvent.keyDown(first, { key: 'End' });
-  assert.ok(document.activeElement === items().at(-1), 'end');
-  fireEvent.keyDown(items().at(-1)!, { key: 'Home' });
-  assert.ok(document.activeElement === first, 'home');
+  test('ArrowRight moves to the next item', () => {
+    const { first, second } = setup();
+    fireEvent.keyDown(first, { key: 'ArrowRight' });
+    assert.ok(document.activeElement === second);
+  });
+
+  test('ArrowLeft moves back', () => {
+    const { first, second } = setup();
+    fireEvent.keyDown(first, { key: 'ArrowRight' });
+    fireEvent.keyDown(second, { key: 'ArrowLeft' });
+    assert.ok(document.activeElement === first);
+  });
+
+  test('End moves to the last item', () => {
+    const { first } = setup();
+    fireEvent.keyDown(first, { key: 'End' });
+    assert.ok(document.activeElement === items().at(-1));
+  });
+
+  test('Home moves to the first item', () => {
+    const { first } = setup();
+    fireEvent.keyDown(first, { key: 'End' });
+    fireEvent.keyDown(items().at(-1)!, { key: 'Home' });
+    assert.ok(document.activeElement === first);
+  });
+
   // The chip used last is the stop, so the next Tab comes back to it.
-  fireEvent.keyDown(first, { key: 'ArrowRight' });
-  assert.equal(tabStops().length, 1);
-  assert.ok(tabStops()[0] === second, 'the last used chip is the stop');
+  test('the last used chip is the only stop', () => {
+    const { first, second } = setup();
+    fireEvent.keyDown(first, { key: 'ArrowRight' });
+    assert.equal(tabStops().length, 1);
+    assert.ok(tabStops()[0] === second);
+  });
 });
 
-test('recipe-step-chips › Enter opens the popup', () => {
-  show();
+describe('recipe-step-chips › Enter opens the popup', () => {
   // A chip is a real button, so Enter and Space press it like a click; the browser does that, not the page.
   // The step's chips are the oven and then the timer.
-  const chip = screen.getAllByTestId('StepChips-chip')[1];
-  assert.match(chip.textContent ?? '', /30 min/);
-  assert.equal(chip.tagName, 'BUTTON');
-  assert.equal(chip.getAttribute('aria-haspopup'), 'dialog');
-  fireEvent.click(chip);
-  const dialog = screen.getByTestId('ChipPopup-dialog');
-  // The follow or pinned choice in the popup does what the icon button does: it pins, and lets the chip follow again.
-  const [follow, pinned] = within(dialog).getAllByTestId('ChipPopup-mode');
+  const chip = () => screen.getAllByTestId('StepChips-chip')[1];
   const icon = () => screen.getAllByTestId('StepChips-icon')[1];
-  fireEvent.click(pinned);
-  assert.equal(pinned.getAttribute('aria-pressed'), 'true');
-  assert.equal(icon().getAttribute('aria-label'), 'Laten volgen en openen');
-  fireEvent.click(follow);
-  assert.equal(follow.getAttribute('aria-pressed'), 'true');
-  assert.equal(icon().getAttribute('aria-label'), 'Vastzetten en openen');
+  /** The follow or pinned choice in the popup does what the icon button does: it pins, and lets the chip follow again. */
+  const choices = () => {
+    show();
+    fireEvent.click(chip());
+    const [follow, pinned] = within(screen.getByTestId('ChipPopup-dialog')).getAllByTestId('ChipPopup-mode');
+    return { follow, pinned };
+  };
+
+  test('the chip shows its timer', () => {
+    show();
+    assert.match(chip().textContent ?? '', /30 min/);
+  });
+
+  test('the chip is a button', () => {
+    show();
+    assert.equal(chip().tagName, 'BUTTON');
+  });
+
+  test('the chip announces a dialog', () => {
+    show();
+    assert.equal(chip().getAttribute('aria-haspopup'), 'dialog');
+  });
+
+  test('clicking the chip opens the popup', () => {
+    show();
+    fireEvent.click(chip());
+    assert.ok(screen.getByTestId('ChipPopup-dialog'));
+  });
+
+  test('the pinned choice pins the chip', () => {
+    const { pinned } = choices();
+    fireEvent.click(pinned);
+    assert.equal(pinned.getAttribute('aria-pressed'), 'true');
+  });
+
+  test('the pinned choice changes the icon to offer following', () => {
+    const { pinned } = choices();
+    fireEvent.click(pinned);
+    assert.equal(icon().getAttribute('aria-label'), 'Laten volgen en openen');
+  });
+
+  test('the follow choice lets the chip follow again', () => {
+    const { follow, pinned } = choices();
+    fireEvent.click(pinned);
+    fireEvent.click(follow);
+    assert.equal(follow.getAttribute('aria-pressed'), 'true');
+  });
+
+  test('the follow choice changes the icon to offer pinning', () => {
+    const { follow, pinned } = choices();
+    fireEvent.click(pinned);
+    fireEvent.click(follow);
+    assert.equal(icon().getAttribute('aria-label'), 'Vastzetten en openen');
+  });
 });

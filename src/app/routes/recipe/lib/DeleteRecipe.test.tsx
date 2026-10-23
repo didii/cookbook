@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { describe, test } from 'node:test';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { defaultRules } from '~app/shared/rules';
 import { fireEvent, precedes, render, screen, within } from '~testing/dom';
@@ -36,39 +36,73 @@ const open = () => {
   fireEvent.click(trigger());
 };
 
-test('recipe-deletion › Delete button is shown', () => {
-  show();
-  assert.ok(precedes(screen.getByTestId('StepItem-body'), trigger()));
-  assert.equal(trigger().closest('header'), null);
+describe('recipe-deletion › Delete button is shown', () => {
+  test('the button comes after the steps', () => {
+    show();
+    assert.ok(precedes(screen.getByTestId('StepItem-body'), trigger()));
+  });
+
+  test('the button is not in the header', () => {
+    show();
+    assert.equal(trigger().closest('header'), null);
+  });
 });
 
-test('recipe-deletion › Popup asks for confirmation', () => {
-  show();
-  assert.equal(dialog().open, false);
-  fireEvent.click(trigger());
-  assert.equal(dialog().open, true);
-  const popup = within(dialog());
-  assert.ok(popup.getByTestId('DeleteRecipe-title').textContent?.includes('Appeltaart'));
-  assert.ok(popup.getByTestId('DeleteRecipe-confirm') && popup.getByTestId('DeleteRecipe-cancel'));
-  assert.equal(popup.getByTestId('DeleteRecipe-confirm').getAttribute('type'), 'submit');
+describe('recipe-deletion › Popup asks for confirmation', () => {
+  test('the popup is closed at first', () => {
+    show();
+    assert.equal(dialog().open, false);
+  });
+
+  test('pressing the button opens it', () => {
+    open();
+    assert.equal(dialog().open, true);
+  });
+
+  test('it names the recipe', () => {
+    open();
+    assert.ok(within(dialog()).getByTestId('DeleteRecipe-title').textContent?.includes('Appeltaart'));
+  });
+
+  test('it has a confirm and a cancel button', () => {
+    open();
+    const popup = within(dialog());
+    assert.ok(popup.getByTestId('DeleteRecipe-confirm') && popup.getByTestId('DeleteRecipe-cancel'));
+  });
+
+  test('the confirm button submits the form', () => {
+    open();
+    assert.equal(within(dialog()).getByTestId('DeleteRecipe-confirm').getAttribute('type'), 'submit');
+  });
 });
 
-test('recipe-deletion › Cancel closes the popup', () => {
-  open();
-  fireEvent.click(within(dialog()).getByTestId('DeleteRecipe-cancel'));
-  assert.equal(dialog().open, false);
+describe('recipe-deletion › Cancel closes the popup', () => {
+  test('the popup is closed after cancel', () => {
+    open();
+    fireEvent.click(within(dialog()).getByTestId('DeleteRecipe-cancel'));
+    assert.equal(dialog().open, false);
+  });
 });
 
-test('recipe-deletion › Click outside closes the popup', () => {
-  open();
-  // A click inside the popup leaves it open; one on the backdrop (the dialog element itself) closes it.
-  fireEvent.click(within(dialog()).getByTestId('DeleteRecipe-title'));
-  assert.equal(dialog().open, true);
-  // The padding belongs to the inner form, so a click on it is not a click on the backdrop.
-  fireEvent.click(dialog().firstElementChild!);
-  assert.equal(dialog().open, true);
-  fireEvent.click(dialog());
-  assert.equal(dialog().open, false);
+describe('recipe-deletion › Click outside closes the popup', () => {
+  test('a click inside the popup leaves it open', () => {
+    open();
+    fireEvent.click(within(dialog()).getByTestId('DeleteRecipe-title'));
+    assert.equal(dialog().open, true);
+  });
+
+  test('a click on the padding leaves it open', () => {
+    open();
+    // The padding belongs to the inner form, so a click on it is not a click on the backdrop.
+    fireEvent.click(dialog().firstElementChild!);
+    assert.equal(dialog().open, true);
+  });
+
+  test('a click on the backdrop (the dialog element itself) closes it', () => {
+    open();
+    fireEvent.click(dialog());
+    assert.equal(dialog().open, false);
+  });
 });
 
 // Escape and the focus trap come from the browser's modal dialog, which happy-dom does not implement.

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { afterEach, beforeEach, mock, test } from 'node:test';
+import { afterEach, beforeEach, describe, mock, test } from 'node:test';
 import { act, fireEvent, render, screen } from '~testing/dom';
 import { NoteSheet } from './NoteSheet';
 import { useNote } from './useNote';
@@ -34,93 +34,190 @@ const open = async (saved = 'oud') => {
 };
 const type = (value: string) => act(async () => void fireEvent.change(field(), { target: { value } }));
 
-test('recipe-note › Recipe without a note', () => {
-  render(<Sheet saved="" />);
-  assert.equal(screen.queryByTestId('NoteSheet-marker'), null);
-  assert.equal(button().getAttribute('aria-label'), 'Open mijn notitie');
-  assert.ok(button().closest('div')!.classList.contains('min-[52rem]:hidden'));
+describe('recipe-note › Recipe without a note', () => {
+  beforeEach(() => {
+    render(<Sheet saved="" />);
+  });
+
+  test('the button has no marker', () => {
+    assert.equal(screen.queryByTestId('NoteSheet-marker'), null);
+  });
+
+  test('the button offers to open the note', () => {
+    assert.equal(button().getAttribute('aria-label'), 'Open mijn notitie');
+  });
+
+  test('the button is only there below 52rem', () => {
+    assert.ok(button().closest('div')!.classList.contains('min-[52rem]:hidden'));
+  });
 });
 
-test('recipe-note › Recipe with a note', async () => {
-  render(<Sheet saved="Minder zout" />);
-  assert.ok(screen.getByTestId('NoteSheet-marker'));
-  await act(async () => void fireEvent.click(button()));
-  assert.equal(field().value, 'Minder zout');
+describe('recipe-note › Recipe with a note', () => {
+  test('the button has a marker', () => {
+    render(<Sheet saved="Minder zout" />);
+    assert.ok(screen.getByTestId('NoteSheet-marker'));
+  });
+
+  test('opening shows the note', async () => {
+    render(<Sheet saved="Minder zout" />);
+    await act(async () => void fireEvent.click(button()));
+    assert.equal(field().value, 'Minder zout');
+  });
 });
 
-test('recipe-note › Opening the note field', async () => {
-  await open();
-  assert.equal(field().value, 'oud');
-  assert.equal(sheet()!.tagName, 'DIALOG');
-  assert.equal(sheet()!.getAttribute('aria-label'), 'Mijn notitie');
-  assert.equal(button().getAttribute('aria-label'), 'Sluit mijn notitie');
-  assert.equal(button().getAttribute('aria-expanded'), 'true');
-  assert.ok(button().classList.contains('bg-red'));
-  assert.ok(screen.getByText('Alleen voor jou'));
-  assert.equal(document.activeElement, field());
+describe('recipe-note › Opening the note field', () => {
+  beforeEach(async () => {
+    await open();
+  });
+
+  test('the field shows the note', () => {
+    assert.equal(field().value, 'oud');
+  });
+
+  test('the sheet is a dialog named "Mijn notitie"', () => {
+    assert.equal(sheet()!.tagName, 'DIALOG');
+    assert.equal(sheet()!.getAttribute('aria-label'), 'Mijn notitie');
+  });
+
+  test('the button turns into a red close button', () => {
+    assert.equal(button().getAttribute('aria-label'), 'Sluit mijn notitie');
+    assert.equal(button().getAttribute('aria-expanded'), 'true');
+    assert.ok(button().classList.contains('bg-red'));
+  });
+
+  test('the sheet says the note is only for you', () => {
+    assert.ok(screen.getByText('Alleen voor jou'));
+  });
+
+  test('the field has focus', () => {
+    assert.equal(document.activeElement, field());
+  });
 });
 
-test('recipe-note › Closing by tapping outside', async () => {
-  await open();
-  // A tap inside the field leaves it open, a tap on the scrim closes.
-  await act(async () => void fireEvent.click(field()));
-  assert.ok(sheet());
-  await act(async () => void fireEvent.click(screen.getByTestId('NoteSheet-scrim')));
-  assert.equal(sheet(), null);
-  assert.equal(document.activeElement, button());
+describe('recipe-note › Closing by tapping outside', () => {
+  beforeEach(async () => {
+    await open();
+  });
+
+  test('a tap inside the field leaves it open', async () => {
+    await act(async () => void fireEvent.click(field()));
+    assert.ok(sheet());
+  });
+
+  test('a tap on the scrim closes the sheet', async () => {
+    await act(async () => void fireEvent.click(screen.getByTestId('NoteSheet-scrim')));
+    assert.equal(sheet(), null);
+  });
+
+  test('focus returns to the button', async () => {
+    await act(async () => void fireEvent.click(screen.getByTestId('NoteSheet-scrim')));
+    assert.equal(document.activeElement, button());
+  });
 });
 
-test('recipe-note › Closing with the button', async () => {
-  await open();
-  await act(async () => void fireEvent.click(button()));
-  assert.equal(sheet(), null);
-  assert.equal(document.activeElement, button());
+describe('recipe-note › Closing with the button', () => {
+  beforeEach(async () => {
+    await open();
+    await act(async () => void fireEvent.click(button()));
+  });
+
+  test('the sheet is closed', () => {
+    assert.equal(sheet(), null);
+  });
+
+  test('focus returns to the button', () => {
+    assert.equal(document.activeElement, button());
+  });
 });
 
-test('Escape closes the field', async () => {
-  await open();
-  await act(async () => void fireEvent.keyDown(document, { key: 'Escape' }));
-  assert.equal(sheet(), null);
+describe('NoteSheet', () => {
+  test('Escape closes the field', async () => {
+    await open();
+    await act(async () => void fireEvent.keyDown(document, { key: 'Escape' }));
+    assert.equal(sheet(), null);
+  });
+
+  describe('the cue after a change', () => {
+    beforeEach(async () => {
+      await open();
+      await type('nieuw');
+      await act(async () => void fireEvent.click(button()));
+    });
+
+    test('sits next to the closed button and says the note is saved', () => {
+      assert.equal(screen.getByTestId('NoteCue-cue').textContent?.trim(), 'Notitie bewaard');
+      assert.equal(screen.getByTestId('NoteCue-status').tagName, 'OUTPUT');
+    });
+
+    test('a tap removes it', async () => {
+      await act(async () => void fireEvent.click(screen.getByTestId('NoteCue-cue')));
+      assert.equal(screen.queryByTestId('NoteCue-cue'), null);
+    });
+  });
 });
 
-test('recipe-note › Hint while there is unsaved text', async () => {
-  await open();
-  await type('nieuw');
-  assert.equal(screen.getByTestId('NoteSheet-hint').textContent, 'Wordt vanzelf bewaard. Tik buiten het veld om te sluiten.');
-  assert.equal(screen.queryByTestId('NoteSheet-saved'), null);
+describe('recipe-note › Hint while there is unsaved text', () => {
+  beforeEach(async () => {
+    await open();
+    await type('nieuw');
+  });
+
+  test('the hint explains the autosave', () => {
+    assert.equal(screen.getByTestId('NoteSheet-hint').textContent, 'Wordt vanzelf bewaard. Tik buiten het veld om te sluiten.');
+  });
+
+  test('no saved message shows', () => {
+    assert.equal(screen.queryByTestId('NoteSheet-saved'), null);
+  });
 });
 
-test('recipe-note › Saved replaces the hint', async () => {
-  await open();
-  await type('nieuw');
-  await act(async () => mock.timers.tick(5000));
-  assert.equal(screen.queryByTestId('NoteSheet-hint'), null);
-  assert.equal(screen.getByTestId('NoteSheet-saved').textContent?.trim(), 'Bewaard');
-  assert.equal(screen.getByTestId('NoteSheet-status').tagName, 'OUTPUT');
+describe('recipe-note › Saved replaces the hint', () => {
+  beforeEach(async () => {
+    await open();
+    await type('nieuw');
+    await act(async () => mock.timers.tick(5000));
+  });
+
+  test('the hint is gone', () => {
+    assert.equal(screen.queryByTestId('NoteSheet-hint'), null);
+  });
+
+  test('"Bewaard" shows', () => {
+    assert.equal(screen.getByTestId('NoteSheet-saved').textContent?.trim(), 'Bewaard');
+  });
+
+  test('the status is an output element', () => {
+    assert.equal(screen.getByTestId('NoteSheet-status').tagName, 'OUTPUT');
+  });
 });
 
-test('recipe-note › Typing brings the hint back', async () => {
-  await open();
-  await type('nieuw');
-  await act(async () => mock.timers.tick(5000));
-  await type('nieuwer');
-  assert.ok(screen.getByTestId('NoteSheet-hint'));
-  assert.equal(screen.queryByTestId('NoteSheet-saved'), null);
+describe('recipe-note › Typing brings the hint back', () => {
+  beforeEach(async () => {
+    await open();
+    await type('nieuw');
+    await act(async () => mock.timers.tick(5000));
+    await type('nieuwer');
+  });
+
+  test('the hint shows again', () => {
+    assert.ok(screen.getByTestId('NoteSheet-hint'));
+  });
+
+  test('the saved message is gone', () => {
+    assert.equal(screen.queryByTestId('NoteSheet-saved'), null);
+  });
 });
 
-test('recipe-note › Opening alone shows the hint', async () => {
-  await open();
-  assert.ok(screen.getByTestId('NoteSheet-hint'));
-  assert.equal(screen.queryByTestId('NoteSheet-saved'), null);
-});
+describe('recipe-note › Opening alone shows the hint', () => {
+  beforeEach(async () => {
+    await open();
+  });
 
-test('the cue sits next to the closed button after a change and a tap removes it', async () => {
-  await open();
-  await type('nieuw');
-  await act(async () => void fireEvent.click(button()));
-  const cue = screen.getByTestId('NoteCue-cue');
-  assert.equal(cue.textContent?.trim(), 'Notitie bewaard');
-  assert.equal(screen.getByTestId('NoteCue-status').tagName, 'OUTPUT');
-  await act(async () => void fireEvent.click(cue));
-  assert.equal(screen.queryByTestId('NoteCue-cue'), null);
+  test('the hint shows', () => {
+    assert.ok(screen.getByTestId('NoteSheet-hint'));
+  });
+
+  test('no saved message shows', () => {
+    assert.equal(screen.queryByTestId('NoteSheet-saved'), null);
+  });
 });

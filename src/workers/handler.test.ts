@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { after, test } from 'node:test';
+import { after, describe, test } from 'node:test';
 import { generateKeyPair, SignJWT } from 'jose';
 import type { RouterContextProvider } from 'react-router';
 import { envContext, userEmailContext } from '~app/shared/context.server';
@@ -36,59 +36,114 @@ function setup(dev: boolean) {
 
 const get = (jwt?: string) => new Request('https://cookbook.example.com/', { headers: jwt ? { [accessJwtHeader]: jwt } : {} });
 
-test('family-access › Request with no identity proof', async () => {
-  const { calls, fetch } = setup(false);
-  const res = await fetch(get(), env);
-  assert.equal(res.status, 403);
-  assert.equal(calls.length, 0);
+describe('family-access › Request with no identity proof', () => {
+  test('is refused with 403', async () => {
+    const res = await setup(false).fetch(get(), env);
+    assert.equal(res.status, 403);
+  });
+
+  test('never reaches the app', async () => {
+    const { calls, fetch } = setup(false);
+    await fetch(get(), env);
+    assert.equal(calls.length, 0);
+  });
 });
 
-test('refuses a bad token and never reaches the app', async () => {
-  const { calls, fetch } = setup(false);
-  const res = await fetch(get('not-a-token'), env);
-  assert.equal(res.status, 403);
-  assert.equal(calls.length, 0);
+describe('createFetch', () => {
+  describe('a bad token', () => {
+    test('is refused with 403', async () => {
+      const res = await setup(false).fetch(get('not-a-token'), env);
+      assert.equal(res.status, 403);
+    });
+
+    test('never reaches the app', async () => {
+      const { calls, fetch } = setup(false);
+      await fetch(get('not-a-token'), env);
+      assert.equal(calls.length, 0);
+    });
+  });
+
+  describe('a valid token', () => {
+    test('returns the response of the app', async () => {
+      const res = await setup(false).fetch(get(await token()), env);
+      assert.equal(await res.text(), 'app');
+    });
+
+    test('calls the app once', async () => {
+      const { calls, fetch } = setup(false);
+      await fetch(get(await token()), env);
+      assert.equal(calls.length, 1);
+    });
+
+    test('puts the verified email in the context', async () => {
+      const { calls, fetch } = setup(false);
+      await fetch(get(await token()), env);
+      assert.equal(calls[0].get(userEmailContext), 'mum@example.com');
+    });
+
+    test('puts the env in the context', async () => {
+      const { calls, fetch } = setup(false);
+      await fetch(get(await token()), env);
+      assert.equal(calls[0].get(envContext), env);
+    });
+  });
 });
 
-test('passes the app its response, with the verified email and the env in the context', async () => {
-  const { calls, fetch } = setup(false);
-  const res = await fetch(get(await token()), env);
-  assert.equal(await res.text(), 'app');
-  assert.equal(calls.length, 1);
-  assert.equal(calls[0].get(userEmailContext), 'mum@example.com');
-  assert.equal(calls[0].get(envContext), env);
+describe('family-access › Local run with a stand-in member', () => {
+  test('the request is let through', async () => {
+    assert.equal((await setup(true).fetch(get(), env)).status, 200);
+  });
+
+  test('the stand-in email is in the context', async () => {
+    const dev = setup(true);
+    await dev.fetch(get(), env);
+    assert.equal(dev.calls[0].get(userEmailContext), 'dev@example.com');
+  });
 });
 
-test('family-access › Local run with a stand-in member', async () => {
-  const dev = setup(true);
-  assert.equal((await dev.fetch(get(), env)).status, 200);
-  assert.equal(dev.calls[0].get(userEmailContext), 'dev@example.com');
-});
+describe('family-access › Stand-in identity configured on a deployed app', () => {
+  test('is refused with 403', async () => {
+    assert.equal((await setup(false).fetch(get(), env)).status, 403);
+  });
 
-test('family-access › Stand-in identity configured on a deployed app', async () => {
-  const prod = setup(false);
-  assert.equal((await prod.fetch(get(), env)).status, 403);
-  assert.equal(prod.calls.length, 0);
+  test('never reaches the app', async () => {
+    const prod = setup(false);
+    await prod.fetch(get(), env);
+    assert.equal(prod.calls.length, 0);
+  });
 });
 
 // A request without verified identity never reaches the app, so nothing that would store a user can run.
-test('users › Forged identity', async () => {
-  const { db, dispose } = await createTestDb();
-  after(dispose);
-  const reached: string[] = [];
-  const fetch = createFetch({
-    requestHandler: async (_request, context) => (
-      await createUser(db, context.get(userEmailContext), 'Nep'),
-      reached.push('app'),
-      new Response('app')
-    ),
-    dev: false,
-    getKey: async () => publicKey,
+describe('users › Forged identity', () => {
+  const forge = async () => {
+    const { db, dispose } = await createTestDb();
+    after(dispose);
+    const reached: string[] = [];
+    const fetch = createFetch({
+      requestHandler: async (_request, context) => (
+        await createUser(db, context.get(userEmailContext), 'Nep'),
+        reached.push('app'),
+        new Response('app')
+      ),
+      dev: false,
+      getKey: async () => publicKey,
+    });
+    const res = await fetch(get('forged'), { ...env, DB: db });
+    return { db, reached, res };
+  };
+
+  test('is refused with 403', async () => {
+    assert.equal((await forge()).res.status, 403);
   });
-  const res = await fetch(get('forged'), { ...env, DB: db });
-  assert.equal(res.status, 403);
-  assert.deepEqual(reached, []);
-  assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM users').first<{ n: number }>())?.n, 0);
+
+  test('never reaches the app', async () => {
+    assert.deepEqual((await forge()).reached, []);
+  });
+
+  test('stores nobody', async () => {
+    const { db } = await forge();
+    assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM users').first<{ n: number }>())?.n, 0);
+  });
 });
 
 // Not automated: sign-in happens at Cloudflare Access, outside this code.

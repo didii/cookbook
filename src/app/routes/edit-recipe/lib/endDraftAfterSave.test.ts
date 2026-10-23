@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { beforeEach, describe, test } from 'node:test';
 import { defaultRules } from '~app/shared/rules';
 import { emptyDraftSeed, startingDraft } from './draft';
 import { draftKey, draftKeyField, loadDraft, saveDraft, type DraftStorage } from './draftStore';
 import { endDraftAfterSave } from './endDraftAfterSave';
 
 const items = new Map<string, string>();
+beforeEach(() => items.clear());
 const storage: DraftStorage = {
   get length() {
     return items.size;
@@ -34,37 +35,56 @@ const save = (serverAction: () => Promise<unknown>) =>
   );
 
 // The server action as the browser sees it (react-router's single fetch): a success is a thrown redirect, a refusal is returned data.
-test('recipe-draft › A save ends the draft', async () => {
-  keep();
-  await assert.rejects(
-    save(() => Promise.reject(new Response(null, { status: 302, headers: { Location: '/recepten/soep' } }))),
-    (e) => e instanceof Response && e.status === 302,
-  );
-  assert.equal(loadDraft(storage, key), undefined);
-});
-
-test('recipe-draft › A refused save keeps the draft', async () => {
-  keep();
-  const refused = { errors: { title: 'Vul een titel in' } };
-  assert.equal(await save(() => Promise.resolve(refused)), refused);
-  assert.ok(loadDraft(storage, key));
-  // Nor does a failure that is not a redirect end it.
-  await assert.rejects(save(() => Promise.reject(new Error('offline'))));
-  await assert.rejects(save(() => Promise.reject(new Response('nope', { status: 500 }))));
-  assert.ok(loadDraft(storage, key));
-});
-
-test('recipe-draft › Reset ends the draft', () => {
-  keep();
-  // Herstel puts the starting values back: the editor equals the stored recipe, so keeping it removes the draft.
-  saveDraft(storage, key, {
-    state: startingDraft(defaultRules, { ...emptyDraftSeed, title: 'Soep' }),
-    initial,
-    base: {},
-    uploading: false,
-    settledImage: '',
-    now: new Date(),
-    rules: defaultRules,
+describe('recipe-draft › A save ends the draft', () => {
+  test('the redirect is passed on', async () => {
+    keep();
+    await assert.rejects(
+      save(() => Promise.reject(new Response(null, { status: 302, headers: { Location: '/recepten/soep' } }))),
+      (e) => e instanceof Response && e.status === 302,
+    );
   });
-  assert.equal(loadDraft(storage, key), undefined);
+
+  test('the draft is removed', async () => {
+    keep();
+    await save(() => Promise.reject(new Response(null, { status: 302, headers: { Location: '/recepten/soep' } }))).catch(() => undefined);
+    assert.equal(loadDraft(storage, key), undefined);
+  });
+});
+
+describe('recipe-draft › A refused save keeps the draft', () => {
+  test('refused data is returned and the draft stays', async () => {
+    keep();
+    const refused = { errors: { title: 'Vul een titel in' } };
+    assert.equal(await save(() => Promise.resolve(refused)), refused);
+    assert.ok(loadDraft(storage, key));
+  });
+
+  test('a failure that is not a redirect does not end it', async () => {
+    keep();
+    await assert.rejects(save(() => Promise.reject(new Error('offline'))));
+    assert.ok(loadDraft(storage, key));
+  });
+
+  test('a failed response does not end it', async () => {
+    keep();
+    await assert.rejects(save(() => Promise.reject(new Response('nope', { status: 500 }))));
+    assert.ok(loadDraft(storage, key));
+  });
+});
+
+describe('recipe-draft › Reset ends the draft', () => {
+  test('keeping the starting values removes the draft', () => {
+    keep();
+    // Herstel puts the starting values back: the editor equals the stored recipe, so keeping it removes the draft.
+    saveDraft(storage, key, {
+      state: startingDraft(defaultRules, { ...emptyDraftSeed, title: 'Soep' }),
+      initial,
+      base: {},
+      uploading: false,
+      settledImage: '',
+      now: new Date(),
+      rules: defaultRules,
+    });
+    assert.equal(loadDraft(storage, key), undefined);
+  });
 });

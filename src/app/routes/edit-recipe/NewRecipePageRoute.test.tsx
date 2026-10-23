@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { after, before, test } from 'node:test';
+import { after, before, describe, test } from 'node:test';
 import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { getRecipe } from '~app/shared/recipes.server';
@@ -33,26 +33,54 @@ const submit = (fields: Record<string, string>) => {
   );
 };
 
-test('recipe-creation › Recipe is created', async () => {
-  const res = (await submit({ title: ' Soep ', author: 'Oma', servings: '4' })) as Response;
-  assert.equal(res.status, 302);
-  assert.equal(res.headers.get('Location'), '/recepten/soep');
-  const r = await getRecipe(db, 'soep');
-  assert.deepEqual([r?.title, r?.author, r?.servings], ['Soep', 'Oma', 4]);
-  assert.equal((await db.prepare("SELECT created_by FROM recipes WHERE slug = 'soep'").first())?.created_by, 'oma@example.com');
+describe('recipe-creation › Recipe is created', () => {
+  let res: Response;
+
+  before(async () => {
+    res = (await submit({ title: ' Soep ', author: 'Oma', servings: '4' })) as Response;
+  });
+
+  test('the answer is a redirect', () => {
+    assert.equal(res.status, 302);
+  });
+
+  test('the redirect goes to the new recipe', () => {
+    assert.equal(res.headers.get('Location'), '/recepten/soep');
+  });
+
+  test('the title, author and servings are stored', async () => {
+    const r = await getRecipe(db, 'soep');
+    assert.deepEqual([r?.title, r?.author, r?.servings], ['Soep', 'Oma', 4]);
+  });
+
+  test('the creator is stored', async () => {
+    assert.equal((await db.prepare("SELECT created_by FROM recipes WHERE slug = 'soep'").first())?.created_by, 'oma@example.com');
+  });
 });
 
-test('recipe-creation › Time, intro and image are stored', async () => {
-  const image = '/foto/00000000-0000-4000-8000-000000000000.webp';
-  await submit({ title: 'Compleet', author: 'Oma', time: ' 45 min ', intro: 'Lekker', image });
-  const r = await getRecipe(db, 'compleet');
-  assert.deepEqual([r?.time, r?.intro, r?.image], ['45 min', 'Lekker', image]);
+describe('recipe-creation › Time, intro and image are stored', () => {
+  test('the time, intro and image are stored', async () => {
+    const image = '/foto/00000000-0000-4000-8000-000000000000.webp';
+    await submit({ title: 'Compleet', author: 'Oma', time: ' 45 min ', intro: 'Lekker', image });
+    const r = await getRecipe(db, 'compleet');
+    assert.deepEqual([r?.time, r?.intro, r?.image], ['45 min', 'Lekker', image]);
+  });
 });
 
-test('recipe-creation › Servings left empty', async () => {
-  const res = (await submit({ title: 'Zonder porties', author: 'Oma', servings: '' })) as Response;
-  assert.equal(res.headers.get('Location'), '/recepten/zonder-porties');
-  assert.equal((await getRecipe(db, 'zonder-porties'))?.servings, null);
+describe('recipe-creation › Servings left empty', () => {
+  let res: Response;
+
+  before(async () => {
+    res = (await submit({ title: 'Zonder porties', author: 'Oma', servings: '' })) as Response;
+  });
+
+  test('the recipe is created', () => {
+    assert.equal(res.headers.get('Location'), '/recepten/zonder-porties');
+  });
+
+  test('the servings are empty', async () => {
+    assert.equal((await getRecipe(db, 'zonder-porties'))?.servings, null);
+  });
 });
 
 /** The new recipe page as the router shows it, with what a refused submit hands back (nothing on first opening). */
@@ -61,61 +89,95 @@ const form = (actionData?: { errors: Record<string, string>; values: typeof empt
   return render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <NewRecipePage {...props} /> }])} />);
 };
 
-test('recipe-creation › Suggestions ignore letter case', async () => {
-  form();
-  const author = screen.getByTestId('AuthorInput-field');
-  openAutocomplete(author);
-  fireEvent.change(author, { target: { value: 'oma' } });
-  const options = await screen.findAllByTestId('AuthorInput-option');
-  assert.deepEqual(
-    options.map((o) => o.textContent),
-    ['Oma'],
-  );
+describe('recipe-creation › Suggestions ignore letter case', () => {
+  test('lower case typing finds the capitalised author', async () => {
+    form();
+    const author = screen.getByTestId('AuthorInput-field');
+    openAutocomplete(author);
+    fireEvent.change(author, { target: { value: 'oma' } });
+    const options = await screen.findAllByTestId('AuthorInput-option');
+    assert.deepEqual(
+      options.map((o) => o.textContent),
+      ['Oma'],
+    );
+  });
 });
 
-test('recipe-creation › Required fields are marked', () => {
-  form();
+describe('recipe-creation › Required fields are marked', () => {
   const label = (id: string) => document.querySelector(`label[for=${id}]`)!.textContent;
+
   // The title and author labels carry an asterisk and the form explains it; the servings label has none.
-  assert.match(label('title') ?? '', /\*$/);
-  assert.match(label('author') ?? '', /\*$/);
-  assert.doesNotMatch(label('servings') ?? '', /\*/);
-  assert.ok(screen.getByTestId('RecipeEditor-required').textContent?.includes('*'));
+  test('the title label carries an asterisk', () => {
+    form();
+    assert.match(label('title') ?? '', /\*$/);
+  });
+
+  test('the author label carries an asterisk', () => {
+    form();
+    assert.match(label('author') ?? '', /\*$/);
+  });
+
+  test('the servings label has none', () => {
+    form();
+    assert.doesNotMatch(label('servings') ?? '', /\*/);
+  });
+
+  test('the form explains the asterisk', () => {
+    form();
+    assert.ok(screen.getByTestId('RecipeEditor-required').textContent?.includes('*'));
+  });
 });
 
-test('recipe-creation › Errors are announced and focused', () => {
+describe('recipe-creation › Errors are announced and focused', () => {
   const errors = { title: 'Vul een titel in.', author: 'Vul een kok in.' };
-  form({ errors, values: emptyDraftSeed });
+
   // Each error is text tied to its field, and focus is on the first field in error.
   for (const [id, message] of Object.entries(errors)) {
-    const field = document.getElementById(id)!;
-    assert.equal(field.getAttribute('aria-invalid'), 'true');
-    assert.equal(document.getElementById(field.getAttribute('aria-describedby')!)?.textContent, message);
+    test(`the ${id} field is marked invalid`, () => {
+      form({ errors, values: emptyDraftSeed });
+      assert.equal(document.getElementById(id)!.getAttribute('aria-invalid'), 'true');
+    });
+
+    test(`the ${id} field is described by its error`, () => {
+      form({ errors, values: emptyDraftSeed });
+      const field = document.getElementById(id)!;
+      assert.equal(document.getElementById(field.getAttribute('aria-describedby')!)?.textContent, message);
+    });
   }
-  assert.ok(document.activeElement === document.getElementById('title'), 'focus on the title');
-  cleanup();
+
+  test('focus is on the first field in error', () => {
+    form({ errors, values: emptyDraftSeed });
+    assert.ok(document.activeElement === document.getElementById('title'));
+  });
+
   // With only a later field in error, focus goes there.
-  form({ errors: { servings: 'Vul een getal in.' }, values: emptyDraftSeed });
-  assert.ok(document.activeElement === document.getElementById('servings'), 'focus on the servings');
+  test('focus goes to a later field when only that one is in error', () => {
+    form({ errors: { servings: 'Vul een getal in.' }, values: emptyDraftSeed });
+    assert.ok(document.activeElement === document.getElementById('servings'));
+  });
 });
 
 // Only the action stores anything: opening the editor (the loader) leaves the database as it was.
-test('recipe-form › Nothing stored before saving', async () => {
-  const count = async () => (await db.prepare('SELECT COUNT(*) AS n FROM recipes').first<{ n: number }>())?.n;
-  const before = await count();
-  const context = new RouterContextProvider();
-  context.set(envContext, fake<Env>({ DB: db }));
-  context.set(userEmailContext, 'oma@example.com');
-  await loader(fake<Route.LoaderArgs>({ context }));
-  assert.equal(await count(), before);
+describe('recipe-form › Nothing stored before saving', () => {
+  test('opening the editor leaves the database as it was', async () => {
+    const count = async () => (await db.prepare('SELECT COUNT(*) AS n FROM recipes').first<{ n: number }>())?.n;
+    const rowsBefore = await count();
+    const context = new RouterContextProvider();
+    context.set(envContext, fake<Env>({ DB: db }));
+    context.set(userEmailContext, 'oma@example.com');
+    await loader(fake<Route.LoaderArgs>({ context }));
+    assert.equal(await count(), rowsBefore);
+  });
 });
 
-test('a new recipe stores its non-blank steps in order', async () => {
-  await submit({ title: 'Met stappen', author: 'Oma', steps: JSON.stringify([{ body: 'een' }, { body: '' }, { body: 'twee' }]) });
-  assert.deepEqual(
-    (await getRecipe(db, 'met-stappen'))?.steps.map((s) => s.body),
-    ['een', 'twee'],
-  );
+describe('a new recipe', () => {
+  test('stores its non-blank steps in order', async () => {
+    await submit({ title: 'Met stappen', author: 'Oma', steps: JSON.stringify([{ body: 'een' }, { body: '' }, { body: 'twee' }]) });
+    assert.deepEqual(
+      (await getRecipe(db, 'met-stappen'))?.steps.map((s) => s.body),
+      ['een', 'twee'],
+    );
+  });
 });
 
 const openFormAs = async (email: string) => {
@@ -129,29 +191,35 @@ const openFormAs = async (email: string) => {
   return render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <NewRecipePage {...props} /> }])} />);
 };
 
-test('recipe-creation › Author is prefilled', async () => {
-  await createUser(db, 'jos@example.com', 'Jos');
-  await openFormAs('jos@example.com');
-  assert.equal((document.getElementById('author') as HTMLInputElement).value, 'Jos');
+describe('recipe-creation › Author is prefilled', () => {
+  test('the author field holds the calling name', async () => {
+    await createUser(db, 'jos@example.com', 'Jos');
+    await openFormAs('jos@example.com');
+    assert.equal((document.getElementById('author') as HTMLInputElement).value, 'Jos');
+  });
 });
 
-test('recipe-creation › Prefilled author can be changed', async () => {
-  await createUser(db, 'jos2@example.com', 'Jos');
-  await openFormAs('jos2@example.com');
-  const author = document.getElementById('author') as HTMLInputElement;
-  fireEvent.change(author, { target: { value: 'Oma' } });
-  fireEvent.change(document.getElementById('title')!, { target: { value: 'Oma kookt' } });
-  // Submit what the form itself posts, not values copied from the inputs.
-  const posted = Object.fromEntries(
-    [...author.form!.elements].filter((e): e is HTMLInputElement => e instanceof HTMLInputElement && !!e.name).map((e) => [e.name, e.value]),
-  );
-  await submit(posted);
-  assert.equal((await getRecipe(db, 'oma-kookt'))?.author, 'Oma');
+describe('recipe-creation › Prefilled author can be changed', () => {
+  test('the changed author is stored', async () => {
+    await createUser(db, 'jos2@example.com', 'Jos');
+    await openFormAs('jos2@example.com');
+    const author = document.getElementById('author') as HTMLInputElement;
+    fireEvent.change(author, { target: { value: 'Oma' } });
+    fireEvent.change(document.getElementById('title')!, { target: { value: 'Oma kookt' } });
+    // Submit what the form itself posts, not values copied from the inputs.
+    const posted = Object.fromEntries(
+      [...author.form!.elements].filter((e): e is HTMLInputElement => e instanceof HTMLInputElement && !!e.name).map((e) => [e.name, e.value]),
+    );
+    await submit(posted);
+    assert.equal((await getRecipe(db, 'oma-kookt'))?.author, 'Oma');
+  });
 });
 
-test('recipe-creation › Prefill alone is not a draft', async () => {
-  await createUser(db, 'jos3@example.com', 'Jos');
-  await openFormAs('jos3@example.com');
-  cleanup();
-  assert.equal(window.localStorage.length, 0);
+describe('recipe-creation › Prefill alone is not a draft', () => {
+  test('nothing is kept on the device', async () => {
+    await createUser(db, 'jos3@example.com', 'Jos');
+    await openFormAs('jos3@example.com');
+    cleanup();
+    assert.equal(window.localStorage.length, 0);
+  });
 });

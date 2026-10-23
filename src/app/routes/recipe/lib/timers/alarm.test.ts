@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { describe, test } from 'node:test';
 import type { Step } from '~app/shared/recipe';
 import { fake } from '~testing/fake';
 import { soundAlarm } from './alarm';
@@ -20,111 +20,206 @@ const smoren = defs[1]; // step 5, 20 minutes
 const MIN = 60_000;
 const T0 = 1_000_000;
 
-test('timerDefs: ids are the step indexes', () => {
-  assert.deepEqual(
-    defs.map((d) => d.id),
-    ['1', '4', '5', '9', '10'],
-  );
-  assert.deepEqual([rust.minutes, rust.label], [30, 'Deeg rust']);
+describe('timerDefs', () => {
+  test('ids are the step indexes', () => {
+    assert.deepEqual(
+      defs.map((d) => d.id),
+      ['1', '4', '5', '9', '10'],
+    );
+  });
+
+  test('a def carries the minutes and label of its step', () => {
+    assert.deepEqual([rust.minutes, rust.label], [30, 'Deeg rust']);
+  });
 });
 
-test('step-timers › Timer is started', () => {
-  assert.equal(timerView({}, rust, T0).state, 'idle');
+describe('step-timers › Timer is started', () => {
+  test('a timer that was not started is idle', () => {
+    assert.equal(timerView({}, rust, T0).state, 'idle');
+  });
+
+  test('a started timer runs with the full time left', () => {
+    const view = timerView(start({}, rust, T0), rust, T0);
+    assert.deepEqual([view.state, view.remainingMs], ['running', 30 * MIN]);
+    assert.equal(formatCountdown(view.remainingMs), '30:00');
+  });
+
+  test('the time left counts down', () => {
+    assert.equal(timerView(start({}, rust, T0), rust, T0 + 5 * MIN).remainingMs, 25 * MIN);
+  });
+});
+
+describe('step-timers › Time is added', () => {
   const timers = start({}, rust, T0);
-  const view = timerView(timers, rust, T0);
-  assert.deepEqual([view.state, view.remainingMs], ['running', 30 * MIN]);
-  assert.equal(formatCountdown(view.remainingMs), '30:00');
-  assert.equal(timerView(timers, rust, T0 + 5 * MIN).remainingMs, 25 * MIN);
+
+  test('one minute added a minute in: the time left is unchanged', () => {
+    assert.equal(timerView(add(timers, rust.id, 1, T0 + MIN), rust, T0 + MIN).remainingMs, 30 * MIN);
+  });
+
+  test('five minutes added at the start: 35 minutes left', () => {
+    assert.equal(timerView(add(timers, rust.id, 5, T0), rust, T0).remainingMs, 35 * MIN);
+  });
 });
 
-test('step-timers › Time is added', () => {
-  const timers = start({}, rust, T0);
-  assert.equal(timerView(add(timers, rust.id, 1, T0 + MIN), rust, T0 + MIN).remainingMs, 30 * MIN);
-  assert.equal(timerView(add(timers, rust.id, 5, T0), rust, T0).remainingMs, 35 * MIN);
+describe('step-timers › Timer is stopped', () => {
+  test('is idle again with the full time', () => {
+    const timers = stop(start({}, rust, T0), rust.id);
+    const view = timerView(timers, rust, T0 + MIN);
+    assert.deepEqual([view.state, view.remainingMs], ['idle', 30 * MIN]);
+  });
 });
 
-test('step-timers › Timer is stopped', () => {
-  const timers = stop(start({}, rust, T0), rust.id);
-  const view = timerView(timers, rust, T0 + MIN);
-  assert.deepEqual([view.state, view.remainingMs], ['idle', 30 * MIN]);
-});
-
-test('step-timers › Timers run side by side', () => {
+describe('step-timers › Timers run side by side', () => {
   const timers = start(start({}, smoren, T0), rust, T0 + 2 * MIN);
   const at = T0 + 5 * MIN;
-  assert.equal(timerView(timers, smoren, at).remainingMs, 15 * MIN);
-  assert.equal(timerView(timers, rust, at).remainingMs, 27 * MIN);
-  // Stopping one leaves the other alone.
-  assert.equal(timerView(stop(timers, rust.id), smoren, at).state, 'running');
+
+  test('each timer counts its own time', () => {
+    assert.equal(timerView(timers, smoren, at).remainingMs, 15 * MIN);
+    assert.equal(timerView(timers, rust, at).remainingMs, 27 * MIN);
+  });
+
+  test('stopping one leaves the other alone', () => {
+    assert.equal(timerView(stop(timers, rust.id), smoren, at).state, 'running');
+  });
 });
 
-test('step-timers › Timer ends', () => {
+describe('step-timers › Timer ends', () => {
   const timers = start({}, smoren, T0);
   const end = T0 + 20 * MIN;
-  assert.deepEqual(newlyFinished(defs, timers, new Set(), end - 1), []);
-  assert.deepEqual(newlyFinished(defs, timers, new Set(), end), [smoren.id]);
-  // Already signalled: not again.
-  assert.deepEqual(newlyFinished(defs, timers, new Set([smoren.id]), end + 5000), []);
-  const [finished] = activeTimers(defs, timers, end);
-  assert.deepEqual([finished.state, finished.remainingMs], ['finished', 0]);
-  // The page title names the step; with nothing finished it is the original.
-  assert.equal(finishTitle('Appeltaart', finished.step), '⏰ Stap 5 · Appeltaart');
-  assert.equal(finishTitle('Appeltaart', undefined), 'Appeltaart');
-  // Sound and vibration, stubbed.
-  const calls: unknown[] = [];
-  const nodes = { connect() {}, frequency: {}, gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} }, start() {}, stop() {} };
-  const audio = { currentTime: 0, destination: {}, createOscillator: () => (calls.push('osc'), nodes) as never, createGain: () => nodes as never };
-  soundAlarm(fake<AudioContext>(audio), { vibrate: (p) => (calls.push(p), true) });
-  assert.deepEqual(calls.at(-1), [200, 100, 200]);
-  assert.equal(calls.filter((c) => c === 'osc').length, 3);
-  // Without audio or vibration support nothing throws.
-  soundAlarm(undefined, {} as Navigator);
+
+  test('a timer one millisecond before its end has not finished', () => {
+    assert.deepEqual(newlyFinished(defs, timers, new Set(), end - 1), []);
+  });
+
+  test('a timer at its end is newly finished', () => {
+    assert.deepEqual(newlyFinished(defs, timers, new Set(), end), [smoren.id]);
+  });
+
+  test('a timer already signalled is not signalled again', () => {
+    assert.deepEqual(newlyFinished(defs, timers, new Set([smoren.id]), end + 5000), []);
+  });
+
+  test('a finished timer has no time left', () => {
+    const [finished] = activeTimers(defs, timers, end);
+    assert.deepEqual([finished.state, finished.remainingMs], ['finished', 0]);
+  });
+
+  test('the page title names the step', () => {
+    const [finished] = activeTimers(defs, timers, end);
+    assert.equal(finishTitle('Appeltaart', finished.step), '⏰ Stap 5 · Appeltaart');
+  });
+
+  test('with nothing finished the title is the original', () => {
+    assert.equal(finishTitle('Appeltaart', undefined), 'Appeltaart');
+  });
+
+  describe('sound and vibration, stubbed', () => {
+    test('the alarm beeps three times and vibrates', () => {
+      const calls: unknown[] = [];
+      const nodes = { connect() {}, frequency: {}, gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} }, start() {}, stop() {} };
+      const audio = {
+        currentTime: 0,
+        destination: {},
+        createOscillator: () => (calls.push('osc'), nodes) as never,
+        createGain: () => nodes as never,
+      };
+      soundAlarm(fake<AudioContext>(audio), { vibrate: (p) => (calls.push(p), true) });
+      assert.deepEqual(calls.at(-1), [200, 100, 200]);
+      assert.equal(calls.filter((c) => c === 'osc').length, 3);
+    });
+
+    test('without audio or vibration support nothing throws', () => {
+      soundAlarm(undefined, {} as Navigator);
+    });
+  });
 });
 
-test('step-timers › More time after the end', () => {
+describe('step-timers › More time after the end', () => {
   const timers = start({}, smoren, T0);
   const after = T0 + 21 * MIN;
-  assert.equal(timerView(timers, smoren, after).state, 'finished');
-  const more = add(timers, smoren.id, 5, after);
-  const view = timerView(more, smoren, after);
-  assert.deepEqual([view.state, view.remainingMs], ['running', 5 * MIN]);
-  assert.deepEqual(newlyFinished(defs, more, new Set(), after), []);
+
+  test('the timer is finished after its end', () => {
+    assert.equal(timerView(timers, smoren, after).state, 'finished');
+  });
+
+  test('adding time makes it run again with that time', () => {
+    const view = timerView(add(timers, smoren.id, 5, after), smoren, after);
+    assert.deepEqual([view.state, view.remainingMs], ['running', 5 * MIN]);
+  });
+
+  test('it is not newly finished again', () => {
+    assert.deepEqual(newlyFinished(defs, add(timers, smoren.id, 5, after), new Set(), after), []);
+  });
 });
 
-test('step-timers › Finished timer is dismissed', () => {
+describe('step-timers › Finished timer is dismissed', () => {
   const timers = stop(start({}, smoren, T0), smoren.id);
-  assert.equal(timerView(timers, smoren, T0 + 30 * MIN).state, 'idle');
-  assert.deepEqual(activeTimers(defs, timers, T0 + 30 * MIN), []);
+
+  test('the timer is idle', () => {
+    assert.equal(timerView(timers, smoren, T0 + 30 * MIN).state, 'idle');
+  });
+
+  test('it is no longer active', () => {
+    assert.deepEqual(activeTimers(defs, timers, T0 + 30 * MIN), []);
+  });
 });
 
-test('step-timers › Reload during a timer', () => {
-  const stored = serialize(start({}, rust, T0));
-  const timers = restore(stored, defs);
-  const view = timerView(timers, rust, T0 + 10 * MIN);
-  assert.deepEqual([view.state, view.remainingMs], ['running', 20 * MIN]);
+describe('step-timers › Reload during a timer', () => {
+  test('the timer keeps running with the right time left', () => {
+    const stored = serialize(start({}, rust, T0));
+    const timers = restore(stored, defs);
+    const view = timerView(timers, rust, T0 + 10 * MIN);
+    assert.deepEqual([view.state, view.remainingMs], ['running', 20 * MIN]);
+  });
 });
 
-test('step-timers › Timer ended while away', () => {
-  const timers = restore(serialize(start({}, rust, T0)), defs);
-  assert.equal(timerView(timers, rust, T0 + 45 * MIN).state, 'finished');
+describe('step-timers › Timer ended while away', () => {
+  test('the timer is finished', () => {
+    const timers = restore(serialize(start({}, rust, T0)), defs);
+    assert.equal(timerView(timers, rust, T0 + 45 * MIN).state, 'finished');
+  });
 });
 
-test('restore ignores what it cannot read or does not know', () => {
-  assert.deepEqual(restore(null, defs), {});
-  assert.deepEqual(restore('{nope', defs), {});
-  assert.deepEqual(restore('[1]', defs), {});
-  assert.deepEqual(restore(JSON.stringify({ '1': { endsAt: 'x' }, '99': { endsAt: 5 }, '4': { endsAt: 7 } }), defs), { '4': { endsAt: 7 } });
+describe('restore', () => {
+  test('ignores nothing stored', () => {
+    assert.deepEqual(restore(null, defs), {});
+  });
+
+  test('ignores invalid JSON', () => {
+    assert.deepEqual(restore('{nope', defs), {});
+  });
+
+  test('ignores JSON that is not an object', () => {
+    assert.deepEqual(restore('[1]', defs), {});
+  });
+
+  test('ignores bad entries and unknown timers', () => {
+    assert.deepEqual(restore(JSON.stringify({ '1': { endsAt: 'x' }, '99': { endsAt: 5 }, '4': { endsAt: 7 } }), defs), { '4': { endsAt: 7 } });
+  });
 });
 
-test('step-timers › Timers follow the order of the steps', () => {
-  // The later step is started first.
-  const timers = start(start({}, defs[3], T0), rust, T0 + MIN);
-  assert.deepEqual(
-    activeTimers(defs, timers, T0 + 2 * MIN).map((t) => t.id),
-    ['1', '9'],
-  );
+describe('step-timers › Timers follow the order of the steps', () => {
+  test('the earlier step comes first although the later was started first', () => {
+    const timers = start(start({}, defs[3], T0), rust, T0 + MIN);
+    assert.deepEqual(
+      activeTimers(defs, timers, T0 + 2 * MIN).map((t) => t.id),
+      ['1', '9'],
+    );
+  });
 });
 
-test('formatCountdown', () => {
-  assert.deepEqual([0, 999, 1000, 61_000, 14 * MIN + 32_000, 3_900_000].map(formatCountdown), ['0:00', '0:01', '0:01', '1:01', '14:32', '1:05:00']);
+describe('formatCountdown', () => {
+  const cases: [number, string][] = [
+    [0, '0:00'],
+    [999, '0:01'],
+    [1000, '0:01'],
+    [61_000, '1:01'],
+    [14 * MIN + 32_000, '14:32'],
+    [3_900_000, '1:05:00'],
+  ];
+  for (const [ms, text] of cases) {
+    test(`${ms} ms is ${text}`, () => {
+      assert.equal(formatCountdown(ms), text);
+    });
+  }
 });

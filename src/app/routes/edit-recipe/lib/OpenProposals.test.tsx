@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { describe, test } from 'node:test';
 import { fireEvent, render, screen } from '~testing/dom';
 import { proposals, reconcile, setMode } from './chips';
 import { OpenProposals } from './OpenProposals';
@@ -17,26 +17,58 @@ const show = (initial = withProposals) =>
 const link = () => screen.getByTestId('OpenProposals-link');
 const accepts = () => screen.getAllByTestId('StepChips-accept').filter((b) => b.getAttribute('aria-label') === 'Wijziging overnemen');
 
-test('recipe-step-chips › Suggestions are counted in the save bar', () => {
-  assert.equal(proposals(withProposals, noRows).length, 2);
-  show();
-  assert.equal(link().textContent, '2 voorstellen open');
-  // Taking one over leaves one; and nothing is said about proposals while there are none.
-  fireEvent.click(accepts()[0]);
-  assert.equal(link().textContent, '1 voorstel open');
-  fireEvent.click(accepts()[0]);
-  assert.equal(screen.queryByTestId('OpenProposals-link'), null);
+describe('recipe-step-chips › Suggestions are counted in the save bar', () => {
+  test('two pinned chips with changed words have two proposals', () => {
+    assert.equal(proposals(withProposals, noRows).length, 2);
+  });
+
+  test('the link counts the open suggestions', () => {
+    show();
+    assert.equal(link().textContent, '2 voorstellen open');
+  });
+
+  test('taking one over leaves one', () => {
+    show();
+    fireEvent.click(accepts()[0]);
+    assert.equal(link().textContent, '1 voorstel open');
+  });
+
+  test('nothing is said about proposals while there are none', () => {
+    show();
+    fireEvent.click(accepts()[0]);
+    fireEvent.click(accepts()[0]);
+    assert.equal(screen.queryByTestId('OpenProposals-link'), null);
+  });
 });
 
-test('recipe-step-chips › The count jumps to the next suggestion', () => {
-  show();
-  const [first, second] = accepts();
-  assert.equal(accepts().length, 2);
+describe('recipe-step-chips › The count jumps to the next suggestion', () => {
   // The link moves focus to the accept button of the first open proposal, then to the next on each use, and round again.
-  fireEvent.click(link());
-  assert.ok(document.activeElement === first, 'first');
-  fireEvent.click(link());
-  assert.ok(document.activeElement === second, 'second');
-  fireEvent.click(link());
-  assert.ok(document.activeElement === first, 'first again');
+  test('there are two accept buttons', () => {
+    show();
+    assert.equal(accepts().length, 2);
+  });
+
+  test('the first use focuses the first proposal', () => {
+    show();
+    const [first] = accepts();
+    fireEvent.click(link());
+    assert.ok(document.activeElement === first);
+  });
+
+  test('the second use focuses the second proposal', () => {
+    show();
+    const [, second] = accepts();
+    fireEvent.click(link());
+    fireEvent.click(link());
+    assert.ok(document.activeElement === second);
+  });
+
+  test('the third use goes round to the first again', () => {
+    show();
+    const [first] = accepts();
+    fireEvent.click(link());
+    fireEvent.click(link());
+    fireEvent.click(link());
+    assert.ok(document.activeElement === first);
+  });
 });

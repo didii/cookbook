@@ -50,9 +50,9 @@ export function parseScenarios(specs: Spec[], honorRemoved = true) {
   return { keys, duplicates };
 }
 
-/** Tests whose name starts with `<kebab-case> › `, including `test.todo`. */
+/** Tests and `describe` blocks whose name starts with `<kebab-case> › `, including `test.todo`. */
 export function findTests(files: { path: string; text: string }[]): TestRef[] {
-  const re = /\b(?:test|it)(\.todo)?\(\s*(['"`])((?:(?!\2).)*)\2/;
+  const re = /\b(?:describe|test|it)(\.todo)?\(\s*(['"`])((?:(?!\2).)*)\2/;
   return files.flatMap(({ path, text }) =>
     text.split(/\r?\n/).flatMap((line, i) => {
       const m = line.match(re);
