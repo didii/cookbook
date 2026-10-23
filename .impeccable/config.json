@@ -7,7 +7,7 @@
         "rule": "side-tab",
         "value": "*",
         "files": [
-          "packages/web/app/shared/recipeEditor/RowToolbar.tsx"
+          "app/shared/recipeEditor/RowToolbar.tsx"
         ],
         "createdAt": "2026-10-19T13:39:26.891Z",
         "reason": "model triage, not user confirmed: border-l-2 is a thin divider between arrow and delete buttons in a toolbar (design's divider), not a card accent border"

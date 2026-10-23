@@ -29,5 +29,5 @@ jobs:
       - uses: mikepenz/action-junit-report@v6
         if: '!cancelled()'
         with:
-          report_paths: packages/web/junit.xml
+          report_paths: junit.xml
       - run: pnpm build
