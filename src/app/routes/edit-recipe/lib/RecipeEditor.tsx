@@ -279,7 +279,7 @@ export function RecipeEditor({ rules: rulesNow, heading, authors, initial, value
             />
           </section>
         </div>
-        <div className="order-first grid gap-5 lg:sticky lg:top-4 lg:order-none">
+        <div className="order-first grid gap-5 lg:sticky lg:top-4 lg:order-0">
           <div>
             <label htmlFor="author" className={labelClass}>
               Van wie is het recept?{asterisk}

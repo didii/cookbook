@@ -112,7 +112,7 @@ export function StepText({ ref, label, value, marks = [], placeholder, onChange,
         {...handlers}
         className={cn(
           field,
-          'h-full w-full resize-none self-stretch overflow-hidden border-ink bg-transparent text-ink caret-ink placeholder:text-ink/50 hover:not-focus:bg-ink/5 focus:shadow-focus focus:outline-transparent',
+          'size-full  resize-none self-stretch overflow-hidden border-ink bg-transparent text-ink caret-ink placeholder:text-ink/50 hover:not-focus:bg-ink/5 focus:shadow-focus focus:outline-transparent',
         )}
       />
     </div>

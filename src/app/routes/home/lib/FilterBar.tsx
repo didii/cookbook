@@ -52,7 +52,7 @@ export function FilterBar({ filters, authors, detailed, onChange }: Props) {
   return (
     <search
       data-testid="FilterBar-bar"
-      className="fixed inset-x-0 bottom-[var(--kb,0px)] z-10 border-t-3 border-ink bg-por px-[max(1rem,4vw)] pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:static md:z-auto md:mt-6 md:flex md:flex-col-reverse md:gap-4 md:border-0 md:bg-transparent md:p-0"
+      className="fixed inset-x-0 bottom-(--kb,0px) z-10 border-t-3 border-ink bg-por px-[max(1rem,4vw)] pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:static md:z-auto md:mt-6 md:flex md:flex-col-reverse md:gap-4 md:border-0 md:bg-transparent md:p-0"
     >
       {detailed && (
         <div
@@ -99,7 +99,7 @@ export function FilterBar({ filters, authors, detailed, onChange }: Props) {
                     className={cn(
                       control,
                       'relative bg-white peer-checked:bg-red peer-checked:text-white peer-focus-visible:outline-4 peer-focus-visible:outline-offset-3 peer-focus-visible:outline-blu',
-                      value === sorts[0].value ? 'rounded-r-none' : '-ml-[3px] rounded-l-none',
+                      value === sorts[0].value ? 'rounded-r-none' : 'ml-[-3px] rounded-l-none',
                     )}
                   >
                     {label}

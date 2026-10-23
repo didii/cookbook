@@ -10,7 +10,7 @@ export function TimerDock({ timers, onJump }: Props) {
       data-testid="TimerDock-dock"
       hidden={timers.length === 0}
       aria-label="Lopende timers"
-      className="absolute inset-x-0 top-full flex gap-2 overflow-x-auto border-b-3 border-ink bg-yel px-[max(1rem,4vw)] py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      className="absolute inset-x-0 top-full flex gap-2 overflow-x-auto border-b-3 border-ink bg-yel px-[max(1rem,4vw)] py-2 scrollbar-none [&::-webkit-scrollbar]:hidden"
     >
       {timers.map((t) => {
         const finished = t.state === 'finished';
