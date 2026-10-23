@@ -4,7 +4,7 @@ import { describe, test } from 'vitest';
 import { defaultRules } from '~app/shared/rules';
 import { cssFor } from '~testing/css';
 import { fireEvent, precedes, render, screen, within } from '~testing/dom';
-import type { IngredientLine } from './draft';
+import type { IngredientLine } from './IngredientList';
 import { IngredientList } from './IngredientList';
 
 /** The list as the editor holds it: a few rows and the free row at the end. */

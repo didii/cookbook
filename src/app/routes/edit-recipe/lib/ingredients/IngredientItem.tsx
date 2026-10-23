@@ -3,10 +3,10 @@ import { cn } from '~app/shared/cn';
 import { Ingredient } from '~app/shared/icons';
 import { parseIngredient } from '~app/shared/ingredients';
 import type { Rules } from '~app/shared/rules';
-import type { ItemHandle } from './ItemHandle';
-import { RowGrip } from './RowGrip';
-import { RowToolbar } from './RowToolbar';
-import { useAfterRender } from './useAfterRender';
+import type { ItemHandle } from '../shared/ItemHandle';
+import { RowGrip } from '../shared/RowGrip';
+import { RowToolbar } from '../shared/RowToolbar';
+import { useAfterRender } from '../shared/useAfterRender';
 
 type Props = {
   ref?: Ref<ItemHandle>;

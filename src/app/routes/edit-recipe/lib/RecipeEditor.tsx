@@ -4,7 +4,6 @@ import { cn } from '~app/shared/cn';
 import { AuthorInput } from '~app/shared/components';
 import { ChevronBack } from '~app/shared/icons';
 import type { Rules } from '~app/shared/rules';
-import { proposals, usedIn } from './chips';
 import {
   addStep,
   changeChips,
@@ -35,12 +34,13 @@ import {
   purgeDrafts,
   resolveStart,
 } from './draftStore';
-import { IngredientList } from './IngredientList';
-import { OpenProposals } from './OpenProposals';
-import { PhotoField, type PhotoState } from './PhotoField';
+import { IngredientList } from './ingredients/IngredientList';
+import { PhotoField, type PhotoState } from './photo/PhotoField';
 import type { RecipeFormErrors, RecipeFormField } from './recipeValidation';
 import { SaveBar } from './SaveBar';
-import { StepList } from './StepList';
+import { proposals, usedIn } from './steps/chips';
+import { OpenProposals } from './steps/OpenProposals';
+import { StepList } from './steps/StepList';
 import { useDraftPersistence } from './useDraftPersistence';
 import { useLeaveGuard } from './useLeaveGuard';
 

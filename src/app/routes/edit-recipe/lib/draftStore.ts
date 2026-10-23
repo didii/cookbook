@@ -1,6 +1,6 @@
 import type { Rules } from '~app/shared/rules';
-import type { Chip, Ghost } from './chips';
-import { isDirty, withFreeRow, type RecipeDraft, type StepDraft } from './draft';
+import { isDirty, withFreeRow, type RecipeDraft } from './draft';
+import type { Chip, Ghost, StepDraft } from './steps/chips';
 
 /** The part of `Storage` the drafts need; `localStorage` fits, and so does a fake in a test. */
 export type DraftStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem' | 'key' | 'length'>;

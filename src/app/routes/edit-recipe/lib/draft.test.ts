@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'vitest';
 import { defaultRules } from '~app/shared/rules';
-import type { Chip } from './chips';
 import {
   addStep,
   editedStep,
@@ -18,7 +17,8 @@ import {
   typeIngredient,
   type RecipeDraft,
 } from './draft';
-import { computeEdit } from './textEdit';
+import type { Chip } from './steps/chips';
+import { computeEdit } from './steps/textEdit';
 
 const emptyDraft = startingDraft(defaultRules);
 const content = { ...emptyDraftSeed, title: 'Soep', author: 'Oma' };
