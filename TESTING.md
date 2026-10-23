@@ -2,4 +2,33 @@
 
 Where tests live: see `STRUCTURE.md`.
 
-Logic and edge cases get unit tests. Each spec scenario is tested at the lowest level that runs the real thing (e.g. the schema against an in-memory D1, `identify` with real tokens). A loader-level integration test, calling the real route `loader` against an in-memory D1 holding data the test inserted (see `routes/recipe/route.test.ts`), is used only where a scenario can only be shown through the loader. A scenario about what a component shows or does is a component test: render it into a DOM with `~testing/dom` (happy-dom plus Testing Library; import `render`, `screen` and `fireEvent` from there, not from the library, so the DOM exists first), find elements by test id (`getByTestId`) and fire events for clicks and keys. Give every element a test selects a hardcoded `data-testid="ComponentName-role"` (e.g. `FilterBar-toggle`), where the name is a component in the same file and `role` says what the element is for, not its ARIA role; repeated elements share the id and are read with `getAllByTestId` or `within`. `testing/testIds.test.ts` enforces the format. Accessibility scenarios still assert `aria-*`, roles and focus on the element found by id. Do not assert with regexes on an HTML string. For a class-based CSS claim, give `el.className` to `cssFor`. Only what needs real layout, scrolling, a viewport width, animation, a computed colour or browser history stays a `test.todo`, with that reason. A scenario is a `describe` named `<capability> › <Scenario title>` with the exact `#### Scenario:` title, one scenario per `describe`; each `test` inside checks one thing and is named for it (a scenario with one check still gets a `describe`). Other tests are grouped in a `describe` per function or behaviour the same way; a scenario that cannot be automated yet gets `test.todo('<capability> › <Scenario title>')` with the reason on the line above. `pnpm test` fails on a scenario without a test or a test naming an unknown scenario. `pnpm test` runs everything through `tsx`, which resolves `~app/` and JSX; no browser or network is needed.
+## Levels
+
+- Logic and edge cases get unit tests.
+- Test each spec scenario at the lowest level that runs the real thing (e.g. schema against in-memory D1, `identify` with real tokens).
+- Loader-level integration test only when a scenario can only be shown through the loader. Call the real `loader` against in-memory D1 with data the test inserted (see `routes/recipe/route.test.ts`).
+- Scenario about what a component shows or does: component test.
+- Needs real layout, scrolling, viewport width, animation, computed colour or browser history: `test.todo` with the reason on the line above.
+
+## Component tests
+
+- Render with `~testing/dom` (happy-dom + Testing Library). Import `render`, `screen`, `fireEvent` from there, not from the library.
+- Find elements with `getByTestId`. Fire events for clicks and keys.
+- Give every selected element a hardcoded `data-testid="ComponentName-role"` (e.g. `FilterBar-toggle`). Name is a component in the same file; `role` is what the element is for, not its ARIA role.
+- Repeated elements share the id. Read them with `getAllByTestId` or `within`.
+- `testing/testIds.test.ts` enforces the format.
+- Accessibility scenarios still assert `aria-*`, roles and focus on the element found by id.
+- No regexes on an HTML string.
+- Class-based CSS claim: give `el.className` to `cssFor`.
+
+## Naming
+
+- Scenario: one `describe` named `<capability> › <Scenario title>` (exact `#### Scenario:` title). One scenario per `describe`, even with one check.
+- Each `test` inside checks one thing and is named for it.
+- Other tests: a `describe` per function or behaviour, same way.
+- Scenario not automatable yet: `test.todo('<capability> › <Scenario title>')`.
+
+## Running
+
+- `pnpm test` fails on a scenario without a test or a test naming an unknown scenario.
+- `pnpm test` runs through `tsx` (resolves `~app/` and JSX). No browser or network needed.
