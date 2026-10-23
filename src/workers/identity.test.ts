@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { describe, test } from 'node:test';
 import { generateKeyPair, SignJWT } from 'jose';
 import { accessJwtHeader, identify } from './identity';
 
@@ -28,48 +28,67 @@ const request = (jwt?: string, headers: Record<string, string> = {}) =>
     headers: jwt ? { ...headers, [accessJwtHeader]: jwt } : headers,
   });
 
-test('valid token returns the email', async () => {
-  assert.equal(await identify(request(await token()), options), 'mum@example.com');
-});
-
-test('family-access › Request with no identity proof', async () => {
-  assert.equal(await identify(request(), options), null);
-});
-
-test('family-access › Forged identity', async () => {
-  const forged = request(undefined, {
-    'Cf-Access-Authenticated-User-Email': 'mum@example.com',
+describe('identify', () => {
+  test('a valid token returns the email', async () => {
+    assert.equal(await identify(request(await token()), options), 'mum@example.com');
   });
-  assert.equal(await identify(forged, options), null);
-});
 
-test('bad signature is refused', async () => {
-  const jwt = await token({ key: other.privateKey });
-  assert.equal(await identify(request(jwt), options), null);
-});
+  describe('family-access › Request with no identity proof', () => {
+    test('returns null', async () => {
+      assert.equal(await identify(request(), options), null);
+    });
+  });
 
-test('wrong audience is refused', async () => {
-  const jwt = await token({ aud: 'someone-else' });
-  assert.equal(await identify(request(jwt), options), null);
-});
+  describe('family-access › Forged identity', () => {
+    test('an email header without a token returns null', async () => {
+      const forged = request(undefined, {
+        'Cf-Access-Authenticated-User-Email': 'mum@example.com',
+      });
+      assert.equal(await identify(forged, options), null);
+    });
+  });
 
-test('family-access › Expired identity proof', async () => {
-  const jwt = await token({ exp: Math.floor(Date.now() / 1000) - 60 });
-  assert.equal(await identify(request(jwt), options), null);
-});
+  test('a bad signature is refused', async () => {
+    const jwt = await token({ key: other.privateKey });
+    assert.equal(await identify(request(jwt), options), null);
+  });
 
-test('token without an email claim is refused', async () => {
-  const jwt = await token({ claims: {} });
-  assert.equal(await identify(request(jwt), options), null);
-});
+  test('a wrong audience is refused', async () => {
+    const jwt = await token({ aud: 'someone-else' });
+    assert.equal(await identify(request(jwt), options), null);
+  });
 
-test('missing Access config is refused even with a valid token', async () => {
-  const jwt = await token();
-  assert.equal(await identify(request(jwt), { ...options, audience: '' }), null);
-  assert.equal(await identify(request(jwt), { ...options, teamDomain: '' }), null);
-});
+  describe('family-access › Expired identity proof', () => {
+    test('returns null', async () => {
+      const jwt = await token({ exp: Math.floor(Date.now() / 1000) - 60 });
+      assert.equal(await identify(request(jwt), options), null);
+    });
+  });
 
-test('stand-in email is honored only when passed in', async () => {
-  assert.equal(await identify(request(), { ...options, devEmail: 'dev@example.com' }), 'dev@example.com');
-  assert.equal(await identify(request(), { ...options, devEmail: undefined }), null);
+  test('a token without an email claim is refused', async () => {
+    const jwt = await token({ claims: {} });
+    assert.equal(await identify(request(jwt), options), null);
+  });
+
+  describe('missing Access config is refused even with a valid token', () => {
+    test('without an audience', async () => {
+      const jwt = await token();
+      assert.equal(await identify(request(jwt), { ...options, audience: '' }), null);
+    });
+
+    test('without a team domain', async () => {
+      const jwt = await token();
+      assert.equal(await identify(request(jwt), { ...options, teamDomain: '' }), null);
+    });
+  });
+
+  describe('stand-in email', () => {
+    test('is honored when passed in', async () => {
+      assert.equal(await identify(request(), { ...options, devEmail: 'dev@example.com' }), 'dev@example.com');
+    });
+
+    test('is not honored when not passed in', async () => {
+      assert.equal(await identify(request(), { ...options, devEmail: undefined }), null);
+    });
+  });
 });

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { after, before, test } from 'node:test';
+import { after, before, describe, test } from 'node:test';
 import { RouterContextProvider } from 'react-router';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { createTestDb } from '~testing/db';
@@ -34,17 +34,26 @@ const refused = async (call: Promise<unknown>) => {
   }
 };
 
-test('user-management › Superadmin opens the page', async () => {
-  const { users, capped, limit } = await open('superadmin@example.com');
-  assert.deepEqual([users.length, capped, limit], [3, false, 100]);
+describe('user-management › Superadmin opens the page', () => {
+  test('lists all users, uncapped at the limit of 100', async () => {
+    const { users, capped, limit } = await open('superadmin@example.com');
+    assert.deepEqual([users.length, capped, limit], [3, false, 100]);
+  });
 });
 
-test('user-management › Admin opens the page', async () => {
-  assert.equal(await refused(open('admin@example.com')), 403);
+describe('user-management › Admin opens the page', () => {
+  test('is refused with 403', async () => {
+    assert.equal(await refused(open('admin@example.com')), 403);
+  });
 });
 
-test('user-management › User opens the page', async () => {
-  assert.equal(await refused(open('user@example.com')), 403);
+describe('user-management › User opens the page', () => {
+  test('is refused with 403', async () => {
+    assert.equal(await refused(open('user@example.com')), 403);
+  });
+
   // Someone without a user row is no superadmin either.
-  assert.equal(await refused(open('nobody@example.com')), 403);
+  test('someone without a user row is refused with 403', async () => {
+    assert.equal(await refused(open('nobody@example.com')), 403);
+  });
 });

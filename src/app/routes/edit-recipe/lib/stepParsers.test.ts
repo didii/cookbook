@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { describe, test } from 'node:test';
 import { parseIngredient } from '~app/routes/recipe/lib/ingredients';
 import { defaultRules } from '~app/shared/rules';
 import { findIngredients, findOven, findTimer, type Row } from './stepParsers';
@@ -8,76 +8,174 @@ const minutes = (text: string) => findTimer(text, defaultRules)?.values.minutes;
 const degrees = (text: string) => findOven(text, defaultRules)?.values.degrees;
 const words = (text: string, found?: { start: number; end: number }) => found && text.slice(found.start, found.end);
 
-test('recipe-step-chips › Minutes become a timer', () => {
+describe('recipe-step-chips › Minutes become a timer', () => {
   for (const unit of ['minuten', 'min', 'minuut']) {
     const text = `Laat 30 ${unit} rusten.`;
-    assert.equal(minutes(text), 30);
-    assert.equal(words(text, findTimer(text, defaultRules)), `30 ${unit}`);
+
+    test(`${unit} gives 30 minutes`, () => {
+      assert.equal(minutes(text), 30);
+    });
+
+    test(`${unit} marks the words of the duration`, () => {
+      assert.equal(words(text, findTimer(text, defaultRules)), `30 ${unit}`);
+    });
   }
-  assert.equal(minutes('Laat 30 MINUTEN rusten'), 30);
+
+  test('the unit is case-insensitive', () => {
+    assert.equal(minutes('Laat 30 MINUTEN rusten'), 30);
+  });
 });
 
-test('recipe-step-chips › Hours and fractions of hours', () => {
-  assert.equal(minutes('Kook 2 uur'), 120);
-  assert.equal(minutes('Kook 1,5 uur'), 90);
-  assert.equal(minutes('Kook 1.5 uur'), 90);
-  assert.equal(minutes('Kook 1 u'), 60);
+describe('recipe-step-chips › Hours and fractions of hours', () => {
+  test('whole hours', () => {
+    assert.equal(minutes('Kook 2 uur'), 120);
+  });
+
+  test('a decimal comma', () => {
+    assert.equal(minutes('Kook 1,5 uur'), 90);
+  });
+
+  test('a decimal point', () => {
+    assert.equal(minutes('Kook 1.5 uur'), 90);
+  });
+
+  test('the short unit u', () => {
+    assert.equal(minutes('Kook 1 u'), 60);
+  });
 });
 
-test('recipe-step-chips › Spoken amounts', () => {
-  assert.equal(minutes('Laat een half uur staan'), 30);
-  assert.equal(minutes('Laat een kwartier staan'), 15);
-  assert.equal(minutes('Laat anderhalf uur staan'), 90);
-  assert.equal(minutes('Laat Een Uur staan'), 60);
+describe('recipe-step-chips › Spoken amounts', () => {
+  test('een half uur', () => {
+    assert.equal(minutes('Laat een half uur staan'), 30);
+  });
+
+  test('een kwartier', () => {
+    assert.equal(minutes('Laat een kwartier staan'), 15);
+  });
+
+  test('anderhalf uur', () => {
+    assert.equal(minutes('Laat anderhalf uur staan'), 90);
+  });
+
+  test('in mixed case', () => {
+    assert.equal(minutes('Laat Een Uur staan'), 60);
+  });
 });
 
-test('recipe-step-chips › A range uses its lower value', () => {
+describe('recipe-step-chips › A range uses its lower value', () => {
   const text = 'Bak 20-25 minuten';
-  assert.equal(minutes(text), 20);
-  assert.equal(words(text, findTimer(text, defaultRules)), '20-25 minuten');
-  assert.equal(minutes('Bak 20 – 25 min'), 20);
+
+  test('the lower value is the duration', () => {
+    assert.equal(minutes(text), 20);
+  });
+
+  test('the whole range is marked', () => {
+    assert.equal(words(text, findTimer(text, defaultRules)), '20-25 minuten');
+  });
+
+  test('a range with an en dash and spaces', () => {
+    assert.equal(minutes('Bak 20 – 25 min'), 20);
+  });
 });
 
-test('recipe-step-chips › Text without a duration has no timer', () => {
-  assert.equal(findTimer('Voeg 30 gram boter toe', defaultRules), undefined);
-  assert.equal(findTimer('Voeg 30 m toe', defaultRules), undefined);
-  assert.equal(findTimer('Roer goed', defaultRules), undefined);
+describe('recipe-step-chips › Text without a duration has no timer', () => {
+  test('a weight', () => {
+    assert.equal(findTimer('Voeg 30 gram boter toe', defaultRules), undefined);
+  });
+
+  test('a lone m', () => {
+    assert.equal(findTimer('Voeg 30 m toe', defaultRules), undefined);
+  });
+
+  test('no number', () => {
+    assert.equal(findTimer('Roer goed', defaultRules), undefined);
+  });
+
   // Half typed: the chip appears when the word is complete.
-  assert.equal(findTimer('Laat 30 mi', defaultRules), undefined);
-  assert.equal(findTimer('Laat 30 minu', defaultRules), undefined);
-  assert.equal(findTimer('Laat 0 minuten rusten', defaultRules), undefined);
-  assert.equal(findTimer('Laat 130 uurwerken', defaultRules), undefined);
+  test('a half typed unit, mi', () => {
+    assert.equal(findTimer('Laat 30 mi', defaultRules), undefined);
+  });
+
+  test('a half typed unit, minu', () => {
+    assert.equal(findTimer('Laat 30 minu', defaultRules), undefined);
+  });
+
+  test('zero minutes', () => {
+    assert.equal(findTimer('Laat 0 minuten rusten', defaultRules), undefined);
+  });
+
+  test('a longer word that starts with a unit', () => {
+    assert.equal(findTimer('Laat 130 uurwerken', defaultRules), undefined);
+  });
 });
 
-test('recipe-step-chips › Only the first duration is a timer', () => {
+describe('recipe-step-chips › Only the first duration is a timer', () => {
   const text = 'Kook 10 minuten en daarna 20 minuten';
-  assert.equal(minutes(text), 10);
-  assert.equal(words(text, findTimer(text, defaultRules)), '10 minuten');
+
+  test('the first duration is the timer', () => {
+    assert.equal(minutes(text), 10);
+  });
+
+  test('only the first duration is marked', () => {
+    assert.equal(words(text, findTimer(text, defaultRules)), '10 minuten');
+  });
 });
 
-test('recipe-step-chips › Degrees become an oven temperature', () => {
+describe('recipe-step-chips › Degrees become an oven temperature', () => {
   for (const written of ['180 graden', '180 °C', '180°C', '180 °', '180 Graden']) {
     const text = `Verwarm op ${written} voor.`;
-    assert.equal(degrees(text), 180, written);
-    assert.equal(words(text, findOven(text, defaultRules)), written);
+
+    test(`${written} gives 180 degrees`, () => {
+      assert.equal(degrees(text), 180, written);
+    });
+
+    test(`${written} is marked as written`, () => {
+      assert.equal(words(text, findOven(text, defaultRules)), written);
+    });
   }
 });
 
-test('recipe-step-chips › Implausible numbers are ignored', () => {
-  assert.equal(degrees('Op 3 graden'), undefined);
-  assert.equal(degrees('Op 1500 graden'), undefined);
-  assert.equal(degrees('Op 49 graden'), undefined);
-  assert.equal(degrees('Op 301 graden'), undefined);
-  assert.equal(degrees('Op 50 graden'), 50);
-  assert.equal(degrees('Op 300 graden'), 300);
+describe('recipe-step-chips › Implausible numbers are ignored', () => {
+  test('3 degrees is too low', () => {
+    assert.equal(degrees('Op 3 graden'), undefined);
+  });
+
+  test('1500 degrees is too high', () => {
+    assert.equal(degrees('Op 1500 graden'), undefined);
+  });
+
+  test('49 degrees is just below the range', () => {
+    assert.equal(degrees('Op 49 graden'), undefined);
+  });
+
+  test('301 degrees is just above the range', () => {
+    assert.equal(degrees('Op 301 graden'), undefined);
+  });
+
+  test('50 degrees is the lowest accepted', () => {
+    assert.equal(degrees('Op 50 graden'), 50);
+  });
+
+  test('300 degrees is the highest accepted', () => {
+    assert.equal(degrees('Op 300 graden'), 300);
+  });
 });
 
-test('recipe-step-chips › Only the first temperature counts', () => {
+describe('recipe-step-chips › Only the first temperature counts', () => {
   const text = 'Eerst 180 graden, daarna 200 graden';
-  assert.equal(degrees(text), 180);
-  assert.equal(words(text, findOven(text, defaultRules)), '180 graden');
+
+  test('the first temperature is used', () => {
+    assert.equal(degrees(text), 180);
+  });
+
+  test('only the first temperature is marked', () => {
+    assert.equal(words(text, findOven(text, defaultRules)), '180 graden');
+  });
+
   // An implausible first number does not hide a later plausible one.
-  assert.equal(degrees('3 graden warmer, 200 graden'), 200);
+  test('an implausible first number does not hide a later one', () => {
+    assert.equal(degrees('3 graden warmer, 200 graden'), 200);
+  });
 });
 
 const row = (id: string, line: string): Row => {
@@ -88,90 +186,137 @@ const none = () => '';
 const found = (text: string, rows: Row[], fallback: (r: Row) => string = none) =>
   findIngredients(text, rows, fallback, defaultRules).map((f) => ({ row: f.rowId, words: text.slice(f.start, f.end), ...f.values }));
 
-test('recipe-step-chips › Name in the text creates an ingredient chip', () => {
+describe('recipe-step-chips › Name in the text creates an ingredient chip', () => {
   const rows = [row('a', '250 g zelfrijzende bloem')];
-  assert.deepEqual(found('Meng de bloem met water.', rows), [{ row: 'a', words: 'bloem', quantity: '', name: 'zelfrijzende bloem' }]);
-  assert.deepEqual(
-    found('Meng de BLOEM met water.', rows).map((f) => f.words),
-    ['BLOEM'],
-  );
+
+  test('a name found in the text gives a chip with the full name', () => {
+    assert.deepEqual(found('Meng de bloem met water.', rows), [{ row: 'a', words: 'bloem', quantity: '', name: 'zelfrijzende bloem' }]);
+  });
+
+  test('matching ignores case', () => {
+    assert.deepEqual(
+      found('Meng de BLOEM met water.', rows).map((f) => f.words),
+      ['BLOEM'],
+    );
+  });
 });
 
-test('recipe-step-chips › Plurals match', () => {
-  const rows = [row('ei', '2 ei'), row('ui', '1 ui')];
-  assert.deepEqual(
-    found('Klop de eieren en snijd de uien.', rows).map((f) => [f.row, f.words]),
-    [
-      ['ei', 'eieren'],
-      ['ui', 'uien'],
-    ],
-  );
+describe('recipe-step-chips › Plurals match', () => {
+  test('eieren and uien match their singular rows', () => {
+    const rows = [row('ei', '2 ei'), row('ui', '1 ui')];
+    assert.deepEqual(
+      found('Klop de eieren en snijd de uien.', rows).map((f) => [f.row, f.words]),
+      [
+        ['ei', 'eieren'],
+        ['ui', 'uien'],
+      ],
+    );
+  });
 });
 
-test('recipe-step-chips › The longest name wins', () => {
+describe('recipe-step-chips › The longest name wins', () => {
   const rows = [row('b', '100 g boter'), row('k', '150 g koude boter')];
-  assert.deepEqual(
-    found('Snijd de koude boter in blokjes.', rows).map((f) => [f.row, f.words]),
-    [['k', 'koude boter']],
-  );
+
+  test('the longer name is chosen', () => {
+    assert.deepEqual(
+      found('Snijd de koude boter in blokjes.', rows).map((f) => [f.row, f.words]),
+      [['k', 'koude boter']],
+    );
+  });
+
   // Without the longer name written out, the shorter row matches again.
-  assert.deepEqual(
-    found('Snijd de boter in blokjes.', rows).map((f) => [f.row, f.words]),
-    [['b', 'boter']],
-  );
+  test('the shorter row matches again without the longer name', () => {
+    assert.deepEqual(
+      found('Snijd de boter in blokjes.', rows).map((f) => [f.row, f.words]),
+      [['b', 'boter']],
+    );
+  });
 });
 
-test('recipe-step-chips › Other words create nothing', () => {
-  assert.deepEqual(found('Roer goed en laat rusten.', [row('a', '250 g bloem'), row('b', 'boter')]), []);
-  assert.deepEqual(found('Alles roeren', [row('a', '250 g bloem')]), []);
-  assert.deepEqual(found('bloem', [row('a', '250 g')]), []);
+describe('recipe-step-chips › Other words create nothing', () => {
+  test('words that are no ingredient', () => {
+    assert.deepEqual(found('Roer goed en laat rusten.', [row('a', '250 g bloem'), row('b', 'boter')]), []);
+  });
+
+  test('a text without the ingredient', () => {
+    assert.deepEqual(found('Alles roeren', [row('a', '250 g bloem')]), []);
+  });
+
+  test('a row without a name', () => {
+    assert.deepEqual(found('bloem', [row('a', '250 g')]), []);
+  });
 });
 
-test('recipe-step-chips › An ingredient is chipped once per step', () => {
+describe('recipe-step-chips › An ingredient is chipped once per step', () => {
   const text = 'Voeg bloem toe en daarna nog meer bloem.';
-  assert.deepEqual(
-    found(text, [row('a', 'bloem')]).map((f) => f.words),
-    ['bloem'],
-  );
-  assert.equal(findIngredients(text, [row('a', 'bloem')], none, defaultRules)[0].start, text.indexOf('bloem'));
+
+  test('only one chip for a repeated name', () => {
+    assert.deepEqual(
+      found(text, [row('a', 'bloem')]).map((f) => f.words),
+      ['bloem'],
+    );
+  });
+
+  test('the chip is on the first occurrence', () => {
+    assert.equal(findIngredients(text, [row('a', 'bloem')], none, defaultRules)[0].start, text.indexOf('bloem'));
+  });
 });
 
-test('recipe-step-chips › Amount written before the name', () => {
-  const text = 'Smelt 100 g boter in een pan.';
-  assert.deepEqual(
-    found(text, [row('b', '150 g boter')], () => '150 g'),
-    [{ row: 'b', words: '100 g boter', quantity: '100 g', name: 'boter' }],
-  );
-  assert.deepEqual(
-    found('Klop 2 eieren.', [row('e', 'ei')]).map((f) => [f.words, f.quantity]),
-    [['2 eieren', '2']],
-  );
-  assert.deepEqual(
-    found('Wel 100g boter.', [row('b', 'boter')]).map((f) => f.words),
-    ['100g boter'],
-  );
+describe('recipe-step-chips › Amount written before the name', () => {
+  test('the written amount is used instead of the list amount', () => {
+    assert.deepEqual(
+      found('Smelt 100 g boter in een pan.', [row('b', '150 g boter')], () => '150 g'),
+      [{ row: 'b', words: '100 g boter', quantity: '100 g', name: 'boter' }],
+    );
+  });
+
+  test('an amount without a unit', () => {
+    assert.deepEqual(
+      found('Klop 2 eieren.', [row('e', 'ei')]).map((f) => [f.words, f.quantity]),
+      [['2 eieren', '2']],
+    );
+  });
+
+  test('an amount written against its unit', () => {
+    assert.deepEqual(
+      found('Wel 100g boter.', [row('b', 'boter')]).map((f) => f.words),
+      ['100g boter'],
+    );
+  });
+
   // A duration is not an amount.
-  assert.deepEqual(
-    found('Na 10 minuten boter toevoegen.', [row('b', 'boter')]).map((f) => f.words),
-    ['boter'],
-  );
+  test('a duration is not an amount', () => {
+    assert.deepEqual(
+      found('Na 10 minuten boter toevoegen.', [row('b', 'boter')]).map((f) => f.words),
+      ['boter'],
+    );
+  });
 });
 
-test('recipe-step-chips › Amount from the list when only this step uses the ingredient', () => {
-  const rows = [row('a', '250 g zelfrijzende bloem')];
-  assert.equal(found('Zeef de bloem.', rows, (r) => r.quantityText)[0].quantity, '250 g');
+describe('recipe-step-chips › Amount from the list when only this step uses the ingredient', () => {
+  test('the chip gets the quantity of the list row', () => {
+    const rows = [row('a', '250 g zelfrijzende bloem')];
+    assert.equal(found('Zeef de bloem.', rows, (r) => r.quantityText)[0].quantity, '250 g');
+  });
 });
 
-test('plural forms of ingredients', () => {
-  const words = (text: string, line: string) => found(text, [row('x', line)]).map((f) => f.words);
-  assert.deepEqual(words('Was de bessen.', 'bes'), ['bessen']);
-  assert.deepEqual(words('Was de bes.', 'bessen'), ['bes']);
-  assert.deepEqual(words('Snijd de tomaten.', 'tomaat'), ['tomaten']);
-  assert.deepEqual(words('Schil de appels.', 'appel'), ['appels']);
-  assert.deepEqual(words('Hak de ui fijn.', 'uien'), ['ui']);
-  assert.deepEqual(words("Bak de paddestoelen en de auto's.", 'auto'), ["auto's"]);
-  assert.deepEqual(words('Schil de Peren.', 'peer'), ['Peren']);
-  assert.deepEqual(words('Voeg crème toe.', 'creme'), ['crème']);
-  assert.deepEqual(words('Voeg bloemen toe.', 'bloem'), ['bloemen']);
-  assert.deepEqual(words('Voeg bakstenen toe.', 'bloem'), []);
+describe('findIngredients plural forms', () => {
+  const matches = (text: string, line: string) => found(text, [row('x', line)]).map((f) => f.words);
+  const cases: [string, string, string[]][] = [
+    ['Was de bessen.', 'bes', ['bessen']],
+    ['Was de bes.', 'bessen', ['bes']],
+    ['Snijd de tomaten.', 'tomaat', ['tomaten']],
+    ['Schil de appels.', 'appel', ['appels']],
+    ['Hak de ui fijn.', 'uien', ['ui']],
+    ["Bak de paddestoelen en de auto's.", 'auto', ["auto's"]],
+    ['Schil de Peren.', 'peer', ['Peren']],
+    ['Voeg crème toe.', 'creme', ['crème']],
+    ['Voeg bloemen toe.', 'bloem', ['bloemen']],
+    ['Voeg bakstenen toe.', 'bloem', []],
+  ];
+  for (const [text, line, expected] of cases) {
+    test(`"${line}" in "${text}" matches ${expected.length ? expected.join(', ') : 'nothing'}`, () => {
+      assert.deepEqual(matches(text, line), expected);
+    });
+  }
 });

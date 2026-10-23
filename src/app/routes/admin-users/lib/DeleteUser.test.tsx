@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { beforeEach, describe, test } from 'node:test';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { fireEvent, render, screen, within } from '~testing/dom';
 import { DeleteUser } from './DeleteUser';
@@ -19,55 +19,100 @@ const open = (props: Partial<Parameters<typeof DeleteUser>[0]> = {}) => {
   fireEvent.click(screen.getByTestId('DeleteUser-open'));
 };
 
-test('user-management › Popup asks for confirmation', () => {
-  show();
-  assert.equal(dialog().open, false);
-  fireEvent.click(screen.getByTestId('DeleteUser-open'));
-  assert.equal(dialog().open, true);
-  const popup = within(dialog());
-  assert.ok(popup.getByTestId('DeleteUser-title').textContent?.includes('Jos'));
-  assert.equal(popup.getByTestId('DeleteUser-confirm').textContent, 'Verwijderen');
-  assert.equal(popup.getByTestId('DeleteUser-confirm').getAttribute('type'), 'submit');
-  assert.equal(popup.getByTestId('DeleteUser-cancel').textContent, 'Annuleren');
-  assert.equal(document.querySelector<HTMLInputElement>('input[name=intent]')?.value, 'delete');
+describe('user-management › Popup asks for confirmation', () => {
+  test('the popup starts closed', () => {
+    show();
+    assert.equal(dialog().open, false);
+  });
+
+  describe('once opened', () => {
+    beforeEach(() => open());
+
+    test('it is open', () => {
+      assert.equal(dialog().open, true);
+    });
+
+    test('the title names the user', () => {
+      assert.ok(within(dialog()).getByTestId('DeleteUser-title').textContent?.includes('Jos'));
+    });
+
+    test('the confirm button submits and reads Verwijderen', () => {
+      const confirm = within(dialog()).getByTestId('DeleteUser-confirm');
+      assert.equal(confirm.textContent, 'Verwijderen');
+      assert.equal(confirm.getAttribute('type'), 'submit');
+    });
+
+    test('the cancel button reads Annuleren', () => {
+      assert.equal(within(dialog()).getByTestId('DeleteUser-cancel').textContent, 'Annuleren');
+    });
+
+    test('the form sends the delete intent', () => {
+      assert.equal(document.querySelector<HTMLInputElement>('input[name=intent]')?.value, 'delete');
+    });
+  });
 });
 
-test('user-management › Cancel closes the popup', () => {
-  open();
-  fireEvent.click(within(dialog()).getByTestId('DeleteUser-cancel'));
-  assert.equal(dialog().open, false);
+describe('user-management › Cancel closes the popup', () => {
+  test('the popup closes', () => {
+    open();
+    fireEvent.click(within(dialog()).getByTestId('DeleteUser-cancel'));
+    assert.equal(dialog().open, false);
+  });
 });
 
-test('a click on the backdrop closes the popup, a click inside leaves it open', () => {
-  open();
-  fireEvent.click(within(dialog()).getByTestId('DeleteUser-title'));
-  assert.equal(dialog().open, true);
-  fireEvent.click(dialog());
-  assert.equal(dialog().open, false);
+describe('DeleteUser backdrop', () => {
+  beforeEach(() => open());
+
+  test('a click inside leaves the popup open', () => {
+    fireEvent.click(within(dialog()).getByTestId('DeleteUser-title'));
+    assert.equal(dialog().open, true);
+  });
+
+  test('a click on the backdrop closes the popup', () => {
+    fireEvent.click(dialog());
+    assert.equal(dialog().open, false);
+  });
 });
 
-test('user-management › Popup explains the allowlist', () => {
-  open();
-  const popup = within(dialog());
-  assert.match(popup.getByTestId('DeleteUser-allowlist').textContent!, /opnieuw inloggen zolang het e-mailadres op de toegestane lijst staat/);
-  assert.equal(popup.getByTestId('DeleteUser-link').getAttribute('href'), 'https://access.example.com/');
+describe('user-management › Popup explains the allowlist', () => {
+  beforeEach(() => open());
+
+  test('says the user can log in again while the email is on the allowlist', () => {
+    assert.match(
+      within(dialog()).getByTestId('DeleteUser-allowlist').textContent!,
+      /opnieuw inloggen zolang het e-mailadres op de toegestane lijst staat/,
+    );
+  });
+
+  test('links to the allowlist', () => {
+    assert.equal(within(dialog()).getByTestId('DeleteUser-link').getAttribute('href'), 'https://access.example.com/');
+  });
 });
 
-test('user-management › Popup for your own record warns about losing access', () => {
-  open({ isSelf: true });
-  assert.match(within(dialog()).getByTestId('DeleteUser-warning').textContent!, /verliest.*toegang/);
+describe('user-management › Popup for your own record warns about losing access', () => {
+  test('shows the warning', () => {
+    open({ isSelf: true });
+    assert.match(within(dialog()).getByTestId('DeleteUser-warning').textContent!, /verliest.*toegang/);
+  });
 });
 
-test('the popup for another record has no access warning', () => {
-  open();
-  assert.equal(screen.queryByTestId('DeleteUser-warning'), null);
+describe('DeleteUser warning', () => {
+  test('the popup for another record has no access warning', () => {
+    open();
+    assert.equal(screen.queryByTestId('DeleteUser-warning'), null);
+  });
 });
 
-test('a disabled button shows its reason beside it', () => {
-  show({ disabledReason: 'De enige superadmin kan niet worden verwijderd' });
-  const button = screen.getByTestId<HTMLButtonElement>('DeleteUser-open');
-  assert.equal(button.disabled, true);
-  assert.equal(button.getAttribute('aria-describedby'), screen.getByTestId('DeleteUser-reason').id);
+describe('DeleteUser disabled', () => {
+  beforeEach(() => show({ disabledReason: 'De enige superadmin kan niet worden verwijderd' }));
+
+  test('the button is disabled', () => {
+    assert.equal(screen.getByTestId<HTMLButtonElement>('DeleteUser-open').disabled, true);
+  });
+
+  test('the button is described by the reason beside it', () => {
+    assert.equal(screen.getByTestId('DeleteUser-open').getAttribute('aria-describedby'), screen.getByTestId('DeleteUser-reason').id);
+  });
 });
 
 // Escape and the focus trap come from the browser's modal dialog, which happy-dom does not implement.

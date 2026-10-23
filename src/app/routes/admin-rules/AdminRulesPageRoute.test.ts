@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { after, before, test } from 'node:test';
+import { after, afterEach, before, beforeEach, describe, test } from 'node:test';
 import { RouterContextProvider } from 'react-router';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { defaultRules } from '~app/shared/rules';
@@ -47,54 +47,115 @@ const refused = async (call: Promise<unknown>) => {
   }
 };
 
-test('parsing-rules › User opens the page', async () => {
-  assert.equal(await refused(open('user@example.com')), 403);
+describe('parsing-rules › User opens the page', () => {
+  test('is refused with 403', async () => {
+    assert.equal(await refused(open('user@example.com')), 403);
+  });
+
   // Someone without a user row is no admin either.
-  assert.equal(await refused(open('nobody@example.com')), 403);
+  test('someone without a user row is refused with 403', async () => {
+    assert.equal(await refused(open('nobody@example.com')), 403);
+  });
 });
 
-test('parsing-rules › User posts a change', async () => {
+describe('parsing-rules › User posts a change', () => {
   const fields = { intent: 'save', units: 'kopje', minuteWords: 'min', hourWords: 'u', degreeWords: 'graden', spoken: '' };
-  assert.equal(await refused(post('user@example.com', fields)), 403);
-  assert.deepEqual(await getRules(db), defaultRules);
+
+  test('is refused with 403', async () => {
+    assert.equal(await refused(post('user@example.com', fields)), 403);
+  });
+
+  test('the stored rules stay the defaults', async () => {
+    await refused(post('user@example.com', fields));
+    assert.deepEqual(await getRules(db), defaultRules);
+  });
 });
 
-test('parsing-rules › Non-admin cannot restore defaults', async () => {
-  await db
-    .prepare("INSERT INTO settings (key, value) VALUES ('parsing-rules', ?)")
-    .bind(JSON.stringify({ ...defaultRules, units: ['kopje'] }))
-    .run();
-  assert.equal(await refused(post('user@example.com', { intent: 'reset' })), 403);
-  assert.deepEqual((await getRules(db)).units, ['kopje']);
-  await db.prepare("DELETE FROM settings WHERE key = 'parsing-rules'").run();
+describe('parsing-rules › Non-admin cannot restore defaults', () => {
+  beforeEach(async () => {
+    await db
+      .prepare("INSERT INTO settings (key, value) VALUES ('parsing-rules', ?)")
+      .bind(JSON.stringify({ ...defaultRules, units: ['kopje'] }))
+      .run();
+  });
+  afterEach(async () => {
+    await db.prepare("DELETE FROM settings WHERE key = 'parsing-rules'").run();
+  });
+
+  test('is refused with 403', async () => {
+    assert.equal(await refused(post('user@example.com', { intent: 'reset' })), 403);
+  });
+
+  test('the custom rules are kept', async () => {
+    await refused(post('user@example.com', { intent: 'reset' }));
+    assert.deepEqual((await getRules(db)).units, ['kopje']);
+  });
 });
 
-const showsRules = async (role: string) => {
-  const { values } = await open(`${role}@example.com`);
-  assert.equal(values.units.split('\n').includes('g'), true);
-  assert.equal(values.minuteWords, 'minuten\nminuut\nmin');
-  assert.equal(values.spoken.split('\n')[0], 'een half uur = 30');
+const showsRules = (role: string) => {
+  const values = () => open(`${role}@example.com`).then((r) => r.values);
+
+  test('the units include g', async () => {
+    assert.equal((await values()).units.split('\n').includes('g'), true);
+  });
+
+  test('the minute words are listed', async () => {
+    assert.equal((await values()).minuteWords, 'minuten\nminuut\nmin');
+  });
+
+  test('the spoken amounts start with the first default', async () => {
+    assert.equal((await values()).spoken.split('\n')[0], 'een half uur = 30');
+  });
 };
 
-test('parsing-rules › Admin opens the page', () => showsRules('admin'));
+describe('parsing-rules › Admin opens the page', () => {
+  showsRules('admin');
+});
 
-test('parsing-rules › Superadmin opens the page', () => showsRules('superadmin'));
+describe('parsing-rules › Superadmin opens the page', () => {
+  showsRules('superadmin');
+});
 
-test('an admin saves and restores through the action', async () => {
+describe('action', () => {
   const ok = { intent: 'save', units: 'g\nkopje', minuteWords: 'min', hourWords: 'u', degreeWords: 'graden', spoken: 'een kwartier = 15' };
-  assert.deepEqual((await post('admin@example.com', ok)).data, { saved: true });
-  assert.deepEqual((await getRules(db)).units, ['g', 'kopje']);
-  const bad = await post('admin@example.com', { ...ok, units: '' });
-  assert.equal((bad.data as { errors: object }).errors !== undefined, true);
-  assert.deepEqual((await getRules(db)).units, ['g', 'kopje']);
-  await post('admin@example.com', { intent: 'reset' });
-  assert.deepEqual(await getRules(db), defaultRules);
+
+  describe('an admin saves', () => {
+    test('answers saved', async () => {
+      assert.deepEqual((await post('admin@example.com', ok)).data, { saved: true });
+    });
+
+    test('stores the new rules', async () => {
+      await post('admin@example.com', ok);
+      assert.deepEqual((await getRules(db)).units, ['g', 'kopje']);
+    });
+
+    test('invalid input answers errors and keeps the stored rules', async () => {
+      await post('admin@example.com', ok);
+      const bad = await post('admin@example.com', { ...ok, units: '' });
+      assert.equal((bad.data as { errors: object }).errors !== undefined, true);
+      assert.deepEqual((await getRules(db)).units, ['g', 'kopje']);
+    });
+
+    test('reset restores the defaults', async () => {
+      await post('admin@example.com', ok);
+      await post('admin@example.com', { intent: 'reset' });
+      assert.deepEqual(await getRules(db), defaultRules);
+    });
+  });
+
+  describe('an unknown intent', () => {
+    for (const fields of [{} as Record<string, string>, { intent: 'bogus' }]) {
+      test(`${JSON.stringify(fields)} is refused with 400`, async () => {
+        assert.equal(await refused(post('admin@example.com', fields)), 400);
+      });
+    }
+
+    test('changes nothing', async () => {
+      await refused(post('admin@example.com', { intent: 'bogus' }));
+      assert.deepEqual(await getRules(db), defaultRules);
+    });
+  });
 });
 
 // The root loader imports app.css, which node:test cannot load; the revalidation after an action is router behaviour.
 test.todo('parsing-rules › Saved change applies at once');
-
-test('an unknown intent is refused and changes nothing', async () => {
-  for (const fields of [{} as Record<string, string>, { intent: 'bogus' }]) assert.equal(await refused(post('admin@example.com', fields)), 400);
-  assert.deepEqual(await getRules(db), defaultRules);
-});

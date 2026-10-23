@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { describe, test } from 'node:test';
 import { defaultRules } from '~app/shared/rules';
 import { emptyDraftSeed, isDirty, startingDraft } from './draft';
 import { asksBeforeLeaving, draftKey, saveDraft, type DraftStorage } from './draftStore';
@@ -30,19 +30,37 @@ test.todo('recipe-form › Save is busy while storing');
 test.todo('recipe-form › Cancel leaves without storing');
 
 // The bar shows "Herstel" and "Niet opgeslagen" exactly while isDirty is true.
-test('recipe-form › Reset hidden without changes', () => assert.equal(isDirty(stored, startingDraft(defaultRules, content), defaultRules), false));
-
-test('recipe-form › Reset restores the starting values', () => {
-  const edited = { ...stored, title: 'Stamppot', intro: 'x' };
-  assert.equal(isDirty(stored, edited, defaultRules), true);
-  const reset = startingDraft(defaultRules, content);
-  assert.deepEqual(reset, stored);
-  assert.equal(isDirty(stored, reset, defaultRules), false);
+describe('recipe-form › Reset hidden without changes', () => {
+  test('the unchanged draft is not dirty', () => {
+    assert.equal(isDirty(stored, startingDraft(defaultRules, content), defaultRules), false);
+  });
 });
 
-test('recipe-form › Unsaved indicator', () => {
-  assert.equal(isDirty(stored, { ...stored, time: '1 uur' }, defaultRules), true);
-  assert.equal(isDirty(stored, { ...stored, time: '' }, defaultRules), false);
+describe('recipe-form › Reset restores the starting values', () => {
+  const edited = { ...stored, title: 'Stamppot', intro: 'x' };
+  const reset = startingDraft(defaultRules, content);
+
+  test('the edited draft is dirty', () => {
+    assert.equal(isDirty(stored, edited, defaultRules), true);
+  });
+
+  test('the starting values are the stored ones', () => {
+    assert.deepEqual(reset, stored);
+  });
+
+  test('the reset draft is not dirty', () => {
+    assert.equal(isDirty(stored, reset, defaultRules), false);
+  });
+});
+
+describe('recipe-form › Unsaved indicator', () => {
+  test('a changed field is unsaved', () => {
+    assert.equal(isDirty(stored, { ...stored, time: '1 uur' }, defaultRules), true);
+  });
+
+  test('an emptied field that was empty is not unsaved', () => {
+    assert.equal(isDirty(stored, { ...stored, time: '' }, defaultRules), false);
+  });
 });
 
 // Needs a browser: the inline question and its focus.
@@ -51,33 +69,57 @@ test.todo('recipe-form › Reset asks first');
 test.todo('recipe-form › Reset can be declined');
 
 // The confirmation itself (following a link) needs a browser; whether it is asked is decided by asksBeforeLeaving.
-test('recipe-form › Leaving when the draft could not be kept asks first', () => {
+describe('recipe-form › Leaving when the draft could not be kept asks first', () => {
   const full = (state: typeof stored) =>
     saveDraft(fakeFullStorage, key, { state, initial: stored, base: {}, uploading: false, settledImage: '', now: new Date(), rules: defaultRules });
   const edited = { ...stored, title: 'Stamppot' };
-  assert.equal(
-    asksBeforeLeaving({ dirty: true, submitting: false }, () => full(edited).ok),
-    true,
-  );
-  assert.equal(
-    asksBeforeLeaving({ dirty: true, submitting: false }, () => false),
-    true,
-  );
+
+  test('a full storage asks', () => {
+    assert.equal(
+      asksBeforeLeaving({ dirty: true, submitting: false }, () => full(edited).ok),
+      true,
+    );
+  });
+
+  test('a draft that is not kept asks', () => {
+    assert.equal(
+      asksBeforeLeaving({ dirty: true, submitting: false }, () => false),
+      true,
+    );
+  });
 });
 
-test('recipe-form › Leaving with a kept draft does not ask', () => {
-  let storedValue = '';
-  const storage = { ...fakeFullStorage, setItem: (_: string, v: string) => void (storedValue = v) };
-  const edited = { ...stored, title: 'Stamppot' };
-  const keep = () =>
-    saveDraft(storage, key, { state: edited, initial: stored, base: {}, uploading: false, settledImage: '', now: new Date(), rules: defaultRules })
-      .ok;
-  assert.equal(asksBeforeLeaving({ dirty: true, submitting: false }, keep), false);
-  assert.ok(storedValue, 'the changes are on the device when the page is left');
+describe('recipe-form › Leaving with a kept draft does not ask', () => {
+  const setup = () => {
+    const calls = { storedValue: '' };
+    const storage = { ...fakeFullStorage, setItem: (_: string, v: string) => void (calls.storedValue = v) };
+    const edited = { ...stored, title: 'Stamppot' };
+    const keep = () =>
+      saveDraft(storage, key, { state: edited, initial: stored, base: {}, uploading: false, settledImage: '', now: new Date(), rules: defaultRules })
+        .ok;
+    return { calls, keep };
+  };
+
+  test('nothing is asked', () => {
+    assert.equal(asksBeforeLeaving({ dirty: true, submitting: false }, setup().keep), false);
+  });
+
+  test('the changes are on the device when the page is left', () => {
+    const { calls, keep } = setup();
+    asksBeforeLeaving({ dirty: true, submitting: false }, keep);
+    assert.ok(calls.storedValue);
+  });
 });
-test('recipe-form › Leaving without changes does not ask', () => {
+
+describe('recipe-form › Leaving without changes does not ask', () => {
   const never = () => assert.fail('nothing to keep');
-  assert.equal(asksBeforeLeaving({ dirty: false, submitting: false }, never), false);
+
+  test('a clean form does not ask', () => {
+    assert.equal(asksBeforeLeaving({ dirty: false, submitting: false }, never), false);
+  });
+
   // Saving: the form is submitted, so nothing is asked even though the editor still differs from the stored recipe.
-  assert.equal(asksBeforeLeaving({ dirty: true, submitting: true }, never), false);
+  test('a submitting form does not ask', () => {
+    assert.equal(asksBeforeLeaving({ dirty: true, submitting: true }, never), false);
+  });
 });

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { describe, test } from 'node:test';
 import { activeFilterCount, authorsOf, filterParams, filterRecipes, isFiltered, parseFilters, type Filters } from './filterRecipes';
 
 const none: Filters = {};
@@ -12,83 +12,169 @@ const recipes = [
 ];
 const titles = (list: { title: string }[]) => list.map((r) => r.title);
 
-test('recipe-filtering › Searching by title', () => {
-  assert.deepEqual(titles(filterRecipes(recipes, { q: 'appel' })), ['Appeltaart']);
+describe('recipe-filtering › Searching by title', () => {
+  test('finds the matching title', () => {
+    assert.deepEqual(titles(filterRecipes(recipes, { q: 'appel' })), ['Appeltaart']);
+  });
 });
 
-test('recipe-filtering › Searching by author', () => {
-  assert.deepEqual(titles(filterRecipes(recipes, { q: 'mama' })), ['Èclair']);
-  assert.deepEqual(titles(filterRecipes(recipes, { q: 'oma' })), ['Appeltaart', 'Crème brûlée']);
+describe('recipe-filtering › Searching by author', () => {
+  test('finds the matching author', () => {
+    assert.deepEqual(titles(filterRecipes(recipes, { q: 'mama' })), ['Èclair']);
+  });
+
+  test('finds every recipe of an author whatever the case', () => {
+    assert.deepEqual(titles(filterRecipes(recipes, { q: 'oma' })), ['Appeltaart', 'Crème brûlée']);
+  });
 });
 
-test('search ignores case, accents and surrounding spaces', () => {
-  assert.deepEqual(titles(filterRecipes(recipes, { q: ' CREME BRULEE ' })), ['Crème brûlée']);
-  assert.equal(filterRecipes(recipes, { q: '   ' }).length, recipes.length);
-  assert.deepEqual(titles(filterRecipes(recipes, { q: 'eclair' })), ['Èclair']);
-  assert.deepEqual(titles(filterRecipes(recipes, { q: 'crème' })), ['Crème brûlée']);
+describe('search', () => {
+  test('ignores case and surrounding spaces', () => {
+    assert.deepEqual(titles(filterRecipes(recipes, { q: ' CREME BRULEE ' })), ['Crème brûlée']);
+  });
+
+  test('a blank search matches everything', () => {
+    assert.equal(filterRecipes(recipes, { q: '   ' }).length, recipes.length);
+  });
+
+  test('ignores accents in the search', () => {
+    assert.deepEqual(titles(filterRecipes(recipes, { q: 'eclair' })), ['Èclair']);
+  });
+
+  test('matches accents in the title', () => {
+    assert.deepEqual(titles(filterRecipes(recipes, { q: 'crème' })), ['Crème brûlée']);
+  });
 });
 
-test('recipe-filtering › Clearing the search', () => {
+describe('recipe-filtering › Clearing the search', () => {
   const narrowed = { author: 'Papa' };
-  assert.deepEqual(titles(filterRecipes(recipes, { ...narrowed, q: 'soep' })), ['Erwtensoep']);
-  assert.deepEqual(titles(filterRecipes(recipes, { ...narrowed, q: '' })), ['Erwtensoep', 'Stoofvlees']);
+
+  test('with a search only the matches of the author remain', () => {
+    assert.deepEqual(titles(filterRecipes(recipes, { ...narrowed, q: 'soep' })), ['Erwtensoep']);
+  });
+
+  test('without a search all recipes of the author remain', () => {
+    assert.deepEqual(titles(filterRecipes(recipes, { ...narrowed, q: '' })), ['Erwtensoep', 'Stoofvlees']);
+  });
 });
 
-test('recipe-filtering › Choosing an author', () => {
-  assert.deepEqual(titles(filterRecipes(recipes, { author: 'Papa' })), ['Erwtensoep', 'Stoofvlees']);
+describe('recipe-filtering › Choosing an author', () => {
+  test('lists the recipes of the author', () => {
+    assert.deepEqual(titles(filterRecipes(recipes, { author: 'Papa' })), ['Erwtensoep', 'Stoofvlees']);
+  });
+
   // Case variants are one author.
-  assert.deepEqual(titles(filterRecipes(recipes, { author: 'Oma' })), ['Appeltaart', 'Crème brûlée']);
+  test('treats case variants as one author', () => {
+    assert.deepEqual(titles(filterRecipes(recipes, { author: 'Oma' })), ['Appeltaart', 'Crème brûlée']);
+  });
 });
 
-test('recipe-filtering › Search and author combine', () => {
-  assert.deepEqual(titles(filterRecipes(recipes, { author: 'Papa', q: 'stoof' })), ['Stoofvlees']);
-  assert.deepEqual(filterRecipes(recipes, { author: 'Papa', q: 'appel' }), []);
+describe('recipe-filtering › Search and author combine', () => {
+  test('both must match', () => {
+    assert.deepEqual(titles(filterRecipes(recipes, { author: 'Papa', q: 'stoof' })), ['Stoofvlees']);
+  });
+
+  test('a search that no recipe of the author matches finds nothing', () => {
+    assert.deepEqual(filterRecipes(recipes, { author: 'Papa', q: 'appel' }), []);
+  });
 });
 
-test('recipe-filtering › Default order', () => {
+describe('recipe-filtering › Default order', () => {
   // The list arrives newest first and "Nieuwste" keeps it.
-  assert.deepEqual(titles(filterRecipes(recipes, none)), titles(recipes));
-  assert.equal(parseFilters(new URLSearchParams()).sort, 'nieuwste');
+  test('keeps the order of the list', () => {
+    assert.deepEqual(titles(filterRecipes(recipes, none)), titles(recipes));
+  });
+
+  test('the default sort is nieuwste', () => {
+    assert.equal(parseFilters(new URLSearchParams()).sort, 'nieuwste');
+  });
 });
 
-test('recipe-filtering › Sorting alphabetically', () => {
-  assert.deepEqual(titles(filterRecipes(recipes, { sort: 'az' })), ['Appeltaart', 'Crème brûlée', 'Èclair', 'Erwtensoep', 'Stoofvlees']);
+describe('recipe-filtering › Sorting alphabetically', () => {
+  test('orders by title, ignoring accents', () => {
+    assert.deepEqual(titles(filterRecipes(recipes, { sort: 'az' })), ['Appeltaart', 'Crème brûlée', 'Èclair', 'Erwtensoep', 'Stoofvlees']);
+  });
 });
 
-test('sorting does not reorder the list it was given', () => {
-  const before = titles(recipes);
-  filterRecipes(recipes, { sort: 'az' });
-  assert.deepEqual(titles(recipes), before);
+describe('filterRecipes', () => {
+  test('sorting does not reorder the list it was given', () => {
+    const before = titles(recipes);
+    filterRecipes(recipes, { sort: 'az' });
+    assert.deepEqual(titles(recipes), before);
+  });
 });
 
-test('authors are listed once, first spelling wins, alphabetical', () => {
-  assert.deepEqual(authorsOf(recipes), ['Mama', 'Oma', 'Papa']);
-  assert.deepEqual(authorsOf([]), []);
+describe('authorsOf', () => {
+  test('lists authors once, first spelling wins, alphabetical', () => {
+    assert.deepEqual(authorsOf(recipes), ['Mama', 'Oma', 'Papa']);
+  });
+
+  test('lists nothing for no recipes', () => {
+    assert.deepEqual(authorsOf([]), []);
+  });
 });
 
-test('active filters are counted for author and order, not for the search text', () => {
-  assert.equal(activeFilterCount(none), 0);
-  assert.equal(activeFilterCount({ q: 'x' }), 0);
-  assert.equal(activeFilterCount({ author: 'Oma', sort: 'az' }), 2);
-  assert.equal(activeFilterCount({ sort: 'az' }), 1);
+describe('activeFilterCount', () => {
+  test('is zero without filters', () => {
+    assert.equal(activeFilterCount(none), 0);
+  });
+
+  test('does not count the search text', () => {
+    assert.equal(activeFilterCount({ q: 'x' }), 0);
+  });
+
+  test('counts author and order', () => {
+    assert.equal(activeFilterCount({ author: 'Oma', sort: 'az' }), 2);
+  });
+
+  test('counts the order alone', () => {
+    assert.equal(activeFilterCount({ sort: 'az' }), 1);
+  });
 });
 
-test('isFiltered is true for any narrowing or non-default order, not for blank search', () => {
-  assert.equal(isFiltered(none), false);
-  assert.equal(isFiltered({ q: '  ' }), false);
-  assert.equal(isFiltered({ q: 'a' }), true);
-  assert.equal(isFiltered({ author: 'Oma' }), true);
-  assert.equal(isFiltered({ sort: 'az' }), true);
+describe('isFiltered', () => {
+  test('is false without filters', () => {
+    assert.equal(isFiltered(none), false);
+  });
+
+  test('is false for a blank search', () => {
+    assert.equal(isFiltered({ q: '  ' }), false);
+  });
+
+  test('is true for a search', () => {
+    assert.equal(isFiltered({ q: 'a' }), true);
+  });
+
+  test('is true for an author', () => {
+    assert.equal(isFiltered({ author: 'Oma' }), true);
+  });
+
+  test('is true for a non-default order', () => {
+    assert.equal(isFiltered({ sort: 'az' }), true);
+  });
 });
 
-test('parseFilters reads the address and falls back to defaults', () => {
-  assert.deepEqual(parseFilters(new URLSearchParams('q=appel&auteur=Oma&sort=az')), { q: 'appel', author: 'Oma', sort: 'az' });
-  assert.deepEqual(parseFilters(new URLSearchParams('sort=bogus&auteur=')), { q: '', author: undefined, sort: 'nieuwste' });
+describe('parseFilters', () => {
+  test('reads the address', () => {
+    assert.deepEqual(parseFilters(new URLSearchParams('q=appel&auteur=Oma&sort=az')), { q: 'appel', author: 'Oma', sort: 'az' });
+  });
+
+  test('falls back to defaults', () => {
+    assert.deepEqual(parseFilters(new URLSearchParams('sort=bogus&auteur=')), { q: '', author: undefined, sort: 'nieuwste' });
+  });
 });
 
-test('filterParams leaves out defaults and round-trips through parseFilters', () => {
-  assert.equal(filterParams(none).toString(), '');
-  const f: Filters = { q: 'crème brûlée', author: 'Tante An', sort: 'az' };
-  assert.deepEqual(parseFilters(new URLSearchParams(filterParams(f).toString())), f);
-  assert.equal(filterParams({ sort: 'az' }).toString(), 'sort=az');
+describe('filterParams', () => {
+  test('leaves out defaults', () => {
+    assert.equal(filterParams(none).toString(), '');
+  });
+
+  test('round-trips through parseFilters', () => {
+    const f: Filters = { q: 'crème brûlée', author: 'Tante An', sort: 'az' };
+    assert.deepEqual(parseFilters(new URLSearchParams(filterParams(f).toString())), f);
+  });
+
+  test('writes a non-default order', () => {
+    assert.equal(filterParams({ sort: 'az' }).toString(), 'sort=az');
+  });
 });

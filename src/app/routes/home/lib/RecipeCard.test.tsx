@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { describe, test } from 'node:test';
 import { MemoryRouter } from 'react-router';
 import type { RecipeSummary } from '~app/shared/recipe';
 import { cssFor } from '~testing/css';
@@ -14,40 +14,73 @@ const card = (r: Partial<RecipeSummary> = {}) =>
     </MemoryRouter>,
   );
 
-test('recipe-browsing › Card image ratio', async () => {
-  const { container } = card();
-  const image = container.querySelector('img')!;
-  const css = await cssFor(image.className);
+describe('recipe-browsing › Card image ratio', () => {
   // 5:2 by default, 16:10 from 48rem, and height auto so the width/height attributes don't override the ratio.
-  const flat = css.replace(/\s+/g, ' ');
-  assert.match(flat, /aspect-ratio: 5\/2/);
-  assert.match(flat, /@media \(width >= 48rem\) \{ [^{]*\{ aspect-ratio: 16\/10/);
-  assert.match(flat, /height: auto/);
-  // The tile band follows the image.
-  assert.ok(precedes(image, container.querySelector('svg')!));
+  const imageCss = async () => {
+    const { container } = card();
+    return (await cssFor(container.querySelector('img')!.className)).replace(/\s+/g, ' ');
+  };
+
+  test('is 5:2 by default', async () => {
+    assert.match(await imageCss(), /aspect-ratio: 5\/2/);
+  });
+
+  test('is 16:10 from 48rem', async () => {
+    assert.match(await imageCss(), /@media \(width >= 48rem\) \{ [^{]*\{ aspect-ratio: 16\/10/);
+  });
+
+  test('has height auto', async () => {
+    assert.match(await imageCss(), /height: auto/);
+  });
+
+  test('the tile band follows the image', () => {
+    const { container } = card();
+    assert.ok(precedes(container.querySelector('img')!, container.querySelector('svg')!));
+  });
 });
 
 // Needs a real browser at 390px width to measure what is visible without scrolling.
 test.todo('recipe-browsing › Two recipes on one phone screen');
 
-test('recipe-new-marker › Marker on a card with an image', async () => {
-  const { container } = card({ isNew: true });
-  const label = screen.getByTestId('RecipeCard-new');
+describe('recipe-new-marker › Marker on a card with an image', () => {
+  const labelCss = async () => {
+    card({ isNew: true });
+    return (await cssFor(screen.getByTestId('RecipeCard-new').className)).replace(/\s+/g, ' ');
+  };
+
   // Over the top-left of the image: before the image, positioned in the card's top-left corner.
-  assert.ok(precedes(label, container.querySelector('img')!));
-  const css = (await cssFor(label.className)).replace(/\s+/g, ' ');
-  assert.match(css, /position: absolute/);
-  assert.match(css, /top: calc\(var\(--spacing\) \* 2\.5\)/);
-  assert.match(css, /left: calc\(var\(--spacing\) \* 2\.5\)/);
+  test('sits before the image', () => {
+    const { container } = card({ isNew: true });
+    assert.ok(precedes(screen.getByTestId('RecipeCard-new'), container.querySelector('img')!));
+  });
+
+  test('is positioned in the top-left corner', async () => {
+    const css = await labelCss();
+    assert.match(css, /position: absolute/);
+    assert.match(css, /top: calc\(var\(--spacing\) \* 2\.5\)/);
+    assert.match(css, /left: calc\(var\(--spacing\) \* 2\.5\)/);
+  });
+
   // Yellow with a dark border and the hard shadow.
-  assert.match(css, /background-color: var\(--color-yel\)/);
-  assert.match(css, /border-color: var\(--color-ink\)/);
-  assert.match(css, /\.shadow-hard-sm \{ --tw-shadow: 3px 3px 0/);
+  test('is yellow with a dark border and the hard shadow', async () => {
+    const css = await labelCss();
+    assert.match(css, /background-color: var\(--color-yel\)/);
+    assert.match(css, /border-color: var\(--color-ink\)/);
+    assert.match(css, /\.shadow-hard-sm \{ --tw-shadow: 3px 3px 0/);
+  });
+
   // It is text inside the card's link, so it is part of the accessible name.
-  const link = screen.getByTestId('RecipeCard-link');
-  assert.ok(link.contains(label));
-  assert.match(link.textContent ?? '', /Nieuw.*Soep/);
-  card({ isNew: false });
-  card();
-  assert.equal(screen.getAllByTestId('RecipeCard-new').length, 1);
+  test('is part of the accessible name of the link', () => {
+    card({ isNew: true });
+    const link = screen.getByTestId('RecipeCard-link');
+    assert.ok(link.contains(screen.getByTestId('RecipeCard-new')));
+    assert.match(link.textContent ?? '', /Nieuw.*Soep/);
+  });
+
+  test('only a new card has the marker', () => {
+    card({ isNew: true });
+    card({ isNew: false });
+    card();
+    assert.equal(screen.getAllByTestId('RecipeCard-new').length, 1);
+  });
 });

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { afterEach, beforeEach, test } from 'node:test';
+import { afterEach, beforeEach, describe, test } from 'node:test';
 import { RouterContextProvider } from 'react-router';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { getUser } from '~app/shared/users.server';
@@ -60,111 +60,201 @@ const thrownStatus = async (call: Promise<unknown>) => {
 };
 const stored = async (name: string) => getUser(db, `${name}@example.com`);
 
-test('user-management › Non-superadmin asks for an unknown user', async () => {
-  assert.equal(await thrownStatus(open('admin', 9999)), 403);
-  assert.equal(await thrownStatus(open('admin', ids.jos)), 403);
-  assert.equal(await thrownStatus(open('user', 'abc')), 403);
+describe('user-management › Non-superadmin asks for an unknown user', () => {
+  test('an admin asking for a missing id is refused with 403', async () => {
+    assert.equal(await thrownStatus(open('admin', 9999)), 403);
+  });
+
+  test('an admin asking for an existing user is refused with 403', async () => {
+    assert.equal(await thrownStatus(open('admin', ids.jos)), 403);
+  });
+
+  test('a user asking for a non-numeric id is refused with 403', async () => {
+    assert.equal(await thrownStatus(open('user', 'abc')), 403);
+  });
 });
 
-test('user-management › Unknown user', async () => {
-  assert.equal(await thrownStatus(open('boss', 9999)), 404);
-  assert.equal(await thrownStatus(open('boss', 'abc')), 404);
+describe('user-management › Unknown user', () => {
+  test('a missing id answers 404', async () => {
+    assert.equal(await thrownStatus(open('boss', 9999)), 404);
+  });
+
+  test('a non-numeric id answers 404', async () => {
+    assert.equal(await thrownStatus(open('boss', 'abc')), 404);
+  });
 });
 
-test('the loader returns the user, whether they are the last superadmin and the allowlist link', async () => {
-  const result = await open('boss', ids.jos);
-  assert.deepEqual(result.user, { id: ids.jos, email: 'jos@example.com', callingName: 'jos', role: 'user' });
-  assert.deepEqual([result.lastSuperadmin, result.isSelf, result.accessUrl], [false, false, 'https://access.example.com/']);
-  assert.equal((await open('boss', ids.boss)).isSelf, true);
+describe('loader', () => {
+  test('returns the user, whether they are the last superadmin and the allowlist link', async () => {
+    const result = await open('boss', ids.jos);
+    assert.deepEqual(result.user, { id: ids.jos, email: 'jos@example.com', callingName: 'jos', role: 'user' });
+    assert.deepEqual([result.lastSuperadmin, result.isSelf, result.accessUrl], [false, false, 'https://access.example.com/']);
+  });
+
+  test('flags the own record as self', async () => {
+    assert.equal((await open('boss', ids.boss)).isSelf, true);
+  });
+
+  test('an id of more than 9 digits is an unknown user', async () => {
+    assert.equal(await thrownStatus(open('boss', '000000000001')), 404);
+  });
 });
 
-test('user-management › Non-superadmin saves a change', async () => {
-  assert.equal(await thrownStatus(post('admin', ids.jos, { callingName: 'Hack', role: 'superadmin' })), 403);
-  assert.equal(await thrownStatus(post('user', ids.jos, { callingName: 'Hack' })), 403);
-  assert.deepEqual([(await stored('jos'))?.callingName, (await stored('jos'))?.role], ['jos', 'user']);
+describe('user-management › Non-superadmin saves a change', () => {
+  test('an admin changing name and role is refused with 403', async () => {
+    assert.equal(await thrownStatus(post('admin', ids.jos, { callingName: 'Hack', role: 'superadmin' })), 403);
+  });
+
+  test('a user changing the name is refused with 403', async () => {
+    assert.equal(await thrownStatus(post('user', ids.jos, { callingName: 'Hack' })), 403);
+  });
+
+  test('the stored name and role stay as they were', async () => {
+    await thrownStatus(post('admin', ids.jos, { callingName: 'Hack', role: 'superadmin' }));
+    await thrownStatus(post('user', ids.jos, { callingName: 'Hack' }));
+    assert.deepEqual([(await stored('jos'))?.callingName, (await stored('jos'))?.role], ['jos', 'user']);
+  });
 });
 
-test('user-management › Non-superadmin deletes a user', async () => {
-  assert.equal(await thrownStatus(post('admin', ids.jos, { intent: 'delete' })), 403);
-  assert.notEqual(await stored('jos'), undefined);
+describe('user-management › Non-superadmin deletes a user', () => {
+  test('is refused with 403', async () => {
+    assert.equal(await thrownStatus(post('admin', ids.jos, { intent: 'delete' })), 403);
+  });
+
+  test('the user is kept', async () => {
+    await thrownStatus(post('admin', ids.jos, { intent: 'delete' }));
+    assert.notEqual(await stored('jos'), undefined);
+  });
 });
 
-test('user-management › Blank calling name', async () => {
-  const result = await post('boss', ids.jos, { callingName: '   ', role: 'admin' });
-  assert.equal(result.init?.status, 400);
-  assert.deepEqual(result.data, { error: 'Vul een roepnaam in.' });
-  assert.deepEqual([(await stored('jos'))?.callingName, (await stored('jos'))?.role], ['jos', 'user']);
+describe('user-management › Blank calling name', () => {
+  test('answers 400 with the error message', async () => {
+    const result = await post('boss', ids.jos, { callingName: '   ', role: 'admin' });
+    assert.equal(result.init?.status, 400);
+    assert.deepEqual(result.data, { error: 'Vul een roepnaam in.' });
+  });
+
+  test('the stored name and role stay as they were', async () => {
+    await post('boss', ids.jos, { callingName: '   ', role: 'admin' });
+    assert.deepEqual([(await stored('jos'))?.callingName, (await stored('jos'))?.role], ['jos', 'user']);
+  });
 });
 
-test('user-management › Unknown role', async () => {
-  const result = await post('boss', ids.jos, { callingName: 'jos', role: 'owner' });
-  assert.equal(result.init?.status, 400);
-  assert.equal((await stored('jos'))?.role, 'user');
+describe('user-management › Unknown role', () => {
+  test('answers 400', async () => {
+    const result = await post('boss', ids.jos, { callingName: 'jos', role: 'owner' });
+    assert.equal(result.init?.status, 400);
+  });
+
+  test('the role stays as it was', async () => {
+    await post('boss', ids.jos, { callingName: 'jos', role: 'owner' });
+    assert.equal((await stored('jos'))?.role, 'user');
+  });
 });
 
-test('saving stores the trimmed calling name and role, and shows it as saved', async () => {
-  const result = await post('boss', ids.jos, { callingName: '  Josje ', role: 'admin' });
-  assert.deepEqual(result.data, { saved: true });
-  assert.deepEqual([(await stored('jos'))?.callingName, (await stored('jos'))?.role], ['Josje', 'admin']);
+describe('action save', () => {
+  test('shows the change as saved', async () => {
+    const result = await post('boss', ids.jos, { callingName: '  Josje ', role: 'admin' });
+    assert.deepEqual(result.data, { saved: true });
+  });
+
+  test('stores the trimmed calling name and role', async () => {
+    await post('boss', ids.jos, { callingName: '  Josje ', role: 'admin' });
+    assert.deepEqual([(await stored('jos'))?.callingName, (await stored('jos'))?.role], ['Josje', 'admin']);
+  });
 });
 
-test('user-management › Missing role keeps the role', async () => {
-  await db.prepare("UPDATE users SET role = 'admin' WHERE id = ?").bind(ids.jos).run();
-  await post('boss', ids.jos, { callingName: 'Josje' });
-  assert.deepEqual([(await stored('jos'))?.callingName, (await stored('jos'))?.role], ['Josje', 'admin']);
+describe('user-management › Missing role keeps the role', () => {
+  test('the name changes and the role stays', async () => {
+    await db.prepare("UPDATE users SET role = 'admin' WHERE id = ?").bind(ids.jos).run();
+    await post('boss', ids.jos, { callingName: 'Josje' });
+    assert.deepEqual([(await stored('jos'))?.callingName, (await stored('jos'))?.role], ['Josje', 'admin']);
+  });
 });
 
-test('user-management › Delete own record', async () => {
-  const response = await post('other', ids.other, { intent: 'delete' });
-  assert.equal(response.headers!.get('Location'), '/');
-  assert.equal(await stored('other'), undefined);
+describe('user-management › Delete own record', () => {
+  test('redirects to the home page', async () => {
+    const response = await post('other', ids.other, { intent: 'delete' });
+    assert.equal(response.headers!.get('Location'), '/');
+  });
+
+  test('removes the record', async () => {
+    await post('other', ids.other, { intent: 'delete' });
+    assert.equal(await stored('other'), undefined);
+  });
 });
 
-test('a user deleted in the meantime answers 404, not the superadmin refusal', async () => {
-  await post('boss', ids.jos, { intent: 'delete' });
-  assert.equal(await thrownStatus(post('boss', ids.jos, { intent: 'delete' })), 404);
-  assert.equal(await thrownStatus(post('boss', ids.jos, { callingName: 'jos' })), 404);
+describe('action delete', () => {
+  const removeOtherSuperadmin = () => db.prepare('DELETE FROM users WHERE id = ?').bind(ids.other).run();
+
+  describe('a user deleted in the meantime', () => {
+    beforeEach(async () => {
+      await post('boss', ids.jos, { intent: 'delete' });
+    });
+
+    test('answers 404 to a second delete, not the superadmin refusal', async () => {
+      assert.equal(await thrownStatus(post('boss', ids.jos, { intent: 'delete' })), 404);
+    });
+
+    test('answers 404 to a save', async () => {
+      assert.equal(await thrownStatus(post('boss', ids.jos, { callingName: 'jos' })), 404);
+    });
+  });
+
+  describe('the sole superadmin', () => {
+    beforeEach(async () => {
+      await removeOtherSuperadmin();
+    });
+
+    test('is flagged as last by the loader', async () => {
+      assert.equal((await open('boss', ids.boss)).lastSuperadmin, true);
+    });
+
+    test('cannot be demoted through the action', async () => {
+      assert.equal((await post('boss', ids.boss, { callingName: 'boss', role: 'admin' })).init?.status, 400);
+      assert.equal((await stored('boss'))?.role, 'superadmin');
+    });
+
+    test('cannot be deleted through the action', async () => {
+      assert.equal((await post('boss', ids.boss, { intent: 'delete' })).init?.status, 400);
+      assert.notEqual(await stored('boss'), undefined);
+    });
+  });
+
+  describe('another user', () => {
+    test('returns to the list', async () => {
+      const response = await post('boss', ids.jos, { intent: 'delete' });
+      assert.equal(response.headers!.get('Location'), '/beheer/gebruikers');
+    });
+
+    test('is removed', async () => {
+      await post('boss', ids.jos, { intent: 'delete' });
+      assert.equal(await stored('jos'), undefined);
+    });
+  });
 });
 
-test('an id of more than 9 digits is an unknown user', async () => {
-  assert.equal(await thrownStatus(open('boss', '000000000001')), 404);
+describe('user-management › Demote self while another superadmin exists', () => {
+  beforeEach(async () => {
+    await db.prepare("UPDATE users SET role = 'superadmin' WHERE email = 'admin@example.com'").run();
+  });
+
+  test('redirects to the home page', async () => {
+    const response = await post('admin', ids.admin, { callingName: 'admin', role: 'admin' });
+    assert.equal(response.headers!.get('Location'), '/');
+  });
+
+  test('stores the lower role', async () => {
+    await post('admin', ids.admin, { callingName: 'admin', role: 'admin' });
+    assert.equal((await stored('admin'))?.role, 'admin');
+  });
 });
 
-const removeOtherSuperadmin = () => db.prepare('DELETE FROM users WHERE id = ?').bind(ids.other).run();
-
-test('the sole superadmin is flagged as last by the loader', async () => {
-  await removeOtherSuperadmin();
-  assert.equal((await open('boss', ids.boss)).lastSuperadmin, true);
-});
-
-test('the sole superadmin cannot be demoted through the action', async () => {
-  await removeOtherSuperadmin();
-  assert.equal((await post('boss', ids.boss, { callingName: 'boss', role: 'admin' })).init?.status, 400);
-  assert.equal((await stored('boss'))?.role, 'superadmin');
-});
-
-test('the sole superadmin cannot be deleted through the action', async () => {
-  await removeOtherSuperadmin();
-  assert.equal((await post('boss', ids.boss, { intent: 'delete' })).init?.status, 400);
-  assert.notEqual(await stored('boss'), undefined);
-});
-
-test('deleting another user returns to the list', async () => {
-  const response = await post('boss', ids.jos, { intent: 'delete' });
-  assert.equal(response.headers!.get('Location'), '/beheer/gebruikers');
-  assert.equal(await stored('jos'), undefined);
-});
-
-test('user-management › Demote self while another superadmin exists', async () => {
-  await db.prepare("UPDATE users SET role = 'superadmin' WHERE email = 'admin@example.com'").run();
-  const response = await post('admin', ids.admin, { callingName: 'admin', role: 'admin' });
-  assert.equal(response.headers!.get('Location'), '/');
-  assert.equal((await stored('admin'))?.role, 'admin');
-});
-
-test('user-management › Deleted member returns', async () => {
+describe('user-management › Deleted member returns', () => {
   // Without a user row the member is sent to the welcome screen, which asks for the calling name again.
-  await post('boss', ids.jos, { intent: 'delete' });
-  const welcome = redirectToWelcome(await stored('jos'), new URL('http://localhost/'));
-  assert.match(welcome?.headers.get('Location') ?? '', /^\/welkom/);
+  test('is sent to the welcome screen', async () => {
+    await post('boss', ids.jos, { intent: 'delete' });
+    const welcome = redirectToWelcome(await stored('jos'), new URL('http://localhost/'));
+    assert.match(welcome?.headers.get('Location') ?? '', /^\/welkom/);
+  });
 });

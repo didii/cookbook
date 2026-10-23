@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { describe, test } from 'node:test';
 import { defaultRules } from '~app/shared/rules';
 import { fake } from '~testing/fake';
 import { addStep, editStep, emptyDraftSeed, startingDraft, typeIngredient } from './draft';
@@ -42,83 +42,180 @@ const keeping = (state = edited, extra: object = {}) => ({
 const key = draftKey('Oma@Example.com', 'soep');
 const daysAgo = (days: number) => new Date(now.getTime() - days * 24 * 3600 * 1000);
 
-test('recipe-draft › Edits are kept as they are made', () => {
-  const { storage } = fakeStorage();
+describe('recipe-draft › Edits are kept as they are made', () => {
   const withChips = editStep(addStep(typeIngredient(edited, 'i0', '2 el suiker', defaultRules), 0), 's1', 'Bak 20 minuten');
-  assert.deepEqual(saveDraft(storage, key, keeping(withChips)), { ok: true });
-  const draft = loadDraft(storage, key);
-  assert.deepEqual(draft?.state, withChips);
-  assert.equal(draft?.savedAt, now.toISOString());
-  assert.deepEqual(draft?.base, { updatedAt: 'v1' });
-});
+  const kept = () => {
+    const { storage } = fakeStorage();
+    const result = saveDraft(storage, key, keeping(withChips));
+    return { result, draft: loadDraft(storage, key) };
+  };
 
-test('recipe-draft › An unchanged recipe keeps no draft', () => {
-  const { storage } = fakeStorage();
-  saveDraft(storage, key, keeping());
-  assert.ok(loadDraft(storage, key));
-  assert.deepEqual(saveDraft(storage, key, keeping(startingDraft(defaultRules, { ...emptyDraftSeed, title: ' Soep ', author: 'Oma' }))), {
-    ok: true,
+  test('saving succeeds', () => {
+    assert.deepEqual(kept().result, { ok: true });
   });
-  assert.equal(loadDraft(storage, key), undefined);
+
+  test('the state comes back as it was', () => {
+    assert.deepEqual(kept().draft?.state, withChips);
+  });
+
+  test('the time of keeping is stored', () => {
+    assert.equal(kept().draft?.savedAt, now.toISOString());
+  });
+
+  test('the base version is stored', () => {
+    assert.deepEqual(kept().draft?.base, { updatedAt: 'v1' });
+  });
 });
 
-test('recipe-draft › Drafts are per family member', () => {
-  const { storage } = fakeStorage();
-  saveDraft(storage, draftKey('oma@example.com', 'soep'), keeping());
-  assert.ok(loadDraft(storage, draftKey('OMA@example.com ', 'soep')), 'same person, any case');
-  assert.equal(loadDraft(storage, draftKey('opa@example.com', 'soep')), undefined);
-  assert.notEqual(draftKey('oma@example.com'), draftKey('oma@example.com', 'new'), 'a recipe called "new" is not a new recipe');
-});
+describe('recipe-draft › An unchanged recipe keeps no draft', () => {
+  test('saving the unchanged recipe succeeds', () => {
+    const { storage } = fakeStorage();
+    assert.deepEqual(saveDraft(storage, key, keeping(startingDraft(defaultRules, { ...emptyDraftSeed, title: ' Soep ', author: 'Oma' }))), {
+      ok: true,
+    });
+  });
 
-test('recipe-draft › A photo that is still uploading is not kept', () => {
-  const { storage } = fakeStorage();
-  saveDraft(storage, key, keeping({ ...edited, image: 'blob:half' }, { uploading: true, settledImage: '/old.jpg' }));
-  assert.equal(loadDraft(storage, key)?.state.image, '/old.jpg');
-  saveDraft(storage, key, keeping({ ...edited, image: '/new.jpg' }, { settledImage: '/old.jpg' }));
-  assert.equal(loadDraft(storage, key)?.state.image, '/new.jpg');
-});
-
-test('recipe-draft › Old drafts are cleaned up', () => {
-  const { storage, items } = fakeStorage();
-  const put = (name: string, at: Date) => saveDraft(storage, draftKey('a@b.c', name), keeping(edited, { now: at }));
-  put('old', daysAgo(31));
-  put('fresh', daysAgo(29));
-  for (let i = 0; i < 21; i++) put(`n${i}`, new Date(now.getTime() - i * 1000));
-  items.set('other:key', 'x');
-  purgeDrafts(storage, now);
-  assert.equal(loadDraft(storage, draftKey('a@b.c', 'old')), undefined);
-  assert.equal(items.has('other:key'), true, 'only drafts are touched');
-  const left = [...items.keys()].filter((k) => k.startsWith('cookbook:draft:'));
-  assert.equal(left.length, 20);
-  assert.ok(left.includes(draftKey('a@b.c', 'n0')), 'the most recent stay');
-  assert.ok(!left.includes(draftKey('a@b.c', 'fresh')), 'the oldest beyond 20 go');
-});
-
-test('recipe-draft › An unreadable draft is ignored', () => {
-  const { storage, items } = fakeStorage();
-  for (const bad of ['{not json', 'null', JSON.stringify({ v: 0, savedAt: now.toISOString(), base: {}, state: edited }), JSON.stringify({ v: 1 })]) {
-    items.set(key, bad);
+  test('saving the unchanged recipe removes an earlier draft', () => {
+    const { storage } = fakeStorage();
+    saveDraft(storage, key, keeping());
+    assert.ok(loadDraft(storage, key));
+    saveDraft(storage, key, keeping(startingDraft(defaultRules, { ...emptyDraftSeed, title: ' Soep ', author: 'Oma' })));
     assert.equal(loadDraft(storage, key), undefined);
-    assert.equal(items.has(key), false, 'and removed');
-  }
-  saveDraft(storage, key, keeping());
-  items.set(key, items.get(key)!.replace('"chips":[]', '"chips":7'));
-  assert.equal(loadDraft(storage, key), undefined);
-  items.set(key, '{}');
-  purgeDrafts(storage, now);
-  assert.equal(items.size, 0, 'purging removes unreadable ones too');
+  });
 });
 
-test('recipe-draft › Storage that fails does not break editing', () => {
-  const full = fakeStorage({ write: true });
-  assert.deepEqual(saveDraft(full.storage, key, keeping()), { ok: false });
-  const blocked = fakeStorage({ read: true, write: true });
-  assert.equal(loadDraft(blocked.storage, key), undefined);
-  assert.doesNotThrow(() => purgeDrafts(blocked.storage, now));
-  assert.equal(clearDraft(blocked.storage, key), true);
-  assert.deepEqual(saveDraft(undefined, key, keeping()), { ok: false });
-  assert.equal(loadDraft(undefined, key), undefined);
-  assert.doesNotThrow(() => purgeDrafts(undefined, now));
+describe('recipe-draft › Drafts are per family member', () => {
+  const setup = () => {
+    const { storage } = fakeStorage();
+    saveDraft(storage, draftKey('oma@example.com', 'soep'), keeping());
+    return storage;
+  };
+
+  test('the same person finds it, in any case', () => {
+    assert.ok(loadDraft(setup(), draftKey('OMA@example.com ', 'soep')));
+  });
+
+  test('another person does not', () => {
+    assert.equal(loadDraft(setup(), draftKey('opa@example.com', 'soep')), undefined);
+  });
+
+  test('a recipe called "new" is not a new recipe', () => {
+    assert.notEqual(draftKey('oma@example.com'), draftKey('oma@example.com', 'new'));
+  });
+});
+
+describe('recipe-draft › A photo that is still uploading is not kept', () => {
+  test('the settled image is kept instead of the upload', () => {
+    const { storage } = fakeStorage();
+    saveDraft(storage, key, keeping({ ...edited, image: 'blob:half' }, { uploading: true, settledImage: '/old.jpg' }));
+    assert.equal(loadDraft(storage, key)?.state.image, '/old.jpg');
+  });
+
+  test('a finished upload is kept', () => {
+    const { storage } = fakeStorage();
+    saveDraft(storage, key, keeping({ ...edited, image: '/new.jpg' }, { settledImage: '/old.jpg' }));
+    assert.equal(loadDraft(storage, key)?.state.image, '/new.jpg');
+  });
+});
+
+describe('recipe-draft › Old drafts are cleaned up', () => {
+  const purged = () => {
+    const { storage, items } = fakeStorage();
+    const put = (name: string, at: Date) => saveDraft(storage, draftKey('a@b.c', name), keeping(edited, { now: at }));
+    put('old', daysAgo(31));
+    put('fresh', daysAgo(29));
+    for (let i = 0; i < 21; i++) put(`n${i}`, new Date(now.getTime() - i * 1000));
+    items.set('other:key', 'x');
+    purgeDrafts(storage, now);
+    return { storage, items, left: [...items.keys()].filter((k) => k.startsWith('cookbook:draft:')) };
+  };
+
+  test('a draft older than 30 days goes', () => {
+    const { storage } = purged();
+    assert.equal(loadDraft(storage, draftKey('a@b.c', 'old')), undefined);
+  });
+
+  test('only drafts are touched', () => {
+    assert.equal(purged().items.has('other:key'), true);
+  });
+
+  test('at most 20 drafts stay', () => {
+    assert.equal(purged().left.length, 20);
+  });
+
+  test('the most recent stay', () => {
+    assert.ok(purged().left.includes(draftKey('a@b.c', 'n0')));
+  });
+
+  test('the oldest beyond 20 go', () => {
+    assert.ok(!purged().left.includes(draftKey('a@b.c', 'fresh')));
+  });
+});
+
+describe('recipe-draft › An unreadable draft is ignored', () => {
+  const unreadable = ['{not json', 'null', JSON.stringify({ v: 0, savedAt: now.toISOString(), base: {}, state: edited }), JSON.stringify({ v: 1 })];
+  for (const bad of unreadable) {
+    test(`${bad} is not loaded`, () => {
+      const { storage, items } = fakeStorage();
+      items.set(key, bad);
+      assert.equal(loadDraft(storage, key), undefined);
+    });
+
+    test(`${bad} is removed`, () => {
+      const { storage, items } = fakeStorage();
+      items.set(key, bad);
+      loadDraft(storage, key);
+      assert.equal(items.has(key), false);
+    });
+  }
+
+  test('a draft with wrong chips is not loaded', () => {
+    const { storage, items } = fakeStorage();
+    saveDraft(storage, key, keeping());
+    items.set(key, items.get(key)!.replace('"chips":[]', '"chips":7'));
+    assert.equal(loadDraft(storage, key), undefined);
+  });
+
+  test('purging removes unreadable ones too', () => {
+    const { storage, items } = fakeStorage();
+    items.set(key, '{}');
+    purgeDrafts(storage, now);
+    assert.equal(items.size, 0);
+  });
+});
+
+describe('recipe-draft › Storage that fails does not break editing', () => {
+  test('a full storage reports the draft as not kept', () => {
+    const full = fakeStorage({ write: true });
+    assert.deepEqual(saveDraft(full.storage, key, keeping()), { ok: false });
+  });
+
+  test('a blocked storage loads nothing', () => {
+    const blocked = fakeStorage({ read: true, write: true });
+    assert.equal(loadDraft(blocked.storage, key), undefined);
+  });
+
+  test('a blocked storage can be purged', () => {
+    const blocked = fakeStorage({ read: true, write: true });
+    assert.doesNotThrow(() => purgeDrafts(blocked.storage, now));
+  });
+
+  test('a blocked storage can be cleared', () => {
+    const blocked = fakeStorage({ read: true, write: true });
+    assert.equal(clearDraft(blocked.storage, key), true);
+  });
+
+  test('no storage reports the draft as not kept', () => {
+    assert.deepEqual(saveDraft(undefined, key, keeping()), { ok: false });
+  });
+
+  test('no storage loads nothing', () => {
+    assert.equal(loadDraft(undefined, key), undefined);
+  });
+
+  test('no storage can be purged', () => {
+    assert.doesNotThrow(() => purgeDrafts(undefined, now));
+  });
 });
 
 // Start-up: what the editor shows, from the draft, the edit link and the stored recipe's version.
@@ -130,64 +227,129 @@ const draftOf = (state = edited, base: { updatedAt?: string } = { updatedAt: 'v1
 const start = (o: { draft?: ReturnType<typeof loadDraft>; fresh?: boolean; updatedAt?: string }) =>
   resolveStart({ draft: o.draft, fresh: o.fresh ?? false, shown: initial, updatedAt: o.updatedAt });
 
-test('recipe-draft › A reload restores the draft', () => {
+describe('recipe-draft › A reload restores the draft', () => {
   const s = start({ draft: draftOf().draft, updatedAt: 'v1' });
-  assert.deepEqual(s.state, edited);
-  assert.equal(s.restoredAt, now.toISOString());
-  assert.equal(s.changedMeanwhile, false);
-  assert.equal(s.discard, false);
+
+  test('the draft is shown', () => {
+    assert.deepEqual(s.state, edited);
+  });
+
+  test('the time it was kept is reported', () => {
+    assert.equal(s.restoredAt, now.toISOString());
+  });
+
+  test('the recipe is not flagged as changed', () => {
+    assert.equal(s.changedMeanwhile, false);
+  });
+
+  test('the draft is not discarded', () => {
+    assert.equal(s.discard, false);
+  });
 });
 
-test('recipe-draft › An unfinished new recipe returns', () => {
+describe('recipe-draft › An unfinished new recipe returns', () => {
   const s = start({ draft: draftOf(edited, {}).draft });
-  assert.deepEqual(s.state, edited);
-  assert.equal(s.changedMeanwhile, false, 'a new recipe has no version to differ from');
-  assert.equal(start({}).restoredAt, undefined);
+
+  test('the draft is shown', () => {
+    assert.deepEqual(s.state, edited);
+  });
+
+  test('a new recipe has no version to differ from', () => {
+    assert.equal(s.changedMeanwhile, false);
+  });
+
+  test('without a draft nothing is restored', () => {
+    assert.equal(start({}).restoredAt, undefined);
+  });
 });
 
-test('recipe-draft › The edit link starts fresh', () => {
+describe('recipe-draft › The edit link starts fresh', () => {
   const { storage, draft } = draftOf();
   const s = start({ draft, fresh: isFresh({ fresh: true }), updatedAt: 'v1' });
-  assert.deepEqual(s.state, initial);
-  assert.equal(s.restoredAt, undefined);
-  assert.equal(s.discard, true);
-  clearDraft(storage, key);
-  assert.equal(loadDraft(storage, key), undefined);
+
+  test('the stored recipe is shown', () => {
+    assert.deepEqual(s.state, initial);
+  });
+
+  test('nothing is restored', () => {
+    assert.equal(s.restoredAt, undefined);
+  });
+
+  test('the draft is discarded', () => {
+    assert.equal(s.discard, true);
+  });
+
+  test('clearing removes the draft', () => {
+    clearDraft(storage, key);
+    assert.equal(loadDraft(storage, key), undefined);
+  });
 });
 
-test('recipe-draft › A reload after the edit link keeps the new draft', () => {
+describe('recipe-draft › A reload after the edit link keeps the new draft', () => {
   // The flag is consumed by replacing the history state, so the reload carries none.
-  assert.equal(isFresh({ fresh: true }), true);
-  for (const reload of [null, undefined, {}, 'fresh']) assert.equal(isFresh(reload), false);
-  const { draft } = draftOf();
-  assert.deepEqual(start({ draft, fresh: isFresh(null), updatedAt: 'v1' }).state, edited);
+  test('the fresh flag is read from the history state', () => {
+    assert.equal(isFresh({ fresh: true }), true);
+  });
+
+  for (const reload of [null, undefined, {}, 'fresh']) {
+    test(`${JSON.stringify(reload) ?? 'undefined'} is not fresh`, () => {
+      assert.equal(isFresh(reload), false);
+    });
+  }
+
+  test('the draft is shown after a reload', () => {
+    const { draft } = draftOf();
+    assert.deepEqual(start({ draft, fresh: isFresh(null), updatedAt: 'v1' }).state, edited);
+  });
 });
 
-test('recipe-draft › A recipe changed meanwhile is flagged', () => {
+describe('recipe-draft › A recipe changed meanwhile is flagged', () => {
   const s = start({ draft: draftOf().draft, updatedAt: 'v2' });
-  assert.equal(s.changedMeanwhile, true);
-  assert.deepEqual(s.state, edited, 'nothing is replaced without a choice');
+
+  test('the change is flagged', () => {
+    assert.equal(s.changedMeanwhile, true);
+  });
+
+  test('nothing is replaced without a choice', () => {
+    assert.deepEqual(s.state, edited);
+  });
 });
 
-test('recipe-draft › Keeping the draft after a change', () => {
-  const { storage, draft } = draftOf();
-  const asked = start({ draft, updatedAt: 'v2' });
-  // Keeping moves the base to the current version; the next write carries it and the question does not return.
-  saveDraft(storage, key, { ...keeping(asked.state), base: { updatedAt: 'v2' } });
-  const again = start({ draft: loadDraft(storage, key), updatedAt: 'v2' });
-  assert.equal(again.changedMeanwhile, false);
-  assert.deepEqual(again.state, edited);
+describe('recipe-draft › Keeping the draft after a change', () => {
+  const again = () => {
+    const { storage, draft } = draftOf();
+    const asked = start({ draft, updatedAt: 'v2' });
+    // Keeping moves the base to the current version; the next write carries it and the question does not return.
+    saveDraft(storage, key, { ...keeping(asked.state), base: { updatedAt: 'v2' } });
+    return start({ draft: loadDraft(storage, key), updatedAt: 'v2' });
+  };
+
+  test('the question does not return', () => {
+    assert.equal(again().changedMeanwhile, false);
+  });
+
+  test('the draft is still shown', () => {
+    assert.deepEqual(again().state, edited);
+  });
 });
 
-test('recipe-draft › Starting over after a change', () => {
-  const { storage } = draftOf();
-  clearDraft(storage, key);
-  const s = start({ draft: loadDraft(storage, key), updatedAt: 'v2' });
-  assert.deepEqual(s.state, initial);
-  assert.equal(s.changedMeanwhile, false);
+describe('recipe-draft › Starting over after a change', () => {
+  const s = (() => {
+    const { storage } = draftOf();
+    clearDraft(storage, key);
+    return start({ draft: loadDraft(storage, key), updatedAt: 'v2' });
+  })();
+
+  test('the stored recipe is shown', () => {
+    assert.deepEqual(s.state, initial);
+  });
+
+  test('the recipe is not flagged as changed', () => {
+    assert.equal(s.changedMeanwhile, false);
+  });
 });
 
-test('a restored draft whose anchors no longer fit is fitted to its text', () => {
+describe('a restored draft whose anchors no longer fit', () => {
   const step = (over: object) => ({ id: 's0', body: 'Bak 20 minuten', chips: [], ghosts: [], ...over });
   const chip = (over: object) => ({ id: 'c0', kind: 'timer', mode: 'auto', anchor: { start: 4, end: 14 }, values: { minutes: 20 }, ...over });
   const state = {
@@ -212,20 +374,44 @@ test('a restored draft whose anchors no longer fit is fitted to its text', () =>
   const { draft } = draftOf(fake<typeof edited>(state));
   const [fitted] = start({ draft, updatedAt: 'v1' }).state.steps;
   const byId = Object.fromEntries(fitted.chips.map((c) => [c.id, c]));
-  assert.deepEqual(byId.c0, state.steps[0].chips[0], 'a fitting chip is untouched');
-  assert.deepEqual([byId.c1.mode, byId.c1.anchor], ['manual', undefined]);
-  assert.deepEqual([byId.c2.mode, byId.c2.rowId, byId.c2.anchor], ['manual', undefined, { start: 0, end: 3 }]);
-  assert.deepEqual(byId.c3, state.steps[0].chips[3], 'a chip linked to an existing row is untouched');
-  assert.deepEqual(
-    fitted.ghosts.map((g) => g.id),
-    ['c4'],
-  );
+
+  test('a fitting chip is untouched', () => {
+    assert.deepEqual(byId.c0, state.steps[0].chips[0]);
+  });
+
+  test('a chip whose anchor is too long becomes manual without an anchor', () => {
+    assert.deepEqual([byId.c1.mode, byId.c1.anchor], ['manual', undefined]);
+  });
+
+  test('a chip linked to a missing row loses the row and keeps its anchor', () => {
+    assert.deepEqual([byId.c2.mode, byId.c2.rowId, byId.c2.anchor], ['manual', undefined, { start: 0, end: 3 }]);
+  });
+
+  test('a chip linked to an existing row is untouched', () => {
+    assert.deepEqual(byId.c3, state.steps[0].chips[3]);
+  });
+
+  test('only the fitting ghost stays', () => {
+    assert.deepEqual(
+      fitted.ghosts.map((g) => g.id),
+      ['c4'],
+    );
+  });
 });
 
-test('a draft is described by when it was kept', () => {
+describe('describeSavedAt', () => {
   const at = (d: Date) => d.toISOString();
   const noon = new Date(2026, 9, 19, 12, 0);
-  assert.equal(describeSavedAt(at(new Date(2026, 9, 19, 14, 32)), noon), 'vandaag 14:32');
-  assert.equal(describeSavedAt(at(new Date(2026, 9, 18, 9, 10)), noon), 'gisteren 09:10');
-  assert.equal(describeSavedAt(at(new Date(2026, 9, 12, 9, 10)), noon), '12 oktober');
+
+  test('today shows the time', () => {
+    assert.equal(describeSavedAt(at(new Date(2026, 9, 19, 14, 32)), noon), 'vandaag 14:32');
+  });
+
+  test('yesterday shows the time', () => {
+    assert.equal(describeSavedAt(at(new Date(2026, 9, 18, 9, 10)), noon), 'gisteren 09:10');
+  });
+
+  test('earlier shows the date', () => {
+    assert.equal(describeSavedAt(at(new Date(2026, 9, 12, 9, 10)), noon), '12 oktober');
+  });
 });

@@ -46,7 +46,7 @@ test('reports a title repeated within one capability', () => {
   assert.deepEqual([...duplicates], ['cap › Stays']);
 });
 
-test('findTests reads test, it and todo names with a capability prefix', () => {
+test('findTests reads describe, test, it and todo names with a capability prefix', () => {
   const tests = findTests([
     {
       path: 'a.test.ts',
@@ -54,6 +54,7 @@ test('findTests reads test, it and todo names with a capability prefix', () => {
         "test('cap › Stays', () => {});",
         'it("cap › Fresh", () => {});',
         "test.todo('cap › Old wording');",
+        "describe('cap › Grouped', () => {});",
         "test('free-form edge case', () => {});",
       ].join('\n'),
     },
@@ -64,6 +65,7 @@ test('findTests reads test, it and todo names with a capability prefix', () => {
       ['cap › Stays', 1, false],
       ['cap › Fresh', 2, false],
       ['cap › Old wording', 3, true],
+      ['cap › Grouped', 4, false],
     ],
   );
 });

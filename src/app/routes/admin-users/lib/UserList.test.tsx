@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { describe, test } from 'node:test';
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router';
 import { render, screen } from '~testing/dom';
 import { UserList } from './UserList';
@@ -31,20 +31,32 @@ const show = (path: string, capped = false) =>
     />,
   );
 
-test('user-management › No user selected', () => {
-  show('/beheer/gebruikers');
-  assert.equal(screen.getAllByTestId('UserList-user').length, 2);
-  assert.equal(screen.queryByTestId('detail'), null);
+describe('user-management › No user selected', () => {
+  test('lists every user', () => {
+    show('/beheer/gebruikers');
+    assert.equal(screen.getAllByTestId('UserList-user').length, 2);
+  });
+
+  test('shows no detail', () => {
+    show('/beheer/gebruikers');
+    assert.equal(screen.queryByTestId('detail'), null);
+  });
 });
 
-test('the cap message names the limit', () => {
-  show('/beheer/gebruikers', true);
-  assert.match(screen.getByTestId('UserList-capped').textContent!, /meer dan 100 gebruikers.*eerste 100/);
-});
+describe('UserList', () => {
+  test('the cap message names the limit', () => {
+    show('/beheer/gebruikers', true);
+    assert.match(screen.getByTestId('UserList-capped').textContent!, /meer dan 100 gebruikers.*eerste 100/);
+  });
 
-test('the selected user is marked and the list stays', () => {
-  show('/beheer/gebruikers/2');
-  const [anna, jos] = screen.getAllByTestId('UserList-user');
-  assert.deepEqual([anna.getAttribute('aria-current'), jos.getAttribute('aria-current')], [null, 'page']);
-  assert.equal(screen.getByTestId('detail').textContent, 'Detail');
+  test('the selected user is marked', () => {
+    show('/beheer/gebruikers/2');
+    const [anna, jos] = screen.getAllByTestId('UserList-user');
+    assert.deepEqual([anna.getAttribute('aria-current'), jos.getAttribute('aria-current')], [null, 'page']);
+  });
+
+  test('the list stays beside the detail', () => {
+    show('/beheer/gebruikers/2');
+    assert.equal(screen.getByTestId('detail').textContent, 'Detail');
+  });
 });

@@ -1,20 +1,41 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { describe, test } from 'node:test';
 import { dropIndex } from './dropIndex';
 
 const mids = [10, 70, 130, 190];
 
-test('a row dragged less than half a row stays where it is', () => {
-  assert.equal(dropIndex(mids, 1, 70), 1);
-  assert.equal(dropIndex(mids, 1, 90), 1);
-  assert.equal(dropIndex(mids, 1, 50), 1);
-});
+describe('dropIndex', () => {
+  describe('a row dragged less than half a row stays where it is', () => {
+    test('pointer on its own middle', () => {
+      assert.equal(dropIndex(mids, 1, 70), 1);
+    });
 
-test('a row dragged past the middle of another takes its place', () => {
-  assert.equal(dropIndex(mids, 1, 140), 2);
-  assert.equal(dropIndex(mids, 1, 500), 3);
-  assert.equal(dropIndex(mids, 2, 5), 0);
-  assert.equal(dropIndex(mids, 3, 60), 1);
+    test('pointer a little below its middle', () => {
+      assert.equal(dropIndex(mids, 1, 90), 1);
+    });
+
+    test('pointer a little above its middle', () => {
+      assert.equal(dropIndex(mids, 1, 50), 1);
+    });
+  });
+
+  describe('a row dragged past the middle of another takes its place', () => {
+    test('down past the next row', () => {
+      assert.equal(dropIndex(mids, 1, 140), 2);
+    });
+
+    test('down past the last row', () => {
+      assert.equal(dropIndex(mids, 1, 500), 3);
+    });
+
+    test('up to the first row', () => {
+      assert.equal(dropIndex(mids, 2, 5), 0);
+    });
+
+    test('up past one row', () => {
+      assert.equal(dropIndex(mids, 3, 60), 1);
+    });
+  });
 });
 
 // Needs a browser and a mouse: the pointer events, the row following the pointer, Escape.
