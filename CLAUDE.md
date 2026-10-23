@@ -32,3 +32,4 @@ Use the `ArtifactData` tool (a deferred tool: load it with ToolSearch `select:Ar
 - When you finish the last task of an OpenSpec change and nothing is unclear or open to question, push the branch and open a PR for review right away, without asking first. Then move the card to `review`.
 
 @STRUCTURE.md
+@TESTING.md
