@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { RouterContextProvider } from 'react-router';
-import { afterAll, beforeAll, describe, test } from 'vitest';
+import { describe } from 'vitest';
 import { envContext } from '~app/shared/context.server';
-import { createTestDb } from '~testing/db';
+import { test } from '~testing/db';
 import { fake } from '~testing/fake';
 import type { Route as FileRoute } from './+types/PhotoFetchRoute';
 import type { Route as UploadRoute } from './+types/PhotoUploadRoute';
@@ -10,12 +10,10 @@ import { loader } from './PhotoFetchRoute';
 import { action } from './PhotoUploadRoute';
 
 let photos: R2Bucket;
-let dispose: () => Promise<void>;
 
-beforeAll(async () => {
-  ({ photos, dispose } = await createTestDb());
+test.beforeAll(({ testDb }) => {
+  ({ photos } = testDb);
 });
-afterAll(() => dispose());
 
 const context = () => {
   const c = new RouterContextProvider();

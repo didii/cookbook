@@ -1,27 +1,24 @@
 import assert from 'node:assert/strict';
 import { RouterContextProvider } from 'react-router';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, test } from 'vitest';
+import { afterEach, beforeEach, describe } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { defaultRules } from '~app/shared/rules';
 import { getRules } from '~app/shared/rules.server';
 import { createUser } from '~app/shared/users.server';
-import { createTestDb } from '~testing/db';
+import { test } from '~testing/db';
 import { fake } from '~testing/fake';
 import type { Route } from './+types/AdminRulesPageRoute';
 import { action, loader } from './AdminRulesPageRoute';
 
 // Real loader and action against an in-memory D1.
 let db: D1Database;
-let dispose: () => Promise<void>;
 
-beforeAll(async () => {
-  ({ db, dispose } = await createTestDb());
+test.beforeAll(async ({ testDb }) => {
+  ({ db } = testDb);
   await createUser(db, 'user@example.com', 'Uli');
   for (const role of ['admin', 'superadmin'])
     await db.prepare('INSERT INTO users (email, calling_name, role) VALUES (?, ?, ?)').bind(`${role}@example.com`, role, role).run();
 });
-
-afterAll(() => dispose());
 
 const contextFor = (email: string) => {
   const context = new RouterContextProvider();

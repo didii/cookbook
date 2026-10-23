@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { convertV4MiniflareOptions, Miniflare } from 'miniflare';
+import { test as base } from 'vitest';
 
 const root = join(import.meta.dirname, '..');
 
@@ -38,3 +39,48 @@ export async function createTestDb() {
   for (const f of migrations) await applySql(db, join(root, 'db', 'migrations', f));
   return { db, photos, dispose: () => mf.dispose() };
 }
+
+type TestDb = Pick<Awaited<ReturnType<typeof createTestDb>>, 'db' | 'photos'>;
+
+/** Empties every table and the bucket, so the next user of a shared TestDb starts from the migrated schema. */
+async function clear({ db, photos }: TestDb) {
+  const { results } = await db
+    .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT GLOB 'sqlite_*' AND name NOT GLOB '_cf_*'")
+    .all<{ name: string }>();
+  await db.batch([db.prepare('PRAGMA defer_foreign_keys = on'), ...results.map(({ name }) => db.prepare(`DELETE FROM "${name}"`))]);
+  let cursor: string | undefined;
+  do {
+    const page = await photos.list({ cursor });
+    if (page.objects.length) await photos.delete(page.objects.map((o) => o.key));
+    cursor = page.truncated ? page.cursor : undefined;
+  } while (cursor);
+}
+
+/**
+ * `test` with database fixtures. Booting Miniflare is slow, so one instance lives per worker and is emptied between users:
+ * - `testDb`: shared by the tests of one file, emptied when the file is done. Use in `test.beforeAll`.
+ * - `freshDb`: emptied after every test. Use in `test.beforeEach`.
+ * Prefer these over `createTestDb()`, which boots an instance of its own.
+ */
+export const test = base.extend<{ $worker: { instance: TestDb }; $file: { testDb: TestDb }; $test: { freshDb: TestDb } }>({
+  instance: [
+    // eslint-disable-next-line no-empty-pattern -- Vitest reads the fixtures from the destructured first argument
+    async ({}, provide) => {
+      const { dispose, ...instance } = await createTestDb();
+      await provide(instance);
+      await dispose();
+    },
+    { scope: 'worker' },
+  ],
+  testDb: [
+    async ({ instance }, provide) => {
+      await provide(instance);
+      await clear(instance);
+    },
+    { scope: 'file' },
+  ],
+  freshDb: async ({ instance }, provide) => {
+    await provide(instance);
+    await clear(instance);
+  },
+});

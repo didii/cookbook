@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
-import { afterAll, beforeAll, beforeEach, describe, test } from 'vitest';
+import { beforeEach, describe } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { getUser } from '~app/shared/users.server';
-import { createTestDb } from '~testing/db';
+import { test } from '~testing/db';
 import { render, screen } from '~testing/dom';
 import { fake } from '~testing/fake';
 import type { Route } from './+types/WelcomePageRoute';
@@ -11,13 +11,10 @@ import WelcomePage, { action, loader } from './WelcomePageRoute';
 
 // Real loader and action against an in-memory D1; each test uses its own email.
 let db: D1Database;
-let dispose: () => Promise<void>;
 
-beforeAll(async () => {
-  ({ db, dispose } = await createTestDb());
+test.beforeAll(({ testDb }) => {
+  ({ db } = testDb);
 });
-
-afterAll(() => dispose());
 
 const contextFor = (email: string) => {
   const context = new RouterContextProvider();

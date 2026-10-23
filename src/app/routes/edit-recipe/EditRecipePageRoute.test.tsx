@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import type { ReactElement } from 'react';
 import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
-import { afterAll, beforeAll, describe, test } from 'vitest';
+import { beforeAll, describe } from 'vitest';
 import { envContext } from '~app/shared/context.server';
 import { getPhoto, storePhoto } from '~app/shared/photos.server';
 import { getRecipe } from '~app/shared/recipes.server';
-import { createTestDb } from '~testing/db';
+import { test } from '~testing/db';
 import { defined } from '~testing/defined';
 import { render, screen } from '~testing/dom';
 import { fake } from '~testing/fake';
@@ -17,16 +17,13 @@ import NewRecipePage from './NewRecipePageRoute';
 // Real loader and action against an in-memory D1 holding a recipe the test inserted.
 let db: D1Database;
 let photos: R2Bucket;
-let dispose: () => Promise<void>;
 
-beforeAll(async () => {
-  ({ db, photos, dispose } = await createTestDb());
+test.beforeAll(async ({ testDb }) => {
+  ({ db, photos } = testDb);
   await db
     .prepare("INSERT INTO recipes (slug, title, author, time, servings, intro, image) VALUES ('soep', 'Soep', 'Oma', '1u', 4, 'Warm', '/soep.jpg')")
     .run();
 });
-
-afterAll(() => dispose());
 
 const contextWithDb = () => {
   const context = new RouterContextProvider();

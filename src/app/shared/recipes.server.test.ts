@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { afterAll, beforeAll, describe, test } from 'vitest';
-import { createTestDb } from '~testing/db';
+import { beforeAll, describe } from 'vitest';
+import { createTestDb, test } from '~testing/db';
 import { defined } from '~testing/defined';
 import {
   createRecipe,
@@ -23,10 +23,9 @@ const plain = (...bodies: string[]): StepInput[] => bodies.map((body) => ({ body
 const loaded = (...bodies: string[]) => bodies.map((body) => ({ body, ingredients: [] }));
 
 let db: D1Database;
-let dispose: () => Promise<void>;
 
-beforeAll(async () => {
-  ({ db, dispose } = await createTestDb());
+test.beforeAll(async ({ testDb }) => {
+  ({ db } = testDb);
   await db.batch([
     // Ingredients and steps are inserted out of position order, so the tests prove the query sorts.
     db.prepare("INSERT INTO recipes (slug, title, author, servings) VALUES ('ordering', 'Ordering', 'Oma', 2)"),
@@ -41,8 +40,6 @@ beforeAll(async () => {
     ),
   ]);
 });
-
-afterAll(() => dispose());
 
 /** Runs the test body against a database of its own. */
 const withFreshDb = async (run: (fresh: D1Database) => Promise<void>) => {
