@@ -1,26 +1,56 @@
 # Source structure
 
-Recommendations, not rules. Deviate when it makes sense.
+The folder layout and the rules under "Modules" are rules. The rest are recommendations: deviate when it makes sense. Code that breaks a rule is listed under "Violations" and is a TODO to fix, not an exception.
 
 ```
 src/
   app/
     root.tsx, routes.ts, app.css   shell, route table, tokens + base styles only
-    routes/<name>/route.tsx        route module; its own components sit beside it
-    shared/                        components used by 2+ routes/layouts (change with care)
-    lib/                           non-UI modules that run on both server and browser (helpers, shared types)
-    .server/                       server-only modules (context, identity, D1 queries); the build fails if browser code imports them
+    routes/<name>/                 one module per route: route files plus `lib/` with everything only that route uses
+    shared/                        module with everything used by 2+ routes/layouts or the shell (change with care)
   workers/                         Worker entry (app.ts) and request handler
   db/                              D1 migrations and seed data
   testing/                         shared test helpers
 ```
 
-Paths below are relative to `src/app/` unless they start with `src/`.
+Paths below are relative to `src/app/` unless they start with `src/`. Server-only modules are named `*.server.ts`; the build fails if browser code imports them.
 
-- **Colocate first.** A component lives next to the one route that uses it. Move it to `shared/` when a second route or layout needs it, not earlier. This keeps the blast radius of a change visible from the path.
-- **Route module vs component.** Only route modules (`route.tsx`, `root.tsx`) export `loader` (server data, runs before render), `meta` (page title), `links`, `ErrorBoundary` and the default route component. A component file exports one component, with its `Props` type above it, and nothing route-related.
-- **Imports.** Relative within the same route folder, `~app/` for anything under `src/app/`, `~testing/` for the shared test helpers. Aliases only change how an import is resolved; the build bundles what the app and the Worker entry import, so test files and `src/testing/` never ship.
+## Modules
+
+A module is a folder directly under `routes/` (e.g. `routes/recipe/`, including its `lib/`) or `shared/`.
+
+- **Imports inside a module are relative** (`./x`, `../lib/x`). **Imports outside it are absolute** (`~app/...`, `~testing/...`), never `../` out of the module. Files directly under `app/` (`root.tsx`, `routes.ts`) are not in a module and are exempt.
+- **Routes import only from `shared/`, never from another route.** Code two routes need moves to `shared/`.
+- **`shared/` imports only from itself, never from a route.** This holds for test files too.
+- **A file used by only one route lives in that route.** Move it to `shared/` when a second route needs it.
+- **Route file names.** `<name>PageRoute` for a route that renders a page, `<name><Action>Route` for a route with only a loader or action (e.g. `PhotoUploadRoute`, `LikeUpdateRoute`); `LayoutRoute` for a layout (`<name>LayoutRoute` once there is more than one). The test sits beside it with the same name plus `.test`.
+
+- **Colocate first.** A component lives in the one route that uses it. Move it to `shared/` when a second route or layout needs it, not earlier. This keeps the blast radius of a change visible from the path.
+- **Route module vs component.** Only route files (`*Route.tsx`, `root.tsx`) export `loader` (server data, runs before render), `meta` (page title), `links`, `ErrorBoundary` and the default route component. A component file exports one component, with its `Props` type above it, and nothing route-related.
+- **Aliases.** `~app/` is `src/app/`, `~testing/` is the shared test helpers. Aliases only change how an import is resolved; the build bundles what the app and the Worker entry import, so test files and `src/testing/` never ship.
 - **Naming.** PascalCase for component files, camelCase for everything else.
 - **Styling.** Tailwind utilities in the component. Combine with `cn()` (`shared/cn.ts`, tailwind-merge) so a `className` prop can override defaults. Prefer styling from real state (`aria-current`, `has-checked:`, `disabled:`) over parallel state classes. Colours and shadows come from `@theme` tokens in `app.css`; keep component classes out of it.
-- **Tests sit next to the file they test.** `.server/recipes.ts` has `.server/recipes.test.ts`, so a folder listing shows what is untested (`**` globs skip dot directories, so the test scripts list `src/app/.server/*.test.ts` explicitly). Tests with no single source file sit beside what they cover (`src/db/migrations/migrations.test.ts`, `src/db/seed/dev.test.ts`). `src/testing/` holds shared test helpers (`testing/db.ts`: an empty in-memory D1 with the migrations applied; each test inserts the data it needs, no test relies on shared data). It is not named `test/` because `node --test` runs every file under a `test/` directory. A test that renders a component is `<name>.test.tsx` and writes JSX (the test scripts and `scripts/spec-check.ts` list both extensions); all other tests stay `.test.ts`.
-- **What to test how.** Logic and edge cases get unit tests. Each spec scenario is tested at the lowest level that runs the real thing (e.g. the schema against an in-memory D1, `identify` with real tokens). A loader-level integration test, calling the real route `loader` against an in-memory D1 holding data the test inserted (see `routes/recipe/route.test.ts`), is used only where a scenario can only be shown through the loader. A scenario about what a component shows or does is a component test: render it into a DOM with `~testing/dom` (happy-dom plus Testing Library; import `render`, `screen` and `fireEvent` from there, not from the library, so the DOM exists first), find elements by test id (`getByTestId`) and fire events for clicks and keys. Give every element a test selects a hardcoded `data-testid="ComponentName-role"` (e.g. `FilterBar-toggle`), where the name is a component in the same file and `role` says what the element is for, not its ARIA role; repeated elements share the id and are read with `getAllByTestId` or `within`. `testing/testIds.test.ts` enforces the format. Accessibility scenarios still assert `aria-*`, roles and focus on the element found by id. Do not assert with regexes on an HTML string. For a class-based CSS claim, give `el.className` to `cssFor`. Only what needs real layout, scrolling, a viewport width, animation, a computed colour or browser history stays a `test.todo`, with that reason. A test that covers a scenario is named `<capability> › <Scenario title>` with the exact `#### Scenario:` title, one scenario per test; a scenario that cannot be automated yet gets `test.todo('<capability> › <Scenario title>')` with the reason on the line above. `pnpm test` fails on a scenario without a test or a test naming an unknown scenario. `pnpm test` runs everything through `tsx`, which resolves `~app/` and JSX; no browser or network is needed.
+- **Tests sit next to the file they test.** `shared/recipes.server.ts` has `shared/recipes.server.test.ts`, so a folder listing shows what is untested. Tests with no single source file sit beside what they cover (`src/db/migrations/migrations.test.ts`, `src/db/seed/dev.test.ts`). `src/testing/` holds shared test helpers (`testing/db.ts`: an empty in-memory D1 with the migrations applied; each test inserts the data it needs, no test relies on shared data). It is not named `test/` because `node --test` runs every file under a `test/` directory. A test that renders a component is `<name>.test.tsx` and writes JSX (the test scripts and `scripts/spec-check.ts` list both extensions); all other tests stay `.test.ts`.
+
+## Violations
+
+TODO: fix each, then remove it from this list.
+
+Imports from a route into another route:
+
+- [ ] `routes/edit-recipe/EditRecipePageRoute.tsx`, `lib/IngredientItem.tsx`, `lib/chips.ts`, `lib/stepParsers.ts` and `lib/stepParsers.test.ts` import `routes/recipe/lib/ingredients`.
+- [ ] `routes/recipe/lib/scale.ts` imports `routes/edit-recipe/lib/stepParsers`.
+
+Imports from `shared/` into a route:
+
+- [ ] `shared/recipeValidation.ts` imports `routes/recipe/lib/ingredients`.
+- [ ] `shared/rules.server.test.ts` imports `routes/edit-recipe/lib/stepParsers`, `routes/recipe/lib/ingredients` and `routes/recipe/lib/scale`.
+- [ ] `shared/components/WorkInProgress.test.tsx` imports `routes/about/AboutPageRoute` and `routes/settings/SettingsPageRoute`.
+
+Used by one route only, so it belongs in that route:
+
+- [ ] `shared/recipeValidation.ts` (only `routes/edit-recipe`). Moving it there makes `recipeValidation.ts` import `routes/recipe/lib/ingredients`, a route to route import: fix that first.
+
+Route file names:
+
+- [ ] `routes/photo/route.test.ts` tests `PhotoFetchRoute` and `PhotoUploadRoute`; split it per route file.

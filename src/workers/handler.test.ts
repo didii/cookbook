@@ -2,12 +2,12 @@ import assert from 'node:assert/strict';
 import { after, test } from 'node:test';
 import { generateKeyPair, SignJWT } from 'jose';
 import type { RouterContextProvider } from 'react-router';
-import { envContext, userEmailContext } from '~app/.server/context';
-import { accessJwtHeader } from '~app/.server/identity';
-import { createUser } from '~app/.server/users';
+import { envContext, userEmailContext } from '~app/shared/context.server';
+import { createUser } from '~app/shared/users.server';
 import { createTestDb } from '~testing/db';
 import { fake } from '~testing/fake';
 import { createFetch } from './handler';
+import { accessJwtHeader } from './identity';
 
 // Typed string: the generated Env types these vars as the exact literals from wrangler.jsonc.
 const teamDomain: string = 'team.cloudflareaccess.com';

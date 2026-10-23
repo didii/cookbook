@@ -26,7 +26,7 @@ import {
   X,
   type LucideIcon,
 } from 'lucide-react';
-import { cn } from '~app/shared/cn';
+import { cn } from './cn';
 
 type Props = { className?: string };
 
