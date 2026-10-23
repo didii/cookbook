@@ -9,7 +9,7 @@ import { cleanup, fireEvent, precedes, render, screen, setViewport } from '~test
 import { routePaths } from '~testing/routes';
 import { IngredientList } from './IngredientList';
 import { RecipeView } from './RecipeView';
-import { arrive, type Positions, type TabId } from './tabs';
+import { arrive, type Positions, type TabId } from './tabs/tabs';
 
 const steps: Step[] = [
   { body: 'snijden', ingredients: [] },

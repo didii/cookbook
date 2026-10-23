@@ -4,8 +4,7 @@ import { describe, test } from 'vitest';
 import type { Step } from '~app/shared/recipe';
 import { defaultRules } from '~app/shared/rules';
 import { fireEvent, render, screen, within } from '~testing/dom';
-import { classifyStored, type StepChips as Chips, type Context } from './chips';
-import type { StepDraft } from './draft';
+import { classifyStored, type StepChips as Chips, type Context, type StepDraft } from './chips';
 import { StepChips } from './StepChips';
 
 // Needs a browser: hover, focus and visibility.

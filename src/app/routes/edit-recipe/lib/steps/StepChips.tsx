@@ -23,11 +23,11 @@ import {
   type IngredientValues,
   type Kind,
   type OvenValues,
+  type StepDraft,
   type TimerValues,
 } from './chips';
-import type { StepDraft } from './draft';
 import { proposalAttribute } from './OpenProposals';
-import { useAfterRender } from './useAfterRender';
+import { useAfterRender } from '../shared/useAfterRender';
 
 type Props = {
   step: StepDraft;

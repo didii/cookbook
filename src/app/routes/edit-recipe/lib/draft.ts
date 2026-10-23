@@ -1,14 +1,9 @@
 import type { Step } from '~app/shared/recipe';
 import type { Rules } from '~app/shared/rules';
-import { classifyStored, reconcile, rowsOf, toStored, type Context, type StepChips } from './chips';
+import type { IngredientLine } from './ingredients/IngredientList';
 import type { RecipeForm } from './recipeValidation';
-import type { TextEdit } from './textEdit';
-
-/** One ingredient line in the editor. The id is only a stable key for focus and drag; it is never posted or stored. */
-export type IngredientLine = { id: string; text: string };
-
-/** One step in the editor: its text and its chips (see `lib/chips`). The id is only a stable key for focus and drag; it is never posted or stored. */
-export type StepDraft = StepChips & { id: string };
+import { classifyStored, reconcile, rowsOf, toStored, type Context, type StepDraft } from './steps/chips';
+import type { TextEdit } from './steps/textEdit';
 
 /** What the routes hand the editor: the fields, the ingredient lines as plain text and the steps as they are stored. */
 export type DraftSeed = RecipeForm & { ingredients: string[]; steps: Step[] };

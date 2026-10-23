@@ -2,10 +2,12 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { Announcement } from '~app/shared/components';
 import { ArrowDown, ArrowUp } from '~app/shared/icons';
 import type { Rules } from '~app/shared/rules';
-import type { IngredientLine } from './draft';
 import { IngredientItem } from './IngredientItem';
-import type { ItemHandle } from './ItemHandle';
-import { useReorder } from './useReorder';
+import type { ItemHandle } from '../shared/ItemHandle';
+import { useReorder } from '../shared/useReorder';
+
+/** One ingredient line in the editor. The id is only a stable key for focus and drag; it is never posted or stored. */
+export type IngredientLine = { id: string; text: string };
 
 type Props = {
   /** The rows to show; the last one is the empty row. */

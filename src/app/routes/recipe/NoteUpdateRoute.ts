@@ -2,7 +2,7 @@ import { envContext, userEmailContext } from '~app/shared/context.server';
 import { setNote } from '~app/shared/recipes.server';
 import { getUser } from '~app/shared/users.server';
 import type { Route } from './+types/NoteUpdateRoute';
-import { maxNoteLength } from './lib/note';
+import { maxNoteLength } from './lib/notes/note';
 
 /** POST /recepten/:slug/notitie with `note=<text>`. Answers 204, 400 (no text field), 403 (no user row), 404 (unknown recipe) or 413 (too long). */
 export async function action({ request, params, context }: Route.ActionArgs) {

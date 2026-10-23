@@ -45,6 +45,9 @@ export type Ghost = { id: string; kind: Kind; anchor: Range; rowId?: string };
 /** What the chip logic needs of a step. */
 export type StepChips = { body: string; chips: Chip[]; ghosts: Ghost[] };
 
+/** One step in the editor: its text and its chips. The id is only a stable key for focus and drag; it is never posted or stored. */
+export type StepDraft = StepChips & { id: string };
+
 /** What a step's chips are read against: the ingredient rows of the recipe and the recognition rules. */
 export type Context = { rows: Row[]; rules: Rules };
 

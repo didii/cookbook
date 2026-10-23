@@ -2,10 +2,11 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'vitest';
 import type { Step } from '~app/shared/recipe';
 import { precedes, render, screen } from '~testing/dom';
+import { ClockSetting } from './ClockSetting';
+import { TimerCard } from './TimerCard';
+import { TimerChip } from './TimerChip';
 import { activeTimers, handOver, start, timerDefs, timerView } from './timers';
 import { TimersContext, type TimerControls } from './timersContext';
-import { ClockSetting } from '../ClockSetting';
-import { StepItem } from '../StepItem';
 
 const steps: Step[] = [
   { body: 'Meng het deeg.', ingredients: [] },
@@ -31,12 +32,18 @@ const controlsAt = (now: number, timers = start({}, defs[0], T0)): TimerControls
   clock: { available: false, auto: false, setAuto() {} },
 });
 
-const stepTwo = (controls: TimerControls) =>
-  render(
+/** The timer of step two as a step shows it: its chip, and a card under it once it is not idle. */
+const stepTwo = (controls: TimerControls) => {
+  const view = controls.view('1');
+  return render(
     <TimersContext value={controls}>
-      <StepItem step={steps[1]} number={2} done={false} onToggle={() => {}} />
+      <ul>
+        <TimerChip id="1" minutes={30} label="Deeg rust" />
+      </ul>
+      {view && view.state !== 'idle' && <TimerCard view={view} />}
     </TimersContext>,
   );
+};
 
 describe('TimerCard running timer', () => {
   const running = () => stepTwo(controlsAt(T0 + 5 * 60_000));

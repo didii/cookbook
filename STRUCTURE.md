@@ -19,12 +19,13 @@ Paths below are relative to `src/app/` unless they start with `src/`. Server-onl
 
 A module is a folder directly under `routes/` (e.g. `routes/recipe/`, including its `lib/`) or `shared/`.
 
-- **Imports inside a module are relative** (`./x`, `../lib/x`). **Imports outside it are absolute** (`~app/...`, `~testing/...`), never `../` out of the module. Files directly under `app/` (`root.tsx`, `routes.ts`) are not in a module and are exempt.
+- **Imports inside a module are relative** (`./x`, `../shared/x`). **Imports outside it are absolute** (`~app/...`, `~testing/...`), never `../` out of the module. Files directly under `app/` (`root.tsx`, `routes.ts`) are not in a module and are exempt.
 - **Routes import only from `shared/`, never from another route.** Code two routes need moves to `shared/`.
 - **`shared/` imports only from itself, never from a route.** This holds for test files too.
 - **A file used by only one route lives in that route.** Move it to `shared/` when a second route needs it.
 - **Route file names.** `<name>PageRoute` for a route that renders a page, `<name><Action>Route` for a route with only a loader or action (e.g. `PhotoUploadRoute`, `LikeUpdateRoute`); `LayoutRoute` for a layout (`<name>LayoutRoute` once there is more than one). The test sits beside it with the same name plus `.test`.
 
+- **Sub-modules.** When a route's `lib/` grows, group files by feature in a subfolder (`lib/timers/`, `lib/steps/`), not by kind (components, utils). A subfolder is a sub-module inside the route module, and imports only go down: a file imports from its own folder, from folders below it and from the `shared/` folder beside its own folder (`lib/steps/` imports `../shared/x`). Never another sub-module, never up. What two sub-modules both need goes in `lib/shared/`; code that combines sub-modules stays in `lib/`. Same rule as `app/shared/`, one level down.
 - **Colocate first.** A component lives in the one route that uses it. Move it to `shared/` when a second route or layout needs it, not earlier. This works both ways: when removing code leaves a `shared/` file used by only one route, move it back into that route. This keeps the blast radius of a change visible from the path.
 - **Route module vs component.** Only route files (`*Route.tsx`, `root.tsx`) export `loader` (server data, runs before render), `meta` (page title), `links`, `ErrorBoundary` and the default route component. A component file exports one component, with its `Props` type above it, and nothing route-related.
 - **Aliases.** `~app/` is `src/app/`, `~testing/` is the shared test helpers. Aliases only change how an import is resolved; the build bundles what the app and the Worker entry import, so test files and `src/testing/` never ship.

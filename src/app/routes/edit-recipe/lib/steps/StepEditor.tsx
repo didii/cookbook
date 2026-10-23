@@ -1,13 +1,12 @@
 import { useImperativeHandle, useRef, useState, type ComponentProps, type CSSProperties, type KeyboardEvent, type Ref } from 'react';
-import type { Context } from './chips';
-import type { StepDraft } from './draft';
-import type { ItemHandle } from './ItemHandle';
-import { RowGrip } from './RowGrip';
-import { RowToolbar } from './RowToolbar';
+import type { Context, StepDraft } from './chips';
 import { StepChips } from './StepChips';
 import { StepText, type Mark } from './StepText';
 import type { TextEdit } from './textEdit';
-import { useAfterRender } from './useAfterRender';
+import type { ItemHandle } from '../shared/ItemHandle';
+import { RowGrip } from '../shared/RowGrip';
+import { RowToolbar } from '../shared/RowToolbar';
+import { useAfterRender } from '../shared/useAfterRender';
 
 type Props = {
   ref?: Ref<ItemHandle>;
