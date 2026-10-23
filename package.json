@@ -18,7 +18,7 @@
     "test:spec": "node scripts/spec-check.ts",
     "lint:check": "oxlint",
     "lint:fix": "oxlint --fix",
-    "format:check": "prettier --check . --list-different",
+    "format:check": "prettier --check .",
     "format:fix": "prettier --write . --list-different"
   },
   "dependencies": {
