@@ -26,7 +26,7 @@
       "binding": "DB",
       "database_name": "cookbook",
       "database_id": "d585103f-aad1-4214-a9a5-70e70cf87af2",
-      "migrations_dir": "migrations",
+      "migrations_dir": "src/db/migrations",
     },
   ],
   "r2_buckets": [{ "binding": "PHOTOS", "bucket_name": "cookbook-photos" }],
