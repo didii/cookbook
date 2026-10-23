@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import type { Step } from './recipe';
+import type { Step } from '~app/shared/recipe';
+import { defaultRules } from '~app/shared/rules';
 import { readIngredients, readSteps, validate } from './recipeValidation';
-import { defaultRules } from './rules';
 
 const ok = { title: 'Soep', author: 'Oma', servings: '4', time: '', intro: '', image: '' };
 

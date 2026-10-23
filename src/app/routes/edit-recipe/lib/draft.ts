@@ -1,7 +1,7 @@
 import type { Step } from '~app/shared/recipe';
-import type { RecipeForm } from '~app/shared/recipeValidation';
 import type { Rules } from '~app/shared/rules';
 import { classifyStored, reconcile, rowsOf, toStored, type Context, type StepChips } from './chips';
+import type { RecipeForm } from './recipeValidation';
 import type { TextEdit } from './textEdit';
 
 /** One ingredient line in the editor. The id is only a stable key for focus and drag; it is never posted or stored. */

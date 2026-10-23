@@ -152,3 +152,18 @@ describe('nextMultiplier', () => {
     assert.equal(nextMultiplier(5, -1), 4);
   });
 });
+
+const withRules = (change: Partial<typeof defaultRules>) => ({ ...defaultRules, ...change });
+
+describe('parsing-rules › Scaling uses the stored units', () => {
+  const rules = withRules({ units: [...defaultRules.units, 'kopje'] });
+  const rows = [{ id: '0', quantityText: '2 kopje', name: 'rijst' }];
+
+  test('a stored unit is scaled', () => {
+    assert.equal(scaleBody('doe 2 kopje bloem erbij', 2, [], rules), 'doe 4 kopje bloem erbij');
+  });
+
+  test('without the stored unit it is not', () => {
+    assert.equal(scaleBody('doe 2 kopje bloem erbij', 2, rows, defaultRules), 'doe 2 kopje bloem erbij');
+  });
+});
