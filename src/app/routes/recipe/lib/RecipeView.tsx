@@ -187,7 +187,7 @@ export function RecipeView({ recipe: r, tile, steps, rules, liked = false, note:
         </div>
 
         <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-10 min-[52rem]:grid-cols-[minmax(16rem,22rem)_1fr] min-[52rem]:items-start">
-          <section id="panel-ingredients" aria-labelledby="ing" className={panel('ingredients')}>
+          <section id="panel-ingredients" data-testid="RecipeView-ingredients" aria-labelledby="ing" className={panel('ingredients')}>
             <TimerSidebar timers={timers.active} onJump={jump} onPeek={setPeek} />
             <h2 id="ing" className="mb-4 scroll-mt-[calc(var(--stack-h,0px)+0.75rem)] text-2xl font-black">
               Ingrediënten
@@ -196,7 +196,7 @@ export function RecipeView({ recipe: r, tile, steps, rules, liked = false, note:
             <NotePanel note={note} />
           </section>
 
-          <section id="panel-steps" aria-labelledby="bereiding" className={panel('steps')}>
+          <section id="panel-steps" data-testid="RecipeView-steps" aria-labelledby="bereiding" className={panel('steps')}>
             <h2 id="bereiding" className="mb-4 scroll-mt-[calc(var(--stack-h,0px)+0.75rem)] text-2xl font-black">
               Bereiding
             </h2>

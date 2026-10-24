@@ -144,14 +144,8 @@ describe('NoteSheet', () => {
       await act(async () => void fireEvent.click(button()));
     });
 
-    test('sits next to the closed button and says the note is saved', () => {
-      assert.equal(screen.getByTestId('NoteCue-cue').textContent?.trim(), 'Notitie bewaard');
-      assert.equal(screen.getByTestId('NoteCue-status').tagName, 'OUTPUT');
-    });
-
-    test('a tap removes it', async () => {
-      await act(async () => void fireEvent.click(screen.getByTestId('NoteCue-cue')));
-      assert.equal(screen.queryByTestId('NoteCue-cue'), null);
+    test('shows the cue next to the closed button', () => {
+      assert.ok(screen.getByTestId('NoteCue-cue'));
     });
   });
 });

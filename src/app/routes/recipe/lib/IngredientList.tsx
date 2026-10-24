@@ -19,8 +19,10 @@ export function IngredientList({ ingredients, ticked, onToggle, className }: Pro
               onChange={() => onToggle(i)}
               className="m-0 size-6 shrink-0 cursor-pointer appearance-none rounded-full border-3 border-ink bg-white checked:bg-jade checked:shadow-[inset_0_0_0_3px_#fff]"
             />
-            <b className="min-w-14 font-black text-blu tabular-nums">{x.quantityText}</b>
-            <span>{x.name}</span>
+            <b data-testid="IngredientList-quantity" className="min-w-14 font-black text-blu tabular-nums">
+              {x.quantityText}
+            </b>
+            <span data-testid="IngredientList-name">{x.name}</span>
           </label>
         </li>
       ))}

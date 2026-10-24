@@ -26,9 +26,12 @@ const roleSelect = () => screen.getByTestId('UserForm-role') as unknown as HTMLS
 describe('user-management › Selecting a user', () => {
   beforeEach(() => show());
 
-  test('shows the email as plain text', () => {
+  test('shows the email', () => {
     assert.equal(screen.getByTestId('UserForm-email').textContent, 'jos@example.com');
-    assert.equal(screen.getByTestId('UserForm-email').tagName, 'SPAN');
+  });
+
+  test('the email is not an input', () => {
+    assert.equal(screen.getByTestId('UserForm-email').matches('input, select, textarea'), false);
   });
 
   test('fills the calling name and role', () => {
