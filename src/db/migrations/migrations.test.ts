@@ -14,10 +14,10 @@ const addIngredient = async (db: D1Database, recipe: number, position: number) =
     .prepare("INSERT INTO ingredients (recipe_id, position, name) VALUES (?, ?, 'x') RETURNING id")
     .bind(recipe, position)
     .first<{ id: number }>())!.id;
-const addIngredientWithAmount = async (db: D1Database, recipe: number, position: number, amount: number, unit: string) =>
+const addIngredientWithAmount = async (db: D1Database, recipe: number, position: number, quantityValue: number, quantityUnit: string) =>
   (await db
-    .prepare("INSERT INTO ingredients (recipe_id, position, name, amount, unit) VALUES (?, ?, 'x', ?, ?) RETURNING id")
-    .bind(recipe, position, amount, unit)
+    .prepare("INSERT INTO ingredients (recipe_id, position, name, quantity_value, quantity_unit) VALUES (?, ?, 'x', ?, ?) RETURNING id")
+    .bind(recipe, position, quantityValue, quantityUnit)
     .first<{ id: number }>())!.id;
 const addStep = async (db: D1Database, recipe: number, position: number) =>
   (await db.prepare("INSERT INTO steps (recipe_id, position, body) VALUES (?, ?, 'x') RETURNING id").bind(recipe, position).first<{ id: number }>())!
@@ -124,10 +124,10 @@ describe('recipe-storage › Ingredient needs a recipe', () => {
 describe('recipe-storage › Quantity with amount and unit', () => {
   test('amount and unit are stored, the quantity text is empty', async ({ db }) => {
     const id = await addIngredientWithAmount(db, await addRecipe(db, 'quantity'), 1, 250, 'g');
-    assert.deepEqual(await db.prepare('SELECT quantity_text, amount, unit FROM ingredients WHERE id = ?').bind(id).first(), {
+    assert.deepEqual(await db.prepare('SELECT quantity_text, quantity_value, quantity_unit FROM ingredients WHERE id = ?').bind(id).first(), {
       quantity_text: '',
-      amount: 250,
-      unit: 'g',
+      quantity_value: 250,
+      quantity_unit: 'g',
     });
   });
 });
@@ -135,10 +135,10 @@ describe('recipe-storage › Quantity with amount and unit', () => {
 describe('recipe-storage › Quantity without a number', () => {
   test('the quantity text is empty and amount and unit are null', async ({ db }) => {
     const id = await addIngredient(db, await addRecipe(db, 'no-number'), 1);
-    assert.deepEqual(await db.prepare('SELECT quantity_text, amount, unit FROM ingredients WHERE id = ?').bind(id).first(), {
+    assert.deepEqual(await db.prepare('SELECT quantity_text, quantity_value, quantity_unit FROM ingredients WHERE id = ?').bind(id).first(), {
       quantity_text: '',
-      amount: null,
-      unit: null,
+      quantity_value: null,
+      quantity_unit: null,
     });
   });
 });

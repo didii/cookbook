@@ -1,8 +1,9 @@
 import { numberPattern, numberValue } from '~app/shared/ingredients';
+import type { RecipeIngredient } from '~app/shared/recipe';
 import type { Rules } from '~app/shared/rules';
 import { findIngredients, type Row } from '~app/shared/stepParsers';
 
-// TODO: placeholder logic. Scaling parses the quantity text with the parser of `ingredients.ts`; once `quantityValue` and `quantityUnit` are saved in the DB it multiplies those instead.
+// TODO: placeholder logic. Chips and step texts are scaled by parsing text with the parser of `ingredients.ts`; once their values are saved in the DB they multiply those instead (like `scaleIngredient`).
 /** A number or range at the start of a text: leading space, first number, the dash, second number. */
 const leading = new RegExp(String.raw`^(\s*)(${numberPattern})(?:(\s*[-–]\s*)(${numberPattern}))?`, 'u');
 const whole = new RegExp(String.raw`^${numberPattern}$`, 'u');
@@ -32,6 +33,12 @@ export function scaleQuantity(text: string, factor: number): string {
   if (a === undefined || (to !== undefined && b === undefined)) return text;
   const scaled = space + formatNumber(a * factor) + (to === undefined ? '' : dash + formatNumber(b! * factor));
   return scaled + text.slice(all.length);
+}
+
+/** The quantity of an ingredient row for the factor: its stored value multiplied, followed by its unit. Factor 1 and a row without a stored value (no number, or a range) keep the quantity text as written. */
+export function scaleIngredient({ quantityText, quantityValue, quantityUnit }: RecipeIngredient, factor: number): string {
+  if (factor === 1 || quantityValue === null) return quantityText;
+  return [formatNumber(quantityValue * factor), quantityUnit].filter(Boolean).join(' ');
 }
 
 /** A step text with its amounts multiplied: those followed by a unit of the rules and those written right before the name of one of the rows. Durations and temperatures are not touched. */

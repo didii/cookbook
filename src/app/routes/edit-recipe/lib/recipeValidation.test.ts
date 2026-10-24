@@ -60,7 +60,9 @@ describe('recipe-ingredient-editing › Quantity without a name is refused', () 
 
 describe('readIngredients', () => {
   test('the server parses the text itself and ignores what the client sent', () => {
-    assert.deepEqual(post([{ text: '2 el. olie', quantityText: 'x' }]).ingredients, [{ quantityText: '2 el.', amount: 2, unit: 'el', name: 'olie' }]);
+    assert.deepEqual(post([{ text: '2 el. olie', quantityText: 'x' }]).ingredients, [
+      { quantityText: '2 el.', quantityValue: 2, quantityUnit: 'el', name: 'olie' },
+    ]);
   });
 
   describe('a missing or malformed list gives no lines', () => {

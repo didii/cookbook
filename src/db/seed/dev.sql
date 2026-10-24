@@ -3,13 +3,13 @@ DELETE FROM recipes;
 DELETE FROM categories;
 
 INSERT INTO recipes (slug, title, author, time, servings, intro, image, seal) VALUES ('appeltaart', 'Appeltaart', 'Oma', '1u 20', 8, 'Met een dikke laag zure appels en een rooster van deeg bovenop.', '/img/appeltaart.jpg', 'jia-wei');
-INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 0, 'zelfrijzende bloem', '250 g');
-INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 1, 'koude boter', '150 g');
-INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 2, 'basterdsuiker', '100 g');
-INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 3, 'ei', '1');
-INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 4, 'zout', '½ tl');
-INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 5, 'zure appels', '1 kg');
-INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 6, 'kaneel', '¾ tl');
+INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 0, 'zelfrijzende bloem', '250 g', 250, 'g');
+INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 1, 'koude boter', '150 g', 150, 'g');
+INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 2, 'basterdsuiker', '100 g', 100, 'g');
+INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 3, 'ei', '1', 1, NULL);
+INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 4, 'zout', '½ tl', 0.5, 'tl');
+INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 5, 'zure appels', '1 kg', 1, 'kg');
+INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 6, 'kaneel', '¾ tl', 0.75, 'tl');
 INSERT INTO steps (recipe_id, position, body, oven_temperature, timer_minutes, timer_label) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 0, 'Kneed bloem, boter, suiker, ei en zout snel tot een deeg.', NULL, NULL, NULL);
 INSERT INTO step_ingredient_chips (step_id, position, quantity_text, name) VALUES ((SELECT id FROM steps WHERE recipe_id = (SELECT id FROM recipes WHERE slug = 'appeltaart') AND position = 0), 0, '250 g', 'zelfrijzende bloem');
 INSERT INTO step_ingredient_chips (step_id, position, quantity_text, name) VALUES ((SELECT id FROM steps WHERE recipe_id = (SELECT id FROM recipes WHERE slug = 'appeltaart') AND position = 0), 1, '150 g', 'koude boter');
@@ -37,13 +37,13 @@ INSERT INTO steps (recipe_id, position, body, oven_temperature, timer_minutes, t
 INSERT INTO step_ingredient_chips (step_id, position, quantity_text, name) VALUES ((SELECT id FROM steps WHERE recipe_id = (SELECT id FROM recipes WHERE slug = 'appeltaart') AND position = 12), 0, '1 bakje', 'slagroom');
 
 INSERT INTO recipes (slug, title, author, time, servings, intro, image, seal) VALUES ('stoofvlees', 'Stoofvlees', 'Papa', '3u 00', 6, 'Langzaam gaar in donker bier, met een snee brood met mosterd erin.', '/img/stoofvlees.jpg', 'jia-chang-bian-fan');
-INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'stoofvlees'), 0, 'rundsstoofvlees', '1 kg');
-INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'stoofvlees'), 1, 'grote uien', '3');
-INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'stoofvlees'), 2, 'boter', '50 g');
-INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'stoofvlees'), 3, 'donker bier', '50 cl');
-INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'stoofvlees'), 4, 'peperkoek of brood', '2 sneden');
-INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'stoofvlees'), 5, 'mosterd', '2 el');
-INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'stoofvlees'), 6, 'laurierblaadjes', '2');
+INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'stoofvlees'), 0, 'rundsstoofvlees', '1 kg', 1, 'kg');
+INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'stoofvlees'), 1, 'grote uien', '3', 3, NULL);
+INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'stoofvlees'), 2, 'boter', '50 g', 50, 'g');
+INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'stoofvlees'), 3, 'donker bier', '50 cl', 50, 'cl');
+INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'stoofvlees'), 4, 'sneden peperkoek of brood', '2', 2, NULL);
+INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'stoofvlees'), 5, 'mosterd', '2 el', 2, 'el');
+INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'stoofvlees'), 6, 'laurierblaadjes', '2', 2, NULL);
 INSERT INTO steps (recipe_id, position, body, oven_temperature, timer_minutes, timer_label) VALUES ((SELECT id FROM recipes WHERE slug = 'stoofvlees'), 0, 'Snijd de uien in halve ringen. Bak het vlees bruin in de boter en haal het uit de pan.', NULL, NULL, NULL);
 INSERT INTO steps (recipe_id, position, body, oven_temperature, timer_minutes, timer_label) VALUES ((SELECT id FROM recipes WHERE slug = 'stoofvlees'), 1, 'Smoor de uien zacht in dezelfde pan.', NULL, NULL, NULL);
 INSERT INTO steps (recipe_id, position, body, oven_temperature, timer_minutes, timer_label) VALUES ((SELECT id FROM recipes WHERE slug = 'stoofvlees'), 2, 'Doe het vlees terug en blus met het bier. Voeg de laurier toe.', NULL, NULL, NULL);
@@ -51,30 +51,30 @@ INSERT INTO steps (recipe_id, position, body, oven_temperature, timer_minutes, t
 INSERT INTO steps (recipe_id, position, body, oven_temperature, timer_minutes, timer_label) VALUES ((SELECT id FROM recipes WHERE slug = 'stoofvlees'), 4, 'Laat 2,5 uur zachtjes sudderen met het deksel half op de pan.', NULL, NULL, NULL);
 
 INSERT INTO recipes (slug, title, author, time, servings, intro, image, seal) VALUES ('pannenkoeken', 'Pannenkoeken', 'Tante An', '30 min', 4, 'Dun en groot, met stroop of spek.', '/img/pannenkoeken.jpg', 'kai-fan');
-INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'pannenkoeken'), 0, 'bloem', '250 g');
-INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'pannenkoeken'), 1, 'eieren', '2');
-INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'pannenkoeken'), 2, 'melk', '5 dl');
-INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'pannenkoeken'), 3, 'zout', '1 snuf');
+INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'pannenkoeken'), 0, 'bloem', '250 g', 250, 'g');
+INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'pannenkoeken'), 1, 'eieren', '2', 2, NULL);
+INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'pannenkoeken'), 2, 'melk', '5 dl', 5, 'dl');
+INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'pannenkoeken'), 3, 'zout', '1 snuf', 1, 'snuf');
 INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'pannenkoeken'), 4, 'boter om te bakken', '');
 INSERT INTO steps (recipe_id, position, body, oven_temperature, timer_minutes, timer_label) VALUES ((SELECT id FROM recipes WHERE slug = 'pannenkoeken'), 0, 'Klop bloem, eieren, melk en zout tot een gladde, dunne beslag.', NULL, NULL, NULL);
 INSERT INTO steps (recipe_id, position, body, oven_temperature, timer_minutes, timer_label) VALUES ((SELECT id FROM recipes WHERE slug = 'pannenkoeken'), 1, 'Laat de beslag 15 minuten rusten.', NULL, NULL, NULL);
 INSERT INTO steps (recipe_id, position, body, oven_temperature, timer_minutes, timer_label) VALUES ((SELECT id FROM recipes WHERE slug = 'pannenkoeken'), 2, 'Verhit een klein beetje boter in een koekenpan en bak de pannenkoeken goudbruin aan beide kanten.', NULL, NULL, NULL);
 
 INSERT INTO recipes (slug, title, author, time, servings, intro, image, seal) VALUES ('erwtensoep', 'Erwtensoep', 'Opa', '2u 30', 8, 'Zo dik dat de lepel rechtop blijft staan.', '/img/erwtensoep.jpg', 'hui-wei-wu-qiong');
-INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'erwtensoep'), 0, 'spliterwten', '500 g');
-INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'erwtensoep'), 1, 'water', '2 l');
-INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'erwtensoep'), 2, 'doorregen spek', '400 g');
-INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'erwtensoep'), 3, 'knolselderij', '1');
-INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'erwtensoep'), 4, 'preien', '2');
-INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'erwtensoep'), 5, 'rookworst', '1');
+INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'erwtensoep'), 0, 'spliterwten', '500 g', 500, 'g');
+INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'erwtensoep'), 1, 'water', '2 l', 2, 'l');
+INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'erwtensoep'), 2, 'doorregen spek', '400 g', 400, 'g');
+INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'erwtensoep'), 3, 'knolselderij', '1', 1, NULL);
+INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'erwtensoep'), 4, 'preien', '2', 2, NULL);
+INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'erwtensoep'), 5, 'rookworst', '1', 1, NULL);
 INSERT INTO steps (recipe_id, position, body, oven_temperature, timer_minutes, timer_label) VALUES ((SELECT id FROM recipes WHERE slug = 'erwtensoep'), 0, 'Breng erwten, water en spek aan de kook en laat 1,5 uur zachtjes koken.', NULL, NULL, NULL);
 INSERT INTO steps (recipe_id, position, body, oven_temperature, timer_minutes, timer_label) VALUES ((SELECT id FROM recipes WHERE slug = 'erwtensoep'), 1, 'Snijd de groenten klein en voeg ze toe. Kook nog 30 minuten.', NULL, NULL, NULL);
 INSERT INTO steps (recipe_id, position, body, oven_temperature, timer_minutes, timer_label) VALUES ((SELECT id FROM recipes WHERE slug = 'erwtensoep'), 2, 'Verwarm de rookworst de laatste 15 minuten mee. Snijd in plakken en roer door de soep.', NULL, NULL, NULL);
 
 INSERT INTO recipes (slug, title, author, time, servings, intro, image, seal) VALUES ('rijstpap', 'Rijstpap', 'Oma', '45 min', 4, 'Met bruine suiker en een klontje boter.', '/img/rijstpap.jpg', 'fu');
-INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'rijstpap'), 0, 'volle melk', '1 l');
-INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'rijstpap'), 1, 'puddingrijst', '100 g');
-INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'rijstpap'), 2, 'zout', '1 snuf');
+INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'rijstpap'), 0, 'volle melk', '1 l', 1, 'l');
+INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'rijstpap'), 1, 'puddingrijst', '100 g', 100, 'g');
+INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'rijstpap'), 2, 'zout', '1 snuf', 1, 'snuf');
 INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'rijstpap'), 3, 'bruine suiker', '');
 INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'rijstpap'), 4, 'boter', '');
 INSERT INTO steps (recipe_id, position, body, oven_temperature, timer_minutes, timer_label) VALUES ((SELECT id FROM recipes WHERE slug = 'rijstpap'), 0, 'Breng de melk met het zout aan de kook en strooi de rijst erin.', NULL, NULL, NULL);
@@ -82,8 +82,8 @@ INSERT INTO steps (recipe_id, position, body, oven_temperature, timer_minutes, t
 INSERT INTO steps (recipe_id, position, body, oven_temperature, timer_minutes, timer_label) VALUES ((SELECT id FROM recipes WHERE slug = 'rijstpap'), 2, 'Schep in kommen en strooi bruine suiker en een klontje boter erop.', NULL, NULL, NULL);
 
 INSERT INTO recipes (slug, title, author, time, servings, intro, image, seal) VALUES ('frikandellen', 'Frikandellen', 'Papa', '25 min', 4, 'Uit de frituur, met curry en uitjes.', '/img/frikandellen.jpg', 'suan-tian-ku-la');
-INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'frikandellen'), 0, 'frikandellen', '4');
-INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'frikandellen'), 1, 'ui', '1');
+INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'frikandellen'), 0, 'frikandellen', '4', 4, NULL);
+INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'frikandellen'), 1, 'ui', '1', 1, NULL);
 INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'frikandellen'), 2, 'curryketchup', '');
 INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'frikandellen'), 3, 'mayonaise', '');
 INSERT INTO steps (recipe_id, position, body, oven_temperature, timer_minutes, timer_label) VALUES ((SELECT id FROM recipes WHERE slug = 'frikandellen'), 0, 'Frituur de frikandellen 5 minuten tot ze bruin zijn.', NULL, NULL, NULL);

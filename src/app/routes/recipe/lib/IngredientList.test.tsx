@@ -8,8 +8,8 @@ describe('IngredientList', () => {
     render(
       <IngredientList
         ingredients={[
-          { quantityText: '4', name: 'appels' },
-          { quantityText: '100 g', name: 'suiker' },
+          { quantityText: '4', quantityValue: null, quantityUnit: null, name: 'appels' },
+          { quantityText: '100 g', quantityValue: null, quantityUnit: null, name: 'suiker' },
         ]}
         ticked={new Set([1])}
         onToggle={() => {}}

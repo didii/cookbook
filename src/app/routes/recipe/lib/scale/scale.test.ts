@@ -1,20 +1,64 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'vitest';
 import { defaultRules } from '~app/shared/rules';
-import { formatNumber, nextMultiplier, parseNumber, scaleBody, scaleQuantity } from './scale';
+import { formatNumber, nextMultiplier, parseNumber, scaleBody, scaleIngredient, scaleQuantity } from './scale';
 
 const rows = [
   { id: '0', quantityText: '200 g', name: 'bloem' },
   { id: '1', quantityText: '2', name: 'eieren' },
 ];
 
+const ingredient = (quantityText: string, quantityValue: number | null, quantityUnit: string | null) => ({
+  quantityText,
+  quantityValue,
+  quantityUnit,
+  name: 'x',
+});
+
 describe('recipe-scaling › Ingredient list scales', () => {
-  test('a quantity with a unit', () => {
-    assert.equal(scaleQuantity('200 g', 1.5), '300 g');
+  test('the stored value is multiplied and shown with its unit', () => {
+    assert.equal(scaleIngredient(ingredient('', 200, 'g'), 1.5), '300 g');
   });
 
-  test('a quantity without a unit', () => {
-    assert.equal(scaleQuantity('2', 2), '4');
+  test('a value without a unit', () => {
+    assert.equal(scaleIngredient(ingredient('', 2, null), 2), '4');
+  });
+});
+
+describe('recipe-scaling › Ingredient range stays as written', () => {
+  test('a range has no value, so its text is kept at every factor', () => {
+    assert.deepEqual(
+      [2, 0.5].map((f) => scaleIngredient(ingredient('2-3 el', null, 'el'), f)),
+      ['2-3 el', '2-3 el'],
+    );
+  });
+});
+
+describe('recipe-scaling › Scaled ingredient keeps its unit', () => {
+  test('the stored unit follows the scaled value', () => {
+    assert.equal(scaleIngredient(ingredient('', 0.5, 'tl'), 3), '1,5 tl');
+  });
+});
+
+describe('scaleIngredient', () => {
+  test('factor 1 gives the quantity text as written', () => {
+    assert.equal(scaleIngredient(ingredient('1 ½ el', 1.5, 'el'), 1), '1 ½ el');
+  });
+
+  test('an empty quantity stays empty', () => {
+    assert.equal(scaleIngredient(ingredient('', null, null), 3), '');
+  });
+
+  test('the quantity text is ignored when scaling', () => {
+    assert.equal(scaleIngredient(ingredient('quantityText', 5, 'unit'), 2), '10 unit');
+  });
+
+  test('only the quantity text is used at factor 1', () => {
+    assert.equal(scaleIngredient(ingredient('quantityText', 5, 'unit'), 1), 'quantityText');
+  });
+
+  test('the scaled value is rounded like other scaled numbers', () => {
+    assert.equal(scaleIngredient(ingredient('', 1, 'kg'), 1 / 3), '0,333 kg');
   });
 });
 
@@ -43,10 +87,6 @@ describe('recipe-scaling › Times and temperatures do not scale', () => {
 });
 
 describe('recipe-scaling › Ranges scale', () => {
-  test('in a quantity', () => {
-    assert.equal(scaleQuantity('2-3 el', 2), '4-6 el');
-  });
-
   test('in step text', () => {
     assert.equal(scaleBody('Neem 2-3 el olie', 2, [], defaultRules), 'Neem 4-6 el olie');
   });
@@ -89,6 +129,14 @@ describe('recipe-scaling › Round numbers stay round', () => {
 });
 
 describe('scaleQuantity', () => {
+  test('both ends of a range scale', () => {
+    assert.equal(scaleQuantity('2-3 el', 2), '4-6 el');
+  });
+
+  test('a quantity with a unit', () => {
+    assert.equal(scaleQuantity('200 g', 1.5), '300 g');
+  });
+
   describe('fractions and glyphs', () => {
     test('a slash fraction', () => {
       assert.equal(scaleQuantity('1/2 tl', 3), '1,5 tl');

@@ -1,8 +1,7 @@
 import type { Rules } from './rules';
 
-export type ParsedIngredient = { quantityText: string; amount?: number; unit?: string; name: string };
+export type ParsedIngredient = { quantityText: string; quantityValue?: number; quantityUnit?: string; name: string };
 
-// TODO: placeholder logic. This parsing of the quantity text goes away once `quantityValue` and `quantityUnit` are saved in the DB.
 const fractions: Record<string, number> = { '½': 1 / 2, '⅓': 1 / 3, '⅔': 2 / 3, '¼': 1 / 4, '¾': 3 / 4, '⅛': 1 / 8 };
 const glyph = '[½⅓⅔¼¾⅛]';
 // Longest alternatives first: "1 ½", "1 2/3", "1/2", "1,5", "½".
@@ -21,7 +20,7 @@ export function numberValue(text: string): number | undefined {
   return Number(text.replace(',', '.'));
 }
 
-/** Splits one typed line into the quantity as typed, its amount and unit (one of `rules.units`), and the name. A line without a leading number is all name. */
+/** Splits one typed line into the quantity as typed, its value and unit (one of `rules.units`), and the name. A line without a leading number is all name. */
 export function parseIngredient(text: string, rules: Rules): ParsedIngredient {
   const match = leading.exec(text);
   if (!match) return { quantityText: '', name: text.trim() };
@@ -35,9 +34,9 @@ export function parseIngredient(text: string, rules: Rules): ParsedIngredient {
   }
   return {
     quantityText: text.slice(0, end).trim(),
-    // A range can't be scaled, so it has no amount.
-    amount: to === undefined ? numberValue(from) : undefined,
-    unit,
+    // A range can't be scaled, so it has no value.
+    quantityValue: to === undefined ? numberValue(from) : undefined,
+    quantityUnit: unit,
     name: text.slice(end).trim(),
   };
 }

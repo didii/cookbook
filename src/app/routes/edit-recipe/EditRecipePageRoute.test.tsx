@@ -234,8 +234,8 @@ describe('an edit posting ingredient lines', () => {
     await addRecipe(db, 'regels');
     await submit(db, photos, 'regels', { title: 'Soep', author: 'Oma', ingredients: ingredients('250 g bloem', '', '2 grote uien') });
     assert.deepEqual((await getRecipe(db, 'regels'))?.ingredients, [
-      { quantityText: '250 g', name: 'bloem' },
-      { quantityText: '2', name: 'grote uien' },
+      { quantityText: '250 g', quantityValue: 250, quantityUnit: 'g', name: 'bloem' },
+      { quantityText: '2', quantityValue: 2, quantityUnit: null, name: 'grote uien' },
     ]);
   });
 
@@ -260,7 +260,9 @@ describe('an edit posted without an ingredients field', () => {
     await addRecipe(db, 'zonder-regels');
     await submit(db, photos, 'zonder-regels', { title: 'Soep', author: 'Oma', ingredients: JSON.stringify([{ text: '2 uien' }]) });
     await submit(db, photos, 'zonder-regels', { title: 'Soep 2', author: 'Oma' });
-    assert.deepEqual((await getRecipe(db, 'zonder-regels'))?.ingredients, [{ quantityText: '2', name: 'uien' }]);
+    assert.deepEqual((await getRecipe(db, 'zonder-regels'))?.ingredients, [
+      { quantityText: '2', quantityValue: 2, quantityUnit: null, name: 'uien' },
+    ]);
   });
 });
 

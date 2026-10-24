@@ -7,6 +7,7 @@ import { defaultRules } from '~app/shared/rules';
 import { cssFor, hidesAt } from '~testing/css';
 import { cleanup, fireEvent, precedes, render, screen, setViewport } from '~testing/dom';
 import { RecipeView } from './RecipeView';
+import { scaleIngredient } from './scale/scale';
 
 const steps: Step[] = [
   { body: 'snijden', ingredients: [] },
@@ -25,8 +26,8 @@ const recipe: Omit<Recipe, 'steps'> = {
   image: null,
   seal: null,
   ingredients: [
-    { quantityText: '4', name: 'appels' },
-    { quantityText: '100 g', name: 'suiker' },
+    { quantityText: '4', quantityValue: null, quantityUnit: null, name: 'appels' },
+    { quantityText: '100 g', quantityValue: null, quantityUnit: null, name: 'suiker' },
   ],
 };
 
@@ -165,8 +166,8 @@ describe('recipe-viewing › Optional fields are empty', () => {
 
 describe('recipe-viewing › Ingredient without quantity', () => {
   const ingredients = [
-    { quantityText: '', name: 'zout' },
-    { quantityText: '100 g', name: 'suiker' },
+    { quantityText: '', quantityValue: null, quantityUnit: null, name: 'zout' },
+    { quantityText: '100 g', quantityValue: null, quantityUnit: null, name: 'suiker' },
   ];
 
   test('is shown with its name only: the quantity cell is empty', () => {
@@ -281,6 +282,21 @@ describe('recipe-scaling › Step chips scale', () => {
     page({ recipe: { ...recipe, servings: 4 }, steps: chipSteps });
     fireEvent.change(screen.getByTestId('ScaleControl-field'), { target: { value: '6' } });
     assert.equal(screen.getByTestId('StepChips-quantity').textContent, '300 g');
+  });
+});
+
+describe('RecipeView ingredient list scaling', () => {
+  test('the list quantities are the stored values times the factor', () => {
+    const ingredients = [
+      { quantityText: '200 g', quantityValue: 200, quantityUnit: 'g', name: 'bloem' },
+      { quantityText: '1 el', quantityValue: 1, quantityUnit: 'el', name: 'olie' },
+    ];
+    page({ recipe: { ...recipe, servings: 4, ingredients } });
+    fireEvent.change(screen.getByTestId('ScaleControl-field'), { target: { value: '6' } });
+    assert.deepEqual(
+      screen.getAllByTestId('IngredientList-quantity').map((q) => q.textContent),
+      ingredients.map((i) => scaleIngredient(i, 6 / 4)),
+    );
   });
 });
 
