@@ -19,4 +19,4 @@ Change 1 of 3. Verify each task with the type check and `pnpm test:ai`; `pnpm te
 
 ## 4. Wrap-up
 
-- [ ] 4.1 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check` and `pnpm test:ai`; all clean
+- [x] 4.1 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check` and `pnpm test:ai`; all clean
