@@ -186,6 +186,22 @@ describe('scaleText', () => {
     assert.equal(scaleText('Meng wat suiker', quantities, 2), 'Meng wat suiker');
   });
 
+  test('unsorted amounts are all replaced', () => {
+    const unsorted = [
+      { startIndex: 21, endIndex: 22, quantityValue: 2, quantityUnit: null },
+      { startIndex: 5, endIndex: 8, quantityValue: 200, quantityUnit: 'g' },
+    ];
+    assert.equal(scaleText('Meng 200 g bloem met 2 eieren', unsorted, 2), 'Meng 400 g bloem met 4 eieren');
+  });
+
+  test('an amount that overlaps one already replaced is skipped', () => {
+    const overlapping = [
+      { startIndex: 5, endIndex: 9, quantityValue: 1234, quantityUnit: null },
+      { startIndex: 7, endIndex: 10, quantityValue: 5, quantityUnit: null },
+    ];
+    assert.equal(scaleText('Meng 12345 x', overlapping, 2), 'Meng 1210 x');
+  });
+
   test('the scaled value is rounded like other scaled numbers', () => {
     assert.equal(scaleText('Meng 1 el', [{ startIndex: 5, endIndex: 6, quantityValue: 1, quantityUnit: null }], 1 / 3), 'Meng 0,333 el');
   });

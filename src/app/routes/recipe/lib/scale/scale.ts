@@ -21,14 +21,16 @@ export function scaleIngredient({ quantityText, quantityValue, quantityUnit }: S
   return [formatNumber(quantityValue * factor), quantityUnit].filter(Boolean).join(' ');
 }
 
-/** A step text with each stored amount replaced by its value multiplied by the factor; the rest of the text, including the unit after the number, stays. Factor 1 gives the text as stored. An amount whose characters are no number any more (text changed outside the editor) is left alone. */
+/** A step text with each stored amount replaced by its value multiplied by the factor; the rest of the text, including the unit after the number, stays. Factor 1 gives the text as stored. An amount whose characters are no number any more (text changed outside the editor) or that overlaps one already replaced is left alone, whatever the order of `quantities`. */
 export function scaleText(body: string, quantities: StepQuantity[], factor: number): string {
   if (factor === 1) return body;
   let out = body;
+  let replacedFrom = body.length;
   // From the end, so earlier places stay valid.
-  for (const q of [...quantities].reverse()) {
-    if (parseNumber(body.slice(q.startIndex, q.endIndex)) === undefined) continue;
+  for (const q of [...quantities].sort((a, b) => b.startIndex - a.startIndex)) {
+    if (q.endIndex > replacedFrom || parseNumber(body.slice(q.startIndex, q.endIndex)) === undefined) continue;
     out = out.slice(0, q.startIndex) + formatNumber(q.quantityValue * factor) + out.slice(q.endIndex);
+    replacedFrom = q.startIndex;
   }
   return out;
 }
