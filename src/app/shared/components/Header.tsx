@@ -5,7 +5,7 @@ import type { Role } from '../role';
 
 export function Header({ email, role }: { email: string; role: Role }) {
   return (
-    <header className="bg-red text-white">
+    <header className="min-h-header bg-red text-white">
       <div className="flex items-center justify-between gap-4 py-3 pr-[max(1rem,4vw)] pl-[max(0.5rem,calc(4vw-0.5rem))]">
         <div className="flex min-w-0 items-center gap-2">
           <SiteMenu role={role} />

@@ -3,6 +3,7 @@ export * from './AuthorInput';
 export * from './Button';
 export * from './Fret';
 export * from './Header';
+export * from './Plaid';
 export * from './Seal';
 export * from './SiteMenu';
 export * from './SkipLink';

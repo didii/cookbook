@@ -9,8 +9,8 @@
 
 ## 2. Plaid and header token
 
-- [ ] 2.1 Measure the header's rendered height in the browser (header bar + fret + its margin) and add it as a theme token in `app.css`; make `Header` use it as a minimum height; verify the header looks unchanged and `Header.test.tsx` passes
-- [ ] 2.2 Add `src/app/shared/components/Plaid.tsx` (`aria-hidden` absolute layer; props `strength`, `cell`, `className`), export it from `components/index.ts`, and add `Plaid.test.tsx`: draws only from red and ink, takes strength and cell from its props, is `aria-hidden`, adds no colour token; verify the test passes
+- [x] 2.1 Measure the header's rendered height in the browser (header bar + fret + its margin) and add it as a theme token in `app.css`; make `Header` use it as a minimum height; verify the header looks unchanged and `Header.test.tsx` passes
+- [x] 2.2 Add `src/app/shared/components/Plaid.tsx` (`aria-hidden` absolute layer; props `strength`, `cell`, `className`), export it from `components/index.ts`, and add `Plaid.test.tsx`: draws only from red and ink, takes strength and cell from its props, is `aria-hidden`, adds no colour token; verify the test passes
 
 ## 3. Welcome frame
 
