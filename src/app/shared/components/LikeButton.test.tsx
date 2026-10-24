@@ -104,3 +104,33 @@ describe('recipe-like â€º Like cannot be saved', () => {
     assert.equal(leaf().getAttribute('aria-pressed'), 'false');
   });
 });
+
+describe('recipe-like › Leaf reacts to the pointer', () => {
+  test('an unliked leaf has a hover colour', async () => {
+    render(<LikeButton slug="soep" initialLiked={false} />);
+    assert.match(await cssFor(leaf().className), /hover[^{]*\{[^}]*background-color: var\(--color-yel\)/);
+  });
+
+  test('a liked leaf has a hover colour', async () => {
+    render(<LikeButton slug="soep" initialLiked />);
+    assert.match(await cssFor(leaf().className), /hover[^{]*\{[^}]*background-color: color-mix\(/);
+  });
+});
+
+describe('LikeButton onSaved', () => {
+  test('is called after the server accepted the change', async () => {
+    stub(() => Promise.resolve(new Response(null, { status: 204 })));
+    let saved = 0;
+    render(<LikeButton slug="soep" initialLiked={false} onSaved={() => saved++} />);
+    await press();
+    assert.equal(saved, 1);
+  });
+
+  test('is not called when the save fails', async () => {
+    stub(() => Promise.resolve(new Response(null, { status: 500 })));
+    let saved = 0;
+    render(<LikeButton slug="soep" initialLiked={false} onSaved={() => saved++} />);
+    await press();
+    assert.equal(saved, 0);
+  });
+});
