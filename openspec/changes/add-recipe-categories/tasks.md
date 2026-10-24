@@ -9,8 +9,8 @@ Change 1 of 2. `redesign-recipe-card` depends on this one. Verify each task with
 
 ## 2. Server
 
-- [ ] 2.1 Add `categories: string[]` to `RecipeSummary` in `shared/recipe.ts` and return them, in order, from `listRecipes`; test "Recipe without categories" and "Listing returns categories in order" in `recipes.server.test.ts`, and add `categories: []` to existing fixtures so the type check passes
+- [x] 2.1 Add `categories: string[]` to `RecipeSummary` in `shared/recipe.ts` and return them, in order, from `listRecipes`; test "Recipe without categories" and "Listing returns categories in order" in `recipes.server.test.ts`, and add `categories: []` to existing fixtures so the type check passes
 
 ## 3. Wrap-up
 
-- [ ] 3.1 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check` and `pnpm test:ai`; all clean
+- [x] 3.1 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check` and `pnpm test:ai`; all clean

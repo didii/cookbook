@@ -123,7 +123,15 @@ describe('recipe-browsing › Welcome above the recipes', () => {
 });
 
 // Filtering runs in the browser over the loaded list, so these render the page for a given list and address.
-const summary = (title: string, author: string): RecipeSummary => ({ slug: title.toLowerCase(), title, author, time: null, image: null, seal: null });
+const summary = (title: string, author: string): RecipeSummary => ({
+  slug: title.toLowerCase(),
+  title,
+  author,
+  time: null,
+  image: null,
+  seal: null,
+  categories: [],
+});
 const family = [
   summary('Erwtensoep', 'Papa'),
   summary('Appeltaart', 'Oma'),

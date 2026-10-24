@@ -155,21 +155,22 @@ export async function createRecipe(db: D1Database, recipe: RecipeInput): Promise
 /** A recipe is "new" to a member for this many months after it was added. */
 export const newForMonths = 1;
 
-/** Every recipe, the most recently added first, each flagged `isNew` for this member: added less than `newForMonths` before `now`, not opened by them and not added by them. */
+/** Every recipe, the most recently added first, with its categories in order, each flagged `isNew` for this member: added less than `newForMonths` before `now`, not opened by them and not added by them. */
 export async function listRecipes(db: D1Database, email: string, now: Date): Promise<RecipeSummary[]> {
   const cutoff = new Date(now);
   cutoff.setUTCMonth(cutoff.getUTCMonth() - newForMonths);
   const { results } = await db
     .prepare(
       `SELECT r.slug, r.title, r.author, r.time, r.image, r.seal,
-        (r.created_at > ?1 AND v.recipe_id IS NULL AND COALESCE(r.created_by <> ?2 COLLATE NOCASE, 1)) AS isNew
+        (r.created_at > ?1 AND v.recipe_id IS NULL AND COALESCE(r.created_by <> ?2 COLLATE NOCASE, 1)) AS isNew,
+        (SELECT json_group_array(name) FROM (SELECT c.name FROM recipe_categories rc JOIN categories c ON c.id = rc.category_id WHERE rc.recipe_id = r.id ORDER BY rc.position)) AS categories
       FROM recipes r
       LEFT JOIN recipe_views v ON v.recipe_id = r.id AND v.user_id = (SELECT id FROM users WHERE email = ?2)
       ORDER BY r.id DESC`,
     )
     .bind(cutoff.toISOString().replace(/\.\d+Z$/, 'Z'), email)
-    .all<Omit<RecipeSummary, 'isNew'> & { isNew: 0 | 1 }>();
-  return results.map((r) => ({ ...r, isNew: r.isNew === 1 }));
+    .all<Omit<RecipeSummary, 'isNew' | 'categories'> & { isNew: 0 | 1; categories: string }>();
+  return results.map((r) => ({ ...r, isNew: r.isNew === 1, categories: JSON.parse(r.categories) as string[] }));
 }
 
 /** Every author once(case variants count as one), for suggestions. */

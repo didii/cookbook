@@ -6,7 +6,7 @@ import { cssFor, mediaFor } from '~testing/css';
 import { precedes, render, screen } from '~testing/dom';
 import { RecipeCard } from './RecipeCard';
 
-const recipe: RecipeSummary = { slug: 'soep', title: 'Soep', author: 'Oma', time: null, image: '/soep.jpg', seal: null };
+const recipe: RecipeSummary = { slug: 'soep', title: 'Soep', author: 'Oma', time: null, image: '/soep.jpg', seal: null, categories: [] };
 const card = (r: Partial<RecipeSummary> = {}) =>
   render(
     <MemoryRouter>

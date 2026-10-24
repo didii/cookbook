@@ -190,9 +190,50 @@ describe('listRecipes', () => {
     await createRecipe(db, { title: 'Eerst', author: 'Oma', time: '30 min', image: '/a.jpg', seal: 'fu' });
     await createRecipe(db, { title: 'Daarna', author: 'Papa', seal: 'fu' });
     assert.deepEqual(await listRecipes(db, 'x@example.com', new Date()), [
-      { slug: 'daarna', title: 'Daarna', author: 'Papa', time: null, image: null, seal: 'fu', isNew: true },
-      { slug: 'eerst', title: 'Eerst', author: 'Oma', time: '30 min', image: '/a.jpg', seal: 'fu', isNew: true },
+      { slug: 'daarna', title: 'Daarna', author: 'Papa', time: null, image: null, seal: 'fu', categories: [], isNew: true },
+      { slug: 'eerst', title: 'Eerst', author: 'Oma', time: '30 min', image: '/a.jpg', seal: 'fu', categories: [], isNew: true },
     ]);
+  });
+});
+
+const categorize = async (db: D1Database, slug: string, ...names: string[]) => {
+  for (const [position, name] of names.entries()) {
+    await db.prepare('INSERT OR IGNORE INTO categories (name) VALUES (?)').bind(name).run();
+    await db
+      .prepare(
+        'INSERT INTO recipe_categories (recipe_id, category_id, position) VALUES ((SELECT id FROM recipes WHERE slug = ?), (SELECT id FROM categories WHERE name = ?), ?)',
+      )
+      .bind(slug, name, position)
+      .run();
+  }
+};
+
+describe('recipe-storage › Recipe without categories', () => {
+  test('its entry has an empty list', async ({ db }) => {
+    const slug = await createRecipe(db, { title: 'Kaal', author: 'Oma', seal: 'fu' });
+    assert.deepEqual((await listRecipes(db, 'x@example.com', new Date())).find((r) => r.slug === slug)?.categories, []);
+  });
+});
+
+describe('recipe-storage › Listing returns categories in order', () => {
+  test('the entry has its categories in stored order', async ({ db }) => {
+    const slug = await createRecipe(db, { title: 'Erwtensoep', author: 'Oma', seal: 'fu' });
+    await categorize(db, slug, 'Soep', 'Winter');
+    assert.deepEqual((await listRecipes(db, 'x@example.com', new Date())).find((r) => r.slug === slug)?.categories, ['Soep', 'Winter']);
+  });
+});
+
+describe('recipe-storage › Category is shared', () => {
+  test('both recipes are listed with the category', async ({ db }) => {
+    const a = await createRecipe(db, { title: 'A', author: 'Oma', seal: 'fu' });
+    const b = await createRecipe(db, { title: 'B', author: 'Oma', seal: 'fu' });
+    await categorize(db, a, 'Snel');
+    await categorize(db, b, 'Snel');
+    const listed = await listRecipes(db, 'x@example.com', new Date());
+    assert.deepEqual(
+      listed.map((r) => r.categories),
+      [['Snel'], ['Snel']],
+    );
   });
 });
 
