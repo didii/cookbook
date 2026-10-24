@@ -323,7 +323,7 @@ describe('a saved recipe with chips', () => {
   const posted = [
     {
       body: 'Zeef de bloem. Bak 30 minuten op 180 graden.',
-      ingredients: [{ quantityText: '250 g', name: 'bloem' }],
+      ingredients: [{ quantityText: '250 g', quantityValue: 250, quantityUnit: 'g', name: 'bloem' }],
       ovenTemperature: 180,
       timer: { minutes: 30, label: 'Bakken' },
     },

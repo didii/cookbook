@@ -15,8 +15,6 @@ export type RecipeRow = {
   updated_at: string;
 };
 
-export type IngredientRow = { quantityText: string; name: string };
-
 /** A step to store: its text, and any ingredient chips, oven temperature and timer. */
 export type StepInput = Pick<Step, 'body'> & Partial<Step>;
 
@@ -38,19 +36,19 @@ export async function getRecipe(db: D1Database, slug: string): Promise<Recipe | 
       .bind(slug),
     db
       .prepare(
-        'SELECT c.step_id, c.quantity_text AS quantityText, c.name FROM step_ingredient_chips c JOIN steps s ON s.id = c.step_id JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ? ORDER BY s.position, c.position',
+        'SELECT c.step_id, c.quantity_text AS quantityText, c.quantity_value AS quantityValue, c.quantity_unit AS quantityUnit, c.name FROM step_ingredient_chips c JOIN steps s ON s.id = c.step_id JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ? ORDER BY s.position, c.position',
       )
       .bind(slug),
   ]);
   const row = (recipe.results as RecipeRow[])[0];
   if (!row) return undefined;
-  const chipRows = chips.results as (IngredientRow & { step_id: number })[];
+  const chipRows = chips.results as (RecipeIngredient & { step_id: number })[];
   return {
     ...row,
     ingredients: ingredients.results as RecipeIngredient[],
     steps: (steps.results as StepRow[]).map((s) => ({
       body: s.body,
-      ingredients: chipRows.filter((c) => c.step_id === s.id).map((c) => ({ quantityText: c.quantityText, name: c.name })),
+      ingredients: chipRows.filter((c) => c.step_id === s.id).map(({ step_id, ...chip }) => chip),
       ovenTemperature: s.oven_temperature ?? undefined,
       timer: s.timer_minutes === null ? undefined : { minutes: s.timer_minutes, label: s.timer_label ?? undefined },
     })),
@@ -112,9 +110,9 @@ function insertSteps(db: D1Database, slug: string, steps: StepInput[]) {
     ...(step.ingredients ?? []).map((chip, j) =>
       db
         .prepare(
-          'INSERT INTO step_ingredient_chips (step_id, position, quantity_text, name) SELECT s.id, ?, ?, ? FROM steps s JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ? AND s.position = ?',
+          'INSERT INTO step_ingredient_chips (step_id, position, quantity_text, quantity_value, quantity_unit, name) SELECT s.id, ?, ?, ?, ?, ? FROM steps s JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ? AND s.position = ?',
         )
-        .bind(j, chip.quantityText, chip.name, slug, i),
+        .bind(j, chip.quantityText, chip.quantityValue ?? null, chip.quantityUnit ?? null, chip.name, slug, i),
     ),
   ]);
 }
