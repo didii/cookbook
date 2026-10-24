@@ -1,8 +1,7 @@
-import { data, redirect, useRouteLoaderData } from 'react-router';
+import { data, redirect } from 'react-router';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { deletePhoto } from '~app/shared/photos.server';
 import { deleteRecipe, getMemberRecipeData, getRecipe, recordView } from '~app/shared/recipes.server';
-import { defaultRules, type Rules } from '~app/shared/rules';
 import { tileFor } from '~app/shared/tile';
 import type { Route } from './+types/RecipePageRoute';
 import { RecipeView } from './lib/RecipeView';
@@ -34,7 +33,6 @@ export function meta({ loaderData }: Route.MetaArgs) {
 
 export default function RecipePage({ loaderData }: Route.ComponentProps) {
   const { recipe, steps, tile, liked, note } = loaderData;
-  const rules = useRouteLoaderData<{ rules: Rules }>('root')?.rules ?? defaultRules;
   // Keyed by recipe, so another recipe starts with fresh page state (ticks, marks, timers, cook mode).
-  return <RecipeView key={recipe.slug} recipe={recipe} tile={tile} steps={steps} rules={rules} liked={liked} note={note} />;
+  return <RecipeView key={recipe.slug} recipe={recipe} tile={tile} steps={steps} liked={liked} note={note} />;
 }

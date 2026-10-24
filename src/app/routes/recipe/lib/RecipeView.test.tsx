@@ -3,11 +3,10 @@ import type { ComponentProps } from 'react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { afterEach, beforeEach, describe, test } from 'vitest';
 import type { Recipe, Step } from '~app/shared/recipe';
-import { defaultRules } from '~app/shared/rules';
 import { cssFor, hidesAt } from '~testing/css';
 import { cleanup, fireEvent, precedes, render, screen, setViewport } from '~testing/dom';
 import { RecipeView } from './RecipeView';
-import { scaleIngredient } from './scale/scale';
+import { scaleIngredient, scaleText } from './scale/scale';
 
 const steps: Step[] = [
   { body: 'snijden', ingredients: [] },
@@ -33,11 +32,7 @@ const recipe: Omit<Recipe, 'steps'> = {
 
 const page = (props: Partial<ComponentProps<typeof RecipeView>> = {}) =>
   // A data router, because the page holds a router `Form` (delete button).
-  render(
-    <RouterProvider
-      router={createMemoryRouter([{ path: '/', element: <RecipeView recipe={recipe} tile={0} steps={steps} rules={defaultRules} {...props} /> }])}
-    />,
-  );
+  render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <RecipeView recipe={recipe} tile={0} steps={steps} {...props} /> }])} />);
 /** The sticky bar with the tabs and the timer dock. */
 const stack = () => screen.getByTestId('RecipeView-stack');
 const tabs = () => screen.getAllByTestId('TabBar-tab');
@@ -302,6 +297,15 @@ describe('recipe-scaling › Chip keeps its own unit', () => {
     page({ recipe: { ...recipe, servings: 4 }, steps: chipSteps });
     fireEvent.change(screen.getByTestId('ScaleControl-field'), { target: { value: '8' } });
     assert.equal(screen.getByTestId('StepChips-quantity').textContent, '2 klontje');
+  });
+});
+
+describe('RecipeView step text scaling', () => {
+  test('the step text is the stored amounts times the factor', () => {
+    const quantities = [{ startIndex: 5, endIndex: 8, quantityValue: 200, quantityUnit: 'g' }];
+    page({ recipe: { ...recipe, servings: 4 }, steps: [{ body: 'Meng 200 g bloem', ingredients: [], quantities }] });
+    fireEvent.change(screen.getByTestId('ScaleControl-field'), { target: { value: '6' } });
+    assert.equal(screen.getByTestId('StepItem-body').textContent, scaleText('Meng 200 g bloem', quantities, 6 / 4));
   });
 });
 

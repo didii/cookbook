@@ -19,7 +19,7 @@ Change 3 of 3. Precondition: `store-ingredient-quantities` and `store-chip-quant
 
 ## 4. Scaling
 
-- [ ] 4.1 Add `scaleText` to `scale/scale.ts` with unit tests; use it in `RecipeView.tsx` for step bodies
+- [x] 4.1 Add `scaleText` to `scale/scale.ts` with unit tests; use it in `RecipeView.tsx` for step bodies
 - [ ] 4.2 Remove `scaleQuantity`, `scaleBody` and the text regexes and their tests; update `RecipeView.test.tsx` and `scale.test.ts` for the scenarios "Amounts in step text scale", "Range in step text stays as written", "Text without stored amounts stays as written"
 - [ ] 4.3 Check with grep that no file outside `routes/edit-recipe` imports `parseIngredient`, `joinIngredient` or `stepParsers`
 

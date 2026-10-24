@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'vitest';
 import { defaultRules } from '~app/shared/rules';
-import { formatNumber, nextMultiplier, parseNumber, scaleBody, scaleIngredient, scaleQuantity } from './scale';
+import { formatNumber, nextMultiplier, parseNumber, scaleBody, scaleIngredient, scaleQuantity, scaleText } from './scale';
 
 const rows = [
   { id: '0', quantityText: '200 g', name: 'bloem' },
@@ -213,5 +213,17 @@ describe('parsing-rules › Scaling uses the stored units', () => {
 
   test('without the stored unit it is not', () => {
     assert.equal(scaleBody('doe 2 kopje bloem erbij', 2, rows, defaultRules), 'doe 2 kopje bloem erbij');
+  });
+});
+
+describe('scaleText', () => {
+  const quantities = [{ startIndex: 5, endIndex: 8, quantityValue: 1.5, quantityUnit: null }];
+
+  test('a stored place that holds no number is left alone', () => {
+    assert.equal(scaleText('Meng wat suiker', quantities, 2), 'Meng wat suiker');
+  });
+
+  test('the scaled value is rounded like other scaled numbers', () => {
+    assert.equal(scaleText('Meng 1 el', [{ startIndex: 5, endIndex: 6, quantityValue: 1, quantityUnit: null }], 1 / 3), 'Meng 0,333 el');
   });
 });

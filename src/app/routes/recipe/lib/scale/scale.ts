@@ -1,7 +1,7 @@
 // TODO: temporary cross-route import, removed with scaleBody (task 4.2).
 import { findIngredients, type Row } from '~app/routes/edit-recipe/lib/shared/stepParsers';
 import { numberPattern, numberValue } from '~app/shared/numbers';
-import type { StepIngredient } from '~app/shared/recipe';
+import type { StepIngredient, StepQuantity } from '~app/shared/recipe';
 import type { Rules } from '~app/shared/rules';
 
 // TODO: placeholder logic. Step texts are scaled by parsing text with the parser of `ingredients.ts`; once their values are saved in the DB they multiply those instead (like `scaleIngredient`).
@@ -60,6 +60,18 @@ export function scaleBody(body: string, factor: number, rows: Row[], rules: Rule
     if (end > limit) continue;
     out = out.slice(0, start) + scaleQuantity(body.slice(start, end), factor) + out.slice(end);
     limit = start;
+  }
+  return out;
+}
+
+/** A step text with each stored amount replaced by its value multiplied by the factor; the rest of the text, including the unit after the number, stays. Factor 1 gives the text as stored. An amount whose characters are no number any more (text changed outside the editor) is left alone. */
+export function scaleText(body: string, quantities: StepQuantity[], factor: number): string {
+  if (factor === 1) return body;
+  let out = body;
+  // From the end, so earlier places stay valid.
+  for (const q of [...quantities].reverse()) {
+    if (parseNumber(body.slice(q.startIndex, q.endIndex)) === undefined) continue;
+    out = out.slice(0, q.startIndex) + formatNumber(q.quantityValue * factor) + out.slice(q.endIndex);
   }
   return out;
 }
