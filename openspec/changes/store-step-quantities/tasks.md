@@ -25,4 +25,4 @@ Change 3 of 3. Precondition: `store-ingredient-quantities` and `store-chip-quant
 
 ## 5. Wrap-up
 
-- [ ] 5.1 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check` and `pnpm test:ai`; all clean
+- [x] 5.1 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check` and `pnpm test:ai`; all clean
