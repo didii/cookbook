@@ -181,6 +181,10 @@ export function RecipeView({ recipe: r, tile, steps, rules, liked = false, note:
         <ClockSetting />
         <CookSwitch wanted={wanted} lock={lock} manual={cook.manual} onToggle={() => setCook((c) => setByHand(c, !wantsCookMode(c, true)))} />
 
+        <div className="mt-6 min-[52rem]:mt-10">
+          <ScaleControl value={amount} onChange={setAmount} servings={r.servings != null} />
+        </div>
+
         <div
           ref={stack}
           data-testid="RecipeView-stack"
@@ -188,10 +192,6 @@ export function RecipeView({ recipe: r, tile, steps, rules, liked = false, note:
         >
           <TabBar tab={tab} onSelect={select} />
           <TimerDock timers={timers.active.filter((t) => !inView.has(t.step))} onJump={jump} />
-        </div>
-
-        <div className="mt-6 min-[52rem]:mt-10">
-          <ScaleControl value={amount} onChange={setAmount} servings={r.servings != null} />
         </div>
 
         <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-10 min-[52rem]:grid-cols-[minmax(16rem,22rem)_1fr] min-[52rem]:items-start">
