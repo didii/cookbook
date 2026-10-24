@@ -17,11 +17,11 @@ const ingredient = (quantityText: string, quantityValue: number | null, quantity
 
 describe('recipe-scaling › Ingredient list scales', () => {
   test('the stored value is multiplied and shown with its unit', () => {
-    assert.equal(scaleIngredient(ingredient('200 g', 200, 'g'), 1.5), '300 g');
+    assert.equal(scaleIngredient(ingredient('', 200, 'g'), 1.5), '300 g');
   });
 
   test('a value without a unit', () => {
-    assert.equal(scaleIngredient(ingredient('2', 2, null), 2), '4');
+    assert.equal(scaleIngredient(ingredient('', 2, null), 2), '4');
   });
 });
 
@@ -36,7 +36,7 @@ describe('recipe-scaling › Ingredient range stays as written', () => {
 
 describe('recipe-scaling › Scaled ingredient keeps its unit', () => {
   test('the stored unit follows the scaled value', () => {
-    assert.equal(scaleIngredient(ingredient('½ tl', 0.5, 'tl'), 3), '1,5 tl');
+    assert.equal(scaleIngredient(ingredient('', 0.5, 'tl'), 3), '1,5 tl');
   });
 });
 
@@ -49,8 +49,16 @@ describe('scaleIngredient', () => {
     assert.equal(scaleIngredient(ingredient('', null, null), 3), '');
   });
 
+  test('the quantity text is ignored when scaling', () => {
+    assert.equal(scaleIngredient(ingredient('quantityText', 5, 'unit'), 2), '10 unit');
+  });
+
+  test('only the quantity text is used at factor 1', () => {
+    assert.equal(scaleIngredient(ingredient('quantityText', 5, 'unit'), 1), 'quantityText');
+  });
+
   test('the scaled value is rounded like other scaled numbers', () => {
-    assert.equal(scaleIngredient(ingredient('1 kg', 1, 'kg'), 1 / 3), '0,333 kg');
+    assert.equal(scaleIngredient(ingredient('', 1, 'kg'), 1 / 3), '0,333 kg');
   });
 });
 
