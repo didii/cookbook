@@ -23,7 +23,7 @@ describe('TimerDock', () => {
       [tenth, timers[1]],
     ] as const) {
       const label = pill.getAttribute('aria-label')!;
-      assert.ok([String(t.step + 1), t.label, formatCountdown(t.remainingMs)].every((part) => label.includes(part)));
+      assert.ok([String(t.step + 1), t.label!, formatCountdown(t.remainingMs)].every((part) => label.includes(part)));
     }
   });
 

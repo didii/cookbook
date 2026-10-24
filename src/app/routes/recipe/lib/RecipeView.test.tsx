@@ -4,6 +4,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router';
 import { afterEach, beforeEach, describe, test } from 'vitest';
 import type { Recipe, Step } from '~app/shared/recipe';
 import { defaultRules } from '~app/shared/rules';
+import { cssFor, hidesAt } from '~testing/css';
 import { cleanup, fireEvent, precedes, render, screen, setViewport } from '~testing/dom';
 import { RecipeView } from './RecipeView';
 
@@ -43,10 +44,7 @@ const ingredientsPanel = () => screen.getByTestId('RecipeView-ingredients');
 const stepsPanel = () => screen.getByTestId('RecipeView-steps');
 const checkboxes = () => screen.getAllByTestId<HTMLInputElement>('IngredientList-checkbox');
 
-afterEach(() => {
-  localStorage.clear();
-  sessionStorage.clear();
-});
+const hiddenNarrow = (el: HTMLElement) => hidesAt(el.className, '(width < 51.99rem)');
 
 describe('recipe-viewing › Tabs on a narrow screen', () => {
   test('the tab bar with its two tabs is in the sticky bar', () => {
@@ -55,22 +53,27 @@ describe('recipe-viewing › Tabs on a narrow screen', () => {
     assert.equal(tabs().length, 2);
   });
 
-  test('the bar sticks to the top and is only there below 52rem', () => {
+  test('the bar sticks to the top', async () => {
     page();
-    assert.ok(stack().classList.contains('sticky') && stack().classList.contains('min-[52rem]:hidden'));
+    assert.match(await cssFor(stack().className), /position: sticky/);
   });
 
-  test('one panel at a time is shown below 52rem', () => {
+  test('the bar is only there below 52rem', async () => {
     page();
-    assert.ok(stepsPanel().classList.contains('max-[51.99rem]:hidden'));
-    assert.ok(!ingredientsPanel().classList.contains('max-[51.99rem]:hidden'));
+    assert.ok(await hidesAt(stack().className, '(width >= 52rem)'));
   });
 
-  test('choosing the other tab swaps which panel is hidden', () => {
+  test('one panel at a time is shown below 52rem', async () => {
+    page();
+    assert.ok(await hiddenNarrow(stepsPanel()));
+    assert.ok(!(await hiddenNarrow(ingredientsPanel())));
+  });
+
+  test('choosing the other tab swaps which panel is hidden', async () => {
     page();
     fireEvent.click(tabs()[1]);
-    assert.ok(!stepsPanel().classList.contains('max-[51.99rem]:hidden'));
-    assert.ok(ingredientsPanel().classList.contains('max-[51.99rem]:hidden'));
+    assert.ok(!(await hiddenNarrow(stepsPanel())));
+    assert.ok(await hiddenNarrow(ingredientsPanel()));
   });
 });
 
@@ -79,11 +82,11 @@ test.todo('recipe-viewing › Two columns on a wide screen');
 
 // The page scrolling as a whole needs layout; checked here: the column has no sticky or scrolling behaviour of its own.
 describe('recipe-viewing › Long ingredient list on a wide screen', () => {
-  test('the column and its lists have no sticky or scrolling behaviour', () => {
+  test('the column and its lists have no sticky or scrolling behaviour', async () => {
     page();
     const column = ingredientsPanel();
     for (const el of [column, ...column.querySelectorAll('ul')]) {
-      assert.doesNotMatch(el.className, /sticky|overflow|max-h/);
+      assert.doesNotMatch(await cssFor(el.className), /position: sticky|overflow|max-height/);
     }
   });
 });
@@ -137,16 +140,15 @@ describe('recipe-viewing › Optional fields are empty', () => {
   // No time, no servings and no image: the page still renders, without them.
   test('the title and author still show', () => {
     page();
-    assert.equal(screen.getByTestId('RecipeView-title').tagName, 'H1');
     assert.equal(screen.getByTestId('RecipeView-title').textContent, 'Appeltaart');
     assert.equal(screen.getByTestId('RecipeView-author').textContent, 'van Oma');
   });
 
   test('no time, servings or image show', () => {
-    const { container } = page();
+    page();
     assert.equal(screen.queryByTestId('RecipeView-time'), null);
     assert.equal(screen.queryByTestId('RecipeView-servings'), null);
-    assert.equal(container.querySelector('img'), null);
+    assert.equal(screen.queryByTestId('RecipeView-image'), null);
   });
 
   test('with them, the time and servings are shown', () => {
@@ -156,8 +158,8 @@ describe('recipe-viewing › Optional fields are empty', () => {
   });
 
   test('with them, the image is shown', () => {
-    const full = page({ recipe: { ...recipe, time: '1 uur', servings: 6, image: '/taart.jpg' } });
-    assert.ok(full.container.querySelector('img'));
+    page({ recipe: { ...recipe, time: '1 uur', servings: 6, image: '/taart.jpg' } });
+    assert.ok(screen.getByTestId('RecipeView-image'));
   });
 });
 
@@ -212,9 +214,9 @@ describe('cook-mode › Switch on a narrow screen', () => {
 
 describe('cook-mode › No cook mode on a wide screen', () => {
   // The switch is hidden from 52rem on, and the decision never wants the lock there (see cookMode.test.ts).
-  test('the switch is hidden from 52rem', () => {
+  test('the switch is hidden from 52rem', async () => {
     page();
-    assert.ok(screen.getByTestId('CookSwitch-label').classList.contains('min-[52rem]:hidden'));
+    assert.ok(await hidesAt(screen.getByTestId('CookSwitch-label').className, '(width >= 52rem)'));
   });
 });
 

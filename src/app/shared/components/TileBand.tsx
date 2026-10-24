@@ -19,7 +19,7 @@ type PatternProps = { file: string; cols: number; rows: number; className?: stri
 function Pattern({ file, cols, rows, className }: PatternProps) {
   const id = useId();
   return (
-    <svg viewBox={`0 0 ${cols} ${rows}`} className={cn('w-full border-b-3 border-ink', className)} aria-hidden="true">
+    <svg data-testid="TileBand-band" viewBox={`0 0 ${cols} ${rows}`} className={cn('w-full border-b-3 border-ink', className)} aria-hidden="true">
       <pattern id={id} width="1" height="1" patternUnits="userSpaceOnUse">
         <image href={file} width="1" height="1" />
       </pattern>

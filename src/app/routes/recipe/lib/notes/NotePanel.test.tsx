@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { afterEach, beforeEach, describe, test } from 'vitest';
+import { hidesAt } from '~testing/css';
 import { act, fireEvent, render, screen } from '~testing/dom';
 import { NotePanel } from './NotePanel';
 import { useNote } from './useNote';
@@ -43,8 +44,8 @@ describe('recipe-note › Note panel on a wide screen', () => {
     assert.equal(screen.queryByRole('button', { name: /notitie/i }), null);
   });
 
-  test('it is shown from 52rem only', () => {
-    assert.ok(screen.getByTestId('NotePanel-panel').classList.contains('max-[51.99rem]:hidden'));
+  test('it is shown from 52rem only', async () => {
+    assert.ok(await hidesAt(screen.getByTestId('NotePanel-panel').className, '(width < 51.99rem)'));
   });
 });
 

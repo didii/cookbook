@@ -17,7 +17,8 @@ const show = () => render(<ChipsHarness initial={initial} />);
 const bar = () => screen.getByTestId('StepChips-toolbar');
 /** The things in the tab order: the chips and the add buttons, but not the small icon buttons (those are for the pointer). */
 const tabStops = () => [...bar().querySelectorAll('button')].filter((b) => b.getAttribute('tabindex') === '0');
-const items = () => [...bar().querySelectorAll<HTMLElement>('[data-roving]')];
+const rovingIds = ['StepChips-chip', 'StepChips-accept', 'StepChips-reject', 'StepChips-add', 'StepChips-ghost'];
+const items = () => [...bar().querySelectorAll('button')].filter((b) => rovingIds.includes(b.dataset.testid ?? ''));
 
 describe('recipe-step-chips › Chips are one tab stop', () => {
   /** Renders the chips with the first item focused. */
@@ -80,7 +81,7 @@ describe('recipe-step-chips › Enter opens the popup', () => {
   const chip = () => screen.getAllByTestId('StepChips-chip')[1];
   test('the chip is a button', () => {
     show();
-    assert.equal(chip().tagName, 'BUTTON');
+    assert.ok(screen.getAllByRole('button').includes(chip()));
   });
 
   test('the chip announces a dialog', () => {

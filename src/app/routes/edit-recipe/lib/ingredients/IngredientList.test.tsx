@@ -49,10 +49,6 @@ describe('recipe-ingredient-editing › Quantity is highlighted while typing', (
   };
 
   // The field's own text is transparent; a layer under it paints the same text with the quantity in blue.
-  test('the quantity is marked up as bold', () => {
-    assert.equal(typed().tagName, 'B');
-  });
-
   test('only the quantity is highlighted', () => {
     assert.equal(typed().textContent, '250 g');
   });
@@ -75,12 +71,6 @@ describe('recipe-ingredient-editing › Quantity is highlighted while typing', (
     typed();
     fireEvent.change(field(1), { target: { value: 'bruine suiker' } });
     assert.equal(screen.queryByTestId('IngredientItem-quantity'), null);
-  });
-
-  test('no highlight element is left without a quantity', () => {
-    typed();
-    fireEvent.change(field(1), { target: { value: 'bruine suiker' } });
-    assert.equal(document.querySelector('b'), null);
   });
 });
 

@@ -34,7 +34,12 @@ export const within: typeof testing.within = testing.within;
 export const act: typeof testing.act = testing.act;
 /** Removes what was rendered; it also happens after each test, so only a test that renders twice needs it. */
 export const cleanup: typeof testing.cleanup = testing.cleanup;
-afterEach(() => cleanup());
+// Storage lives as long as the DOM, so it is emptied after every test: no test sees what an earlier one stored.
+afterEach(() => {
+  cleanup();
+  localStorage.clear();
+  sessionStorage.clear();
+});
 // Happy-dom keeps timers alive that stop the test run from exiting.
 afterAll(() => GlobalRegistrator.unregister());
 

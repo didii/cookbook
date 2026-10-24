@@ -21,6 +21,7 @@ export function RecipeCard({ recipe: r, tile, eager }: Props) {
       )}
       {r.image && (
         <img
+          data-testid="RecipeCard-image"
           src={r.image}
           alt=""
           loading={eager ? 'eager' : 'lazy'}

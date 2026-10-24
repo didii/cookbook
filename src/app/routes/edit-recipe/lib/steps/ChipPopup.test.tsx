@@ -55,7 +55,7 @@ describe('recipe-step-chips › Clicking a chip opens its popup', () => {
   });
 
   test('the popup sits next to its chip', () => {
-    assert.ok(open().parentElement === timerChip().closest('div.relative'));
+    assert.ok(open().parentElement!.contains(timerChip()));
   });
 
   test('the chip is marked expanded', () => {

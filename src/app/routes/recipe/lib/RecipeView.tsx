@@ -165,7 +165,16 @@ export function RecipeView({ recipe: r, tile, steps, rules, liked = false, note:
         <p className="mt-2 max-w-[60ch] text-lg text-muted">{r.intro}</p>
 
         <div className="@container relative mt-6 overflow-hidden rounded-xl border-3 border-ink bg-white shadow-hard">
-          {r.image && <img src={r.image} alt="" width="1280" height="640" className="block aspect-2/1 w-full border-b-3 border-ink object-cover" />}
+          {r.image && (
+            <img
+              data-testid="RecipeView-image"
+              src={r.image}
+              alt=""
+              width="1280"
+              height="640"
+              className="block aspect-2/1 w-full border-b-3 border-ink object-cover"
+            />
+          )}
           {r.image && r.seal && <Seal id={r.seal} className="h-16" />}
           <TileBand first={tile} responsive className="border-b-0" />
         </div>

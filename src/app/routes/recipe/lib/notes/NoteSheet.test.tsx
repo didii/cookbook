@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { afterEach, beforeEach, describe, test, vi } from 'vitest';
+import { cssFor, hidesAt } from '~testing/css';
 import { act, fireEvent, render, screen } from '~testing/dom';
 import { NoteSheet } from './NoteSheet';
 import { useNote } from './useNote';
@@ -47,8 +48,8 @@ describe('recipe-note › Recipe without a note', () => {
     assert.equal(button().getAttribute('aria-label'), 'Open mijn notitie');
   });
 
-  test('the button is only there below 52rem', () => {
-    assert.ok(button().closest('div')!.classList.contains('min-[52rem]:hidden'));
+  test('the button is only there below 52rem', async () => {
+    assert.ok(await hidesAt(screen.getByTestId('NoteSheet-root').className, '(width >= 52rem)'));
   });
 });
 
@@ -79,10 +80,10 @@ describe('recipe-note › Opening the note field', () => {
     assert.equal(sheet()!.getAttribute('aria-label'), 'Mijn notitie');
   });
 
-  test('the button turns into a red close button', () => {
+  test('the button turns into a red close button', async () => {
     assert.equal(button().getAttribute('aria-label'), 'Sluit mijn notitie');
     assert.equal(button().getAttribute('aria-expanded'), 'true');
-    assert.ok(button().classList.contains('bg-red'));
+    assert.match(await cssFor(button().className), /background-color: var\(--color-red\)/);
   });
 
   test('the sheet says the note is only for you', () => {
@@ -180,8 +181,8 @@ describe('recipe-note › Saved replaces the hint', () => {
     assert.equal(screen.getByTestId('NoteSheet-saved').textContent?.trim(), 'Bewaard');
   });
 
-  test('the status is an output element', () => {
-    assert.equal(screen.getByTestId('NoteSheet-status').tagName, 'OUTPUT');
+  test('the saved message is inside the status', () => {
+    assert.ok(screen.getByTestId('NoteSheet-status').contains(screen.getByTestId('NoteSheet-saved')));
   });
 });
 

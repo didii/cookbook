@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { afterEach, describe, test } from 'vitest';
+import { cssFor } from '~testing/css';
 import { act, fireEvent, render, screen } from '~testing/dom';
 import { LikeButton } from './LikeButton';
 
@@ -32,14 +33,19 @@ describe('recipe-like › Recipe not liked', () => {
     assert.equal(heart().getAttribute('aria-label'), 'Markeer als favoriet');
   });
 
-  test('the button is white and 44px', () => {
+  test('the button is white', async () => {
     render(<LikeButton slug="soep" initialLiked={false} />);
-    assert.ok(heart().classList.contains('bg-white') && heart().classList.contains('size-11'));
+    assert.match(await cssFor(heart().className), /background-color: var\(--color-white\)/);
   });
 
-  test('the heart is an outline', () => {
+  test('the button is 44px wide and high', async () => {
     render(<LikeButton slug="soep" initialLiked={false} />);
-    assert.ok(!heart().querySelector('svg')!.classList.contains('fill-current'));
+    assert.match(await cssFor(heart().className), /width: calc\(var\(--spacing\) \* 11\);\s*height: calc\(var\(--spacing\) \* 11\)/);
+  });
+
+  test('the heart is an outline', async () => {
+    render(<LikeButton slug="soep" initialLiked={false} />);
+    assert.doesNotMatch(await cssFor(heart().querySelector('svg')!.getAttribute('class') ?? ''), /fill: currentcolor/);
   });
 });
 
@@ -54,14 +60,14 @@ describe('recipe-like › Recipe liked', () => {
     assert.equal(heart().getAttribute('aria-label'), 'Verwijder uit favorieten');
   });
 
-  test('the button is red', () => {
+  test('the button is red', async () => {
     render(<LikeButton slug="soep" initialLiked />);
-    assert.ok(heart().classList.contains('bg-red'));
+    assert.match(await cssFor(heart().className), /background-color: var\(--color-red\)/);
   });
 
-  test('the heart is filled', () => {
+  test('the heart is filled', async () => {
     render(<LikeButton slug="soep" initialLiked />);
-    assert.ok(heart().querySelector('svg')!.classList.contains('fill-current'));
+    assert.match(await cssFor(heart().querySelector('svg')!.getAttribute('class') ?? ''), /fill: currentcolor/);
   });
 });
 
