@@ -645,7 +645,7 @@ describe('recipe-storage › Link needs a recipe and a category', () => {
   });
 });
 
-describe('recipe-storage › Recipe deleted', () => {
+describe('recipe-storage › Recipe with categories deleted', () => {
   test('the links are gone', async ({ db }) => {
     const recipe = await addRecipe(db, 'cat-deleted');
     await linkCategory(db, recipe, await addCategory(db, 'Hoofdgerecht'));
