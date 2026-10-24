@@ -43,6 +43,7 @@ export function RecipeCard({ recipe: r, tile, eager, onSaved }: Props) {
           {r.hasNote && (
             <span
               data-testid="RecipeCard-note"
+              // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- a span with an icon, not an image file
               role="img"
               aria-label="Je hebt een notitie"
               className="grid size-11 place-items-center rounded-[10px] border-3 border-ink bg-yel text-ink"
@@ -71,12 +72,19 @@ export function RecipeCard({ recipe: r, tile, eager, onSaved }: Props) {
         {r.categories.length > 0 && (
           <div data-testid="RecipeCard-categories" className="mt-1.5 flex flex-wrap gap-1.5">
             {r.categories.slice(0, maxCategories).map((name) => (
-              <span key={name} data-testid="RecipeCard-category" className="rounded-full border-2 border-ink bg-por px-2.5 text-[0.8125rem] leading-[1.45] font-extrabold">
+              <span
+                key={name}
+                data-testid="RecipeCard-category"
+                className="rounded-full border-2 border-ink bg-por px-2.5 text-[0.8125rem] leading-[1.45] font-extrabold"
+              >
                 {name}
               </span>
             ))}
             {more > 0 && (
-              <span data-testid="RecipeCard-more" className="rounded-full border-2 border-dashed border-ink px-2.5 text-[0.8125rem] leading-[1.45] font-extrabold">
+              <span
+                data-testid="RecipeCard-more"
+                className="rounded-full border-2 border-dashed border-ink px-2.5 text-[0.8125rem] leading-[1.45] font-extrabold"
+              >
                 +{more}
               </span>
             )}

@@ -105,7 +105,7 @@ describe('recipe-like › Like cannot be saved', () => {
   });
 });
 
-describe('recipe-like � Leaf reacts to the pointer', () => {
+describe('recipe-like › Leaf reacts to the pointer', () => {
   test('an unliked leaf has a hover colour', async () => {
     render(<LikeButton slug="soep" initialLiked={false} />);
     assert.match(await cssFor(leaf().className), /hover[^{]*\{[^}]*background-color: var\(--color-yel\)/);

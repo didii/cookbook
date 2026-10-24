@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { createMemoryRouter, MemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
-import { describe } from 'vitest';
+import { createMemoryRouter, RouterContextProvider, RouterProvider, useLoaderData } from 'react-router';
+import { afterEach, describe } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import type { RecipeSummary } from '~app/shared/recipe';
 import { createRecipe } from '~app/shared/recipes.server';
@@ -22,11 +22,7 @@ const load = async (db: D1Database) => {
 /** The page for a list of recipes at an address. */
 const renderAt = (url: string, recipes: RecipeSummary[]) => {
   const props = { loaderData: { recipes } } as Route.ComponentProps;
-  return render(
-    <MemoryRouter initialEntries={[url]}>
-      <HomePage {...props} />
-    </MemoryRouter>,
-  );
+  return render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <HomePage {...props} /> }], { initialEntries: [url] })} />);
 };
 /** The slugs of the cards on the page, in order. */
 const shownTitles = () => screen.queryAllByTestId('RecipeCard-link').map((a) => a.getAttribute('href')?.replace('/recepten/', ''));
@@ -145,14 +141,15 @@ const twelve = Array.from({ length: 12 }, (_, i) => summary(i < 3 ? `Soep ${i}` 
 
 describe('recipe-filtering › Few recipes', () => {
   test('only the search box is offered', () => {
-    const few = renderAt('/', family.slice(0, 3));
+    renderAt('/', family.slice(0, 3));
     assert.ok(searchBox());
-    assert.equal(few.container.querySelector('[aria-pressed]'), null);
+    assert.equal(screen.queryAllByTestId('FilterBar-chip').length, 0);
     assert.equal(screen.queryAllByTestId('FilterBar-sort').length, 0);
   });
 
   test('the chips are offered once there are more recipes', () => {
-    assert.ok(renderAt('/', family).container.querySelector('[aria-pressed]'));
+    renderAt('/', family);
+    assert.ok(screen.getAllByTestId('FilterBar-chip').length > 0);
   });
 
   // An address that sets author or order is ignored when those controls are not offered, since they could not be undone.
@@ -346,5 +343,73 @@ describe('recipe-filtering › Reaching the last recipe', () => {
 
   test('returns to normal spacing from 48rem', async () => {
     assert.match(await mainCss(), /@media \(width >= 48rem\) \{[^@]*padding-bottom: calc\(var\(--spacing\) \* 16\)/);
+  });
+});
+
+describe('recipe-like › Liking from a card', () => {
+  const realFetch = globalThis.fetch;
+  afterEach(() => {
+    globalThis.fetch = realFetch;
+  });
+  const sent: string[] = [];
+  /** The page with a list the "server" changes when a like is posted, so a refetch shows it. */
+  const setup = (liked: boolean) => {
+    const list = [{ ...summary('Erwtensoep', 'Papa'), liked }];
+    sent.length = 0;
+    globalThis.fetch = ((url: string, init: RequestInit) => {
+      sent.push(`${url} ${String(init.body)}`);
+      list[0]!.liked = String(init.body).includes('true');
+      return Promise.resolve(new Response(null, { status: 204 }));
+    }) as typeof fetch;
+    const Page = () => <HomePage {...({ loaderData: useLoaderData() } as Route.ComponentProps)} />;
+    const router = createMemoryRouter([{ path: '/', loader: () => ({ recipes: structuredClone(list) }), Component: Page }], {
+      initialEntries: ['/'],
+    });
+    return render(<RouterProvider router={router} />);
+  };
+  const leaf = () => screen.getByTestId('LikeButton-leaf');
+  const pressLeaf = () => act(async () => void fireEvent.click(leaf()));
+
+  test('the leaf shows liked', async () => {
+    setup(false);
+    await screen.findByTestId('LikeButton-leaf');
+    await pressLeaf();
+    assert.equal(leaf().getAttribute('aria-pressed'), 'true');
+  });
+
+  test('the like is stored with a request', async () => {
+    setup(false);
+    await screen.findByTestId('LikeButton-leaf');
+    await pressLeaf();
+    assert.deepEqual(sent, ['/recepten/erwtensoep/favoriet liked=true']);
+  });
+
+  test('the member stays on the home page', async () => {
+    setup(false);
+    await screen.findByTestId('LikeButton-leaf');
+    await pressLeaf();
+    assert.ok(screen.getByTestId('HomePage-title'));
+  });
+
+  describe('recipe-like › Unliking from a card', () => {
+    test('the leaf shows not liked and the removal is sent', async () => {
+      setup(true);
+      await screen.findByTestId('LikeButton-leaf');
+      await pressLeaf();
+      assert.equal(leaf().getAttribute('aria-pressed'), 'false');
+      assert.deepEqual(sent, ['/recepten/erwtensoep/favoriet liked=false']);
+    });
+  });
+
+  describe('recipe-like › A like from a card is kept', () => {
+    test('the card shows the leaf liked after hiding and showing it', async () => {
+      setup(false);
+      await screen.findByTestId('LikeButton-leaf');
+      await pressLeaf();
+      await act(async () => void fireEvent.change(searchBox(), { target: { value: 'zzz' } }));
+      assert.equal(screen.queryAllByTestId('LikeButton-leaf').length, 0);
+      await act(async () => void fireEvent.change(searchBox(), { target: { value: '' } }));
+      assert.equal(leaf().getAttribute('aria-pressed'), 'true');
+    });
   });
 });

@@ -1,4 +1,4 @@
-import { Link, useSearchParams, type ShouldRevalidateFunctionArgs } from 'react-router';
+import { Link, useRevalidator, useSearchParams, type ShouldRevalidateFunctionArgs } from 'react-router';
 import { Button } from '~app/shared/components';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { listRecipes } from '~app/shared/recipes.server';
@@ -26,6 +26,7 @@ export function meta() {
 export default function HomePage({ loaderData }: Route.ComponentProps) {
   const { recipes } = loaderData;
   const [params, setParams] = useSearchParams();
+  const { revalidate } = useRevalidator();
   const detailed = recipes.length >= minRecipesForFilters;
   const parsed = parseFilters(params);
   // Without the chips and the sort control there is no way to undo them, so an address that sets them is ignored.
@@ -70,7 +71,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
             <ul className="grid list-none grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] gap-6 p-0">
               {shown.map((r, i) => (
                 <li key={r.slug}>
-                  <RecipeCard recipe={r} tile={tileFor(i)} eager={i < 3} />
+                  <RecipeCard recipe={r} tile={tileFor(i)} eager={i < 3} onSaved={() => void revalidate()} />
                 </li>
               ))}
             </ul>

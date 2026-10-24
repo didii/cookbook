@@ -82,6 +82,8 @@ describe('recipe-browsing › Recipe without time or image', () => {
   });
 });
 
+// Removed by redesign-recipe-card (the image ratio now follows the tile count); this goes when the change is archived.
+test.todo('recipe-browsing › Card image ratio');
 // Needs real layout to measure heights.
 test.todo('recipe-browsing › Card without image is as tall as with');
 // Needs a real browser at 390px width.
