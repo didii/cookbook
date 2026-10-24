@@ -334,7 +334,7 @@ describe('parsing-rules › Grams are not degrees', () => {
   });
 
   test('180 gr bloem has the unit gr', () => {
-    assert.equal(parseIngredient('180 gr bloem', defaultRules).unit, 'gr');
+    assert.equal(parseIngredient('180 gr bloem', defaultRules).quantityUnit, 'gr');
   });
 });
 

@@ -3,6 +3,9 @@
 /** An ingredient row of a recipe, or a chip of a step: free text, a step's chip never refers to a row. Same shape as the stored ingredient. */
 export type Ingredient = { quantityText: string; name: string };
 
+/** An ingredient row of a recipe: the quantity text as typed, plus its numeric value and unit when it has them (null for none, such as a range). */
+export type RecipeIngredient = Ingredient & { quantityValue: number | null; quantityUnit: string | null };
+
 /** A step and what belongs to it: the ingredients it uses, an oven temperature and a timer, all optional. */
 export type Step = {
   body: string;
@@ -24,7 +27,7 @@ export type Recipe = {
   seal: string | null;
   /** When the recipe was last saved; the editor compares it to the version a draft started from. */
   updated_at: string;
-  ingredients: Ingredient[];
+  ingredients: RecipeIngredient[];
   steps: Step[];
 };
 

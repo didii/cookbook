@@ -1,4 +1,4 @@
-import type { Recipe, RecipeSummary, Step } from './recipe';
+import type { Recipe, RecipeIngredient, RecipeSummary, Step } from './recipe';
 import { pickSeal } from './seals';
 
 export type RecipeRow = {
@@ -28,7 +28,7 @@ export async function getRecipe(db: D1Database, slug: string): Promise<Recipe | 
     db.prepare('SELECT id, slug, title, author, time, servings, intro, image, seal, updated_at FROM recipes WHERE slug = ?').bind(slug),
     db
       .prepare(
-        'SELECT i.quantity_text AS quantityText, i.name FROM ingredients i JOIN recipes r ON r.id = i.recipe_id WHERE r.slug = ? ORDER BY i.position',
+        'SELECT i.quantity_text AS quantityText, i.quantity_value AS quantityValue, i.quantity_unit AS quantityUnit, i.name FROM ingredients i JOIN recipes r ON r.id = i.recipe_id WHERE r.slug = ? ORDER BY i.position',
       )
       .bind(slug),
     db
@@ -47,7 +47,7 @@ export async function getRecipe(db: D1Database, slug: string): Promise<Recipe | 
   const chipRows = chips.results as (IngredientRow & { step_id: number })[];
   return {
     ...row,
-    ingredients: ingredients.results as IngredientRow[],
+    ingredients: ingredients.results as RecipeIngredient[],
     steps: (steps.results as StepRow[]).map((s) => ({
       body: s.body,
       ingredients: chipRows.filter((c) => c.step_id === s.id).map((c) => ({ quantityText: c.quantityText, name: c.name })),
@@ -66,7 +66,7 @@ export type RecipeInput = {
   image?: string;
   seal?: string;
   createdBy?: string;
-  ingredients?: { name: string; quantityText?: string; amount?: number; unit?: string }[];
+  ingredients?: { name: string; quantityText?: string; quantityValue?: number; quantityUnit?: string }[];
   steps?: StepInput[];
 };
 
@@ -144,8 +144,8 @@ export async function createRecipe(db: D1Database, recipe: RecipeInput): Promise
       ),
     ...(recipe.ingredients ?? []).map((ing, i) =>
       db
-        .prepare(`INSERT INTO ingredients (recipe_id, position, name, quantity_text, amount, unit) VALUES (${idOf}, ?, ?, ?, ?, ?)`)
-        .bind(slug, i, ing.name, ing.quantityText ?? '', ing.amount ?? null, ing.unit ?? null),
+        .prepare(`INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES (${idOf}, ?, ?, ?, ?, ?)`)
+        .bind(slug, i, ing.name, ing.quantityText ?? '', ing.quantityValue ?? null, ing.quantityUnit ?? null),
     ),
     ...insertSteps(db, slug, recipe.steps ?? []),
   ]);
@@ -223,9 +223,9 @@ export async function updateRecipe(
           ...recipe.ingredients.map((ing, i) =>
             db
               .prepare(
-                'INSERT INTO ingredients (recipe_id, position, name, quantity_text, amount, unit) SELECT id, ?, ?, ?, ?, ? FROM recipes WHERE slug = ?',
+                'INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) SELECT id, ?, ?, ?, ?, ? FROM recipes WHERE slug = ?',
               )
-              .bind(i, ing.name, ing.quantityText ?? '', ing.amount ?? null, ing.unit ?? null, slug),
+              .bind(i, ing.name, ing.quantityText ?? '', ing.quantityValue ?? null, ing.quantityUnit ?? null, slug),
           ),
         ]
       : []),

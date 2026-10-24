@@ -9,8 +9,8 @@ Change 1 of 3. Verify each task with the type check and `pnpm test:ai`; `pnpm te
 
 ## 2. Server and types
 
-- [ ] 2.1 Rename `amount` / `unit` to `quantityValue` / `quantityUnit` in `ParsedIngredient` (`shared/ingredients.ts`), `recipeValidation.ts` and the insert/update statements of `recipes.server.ts`; drop the TODO on the old parsing
-- [ ] 2.2 Select `quantity_value` and `quantity_unit` in `getRecipe`, add `RecipeIngredient` to `shared/recipe.ts` and use it for `Recipe.ingredients`; test scenarios "Quantity value and unit are read with the recipe" and "Range has no quantity value" in `recipes.server.test.ts` / the edit route test
+- [x] 2.1 Rename `amount` / `unit` to `quantityValue` / `quantityUnit` in `ParsedIngredient` (`shared/ingredients.ts`), `recipeValidation.ts` and the insert/update statements of `recipes.server.ts`; drop the TODO on the old parsing
+- [x] 2.2 Select `quantity_value` and `quantity_unit` in `getRecipe`, add `RecipeIngredient` to `shared/recipe.ts` and use it for `Recipe.ingredients`; test scenarios "Quantity value and unit are read with the recipe" and "Range has no quantity value" in `recipes.server.test.ts` / the edit route test
 
 ## 3. Scaling
 

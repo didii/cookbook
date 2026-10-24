@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe } from 'vitest';
 import { defined } from '~testing/defined';
 import { test } from '~testing/test';
+import { parseIngredient } from './ingredients';
 import {
   createRecipe,
   deleteRecipe,
@@ -15,6 +16,7 @@ import {
   updateRecipe,
   type StepInput,
 } from './recipes.server';
+import { defaultRules } from './rules';
 import { seals } from './seals';
 
 /** Steps with only a text, as they are stored and as they come back. */
@@ -60,10 +62,25 @@ describe('getRecipe', () => {
 
     test('the ingredients are in position order', async ({ db }) => {
       assert.deepEqual((await getRecipe(db, slug))?.ingredients, [
-        { quantityText: '1', name: 'ei' },
-        { quantityText: '', name: 'zout' },
+        { quantityText: '1', quantityValue: null, quantityUnit: null, name: 'ei' },
+        { quantityText: '', quantityValue: null, quantityUnit: null, name: 'zout' },
       ]);
     });
+  });
+});
+
+describe('recipe-storage › Quantity value and unit are read with the recipe', () => {
+  test('text, value and unit of an ingredient saved from the editor', async ({ db }) => {
+    const slug = await createRecipe(db, { title: 'Bloem', author: 'Oma', ingredients: [parseIngredient('250 g bloem', defaultRules)] });
+    assert.deepEqual((await getRecipe(db, slug))?.ingredients, [{ quantityText: '250 g', quantityValue: 250, quantityUnit: 'g', name: 'bloem' }]);
+  });
+});
+
+describe('recipe-storage › Range has no quantity value', () => {
+  test('a range keeps its text and has no value', async ({ db }) => {
+    const slug = await createRecipe(db, { title: 'Olie', author: 'Oma', ingredients: [parseIngredient('2-3 el olie', defaultRules)] });
+    const [ingredient] = (await getRecipe(db, slug))?.ingredients ?? [];
+    assert.deepEqual([ingredient.quantityText, ingredient.quantityValue], ['2-3 el', null]);
   });
 });
 
@@ -135,7 +152,7 @@ describe('createRecipe', () => {
         image: '/alles.jpg',
         seal: 'fu',
         createdBy: 'iemand@example.com',
-        ingredients: [{ name: 'bloem', quantityText: '250 g', amount: 250, unit: 'g' }, { name: 'zout' }],
+        ingredients: [{ name: 'bloem', quantityText: '250 g', quantityValue: 250, quantityUnit: 'g' }, { name: 'zout' }],
         steps: plain('mengen', 'bakken'),
       });
     });
@@ -154,8 +171,8 @@ describe('createRecipe', () => {
         image: '/alles.jpg',
         seal: 'fu',
         ingredients: [
-          { quantityText: '250 g', name: 'bloem' },
-          { quantityText: '', name: 'zout' },
+          { quantityText: '250 g', quantityValue: 250, quantityUnit: 'g', name: 'bloem' },
+          { quantityText: '', quantityValue: null, quantityUnit: null, name: 'zout' },
         ],
         steps: loaded('mengen', 'bakken'),
       });
@@ -164,10 +181,10 @@ describe('createRecipe', () => {
     test('the creator and the parsed amount and unit are stored', async ({ db }) => {
       const row = await db
         .prepare(
-          "SELECT r.created_by, i.amount, i.unit FROM recipes r JOIN ingredients i ON i.recipe_id = r.id WHERE r.slug = 'alles' AND i.position = 0",
+          "SELECT r.created_by, i.quantity_value, i.quantity_unit FROM recipes r JOIN ingredients i ON i.recipe_id = r.id WHERE r.slug = 'alles' AND i.position = 0",
         )
         .first();
-      assert.deepEqual(row, { created_by: 'iemand@example.com', amount: 250, unit: 'g' });
+      assert.deepEqual(row, { created_by: 'iemand@example.com', quantity_value: 250, quantity_unit: 'g' });
     });
   });
 });
@@ -468,7 +485,7 @@ const storedIngredients = async (db: D1Database, slug: string) =>
   (
     await db
       .prepare(
-        'SELECT i.position, i.name, i.quantity_text, i.amount, i.unit FROM ingredients i JOIN recipes r ON r.id = i.recipe_id WHERE r.slug = ? ORDER BY i.position',
+        'SELECT i.position, i.name, i.quantity_text, i.quantity_value, i.quantity_unit FROM ingredients i JOIN recipes r ON r.id = i.recipe_id WHERE r.slug = ? ORDER BY i.position',
       )
       .bind(slug)
       .all()
@@ -479,12 +496,16 @@ describe('recipe-ingredient-editing › Ingredients are stored in order', () => 
     const slug = await createRecipe(db, {
       title: 'Volgorde',
       author: 'Oma',
-      ingredients: [{ name: 'bloem', quantityText: '250 g', amount: 250, unit: 'g' }, { name: 'zout' }, { name: 'ei', quantityText: '1', amount: 1 }],
+      ingredients: [
+        { name: 'bloem', quantityText: '250 g', quantityValue: 250, quantityUnit: 'g' },
+        { name: 'zout' },
+        { name: 'ei', quantityText: '1', quantityValue: 1 },
+      ],
     });
     assert.deepEqual(await storedIngredients(db, slug), [
-      { position: 0, name: 'bloem', quantity_text: '250 g', amount: 250, unit: 'g' },
-      { position: 1, name: 'zout', quantity_text: '', amount: null, unit: null },
-      { position: 2, name: 'ei', quantity_text: '1', amount: 1, unit: null },
+      { position: 0, name: 'bloem', quantity_text: '250 g', quantity_value: 250, quantity_unit: 'g' },
+      { position: 1, name: 'zout', quantity_text: '', quantity_value: null, quantity_unit: null },
+      { position: 2, name: 'ei', quantity_text: '1', quantity_value: 1, quantity_unit: null },
     ]);
   });
 });
@@ -495,9 +516,12 @@ describe('recipe-ingredient-editing › Saved list replaces the old one', () => 
 
   test('the new list is stored', async ({ db }) => {
     const slug = await create(db);
-    await updateRecipe(db, slug, { ...base, ingredients: [{ name: 'melk' }, { name: 'boter', quantityText: '50 g', amount: 50, unit: 'g' }] });
+    await updateRecipe(db, slug, {
+      ...base,
+      ingredients: [{ name: 'melk' }, { name: 'boter', quantityText: '50 g', quantityValue: 50, quantityUnit: 'g' }],
+    });
     assert.deepEqual(
-      (await storedIngredients(db, slug)).map((i) => [i.position, i.name, i.unit]),
+      (await storedIngredients(db, slug)).map((i) => [i.position, i.name, i.quantity_unit]),
       [
         [0, 'melk', null],
         [1, 'boter', 'g'],
