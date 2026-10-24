@@ -59,3 +59,15 @@ describe('findQuantities', () => {
     assert.deepEqual(find('Doe dit 3 keer'), []);
   });
 });
+
+describe('parsing-rules › Scaling uses the stored units', () => {
+  const rules = { ...defaultRules, units: [...defaultRules.units, 'kopje'] };
+
+  test('a stored unit gives a stored amount', () => {
+    assert.equal(findQuantities('doe 2 kopje bloem erbij', [], rules)[0]?.quantityValue, 2);
+  });
+
+  test('without the stored unit there is none', () => {
+    assert.deepEqual(findQuantities('doe 2 kopje bloem erbij', [], defaultRules), []);
+  });
+});
