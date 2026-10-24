@@ -1,8 +1,10 @@
 import { useId } from 'react';
 import { Link } from 'react-router';
+import { cn } from '~app/shared/cn';
 import { LikeButton, Seal, TileBand } from '~app/shared/components';
 import { StickyNote } from '~app/shared/icons';
 import type { RecipeSummary } from '~app/shared/recipe';
+import { twoTileRows } from '~app/shared/tile';
 
 type Props = { recipe: RecipeSummary; tile: number; eager?: boolean; onSaved?: () => void };
 
@@ -32,8 +34,7 @@ export function RecipeCard({ recipe: r, tile, eager, onSaved }: Props) {
           src={r.image}
           alt=""
           loading={eager ? 'eager' : 'lazy'}
-          // Two tile heights: the ratio follows the tile count of TileBand (6, 8, 10, 14 and 18 tiles).
-          className="block aspect-3/1 h-auto w-full border-b-3 border-ink object-cover @min-[21rem]:aspect-4/1 @min-[29rem]:aspect-5/1 @min-[37rem]:aspect-7/1 @min-[49rem]:aspect-9/1"
+          className={cn('block h-auto w-full border-b-3 border-ink object-cover', twoTileRows)}
         />
       )}
       {r.image && r.seal && <Seal id={r.seal} className="h-13" />}
