@@ -65,9 +65,6 @@ describe('findQuantities', () => {
   });
 });
 
-// Replaced by 'Saving uses the stored units' in the change store-step-quantities; drop this line when the change is archived.
-test.todo('parsing-rules › Scaling uses the stored units');
-
 describe('parsing-rules › Saving uses the stored units', () => {
   const rules = { ...defaultRules, units: [...defaultRules.units, 'kopje'] };
 

@@ -56,9 +56,6 @@ describe('scaleIngredient', () => {
   });
 });
 
-// Goes at archive: store-ingredient-quantities removes this scenario (ranges are out of scope, see card #44); drop this line when the change is archived.
-test.todo('recipe-scaling › Ranges scale');
-
 describe('recipe-scaling › Quantity without a number', () => {
   test('an empty quantity stays empty', () => {
     assert.equal(scaleIngredient(ingredient('', null, null), 3), '');
