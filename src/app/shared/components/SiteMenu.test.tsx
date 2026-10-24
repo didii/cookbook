@@ -170,8 +170,8 @@ describe('plaid-accent › Top of the sidebar is plaid', () => {
     assert.equal(screen.getAllByTestId('Plaid-layer').length, 1);
   });
 
-  test('the top section has an ink line below it', async () => {
-    assert.match(await cssFor(open().className), /border-bottom-style: var\(--tw-border-style\);\s*border-bottom-width: 3px/);
+  test('the top section ends in a fret, like the header', () => {
+    assert.ok(open().contains(screen.getByTestId('Fret-strip')));
   });
 });
 

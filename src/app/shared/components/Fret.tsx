@@ -9,6 +9,7 @@ export function Fret({ size, className }: Props) {
     <div
       className={cn('bg-current mask-repeat-round', className)}
       style={{ height: size, maskImage: mask, WebkitMaskImage: mask, maskSize: `${size}px ${size}px`, WebkitMaskSize: `${size}px ${size}px` }}
+      data-testid="Fret-strip"
       aria-hidden="true"
     />
   );

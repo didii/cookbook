@@ -4,7 +4,7 @@ import { beforeEach, describe } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { createUser, getUser } from '~app/shared/users.server';
 import { cssFor } from '~testing/css';
-import { render, screen } from '~testing/dom';
+import { precedes, render, screen } from '~testing/dom';
 import { fake } from '~testing/fake';
 import { test } from '~testing/test';
 import type { Route } from './+types/WelcomePageRoute';
@@ -207,44 +207,45 @@ describe('family-access › First visit by a new family member', () => {
   });
 });
 
-describe('plaid-accent › Card is framed in plaid', () => {
-  const frame = () => {
+describe('plaid-accent › Card has a plaid strip', () => {
+  const card = () => {
     show({ loaderData: { returnUrl: '/' } });
-    return screen.getByTestId('WelcomePage-frame');
+    return screen.getByTestId('WelcomePage-card');
   };
 
-  test('the frame holds a plaid layer', () => {
-    assert.ok(frame().contains(screen.getByTestId('Plaid-layer')));
+  test('the card starts with a plaid layer', () => {
+    assert.equal(card().firstElementChild, screen.getByTestId('Plaid-layer'));
   });
 
-  test('the frame holds the card', () => {
-    assert.ok(frame().contains(screen.getByTestId('WelcomePage-card')));
+  test('the plaid comes before the fret', () => {
+    card();
+    assert.ok(precedes(screen.getByTestId('Plaid-layer'), screen.getByTestId('Fret-strip')));
   });
 
-  test('the frame has an ink outline', async () => {
-    assert.match(await cssFor(frame().className), /border-color: var\(--color-ink\)/);
+  test('the card has an ink border', async () => {
+    assert.ok((await cssFor(card().className)).includes('border-color: var(--color-ink)'));
   });
 
-  test('the page behind the frame has no plaid', () => {
-    frame();
+  test('the page behind the card has no plaid', () => {
+    card();
     assert.equal(screen.getAllByTestId('Plaid-layer').length, 1);
   });
 });
 
-describe('plaid-accent › Frame and card are rounded', () => {
-  const radius = async (id: string) => (await cssFor(screen.getByTestId(id).className)).match(/border-radius: ([^;]+);/)?.[1];
-
-  test('the frame has a larger corner radius than the card', async () => {
+describe('plaid-accent › Card is rounded', () => {
+  const style = async () => {
     show({ loaderData: { returnUrl: '/' } });
-    assert.equal(await radius('WelcomePage-frame'), '22px');
-    assert.notEqual(await radius('WelcomePage-card'), '22px');
+    return cssFor(screen.getByTestId('WelcomePage-card').className);
+  };
+
+  test('the card has rounded corners', async () => {
+    assert.ok((await style()).includes('border-radius: var(--radius-xl)'));
   });
 
-  test('the card clips the tile band to its corners', async () => {
-    show({ loaderData: { returnUrl: '/' } });
-    assert.match(await cssFor(screen.getByTestId('WelcomePage-card').className), /overflow: hidden/);
+  test('the card clips the strip and the tile band to its corners', async () => {
+    assert.match(await style(), /overflow: hidden/);
   });
 });
 
 // Needs real layout.
-test.todo('plaid-accent › Frame on a narrow screen');
+test.todo('plaid-accent › Card on a narrow screen');

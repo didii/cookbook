@@ -39,41 +39,39 @@ export function meta() {
 export default function WelcomePage({ loaderData, actionData }: Route.ComponentProps) {
   return (
     <main id="main" className="@container mx-auto max-w-3xl px-[max(1rem,4vw)] pt-8 pb-16 md:pt-16">
-      <div data-testid="WelcomePage-frame" className="relative rounded-[22px] border-3 border-ink p-4 shadow-hard">
-        <Plaid strength={0.45} cell={32} className="rounded-[19px]" />
-        <div data-testid="WelcomePage-card" className="relative overflow-hidden rounded-xl border-3 border-ink bg-white">
-          <Fret size={14} className="text-red" />
-          <Form method="post" className="p-6">
-            <h1 className="text-[clamp(2rem,6vw,3rem)] leading-[1.05] font-black tracking-[-0.03em] text-balance">Welkom in het Familiekookboek</h1>
-            <p className="mt-2 text-lg text-pretty text-muted">Alle familierecepten op één plek. Eén ding nog voordat je begint.</p>
-            <input type="hidden" name="returnUrl" value={loaderData.returnUrl} />
-            <label htmlFor="callingName" data-testid="WelcomePage-label" className="mt-6 block font-extrabold">
-              Hoe noemen we je?
-            </label>
-            <input
-              id="callingName"
-              data-testid="WelcomePage-name"
-              name="callingName"
-              type="text"
-              autoComplete="off"
-              maxLength={maxNameLength}
-              required
-              defaultValue={actionData?.name}
-              aria-invalid={actionData?.error ? true : undefined}
-              aria-describedby={actionData?.error ? 'callingName-error' : undefined}
-              className="mt-1 block min-h-13 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-lg text-ink hover:not-focus:bg-[color-mix(in_srgb,var(--color-ink)_5%,white)] focus:shadow-focus focus:outline-transparent aria-invalid:border-red"
-            />
-            {actionData?.error && (
-              <p id="callingName-error" data-testid="WelcomePage-error" role="alert" className="mt-1 font-bold text-red">
-                {actionData.error}
-              </p>
-            )}
-            <Button main type="submit" className="mt-6 w-full">
-              Aan de slag
-            </Button>
-          </Form>
-          <TileBand first={loaderData.tile} responsive className="border-t-3" />
-        </div>
+      <div data-testid="WelcomePage-card" className="relative overflow-hidden rounded-xl border-3 border-ink bg-white">
+        <Plaid className="h-8" />
+        <Fret size={14} className="text-red" />
+        <Form method="post" className="p-6">
+          <h1 className="text-[clamp(2rem,6vw,3rem)] leading-[1.05] font-black tracking-[-0.03em] text-balance">Welkom in het Familiekookboek</h1>
+          <p className="mt-2 text-lg text-pretty text-muted">Alle familierecepten op één plek. Eén ding nog voordat je begint.</p>
+          <input type="hidden" name="returnUrl" value={loaderData.returnUrl} />
+          <label htmlFor="callingName" data-testid="WelcomePage-label" className="mt-6 block font-extrabold">
+            Hoe noemen we je?
+          </label>
+          <input
+            id="callingName"
+            data-testid="WelcomePage-name"
+            name="callingName"
+            type="text"
+            autoComplete="off"
+            maxLength={maxNameLength}
+            required
+            defaultValue={actionData?.name}
+            aria-invalid={actionData?.error ? true : undefined}
+            aria-describedby={actionData?.error ? 'callingName-error' : undefined}
+            className="mt-1 block min-h-13 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-lg text-ink hover:not-focus:bg-[color-mix(in_srgb,var(--color-ink)_5%,white)] focus:shadow-focus focus:outline-transparent aria-invalid:border-red"
+          />
+          {actionData?.error && (
+            <p id="callingName-error" data-testid="WelcomePage-error" role="alert" className="mt-1 font-bold text-red">
+              {actionData.error}
+            </p>
+          )}
+          <Button main type="submit" className="mt-6 w-full">
+            Aan de slag
+          </Button>
+        </Form>
+        <TileBand first={loaderData.tile} responsive className="border-t-3" />
       </div>
     </main>
   );
