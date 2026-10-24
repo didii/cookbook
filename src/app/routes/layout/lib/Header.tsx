@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
-import { Fret, SiteMenu } from '~app/shared/components';
+import { Fret } from '~app/shared/components';
 import type { Role } from '~app/shared/role';
+import { SiteMenu } from './SiteMenu';
 
 export function Header({ email, role }: { email: string; role: Role }) {
   return (

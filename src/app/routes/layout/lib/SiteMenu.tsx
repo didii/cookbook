@@ -1,9 +1,8 @@
 import { useRef } from 'react';
 import { Link } from 'react-router';
-import { Fret } from './Fret';
-import { Plaid } from './Plaid';
-import { Cross, Menu } from '../icons';
-import type { Role } from '../role';
+import { Fret, Plaid } from '~app/shared/components';
+import { Cross, Menu } from '~app/shared/icons';
+import type { Role } from '~app/shared/role';
 
 const links = [
   { to: '/recepten/nieuw', label: 'Nieuw recept' },

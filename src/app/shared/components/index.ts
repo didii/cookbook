@@ -4,7 +4,6 @@ export * from './Button';
 export * from './Fret';
 export * from './Plaid';
 export * from './Seal';
-export * from './SiteMenu';
 export * from './SkipLink';
 export * from './TileBand';
 export * from './WorkInProgress';
