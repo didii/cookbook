@@ -55,6 +55,11 @@ describe('findQuantities', () => {
     assert.deepEqual(find('Voeg 2-3 el olie toe'), []);
   });
 
+  test('finds no range written with spaces around the dash', () => {
+    assert.deepEqual(find('Voeg 2 - 3 el olie toe'), []);
+    assert.deepEqual(find('Voeg 2 – 3 eieren toe'), []);
+  });
+
   test('finds nothing in a number that is no amount', () => {
     assert.deepEqual(find('Doe dit 3 keer'), []);
   });

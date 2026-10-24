@@ -14,8 +14,10 @@ export function findQuantities(body: string, rows: Row[], rules: Rules): StepQua
     const quantityValue = numberValue(number);
     if (quantityValue && quantityValue > 0) found.push({ startIndex: start, endIndex: start + number.length, quantityValue, quantityUnit });
   };
+  const ranges: [number, number][] = [];
   for (const m of body.matchAll(beforeWord)) {
-    if (!m[2] && rules.units.includes(m[3].toLowerCase())) add(m.index, m[1], m[3].toLowerCase());
+    if (m[2]) ranges.push([m.index, m.index + m[1].length + m[2].length]);
+    else if (rules.units.includes(m[3].toLowerCase())) add(m.index, m[1], m[3].toLowerCase());
   }
   for (const f of findIngredients(body, rows, () => '', rules)) {
     const m = leading.exec(f.values.quantity);
@@ -24,5 +26,7 @@ export function findQuantities(body: string, rows: Row[], rules: Rules): StepQua
   // Stable sort: at the same start the amount with a unit stays first.
   found.sort((a, b) => a.startIndex - b.startIndex);
   let limit = 0;
-  return found.filter((q) => q.startIndex >= limit && ((limit = q.endIndex), true));
+  return found
+    .filter((q) => !ranges.some(([from, to]) => q.startIndex >= from && q.startIndex < to))
+    .filter((q) => q.startIndex >= limit && ((limit = q.endIndex), true));
 }
