@@ -19,12 +19,12 @@
 
 ## 4. Menu sidebar
 
-- [ ] 4.1 Split the `SiteMenu` panel into a plaid top (header-token height, ink line below, bare white close button at 0.5rem from the left) and the nav body; verify in the browser that the white cross stays legible where ink bands cross it and the header itself shows no plaid
-- [ ] 4.2 Add the sidebar scenarios to `SiteMenu.test.tsx` (`plaid-accent › Top of the sidebar is plaid`, `Plaid section is as tall as the header`, `Close button on the plaid`) and the limits to the pages' tests (`plaid-accent › Plaid is hidden from assistive technology`, `No plaid in the header`, `No plaid on recipe pages and cards`); verify `pnpm test:spec add-canadian-influence` reports no scenario without a test
+- [x] 4.1 Split the `SiteMenu` panel into a plaid top (header-token height, ink line below, bare white close button at 0.5rem from the left) and the nav body; verify in the browser that the white cross stays legible where ink bands cross it and the header itself shows no plaid
+- [x] 4.2 Add the sidebar scenarios to `SiteMenu.test.tsx` (`plaid-accent › Top of the sidebar is plaid`, `Plaid section is as tall as the header`, `Close button on the plaid`) and the limits to the pages' tests (`plaid-accent › Plaid is hidden from assistive technology`, `No plaid in the header`, `No plaid on recipe pages and cards`); verify `pnpm test:spec add-canadian-influence` reports no scenario without a test
 
 ## 5. Finish
 
-- [ ] 5.1 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check` and `pnpm test:ai`; verify all pass with no lint errors
+- [x] 5.1 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check` and `pnpm test:ai`; verify all pass with no lint errors
 - [ ] 5.2 Check the like button, welcome page and open menu in the browser on a phone-width viewport against the approved mocks; verify the leaf outline is not too thin and fix the plaid strength or stroke if needed
 
 ## Workflow follow-up

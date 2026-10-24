@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router';
 import { describe, test } from 'vitest';
+import { cssFor } from '~testing/css';
 import { fireEvent, render, screen } from '~testing/dom';
 import { SiteMenu } from './SiteMenu';
 import type { Role } from '../role';
@@ -150,5 +151,66 @@ describe('site-menu › Following a link closes the menu', () => {
 
   test('the menu is closed', async () => {
     assert.equal((await follow()).hasAttribute('open'), false);
+  });
+});
+
+describe('plaid-accent › Top of the sidebar is plaid', () => {
+  const open = () => {
+    show();
+    openMenu();
+    return screen.getByTestId('SiteMenu-top');
+  };
+
+  test('the top section holds a plaid layer', () => {
+    assert.ok(open().contains(screen.getByTestId('Plaid-layer')));
+  });
+
+  test('the rest of the sidebar has no plaid', () => {
+    open();
+    assert.equal(screen.getAllByTestId('Plaid-layer').length, 1);
+  });
+
+  test('the top section has an ink line below it', async () => {
+    assert.match(await cssFor(open().className), /border-bottom-style: var\(--tw-border-style\);\s*border-bottom-width: 3px/);
+  });
+});
+
+describe('plaid-accent › Plaid section is as tall as the header', () => {
+  test('the top section is as tall as the header token', async () => {
+    show();
+    openMenu();
+    assert.match(await cssFor(screen.getByTestId('SiteMenu-top').className), /height: var\(--spacing-header\)/);
+  });
+});
+
+describe('plaid-accent › Close button on the plaid', () => {
+  const closeStyle = async () => {
+    show();
+    openMenu();
+    return cssFor(screen.getByTestId('SiteMenu-close').className);
+  };
+
+  test('the close button sits in the plaid section', () => {
+    show();
+    openMenu();
+    assert.ok(screen.getByTestId('SiteMenu-top').contains(screen.getByTestId('SiteMenu-close')));
+  });
+
+  test('the close button is 0.5rem from the left edge', async () => {
+    assert.match(await closeStyle(), /margin-left: calc\(var\(--spacing\) \* 2\)/);
+  });
+
+  test('the close button has no border and no fill', async () => {
+    // The hover tint is the only fill the button may have.
+    const resting = (await closeStyle()).split(':root')[0]!.replace(/[^{}]*:hover[^{}]*\{[^{}]*\}/g, '');
+    assert.doesNotMatch(resting, /border-(width|style|color)|background/);
+  });
+});
+
+describe('plaid-accent › Plaid is hidden from assistive technology', () => {
+  test('the plaid layer is aria-hidden', () => {
+    show();
+    openMenu();
+    assert.equal(screen.getByTestId('Plaid-layer').getAttribute('aria-hidden'), 'true');
   });
 });

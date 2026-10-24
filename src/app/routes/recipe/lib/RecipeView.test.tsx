@@ -311,3 +311,10 @@ describe('recipe-scaling › Control sits above the lists', () => {
     });
   }
 });
+
+describe('plaid-accent › No plaid on recipe pages and cards', () => {
+  test('the recipe page has no plaid', () => {
+    page();
+    assert.equal(screen.queryByTestId('Plaid-layer'), null);
+  });
+});
