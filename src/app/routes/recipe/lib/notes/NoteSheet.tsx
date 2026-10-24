@@ -30,7 +30,7 @@ export function NoteSheet({ note }: Props) {
   }, [isOpen, dismiss]);
 
   return (
-    <div className="min-[52rem]:hidden">
+    <div data-testid="NoteSheet-root" className="min-[52rem]:hidden">
       {isOpen && <div data-testid="NoteSheet-scrim" className="fixed inset-0 z-30 bg-ink/30" aria-hidden="true" onClick={dismiss} />}
       {isOpen && (
         <dialog

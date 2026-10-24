@@ -235,6 +235,7 @@ export function StepChips({ step, context, number, hotId, onHot, onChange }: Pro
                   </button>
                   <button
                     type="button"
+                    data-testid="StepChips-reject"
                     aria-label={removing ? `${kindName[chip.kind]} houden` : 'Oude waarde houden'}
                     {...roving(`no:${chip.id}`)}
                     onClick={() => discard(chip.id)}
@@ -287,6 +288,7 @@ export function StepChips({ step, context, number, hotId, onHot, onChange }: Pro
             <button
               key={kind}
               type="button"
+              data-testid="StepChips-add"
               title={`${kindName[kind]} toevoegen`}
               aria-label={`${kindName[kind]} toevoegen`}
               {...roving(`add:${kind}`)}
@@ -301,6 +303,7 @@ export function StepChips({ step, context, number, hotId, onHot, onChange }: Pro
             <button
               key={ghost.id}
               type="button"
+              data-testid="StepChips-ghost"
               title="Terugzetten"
               aria-label={`${kindName[ghost.kind]} terugzetten: ${step.body.slice(ghost.anchor.start, ghost.anchor.end)}`}
               {...roving(`ghost:${ghost.id}`)}

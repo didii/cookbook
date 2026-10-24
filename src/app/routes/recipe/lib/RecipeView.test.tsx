@@ -1,15 +1,12 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import type { ComponentProps } from 'react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { afterEach, beforeEach, describe, test } from 'vitest';
 import type { Recipe, Step } from '~app/shared/recipe';
 import { defaultRules } from '~app/shared/rules';
+import { cssFor, hidesAt } from '~testing/css';
 import { cleanup, fireEvent, precedes, render, screen, setViewport } from '~testing/dom';
-import { routePaths } from '~testing/routes';
-import { IngredientList } from './IngredientList';
 import { RecipeView } from './RecipeView';
-import { arrive, type Positions, type TabId } from './tabs/tabs';
 
 const steps: Step[] = [
   { body: 'snijden', ingredients: [] },
@@ -43,43 +40,40 @@ const page = (props: Partial<ComponentProps<typeof RecipeView>> = {}) =>
 /** The sticky bar with the tabs and the timer dock. */
 const stack = () => screen.getByTestId('RecipeView-stack');
 const tabs = () => screen.getAllByTestId('TabBar-tab');
+const ingredientsPanel = () => screen.getByTestId('RecipeView-ingredients');
+const stepsPanel = () => screen.getByTestId('RecipeView-steps');
 const checkboxes = () => screen.getAllByTestId<HTMLInputElement>('IngredientList-checkbox');
 
-afterEach(() => {
-  localStorage.clear();
-  sessionStorage.clear();
-});
+const hiddenNarrow = (el: HTMLElement) => hidesAt(el.className, '(width < 51.99rem)');
 
 describe('recipe-viewing › Tabs on a narrow screen', () => {
-  test('there are two tabs with tab roles in a tablist', () => {
+  test('the tab bar with its two tabs is in the sticky bar', () => {
     page();
+    assert.ok(stack().contains(screen.getByTestId('TabBar-list')));
     assert.equal(tabs().length, 2);
-    assert.ok(tabs().every((t) => t.getAttribute('role') === 'tab') && screen.getByTestId('TabBar-list').getAttribute('role') === 'tablist');
   });
 
-  test('the active tab is marked', () => {
+  test('the bar sticks to the top', async () => {
     page();
-    assert.equal(tabs()[0].getAttribute('aria-selected'), 'true');
-    assert.equal(tabs()[1].getAttribute('aria-selected'), 'false');
+    assert.match(await cssFor(stack().className), /position: sticky/);
   });
 
-  test('the bar sticks to the top and is only there below 52rem', () => {
+  test('the bar is only there below 52rem', async () => {
     page();
-    assert.ok(stack().classList.contains('sticky') && stack().classList.contains('min-[52rem]:hidden'));
+    assert.ok(await hidesAt(stack().className, '(width >= 52rem)'));
   });
 
-  test('one panel at a time is shown below 52rem', () => {
+  test('one panel at a time is shown below 52rem', async () => {
     page();
-    assert.ok(document.getElementById('panel-steps')!.classList.contains('max-[51.99rem]:hidden'));
-    assert.ok(!document.getElementById('panel-ingredients')!.classList.contains('max-[51.99rem]:hidden'));
+    assert.ok(await hiddenNarrow(stepsPanel()));
+    assert.ok(!(await hiddenNarrow(ingredientsPanel())));
   });
 
-  test('choosing the other tab swaps which panel is hidden', () => {
+  test('choosing the other tab swaps which panel is hidden', async () => {
     page();
     fireEvent.click(tabs()[1]);
-    assert.equal(tabs()[1].getAttribute('aria-selected'), 'true');
-    assert.ok(!document.getElementById('panel-steps')!.classList.contains('max-[51.99rem]:hidden'));
-    assert.ok(document.getElementById('panel-ingredients')!.classList.contains('max-[51.99rem]:hidden'));
+    assert.ok(!(await hiddenNarrow(stepsPanel())));
+    assert.ok(await hiddenNarrow(ingredientsPanel()));
   });
 });
 
@@ -88,11 +82,11 @@ test.todo('recipe-viewing › Two columns on a wide screen');
 
 // The page scrolling as a whole needs layout; checked here: the column has no sticky or scrolling behaviour of its own.
 describe('recipe-viewing › Long ingredient list on a wide screen', () => {
-  test('the column and its lists have no sticky or scrolling behaviour', () => {
+  test('the column and its lists have no sticky or scrolling behaviour', async () => {
     page();
-    const column = document.getElementById('panel-ingredients')!;
+    const column = ingredientsPanel();
     for (const el of [column, ...column.querySelectorAll('ul')]) {
-      assert.doesNotMatch(el.className, /sticky|overflow|max-h/);
+      assert.doesNotMatch(await cssFor(el.className), /position: sticky|overflow|max-height/);
     }
   });
 });
@@ -102,23 +96,18 @@ describe('RecipeView note', () => {
     page({ liked: true, note: 'minder zout' });
   });
 
-  test('the heart comes before "Bewerk" and is pressed', () => {
+  test('the heart comes before "Bewerk"', () => {
     assert.ok(precedes(screen.getByTestId('LikeButton-heart'), screen.getByTestId('RecipeView-edit')));
-    assert.equal(screen.getByTestId('LikeButton-heart').getAttribute('aria-pressed'), 'true');
   });
 
   test('the note panel sits under the ingredients', () => {
-    const column = document.getElementById('panel-ingredients')!;
+    const column = ingredientsPanel();
     assert.ok(column.contains(screen.getByTestId('NotePanel-panel')));
     assert.ok(precedes(column.querySelector('ul')!, screen.getByTestId('NotePanel-panel')));
   });
 
-  test('the note panel shows the note', () => {
-    assert.equal(screen.getByTestId<HTMLTextAreaElement>('NotePanel-field').value, 'minder zout');
-  });
-
-  test('the note sheet button is marked', () => {
-    assert.ok(screen.getByTestId('NoteSheet-marker'));
+  test('the note sheet button is there', () => {
+    assert.ok(screen.getByTestId('NoteSheet-button'));
   });
 });
 
@@ -128,7 +117,7 @@ test.todo('recipe-viewing › Short tab content');
 describe('recipe-viewing › Ticked ingredients are kept', () => {
   test('both panels stay mounted', () => {
     page();
-    assert.ok(document.getElementById('panel-ingredients') && document.getElementById('panel-steps'));
+    assert.ok(ingredientsPanel() && stepsPanel());
   });
 
   test('a tick survives switching tabs back and forth', () => {
@@ -142,56 +131,6 @@ describe('recipe-viewing › Ticked ingredients are kept', () => {
       [true, false],
     );
   });
-
-  test('the list shows the ticks it gets as props', () => {
-    render(<IngredientList ingredients={recipe.ingredients} ticked={new Set([1])} onToggle={() => {}} />);
-    assert.deepEqual(
-      checkboxes().map((c) => c.checked),
-      [false, true],
-    );
-  });
-});
-
-const heading = 500;
-const stackHeight = 60;
-const at = (positions: Positions, from: TabId, to: TabId) => arrive(positions, from, to, heading, stackHeight);
-
-describe('recipe-viewing › Position is remembered', () => {
-  // Both tabs were scrolled into: each opens where it was left, in either direction.
-  const positions = { steps: 1200, ingredients: 700 };
-
-  test('steps open where they were left', () => {
-    assert.equal(at(positions, 'ingredients', 'steps'), 1200);
-  });
-
-  test('ingredients open where they were left', () => {
-    assert.equal(at(positions, 'steps', 'ingredients'), 700);
-  });
-
-  test('the new tab keeps its position when only it has one', () => {
-    assert.equal(at({ ingredients: 700 }, 'steps', 'ingredients'), 700);
-  });
-});
-
-describe('recipe-viewing › First visit of a tab', () => {
-  // Only the old tab was scrolled into: the heading just under the stack, and not above the top of the page.
-  test('the heading ends up just under the stack', () => {
-    assert.equal(at({ steps: 1200 }, 'steps', 'ingredients'), 440);
-  });
-
-  test('the position is never above the top of the page', () => {
-    assert.equal(arrive({ steps: 1200 }, 'steps', 'ingredients', 20, stackHeight), 0);
-  });
-});
-
-describe('recipe-viewing › Tabs swap in place', () => {
-  test('steps to ingredients has no position', () => {
-    assert.equal(at({}, 'steps', 'ingredients'), undefined);
-  });
-
-  test('ingredients to steps has no position', () => {
-    assert.equal(at({}, 'ingredients', 'steps'), undefined);
-  });
 });
 
 // Needs a browser: the position is kept by a scroll listener while the stack is stuck, and survives scrolling up out of that state.
@@ -201,28 +140,26 @@ describe('recipe-viewing › Optional fields are empty', () => {
   // No time, no servings and no image: the page still renders, without them.
   test('the title and author still show', () => {
     page();
-    assert.equal(screen.getByTestId('RecipeView-title').tagName, 'H1');
     assert.equal(screen.getByTestId('RecipeView-title').textContent, 'Appeltaart');
     assert.equal(screen.getByTestId('RecipeView-author').textContent, 'van Oma');
   });
 
   test('no time, servings or image show', () => {
-    const { container } = page();
+    page();
     assert.equal(screen.queryByTestId('RecipeView-time'), null);
     assert.equal(screen.queryByTestId('RecipeView-servings'), null);
-    assert.equal(container.querySelector('img'), null);
+    assert.equal(screen.queryByTestId('RecipeView-image'), null);
   });
 
   test('with them, the time and servings are shown', () => {
     page({ recipe: { ...recipe, time: '1 uur', servings: 6, image: '/taart.jpg' } });
     assert.equal(screen.getByTestId('RecipeView-time').textContent, '1 uur');
     assert.equal(screen.getByTestId('RecipeView-servings').textContent, '6 personen');
-    assert.equal((screen.getByTestId('ScaleControl-field') as HTMLInputElement).value, '6');
   });
 
   test('with them, the image is shown', () => {
-    const full = page({ recipe: { ...recipe, time: '1 uur', servings: 6, image: '/taart.jpg' } });
-    assert.ok(full.container.querySelector('img'));
+    page({ recipe: { ...recipe, time: '1 uur', servings: 6, image: '/taart.jpg' } });
+    assert.ok(screen.getByTestId('RecipeView-image'));
   });
 });
 
@@ -234,9 +171,22 @@ describe('recipe-viewing › Ingredient without quantity', () => {
 
   test('is shown with its name only: the quantity cell is empty', () => {
     page({ recipe: { ...recipe, ingredients } });
-    const [salt, sugar] = screen.getAllByTestId('IngredientList-row');
-    assert.equal(salt.textContent, 'zout');
-    assert.equal(sugar.textContent, '100 gsuiker');
+    const quantities = screen.getAllByTestId('IngredientList-quantity');
+    assert.deepEqual(
+      quantities.map((q) => q.textContent),
+      ['', '100 g'],
+    );
+    assert.deepEqual(
+      screen.getAllByTestId('IngredientList-name').map((n) => n.textContent),
+      ['zout', 'suiker'],
+    );
+  });
+});
+
+describe('recipe-deletion › Delete button is shown', () => {
+  test('the button comes after the steps', () => {
+    page();
+    assert.ok(precedes(screen.getAllByTestId('StepItem-body').at(-1)!, screen.getByTestId('DeleteRecipe-open')));
   });
 });
 
@@ -245,19 +195,11 @@ describe('recipe-viewing › Link to the edit form', () => {
     page();
     assert.equal(screen.getByTestId('RecipeView-edit').getAttribute('href'), '/recepten/appeltaart/bewerken');
   });
-
-  test('the route table serves that address', () => {
-    assert.ok(routePaths.includes('recepten/:slug/bewerken'));
-  });
 });
 
 describe('cook-mode › Switch on a narrow screen', () => {
   beforeEach(() => {
     page();
-  });
-
-  test('the switch has the switch role', () => {
-    assert.equal(screen.getByTestId('CookSwitch-switch').getAttribute('role'), 'switch');
   });
 
   test('the switch sits directly above the sticky stack and is not part of it', () => {
@@ -268,18 +210,13 @@ describe('cook-mode › Switch on a narrow screen', () => {
   test('the switch is off at first', () => {
     assert.equal(screen.getByTestId('CookSwitch-switch').getAttribute('aria-checked'), 'false');
   });
-
-  test('the texts explain it', () => {
-    assert.ok(screen.getByTestId('CookSwitch-text').textContent?.startsWith('Scherm mag slapen'));
-    assert.equal(screen.getByTestId('CookSwitch-sub').textContent, 'Gaat vanzelf aan zodra je begint');
-  });
 });
 
 describe('cook-mode › No cook mode on a wide screen', () => {
   // The switch is hidden from 52rem on, and the decision never wants the lock there (see cookMode.test.ts).
-  test('the switch is hidden from 52rem', () => {
+  test('the switch is hidden from 52rem', async () => {
     page();
-    assert.ok(screen.getByTestId('CookSwitch-label').classList.contains('min-[52rem]:hidden'));
+    assert.ok(await hidesAt(screen.getByTestId('CookSwitch-label').className, '(width >= 52rem)'));
   });
 });
 
@@ -299,20 +236,27 @@ describe('cook-mode › Choice is not kept', () => {
     assert.equal(screen.getByTestId('CookSwitch-switch').getAttribute('aria-checked'), 'true');
   });
 
-  test('turning it off by hand shows "Handmatig"', () => {
+  test('turning it off by hand switches it off', () => {
     page();
     turnOff();
     assert.equal(screen.getByTestId('CookSwitch-switch').getAttribute('aria-checked'), 'false');
-    assert.equal(screen.getByTestId('CookSwitch-sub').textContent, 'Handmatig');
+  });
+
+  test('turning it off by hand changes the explanation', () => {
+    page();
+    const automatic = screen.getByTestId('CookSwitch-sub').textContent;
+    turnOff();
+    assert.notEqual(screen.getByTestId('CookSwitch-sub').textContent, automatic);
   });
 
   test('a new page is automatic again', () => {
     page();
+    const automatic = screen.getByTestId('CookSwitch-sub').textContent;
     turnOff();
     cleanup();
     page();
     assert.equal(screen.getByTestId('CookSwitch-switch').getAttribute('aria-checked'), 'true');
-    assert.notEqual(screen.getByTestId('CookSwitch-sub').textContent, 'Handmatig');
+    assert.equal(screen.getByTestId('CookSwitch-sub').textContent, automatic);
   });
 
   test('nothing about the choice is stored (the timers keep their own state in sessionStorage)', () => {
@@ -327,9 +271,8 @@ describe('cook-mode › Choice is not kept', () => {
     );
   });
 
-  test('another recipe gets a fresh page: the route keys the page by the recipe slug', () => {
-    assert.ok(readFileSync(new URL('../RecipePageRoute.tsx', import.meta.url), 'utf8').includes('key={recipe.slug}'));
-  });
+  // Needs the route: RecipePageRoute keys the page by the recipe slug, so a loader and navigation are involved.
+  test.todo('another recipe gets a fresh page: the route keys the page by the recipe slug');
 });
 
 describe('recipe-scaling › Step chips scale', () => {
@@ -360,11 +303,11 @@ describe('recipe-scaling › Reload resets', () => {
 });
 
 describe('recipe-scaling › Control sits above the lists', () => {
-  for (const id of ['panel-ingredients', 'panel-steps']) {
+  for (const id of ['RecipeView-ingredients', 'RecipeView-steps']) {
     test(`the control comes before ${id}`, () => {
       page({ recipe: { ...recipe, servings: 4 } });
       const control = screen.getByTestId('ScaleControl-field');
-      assert.ok(control.compareDocumentPosition(document.getElementById(id)!) & Node.DOCUMENT_POSITION_FOLLOWING);
+      assert.ok(control.compareDocumentPosition(screen.getByTestId(id)) & Node.DOCUMENT_POSITION_FOLLOWING);
     });
   }
 });

@@ -3,7 +3,18 @@ import { describe, test } from 'vitest';
 import { defaultRules } from '~app/shared/rules';
 import { fake } from '~testing/fake';
 import { addStep, editStep, emptyDraftSeed, startingDraft, typeIngredient } from './draft';
-import { clearDraft, describeSavedAt, draftKey, isFresh, loadDraft, purgeDrafts, resolveStart, saveDraft, type DraftStorage } from './draftStore';
+import {
+  asksBeforeLeaving,
+  clearDraft,
+  describeSavedAt,
+  draftKey,
+  isFresh,
+  loadDraft,
+  purgeDrafts,
+  resolveStart,
+  saveDraft,
+  type DraftStorage,
+} from './draftStore';
 
 /** An in-memory storage that can be told to throw on reads or writes. */
 function fakeStorage(fail: { read?: boolean; write?: boolean } = {}) {
@@ -84,6 +95,16 @@ describe('recipe-draft › An unchanged recipe keeps no draft', () => {
   });
 });
 
+describe('recipe-draft › Reset ends the draft', () => {
+  test('keeping the starting values removes the draft', () => {
+    const { storage } = fakeStorage();
+    saveDraft(storage, key, keeping());
+    // Herstel puts the starting values back: the editor equals the stored recipe, so keeping it removes the draft.
+    saveDraft(storage, key, keeping(initial));
+    assert.equal(loadDraft(storage, key), undefined);
+  });
+});
+
 describe('recipe-draft › Drafts are per family member', () => {
   const setup = () => {
     const { storage } = fakeStorage();
@@ -127,7 +148,7 @@ describe('recipe-draft › Old drafts are cleaned up', () => {
     for (let i = 0; i < 21; i++) put(`n${i}`, new Date(now.getTime() - i * 1000));
     items.set('other:key', 'x');
     purgeDrafts(storage, now);
-    return { storage, items, left: [...items.keys()].filter((k) => k.startsWith('cookbook:draft:')) };
+    return { storage, items, left: [...items.keys()].filter((k) => k !== 'other:key') };
   };
 
   test('a draft older than 30 days goes', () => {
@@ -172,7 +193,9 @@ describe('recipe-draft › An unreadable draft is ignored', () => {
   test('a draft with wrong chips is not loaded', () => {
     const { storage, items } = fakeStorage();
     saveDraft(storage, key, keeping());
-    items.set(key, items.get(key)!.replace('"chips":[]', '"chips":7'));
+    const stored = JSON.parse(items.get(key)!);
+    stored.state.steps[0].chips = 7;
+    items.set(key, JSON.stringify(stored));
     assert.equal(loadDraft(storage, key), undefined);
   });
 
@@ -413,5 +436,53 @@ describe('describeSavedAt', () => {
 
   test('earlier shows the date', () => {
     assert.equal(describeSavedAt(at(new Date(2026, 9, 12, 9, 10)), noon), '12 oktober');
+  });
+});
+
+// The confirmation itself (following a link) needs a browser; whether it is asked is decided by asksBeforeLeaving.
+describe('recipe-form › Leaving when the draft could not be kept asks first', () => {
+  test('a full storage asks', () => {
+    const full = fakeStorage({ write: true });
+    assert.equal(
+      asksBeforeLeaving({ dirty: true, submitting: false }, () => saveDraft(full.storage, key, keeping()).ok),
+      true,
+    );
+  });
+
+  test('a draft that is not kept asks', () => {
+    assert.equal(
+      asksBeforeLeaving({ dirty: true, submitting: false }, () => false),
+      true,
+    );
+  });
+});
+
+describe('recipe-form › Leaving with a kept draft does not ask', () => {
+  const leave = () => {
+    const { storage } = fakeStorage();
+    const asked = asksBeforeLeaving({ dirty: true, submitting: false }, () => saveDraft(storage, key, keeping()).ok);
+    return { asked, storage };
+  };
+
+  test('nothing is asked', () => {
+    assert.equal(leave().asked, false);
+  });
+
+  test('the changes are on the device when the page is left', () => {
+    const { storage } = leave();
+    assert.deepEqual(loadDraft(storage, key)?.state, edited);
+  });
+});
+
+describe('recipe-form › Leaving without changes does not ask', () => {
+  const never = () => assert.fail('nothing to keep');
+
+  test('a clean form does not ask', () => {
+    assert.equal(asksBeforeLeaving({ dirty: false, submitting: false }, never), false);
+  });
+
+  // Saving: the form is submitted, so nothing is asked even though the editor still differs from the stored recipe.
+  test('a submitting form does not ask', () => {
+    assert.equal(asksBeforeLeaving({ dirty: true, submitting: true }, never), false);
   });
 });

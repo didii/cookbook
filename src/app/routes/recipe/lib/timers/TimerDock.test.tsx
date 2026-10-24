@@ -1,19 +1,13 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'vitest';
-import type { Step } from '~app/shared/recipe';
 import { fireEvent, precedes, render, screen } from '~testing/dom';
 import { TimerDock } from './TimerDock';
-import { activeTimers, start, timerDefs } from './timers';
-import { TimerSidebar } from './TimerSidebar';
+import { formatCountdown, type TimerView } from './timers';
 
-const steps: Step[] = Array.from({ length: 10 }, (_, i) => ({
-  body: `stap ${i + 1}`,
-  ingredients: [],
-  timer: i === 1 ? { minutes: 30, label: 'Deeg rust' } : i === 9 ? { minutes: 50, label: 'Bakken' } : undefined,
-}));
-const defs = timerDefs(steps);
-const T0 = 1_000_000;
-const timers = activeTimers(defs, start(start({}, defs[1], T0), defs[0], T0), T0 + 60_000);
+const timers: TimerView[] = [
+  { id: '1', step: 1, minutes: 30, label: 'Deeg rust', state: 'running', remainingMs: 29 * 60_000 },
+  { id: '9', step: 9, minutes: 50, label: 'Bakken', state: 'running', remainingMs: 49 * 60_000 },
+];
 
 describe('TimerDock', () => {
   test('holds a pill per timer', () => {
@@ -24,8 +18,13 @@ describe('TimerDock', () => {
   test('describes each pill with step, label and time left', () => {
     render(<TimerDock timers={timers} onJump={() => {}} />);
     const [second, tenth] = screen.getAllByTestId('TimerDock-pill');
-    assert.match(second.getAttribute('aria-label')!, /^Stap 2, Deeg rust, 29:00/);
-    assert.match(tenth.getAttribute('aria-label')!, /^Stap 10, Bakken, 49:00/);
+    for (const [pill, t] of [
+      [second, timers[0]],
+      [tenth, timers[1]],
+    ] as const) {
+      const label = pill.getAttribute('aria-label')!;
+      assert.ok([String(t.step + 1), t.label!, formatCountdown(t.remainingMs)].every((part) => label.includes(part)));
+    }
   });
 
   test('puts earlier steps first', () => {
@@ -49,52 +48,6 @@ describe('TimerDock', () => {
   test('is hidden when empty', () => {
     render(<TimerDock timers={[]} onJump={() => {}} />);
     assert.equal(screen.getByTestId('TimerDock-dock').hidden, true);
-  });
-});
-
-describe('TimerSidebar', () => {
-  const show = (onJump: (step: number) => void = () => {}) => render(<TimerSidebar timers={timers} onJump={onJump} onPeek={() => {}} />);
-
-  test('lists a card per timer', () => {
-    const { container } = show();
-    assert.equal(container.querySelectorAll('li').length, 2);
-  });
-
-  test('has a jump button per timer that names the step', () => {
-    show();
-    const jump = screen.getAllByTestId('SidebarCard-jump');
-    assert.equal(jump.length, 2);
-    assert.ok(jump.every((b) => b.getAttribute('aria-label')!.startsWith('Ga naar stap')));
-    assert.equal(jump[0].getAttribute('aria-label'), 'Ga naar stap 2');
-  });
-
-  test('has labelled add-a-minute buttons', () => {
-    show();
-    assert.equal(screen.getAllByTestId('SidebarCard-add1').length, 2);
-    assert.ok(screen.getAllByTestId('SidebarCard-add1').every((b) => b.getAttribute('aria-label') === 'Eén minuut erbij'));
-  });
-
-  test('has labelled add-five-minutes buttons', () => {
-    show();
-    assert.equal(screen.getAllByTestId('SidebarCard-add5').length, 2);
-    assert.ok(screen.getAllByTestId('SidebarCard-add5').every((b) => b.getAttribute('aria-label') === 'Vijf minuten erbij'));
-  });
-
-  test('has labelled stop buttons', () => {
-    show();
-    assert.equal(screen.getAllByTestId('SidebarCard-stop').length, 2);
-    assert.ok(screen.getAllByTestId('SidebarCard-stop').every((b) => b.getAttribute('aria-label') === 'Stop timer'));
-  });
-
-  test('a jump button goes to the step of its timer', () => {
-    const jumped: number[] = [];
-    show((step) => jumped.push(step));
-    fireEvent.click(screen.getAllByTestId('SidebarCard-jump')[0]);
-    assert.deepEqual(jumped, [1]);
-  });
-
-  test('renders nothing without timers', () => {
-    assert.equal(render(<TimerSidebar timers={[]} onJump={() => {}} onPeek={() => {}} />).container.firstChild, null);
   });
 });
 

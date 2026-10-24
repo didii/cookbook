@@ -165,7 +165,16 @@ export function RecipeView({ recipe: r, tile, steps, rules, liked = false, note:
         <p className="mt-2 max-w-[60ch] text-lg text-muted">{r.intro}</p>
 
         <div className="@container relative mt-6 overflow-hidden rounded-xl border-3 border-ink bg-white shadow-hard">
-          {r.image && <img src={r.image} alt="" width="1280" height="640" className="block aspect-2/1 w-full border-b-3 border-ink object-cover" />}
+          {r.image && (
+            <img
+              data-testid="RecipeView-image"
+              src={r.image}
+              alt=""
+              width="1280"
+              height="640"
+              className="block aspect-2/1 w-full border-b-3 border-ink object-cover"
+            />
+          )}
           {r.image && r.seal && <Seal id={r.seal} className="h-16" />}
           <TileBand first={tile} responsive className="border-b-0" />
         </div>
@@ -187,7 +196,7 @@ export function RecipeView({ recipe: r, tile, steps, rules, liked = false, note:
         </div>
 
         <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-10 min-[52rem]:grid-cols-[minmax(16rem,22rem)_1fr] min-[52rem]:items-start">
-          <section id="panel-ingredients" aria-labelledby="ing" className={panel('ingredients')}>
+          <section id="panel-ingredients" data-testid="RecipeView-ingredients" aria-labelledby="ing" className={panel('ingredients')}>
             <TimerSidebar timers={timers.active} onJump={jump} onPeek={setPeek} />
             <h2 id="ing" className="mb-4 scroll-mt-[calc(var(--stack-h,0px)+0.75rem)] text-2xl font-black">
               Ingrediënten
@@ -196,7 +205,7 @@ export function RecipeView({ recipe: r, tile, steps, rules, liked = false, note:
             <NotePanel note={note} />
           </section>
 
-          <section id="panel-steps" aria-labelledby="bereiding" className={panel('steps')}>
+          <section id="panel-steps" data-testid="RecipeView-steps" aria-labelledby="bereiding" className={panel('steps')}>
             <h2 id="bereiding" className="mb-4 scroll-mt-[calc(var(--stack-h,0px)+0.75rem)] text-2xl font-black">
               Bereiding
             </h2>

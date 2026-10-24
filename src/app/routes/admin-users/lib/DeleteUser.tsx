@@ -35,7 +35,7 @@ export function DeleteUser({ name, isSelf, accessUrl, disabledReason }: Props) {
         className="m-auto w-[min(26rem,calc(100vw-2rem))] rounded-xl border-3 border-ink bg-white p-0 text-ink shadow-hard backdrop:bg-ink/40"
       >
         <Form method="post" className="grid gap-5 p-6">
-          <input type="hidden" name="intent" value="delete" />
+          <input type="hidden" data-testid="DeleteUser-intent" name="intent" value="delete" />
           <h2 id="delete-user-title" data-testid="DeleteUser-title" className="text-xl font-black text-balance">
             “{name}” verwijderen?
           </h2>

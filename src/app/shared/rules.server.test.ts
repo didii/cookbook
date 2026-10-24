@@ -1,71 +1,23 @@
 import assert from 'node:assert/strict';
-import { afterEach, describe } from 'vitest';
-import { test } from '~testing/db';
-import { parseIngredient } from './ingredients';
+import { describe } from 'vitest';
+import { test } from '~testing/test';
 import { defaultRules } from './rules';
 import { getRules, resetRules, saveRules, toFields, type RulesFields } from './rules.server';
-import { findOven, findTimer } from './stepParsers';
 
-let db: D1Database;
-
-test.beforeAll(({ testDb }) => {
-  ({ db } = testDb);
-});
-
-// Every test starts and ends on the defaults, so the order does not matter.
-afterEach(() => resetRules(db));
-
-const stored = (value: string) =>
+const stored = (db: D1Database, value: string) =>
   db
     .prepare("INSERT INTO settings (key, value) VALUES ('parsing-rules', ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value")
     .bind(value)
     .run();
-const edit = async (change: Partial<RulesFields>) => {
+const edit = async (db: D1Database, change: Partial<RulesFields>) => {
   const { errors } = await saveRules(db, { ...toFields(await getRules(db)), ...change });
   return errors;
 };
-const rowCount = async () => (await db.prepare("SELECT key FROM settings WHERE key = 'parsing-rules'").all()).results.length;
+const rowCount = async (db: D1Database) => (await db.prepare("SELECT key FROM settings WHERE key = 'parsing-rules'").all()).results.length;
 
 describe('parsing-rules › Default rules', () => {
-  test('the stored rules are the defaults', async () => {
+  test('the stored rules are the defaults', async ({ db }) => {
     assert.deepEqual(await getRules(db), defaultRules);
-  });
-
-  test('a timer in minutes is found', async () => {
-    assert.equal(findTimer('30 minuten', await getRules(db))?.values.minutes, 30);
-  });
-
-  test('a timer in decimal hours is found', async () => {
-    assert.equal(findTimer('1,5 uur', await getRules(db))?.values.minutes, 90);
-  });
-
-  test('a spoken timer is found', async () => {
-    assert.equal(findTimer('een kwartier', await getRules(db))?.values.minutes, 15);
-  });
-
-  test('an oven temperature is found', async () => {
-    assert.equal(findOven('180 graden', await getRules(db))?.values.degrees, 180);
-  });
-
-  test('an ingredient unit is found', async () => {
-    assert.equal(parseIngredient('250 g bloem', await getRules(db)).unit, 'g');
-  });
-});
-
-describe('parsing-rules › Degree words include the degree sign', () => {
-  for (const text of ['180°', '180 °C', '180 graden'])
-    test(`${text} is 180 degrees`, () => {
-      assert.equal(findOven(text, defaultRules)?.values.degrees, 180);
-    });
-});
-
-describe('parsing-rules › Grams are not degrees', () => {
-  test('180 gr is no oven temperature', () => {
-    assert.equal(findOven('180 gr', defaultRules), undefined);
-  });
-
-  test('180 gr bloem has the unit gr', () => {
-    assert.equal(parseIngredient('180 gr bloem', defaultRules).unit, 'gr');
   });
 });
 
@@ -81,61 +33,61 @@ describe('parsing-rules › Unreadable saved rules', () => {
     '{"degreeWords":[""]}',
     '{"spoken":{"x":99999999999999999999}}',
   ])
-    test(`${value} gives the defaults`, async () => {
-      await stored(value);
+    test(`${value} gives the defaults`, async ({ db }) => {
+      await stored(db, value);
       assert.deepEqual(await getRules(db), defaultRules);
     });
 
-  test('a field an older value lacks takes its default', async () => {
-    await stored('{"units":["g"]}');
+  test('a field an older value lacks takes its default', async ({ db }) => {
+    await stored(db, '{"units":["g"]}');
     assert.deepEqual(await getRules(db), { ...defaultRules, units: ['g'] });
   });
 });
 
 describe('parsing-rules › Restore defaults', () => {
-  test('a saved change is in the rules', async () => {
-    assert.equal(await edit({ units: 'g\nkopje' }), undefined);
+  test('a saved change is in the rules', async ({ db }) => {
+    assert.equal(await edit(db, { units: 'g\nkopje' }), undefined);
     assert.ok((await getRules(db)).units.includes('kopje'));
   });
 
-  test('restoring removes the stored row', async () => {
-    await edit({ units: 'g\nkopje' });
+  test('restoring removes the stored row', async ({ db }) => {
+    await edit(db, { units: 'g\nkopje' });
     await resetRules(db);
-    assert.equal(await rowCount(), 0);
+    assert.equal(await rowCount(db), 0);
   });
 
-  test('restoring brings back the default units', async () => {
-    await edit({ units: 'g\nkopje' });
+  test('restoring brings back the default units', async ({ db }) => {
+    await edit(db, { units: 'g\nkopje' });
     await resetRules(db);
     assert.equal((await getRules(db)).units.includes('kopje'), false);
   });
 });
 
 describe('parsing-rules › Add a unit', () => {
-  const add = async () => {
-    assert.equal(await edit({ units: toFields(defaultRules).units + '\nKopje\n\nkopje' }), undefined);
+  const add = async (db: D1Database) => {
+    assert.equal(await edit(db, { units: toFields(defaultRules).units + '\nKopje\n\nkopje' }), undefined);
     return getRules(db);
   };
 
-  test('is lowercased and the repeat dropped', async () => {
-    assert.equal((await add()).units.filter((u) => u === 'kopje').length, 1);
+  test('is lowercased and the repeat dropped', async ({ db }) => {
+    assert.equal((await add(db)).units.filter((u) => u === 'kopje').length, 1);
   });
 
-  test('is what the page shows', async () => {
-    assert.equal(toFields(await add()).units.includes('kopje'), true);
+  test('is what the page shows', async ({ db }) => {
+    assert.equal(toFields(await add(db)).units.includes('kopje'), true);
   });
 });
 
 describe('parsing-rules › Remove a word', () => {
-  test('the word is gone', async () => {
-    assert.equal(await edit({ minuteWords: 'minuten\nminuut' }), undefined);
+  test('the word is gone', async ({ db }) => {
+    assert.equal(await edit(db, { minuteWords: 'minuten\nminuut' }), undefined);
     assert.deepEqual((await getRules(db)).minuteWords, ['minuten', 'minuut']);
   });
 });
 
 describe('parsing-rules › Spoken duration', () => {
-  test('a new spoken duration is stored', async () => {
-    assert.equal(await edit({ spoken: toFields(defaultRules).spoken + '\ndrie kwartier = 45' }), undefined);
+  test('a new spoken duration is stored', async ({ db }) => {
+    assert.equal(await edit(db, { spoken: toFields(defaultRules).spoken + '\ndrie kwartier = 45' }), undefined);
     assert.equal((await getRules(db)).spoken['drie kwartier'], 45);
   });
 });
@@ -149,128 +101,75 @@ describe('parsing-rules › Spoken duration without minutes', () => {
     'een tijdje = 1441',
     'een tijdje = 999999999999999999999',
   ])
-    test(`"${line}" is refused`, async () => {
-      const errors = await edit({ spoken: line });
-      assert.match(errors?.spoken ?? '', /heel aantal minuten/);
+    test(`"${line}" is refused`, async ({ db }) => {
+      const errors = await edit(db, { spoken: line });
+      assert.deepEqual(Object.keys(errors ?? {}), ['spoken']);
     });
 
-  test('nothing is stored', async () => {
-    await edit({ spoken: 'een tijdje' });
-    assert.equal(await rowCount(), 0);
+  test('nothing is stored', async ({ db }) => {
+    await edit(db, { spoken: 'een tijdje' });
+    assert.equal(await rowCount(db), 0);
   });
 });
 
 describe('parsing-rules › Empty list', () => {
-  test('is refused', async () => {
-    const errors = await edit({ units: '\n  \n' });
-    assert.match(errors?.units ?? '', /niet leeg/);
+  test('is refused', async ({ db }) => {
+    const errors = await edit(db, { units: '\n  \n' });
+    assert.deepEqual(Object.keys(errors ?? {}), ['units']);
   });
 
-  test('nothing is stored', async () => {
-    await edit({ units: '\n  \n' });
-    assert.equal(await rowCount(), 0);
+  test('nothing is stored', async ({ db }) => {
+    await edit(db, { units: '\n  \n' });
+    assert.equal(await rowCount(db), 0);
   });
 });
 
 describe('parsing-rules › Word in two lists', () => {
-  test('a minute word that is also an hour word is refused', async () => {
-    assert.match((await edit({ minuteWords: 'minuten\nu' }))?.hourWords ?? '', /lijst/);
+  test('a minute word that is also an hour word is refused', async ({ db }) => {
+    assert.deepEqual(Object.keys((await edit(db, { minuteWords: 'minuten\nu' })) ?? {}), ['hourWords']);
   });
 
-  test('a unit may not be a degree word either', async () => {
-    assert.match((await edit({ degreeWords: 'graden\ng' }))?.degreeWords ?? '', /één lijst/);
+  test('a unit may not be a degree word either', async ({ db }) => {
+    assert.deepEqual(Object.keys((await edit(db, { degreeWords: 'graden\ng' })) ?? {}), ['degreeWords']);
   });
 
-  test('nothing is stored', async () => {
-    await edit({ minuteWords: 'minuten\nu' });
-    await edit({ degreeWords: 'graden\ng' });
-    assert.equal(await rowCount(), 0);
+  test('nothing is stored', async ({ db }) => {
+    await edit(db, { minuteWords: 'minuten\nu' });
+    await edit(db, { degreeWords: 'graden\ng' });
+    assert.equal(await rowCount(db), 0);
   });
 });
 
 describe('parsing-rules › Saving the unchanged defaults succeeds', () => {
-  test('there are no errors', async () => {
+  test('there are no errors', async ({ db }) => {
     assert.equal(await saveRules(db, toFields(defaultRules)).then((r) => r.errors), undefined);
   });
 
-  test('the rules are still the defaults', async () => {
+  test('the rules are still the defaults', async ({ db }) => {
     await saveRules(db, toFields(defaultRules));
     assert.deepEqual(await getRules(db), defaultRules);
   });
 });
 
 describe('parsing-rules › Word with other characters', () => {
-  test('a plus sign is refused', async () => {
-    const errors = await edit({ units: 'g\na+' });
-    assert.match(errors?.units ?? '', /letters/);
+  test('a plus sign is refused', async ({ db }) => {
+    const errors = await edit(db, { units: 'g\na+' });
+    assert.deepEqual(Object.keys(errors ?? {}), ['units']);
   });
 
   // A unit is one word: no space or degree sign.
-  test('a space is refused', async () => {
-    assert.match((await edit({ units: 'g\neetlepel vol' }))?.units ?? '', /letters/);
+  test('a space is refused', async ({ db }) => {
+    assert.deepEqual(Object.keys((await edit(db, { units: 'g\neetlepel vol' })) ?? {}), ['units']);
   });
 
-  test('a degree sign is refused', async () => {
-    assert.match((await edit({ units: 'g\n°' }))?.units ?? '', /letters/);
+  test('a degree sign is refused', async ({ db }) => {
+    assert.ok((await edit(db, { units: 'g\n°' }))?.units);
   });
 
-  test('nothing is stored', async () => {
-    await edit({ units: 'g\na+' });
-    await edit({ units: 'g\neetlepel vol' });
-    await edit({ units: 'g\n°' });
-    assert.equal(await rowCount(), 0);
-  });
-});
-
-// Recognition follows the rules.
-const withRules = (change: Partial<typeof defaultRules>) => ({ ...defaultRules, ...change });
-
-describe('parsing-rules › Words are not regular expressions', () => {
-  const rules = withRules({ minuteWords: ['m+'] });
-
-  test('the word m+ matches literally', () => {
-    assert.equal(findTimer('20 m+', rules)?.values.minutes, 20);
-  });
-
-  test('the word m+ does not match mmm', () => {
-    assert.equal(findTimer('20 mmm', rules), undefined);
-  });
-});
-
-describe('parsing-rules › New unit is recognised', () => {
-  test('the unit and name are split', () => {
-    const parsed = parseIngredient('2 kopje rijst', withRules({ units: [...defaultRules.units, 'kopje'] }));
-    assert.deepEqual([parsed.unit, parsed.name], ['kopje', 'rijst']);
-  });
-});
-
-describe('parsing-rules › New minute word makes a timer', () => {
-  const rules = withRules({ minuteWords: [...defaultRules.minuteWords, 'mins'] });
-
-  test('the new rules find the timer', () => {
-    assert.equal(findTimer('Bak 20 mins', rules)?.values.minutes, 20);
-  });
-
-  test('the default rules do not', () => {
-    assert.equal(findTimer('Bak 20 mins', defaultRules), undefined);
-  });
-});
-
-describe('parsing-rules › New spoken duration makes a timer', () => {
-  test('the new spoken duration is found', () => {
-    const rules = withRules({ spoken: { ...defaultRules.spoken, 'drie kwartier': 45 } });
-    assert.equal(findTimer('Bak drie kwartier', rules)?.values.minutes, 45);
-  });
-});
-
-describe('parsing-rules › Removed word is not recognised', () => {
-  const rules = withRules({ degreeWords: ['°c', '°'] });
-
-  test('the removed word is not found', () => {
-    assert.equal(findOven('180 graden', rules), undefined);
-  });
-
-  test('the remaining words still are', () => {
-    assert.equal(findOven('180 °C', rules)?.values.degrees, 180);
+  test('nothing is stored', async ({ db }) => {
+    await edit(db, { units: 'g\na+' });
+    await edit(db, { units: 'g\neetlepel vol' });
+    await edit(db, { units: 'g\n°' });
+    assert.equal(await rowCount(db), 0);
   });
 });

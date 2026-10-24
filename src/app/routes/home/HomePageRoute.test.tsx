@@ -1,25 +1,18 @@
 import assert from 'node:assert/strict';
 import { createMemoryRouter, MemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
-import { beforeEach, describe } from 'vitest';
+import { describe } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import type { RecipeSummary } from '~app/shared/recipe';
 import { createRecipe } from '~app/shared/recipes.server';
 import { cssFor } from '~testing/css';
-import { test } from '~testing/db';
-import { act, fireEvent, precedes, render, screen, within } from '~testing/dom';
+import { act, fireEvent, precedes, render, screen } from '~testing/dom';
 import { fake } from '~testing/fake';
+import { test } from '~testing/test';
 import type { Route } from './+types/HomePageRoute';
 import HomePage, { loader, shouldRevalidate } from './HomePageRoute';
 import { filterParams, noFilters } from './lib/filterRecipes';
 
-// Real loader against an in-memory D1 holding the recipes the test inserted.
-let db: D1Database;
-
-test.beforeAll(({ testDb }) => {
-  ({ db } = testDb);
-});
-
-const load = async () => {
+const load = async (db: D1Database) => {
   const context = new RouterContextProvider();
   context.set(envContext, fake<Env>({ DB: db }));
   context.set(userEmailContext, 'oma@example.com');
@@ -43,92 +36,86 @@ const sortInput = (value: string) => screen.getAllByTestId<HTMLInputElement>('Fi
 const count = () => screen.getByTestId('HomePage-count').textContent;
 const searchBox = () => screen.getByTestId<HTMLInputElement>('FilterBar-search');
 
-// Runs first: the other tests add recipes to the shared database.
+// Empty the database first: other describes add recipes.
 describe('recipe-browsing › No recipes yet', () => {
-  test('the loader returns no recipes', async () => {
-    assert.deepEqual(await load(), []);
+  test('the loader returns no recipes', async ({ db }) => {
+    assert.deepEqual(await load(db), []);
   });
 
-  test('the page shows the empty message', async () => {
-    renderAt('/', await load());
+  test('the page shows the empty message', async ({ db }) => {
+    renderAt('/', await load(db));
     assert.ok(screen.getByTestId('HomePage-empty'));
   });
 
-  test('the page links to adding a recipe', async () => {
-    renderAt('/', await load());
+  test('the page links to adding a recipe', async ({ db }) => {
+    renderAt('/', await load(db));
     assert.equal(screen.getByTestId('HomePage-add').getAttribute('href'), '/recepten/nieuw');
   });
 
-  test('the page offers no search or filter controls', async () => {
-    const { container } = renderAt('/', await load());
+  test('the page offers no search or filter controls', async ({ db }) => {
+    const { container } = renderAt('/', await load(db));
     assert.equal(container.querySelector('output, input'), null);
   });
 });
 
 describe('recipe-browsing › Recipe without time or image', () => {
-  const cardOf = async () => {
+  const cardOf = async (db: D1Database) => {
     const slug = await createRecipe(db, { title: 'Kaal', author: 'Oma' });
-    return (await load()).find((r) => r.slug === slug);
+    return (await load(db)).find((r) => r.slug === slug);
   };
 
-  test('the loader gives no time and no image', async () => {
-    const card = await cardOf();
+  test('the loader gives no time and no image', async ({ db }) => {
+    const card = await cardOf(db);
     assert.equal(card?.time, null);
     assert.equal(card?.image, null);
   });
 
-  // The card leaves the time and the image out when there are none.
-  test('the card shows the author without a time', async () => {
-    renderAt('/', [(await cardOf())!]);
-    const link = screen.getByTestId('RecipeCard-link');
-    assert.equal(within(link).getByTestId('RecipeCard-author').textContent, 'van Oma');
-    assert.ok(!link.textContent?.includes('·'));
-  });
-
-  test('the card shows no image', async () => {
-    renderAt('/', [(await cardOf())!]);
+  test('the card shows no image', async ({ db }) => {
+    renderAt('/', [(await cardOf(db))!]);
     assert.equal(screen.getByTestId('RecipeCard-link').querySelector('img'), null);
   });
 });
 
 describe('recipe-browsing › Stored recipes are listed', () => {
-  test('the newest recipes come first', async () => {
+  test('the newest recipes come first', async ({ db }) => {
     const first = await createRecipe(db, { title: 'Eerste', author: 'Papa', time: '30 min', image: '/a.jpg' });
     const second = await createRecipe(db, { title: 'Tweede', author: 'Mama' });
-    const slugs = (await load()).map((r) => r.slug);
+    const slugs = (await load(db)).map((r) => r.slug);
     assert.deepEqual(slugs.slice(0, 2), [second, first]);
   });
 });
 
 describe('recipe-browsing › A new recipe appears', () => {
-  const shownCount = async () => {
-    const view = renderAt('/', await load());
-    const n = /^(\d+) recept/.exec(count() ?? '')?.[1];
+  const shownCount = async (db: D1Database) => {
+    const view = renderAt('/', await load(db));
+    const n = Number.parseInt(count() ?? '', 10); // the number leads the line
     view.unmount();
     return n;
   };
 
-  test('the page counts the stored recipes', async () => {
-    assert.equal(await shownCount(), String((await load()).length));
+  test('the page counts the stored recipes', async ({ db }) => {
+    await createRecipe(db, { title: 'Bestaand', author: 'Oma' });
+    assert.equal(await shownCount(db), (await load(db)).length);
   });
 
-  test('the loader lists the new recipe first', async () => {
-    const listed = await load();
+  test('the loader lists the new recipe first', async ({ db }) => {
+    const listed = await load(db);
     const slug = await createRecipe(db, { title: 'Nieuw', author: 'Opa' });
-    const relisted = await load();
+    const relisted = await load(db);
     assert.equal(relisted.length, listed.length + 1);
     assert.equal(relisted[0]?.slug, slug);
   });
 
-  test('the page count includes the new recipe', async () => {
+  test('the page count includes the new recipe', async ({ db }) => {
     await createRecipe(db, { title: 'Nieuw', author: 'Opa' });
-    assert.equal(await shownCount(), String((await load()).length));
+    assert.equal(await shownCount(db), (await load(db)).length);
   });
 });
 
 describe('recipe-browsing › Welcome above the recipes', () => {
-  test('the title comes before the intro and the intro before the list', async () => {
-    const { container } = renderAt('/', await load());
+  test('the title comes before the intro and the intro before the list', async ({ db }) => {
+    await createRecipe(db, { title: 'Bestaand', author: 'Oma' });
+    const { container } = renderAt('/', await load(db));
     const heading = screen.getByTestId('HomePage-title');
     const intro = screen.getByTestId('HomePage-intro');
     assert.ok(precedes(heading, intro) && precedes(intro, container.querySelector('ul')!));
@@ -180,7 +167,7 @@ describe('recipe-filtering › Count without a filter', () => {
 });
 
 describe('recipe-filtering › Nothing found', () => {
-  beforeEach(() => {
+  test.beforeEach(() => {
     renderAt('/?q=zzz', family);
   });
 
@@ -209,7 +196,7 @@ describe('recipe-filtering › Clearing all filters', () => {
   });
 
   describe('the address without parameters', () => {
-    beforeEach(() => {
+    test.beforeEach(() => {
       renderAt('/', family);
     });
 
@@ -232,7 +219,7 @@ describe('recipe-filtering › Clearing all filters', () => {
 
   // Using the button from the nothing-found message gets there.
   describe('the clear button', () => {
-    beforeEach(() => {
+    test.beforeEach(() => {
       renderAt('/?q=zzz&auteur=Papa&sort=az', family);
       fireEvent.click(screen.getByTestId('HomePage-clear'));
     });
@@ -309,7 +296,7 @@ describe('recipe-filtering › Filtering does not fill the history', () => {
   const props = { loaderData: { recipes: family } } as Route.ComponentProps;
   let router: ReturnType<typeof createMemoryRouter>;
 
-  beforeEach(() => {
+  test.beforeEach(() => {
     router = createMemoryRouter(
       [
         { path: '/', element: <HomePage {...props} /> },

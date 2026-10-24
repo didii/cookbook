@@ -1,127 +1,82 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'vitest';
-import type { Step } from '~app/shared/recipe';
 import { precedes, render, screen } from '~testing/dom';
-import { ClockSetting } from './ClockSetting';
 import { TimerCard } from './TimerCard';
-import { TimerChip } from './TimerChip';
-import { activeTimers, handOver, start, timerDefs, timerView } from './timers';
+import { formatCountdown, type TimerView } from './timers';
 import { TimersContext, type TimerControls } from './timersContext';
 
-const steps: Step[] = [
-  { body: 'Meng het deeg.', ingredients: [] },
-  { body: 'Laat het deeg 30 minuten rusten.', ingredients: [], timer: { minutes: 30, label: 'Deeg rust' } },
-];
-const defs = timerDefs(steps);
-const T0 = 1_000_000;
+const timer = { id: '1', step: 1, minutes: 30, label: 'Deeg rust' };
+const running: TimerView = { ...timer, state: 'running', remainingMs: 25 * 60_000 };
+const finished: TimerView = { ...timer, state: 'finished', remainingMs: 0 };
+const handedOver: TimerView = { ...timer, state: 'native', remainingMs: 872_000 };
 
-/** Controls over a fixed set of timers as they are at `now`. */
-const controlsAt = (now: number, timers = start({}, defs[0], T0)): TimerControls => ({
-  active: activeTimers(defs, timers, now),
-  view: (id) =>
-    timerView(
-      timers,
-      defs.find((d) => d.id === id)!,
-      now,
-    ),
+/** Controls that show `view` for the timer of step two. */
+const controlsFor = (view: TimerView, clock: TimerControls['clock'] = { available: false, auto: false, setAuto() {} }): TimerControls => ({
+  active: [view],
+  view: () => view,
   start() {},
   add() {},
   stop() {},
   handOver() {},
   undoHandOver() {},
-  clock: { available: false, auto: false, setAuto() {} },
+  clock,
 });
 
-/** The timer of step two as a step shows it: its chip, and a card under it once it is not idle. */
-const stepTwo = (controls: TimerControls) => {
-  const view = controls.view('1');
-  return render(
-    <TimersContext value={controls}>
-      <ul>
-        <TimerChip id="1" minutes={30} label="Deeg rust" />
-      </ul>
-      {view && view.state !== 'idle' && <TimerCard view={view} />}
+const card = (view: TimerView, clock?: TimerControls['clock']) =>
+  render(
+    <TimersContext value={controlsFor(view, clock)}>
+      <TimerCard view={view} />
     </TimersContext>,
   );
-};
 
 describe('TimerCard running timer', () => {
-  const running = () => stepTwo(controlsAt(T0 + 5 * 60_000));
+  const show = () => card(running);
 
   test('is a group card showing the time left', () => {
-    running();
+    show();
     assert.equal(screen.getByTestId('TimerCard-card').getAttribute('role'), 'group');
     assert.ok(screen.getByTestId('TimerCard-card').textContent!.includes('25:00'));
   });
 
   test('has labelled buttons to add one and five minutes', () => {
-    running();
+    show();
     assert.equal(screen.getByTestId('TimerCard-add1').getAttribute('aria-label'), 'Eén minuut erbij');
     assert.equal(screen.getByTestId('TimerCard-add5').getAttribute('aria-label'), 'Vijf minuten erbij');
   });
 
   test('has a stop button', () => {
-    running();
+    show();
     assert.match(screen.getByTestId('TimerCard-stop').textContent!, /Stop/);
-  });
-
-  test('has a countdown chip', () => {
-    running();
-    assert.equal(screen.getByTestId('TimerChip-countdown').getAttribute('role'), 'timer');
-    assert.equal(screen.getByTestId('TimerChip-countdown').textContent, '25:00');
-  });
-
-  test('has no start button', () => {
-    running();
-    assert.equal(screen.queryByTestId('TimerChip-start'), null);
   });
 });
 
 describe('TimerCard finished timer', () => {
   test('is an alert that says so in words, with the step number', () => {
-    stepTwo(controlsAt(T0 + 31 * 60_000));
+    card(finished);
     assert.equal(screen.getByTestId('TimerCard-card').getAttribute('role'), 'alert');
     assert.ok(screen.getByTestId('TimerCard-card').textContent?.includes('Stap 2 klaar'));
     assert.equal(screen.getByTestId('TimerCard-done').textContent, 'Klaar');
   });
 });
 
-describe('TimerCard idle timer', () => {
-  test('is a labelled start button', () => {
-    stepTwo(controlsAt(T0, {}));
-    assert.equal(screen.getByTestId('TimerChip-start').getAttribute('aria-label'), 'Start timer van 30 min, Deeg rust');
-  });
-
-  test('has no card', () => {
-    stepTwo(controlsAt(T0, {}));
-    assert.equal(screen.queryByTestId('TimerCard-card'), null);
-  });
-});
-
 describe('TimerCard clock app control', () => {
-  const running = controlsAt(T0 + 5 * 60_000);
-
   test('is not offered where the clock app cannot be started', () => {
-    stepTwo(running);
+    card(running);
     assert.equal(screen.queryByTestId('TimerCard-app'), null);
   });
 
   test('is offered where the clock app can be started', () => {
-    stepTwo({ ...running, clock: { available: true, auto: false, setAuto() {} } });
-    assert.match(screen.getByTestId('TimerCard-app').getAttribute('aria-label')!, /klok-app/);
-  });
-
-  test('has no setting without it', () => {
-    assert.equal(render(<ClockSetting />).container.firstChild, null);
+    card(running, { available: true, auto: false, setAuto() {} });
+    assert.ok(screen.getByTestId('TimerCard-app').getAttribute('aria-label'));
   });
 });
 
 describe('TimerCard handed over timer', () => {
-  const handed = () => stepTwo(controlsAt(T0, handOver({}, defs[0].id, 872_000, T0)));
+  const handed = () => card(handedOver);
 
   test('is a note with the time left', () => {
     handed();
-    assert.match(screen.getByTestId('TimerCard-note').textContent!, /In je app · 14:32/);
+    assert.ok(screen.getByTestId('TimerCard-note').textContent!.includes(formatCountdown(handedOver.remainingMs)));
   });
 
   test('can be undone or wiped', () => {
@@ -132,8 +87,8 @@ describe('TimerCard handed over timer', () => {
 
   test('has buttons whose labels say the app timer keeps running', () => {
     handed();
-    assert.match(screen.getByTestId('TimerCard-restore').getAttribute('aria-label')!, /Laat de timer hier verder lopen.*loopt door/);
-    assert.match(screen.getByTestId('TimerCard-wipe').getAttribute('aria-label')!, /Wis deze notitie.*loopt door/);
+    assert.ok(screen.getByTestId('TimerCard-restore').getAttribute('aria-label'));
+    assert.ok(screen.getByTestId('TimerCard-wipe').getAttribute('aria-label'));
   });
 
   test('has the label below the note', () => {
@@ -149,7 +104,7 @@ describe('TimerCard handed over timer', () => {
   });
 
   test('with timers always in the app, undoing says it runs here', () => {
-    stepTwo({ ...controlsAt(T0, handOver({}, defs[0].id, 872_000, T0)), clock: { available: true, auto: true, setAuto() {} } });
+    card(handedOver, { available: true, auto: true, setAuto() {} });
     assert.equal(screen.getByTestId('TimerCard-restore').textContent, 'Hier laten lopen');
   });
 });

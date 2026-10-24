@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { MemoryRouter } from 'react-router';
 import { describe, test } from 'vitest';
 import type { RecipeSummary } from '~app/shared/recipe';
-import { cssFor } from '~testing/css';
+import { cssFor, mediaFor } from '~testing/css';
 import { precedes, render, screen } from '~testing/dom';
 import { RecipeCard } from './RecipeCard';
 
@@ -16,17 +16,18 @@ const card = (r: Partial<RecipeSummary> = {}) =>
 
 describe('recipe-browsing › Card image ratio', () => {
   // 5:2 by default, 16:10 from 48rem, and height auto so the width/height attributes don't override the ratio.
-  const imageCss = async () => {
-    const { container } = card();
-    return (await cssFor(container.querySelector('img')!.className)).replace(/\s+/g, ' ');
+  const image = () => {
+    card();
+    return screen.getByTestId('RecipeCard-image');
   };
+  const imageCss = async () => (await cssFor(image().className)).replace(/\s+/g, ' ');
 
   test('is 5:2 by default', async () => {
     assert.match(await imageCss(), /aspect-ratio: 5\/2/);
   });
 
   test('is 16:10 from 48rem', async () => {
-    assert.match(await imageCss(), /@media \(width >= 48rem\) \{ [^{]*\{ aspect-ratio: 16\/10/);
+    assert.match(await mediaFor(image().className, '(width >= 48rem)'), /aspect-ratio: 16\/10/);
   });
 
   test('has height auto', async () => {
@@ -34,8 +35,20 @@ describe('recipe-browsing › Card image ratio', () => {
   });
 
   test('the tile band follows the image', () => {
-    const { container } = card();
-    assert.ok(precedes(container.querySelector('img')!, container.querySelector('svg')!));
+    card();
+    assert.ok(precedes(screen.getByTestId('RecipeCard-image'), screen.getByTestId('TileBand-band')));
+  });
+});
+
+describe('RecipeCard without time', () => {
+  test('shows the author', () => {
+    card();
+    assert.equal(screen.getByTestId('RecipeCard-author').textContent, 'van Oma');
+  });
+
+  test('has no time separator', () => {
+    card();
+    assert.ok(!screen.getByTestId('RecipeCard-link').textContent?.includes('·'));
   });
 });
 
@@ -50,8 +63,8 @@ describe('recipe-new-marker › Marker on a card with an image', () => {
 
   // Over the top-left of the image: before the image, positioned in the card's top-left corner.
   test('sits before the image', () => {
-    const { container } = card({ isNew: true });
-    assert.ok(precedes(screen.getByTestId('RecipeCard-new'), container.querySelector('img')!));
+    card({ isNew: true });
+    assert.ok(precedes(screen.getByTestId('RecipeCard-new'), screen.getByTestId('RecipeCard-image')));
   });
 
   test('is positioned in the top-left corner', async () => {
@@ -66,7 +79,7 @@ describe('recipe-new-marker › Marker on a card with an image', () => {
     const css = await labelCss();
     assert.match(css, /background-color: var\(--color-yel\)/);
     assert.match(css, /border-color: var\(--color-ink\)/);
-    assert.match(css, /\.shadow-hard-sm \{ --tw-shadow: 3px 3px 0/);
+    assert.match(css, /--tw-shadow: 3px 3px 0/);
   });
 
   // It is text inside the card's link, so it is part of the accessible name.
@@ -74,7 +87,9 @@ describe('recipe-new-marker › Marker on a card with an image', () => {
     card({ isNew: true });
     const link = screen.getByTestId('RecipeCard-link');
     assert.ok(link.contains(screen.getByTestId('RecipeCard-new')));
-    assert.match(link.textContent ?? '', /Nieuw.*Soep/);
+    const name = link.textContent ?? '';
+    const marker = screen.getByTestId('RecipeCard-new').textContent!;
+    assert.ok(name.includes(recipe.title) && name.indexOf(marker) < name.indexOf(recipe.title));
   });
 
   test('only a new card has the marker', () => {

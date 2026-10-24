@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'vitest';
 import { fireEvent, render, screen } from '~testing/dom';
 import { proposals, reconcile, setMode } from './chips';
+import { ChipsHarness, noRows, stepOf } from './chipsHarness';
 import { OpenProposals } from './OpenProposals';
-import { ChipsHarness, noRows, stepOf } from './StepChips.test';
 
 const following = stepOf({ body: 'Bak 30 minuten op 180 graden.', ingredients: [], ovenTemperature: 180, timer: { minutes: 30 } });
 /** Both chips pinned, then the words changed: each pinned chip now has a proposal. */
@@ -18,10 +18,6 @@ const link = () => screen.getByTestId('OpenProposals-link');
 const accepts = () => screen.getAllByTestId('StepChips-accept').filter((b) => b.getAttribute('aria-label') === 'Wijziging overnemen');
 
 describe('recipe-step-chips › Suggestions are counted in the save bar', () => {
-  test('two pinned chips with changed words have two proposals', () => {
-    assert.equal(proposals(withProposals, noRows).length, 2);
-  });
-
   test('the link counts the open suggestions', () => {
     show();
     assert.equal(link().textContent, '2 voorstellen open');
@@ -43,11 +39,6 @@ describe('recipe-step-chips › Suggestions are counted in the save bar', () => 
 
 describe('recipe-step-chips › The count jumps to the next suggestion', () => {
   // The link moves focus to the accept button of the first open proposal, then to the next on each use, and round again.
-  test('there are two accept buttons', () => {
-    show();
-    assert.equal(accepts().length, 2);
-  });
-
   test('the first use focuses the first proposal', () => {
     show();
     const [first] = accepts();

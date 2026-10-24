@@ -13,7 +13,7 @@ const show = (props: Partial<Parameters<typeof DeleteUser>[0]> = {}) =>
       ])}
     />,
   );
-const dialog = () => document.querySelector('dialog')!;
+const dialog = () => screen.getByTestId<HTMLDialogElement>('DeleteUser-dialog');
 const open = (props: Partial<Parameters<typeof DeleteUser>[0]> = {}) => {
   show(props);
   fireEvent.click(screen.getByTestId('DeleteUser-open'));
@@ -47,7 +47,7 @@ describe('user-management › Popup asks for confirmation', () => {
     });
 
     test('the form sends the delete intent', () => {
-      assert.equal(document.querySelector<HTMLInputElement>('input[name=intent]')?.value, 'delete');
+      assert.equal(screen.getByTestId<HTMLInputElement>('DeleteUser-intent').value, 'delete');
     });
   });
 });

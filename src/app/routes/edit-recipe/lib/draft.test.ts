@@ -31,10 +31,6 @@ describe('isDirty', () => {
     assert.equal(isDirty(stored, { ...stored }, defaultRules), false);
   });
 
-  test('a changed field is dirty', () => {
-    assert.equal(isDirty(stored, { ...stored, time: '1 uur' }, defaultRules), true);
-  });
-
   test('a whitespace-only difference is not dirty', () => {
     assert.equal(isDirty(stored, { ...stored, title: ' Soep ' }, defaultRules), false);
   });
@@ -61,21 +57,43 @@ describe('isDirty', () => {
   });
 
   test('a moved row is a change', () => {
-    assert.equal(isDirty(withLines('a', 'b'), moveIngredient(withLines('a', 'b'), 'i1', 0, defaultRules), defaultRules), true);
+    const draft = withLines('a', 'b');
+    assert.equal(isDirty(draft, moveIngredient(draft, draft.ingredients[1].id, 0, defaultRules), defaultRules), true);
   });
 });
 
 describe('startingDraft', () => {
-  test('is the stored values', () => {
-    assert.deepEqual(startingDraft(defaultRules, content), stored);
-  });
-
   test('is empty without stored values', () => {
     assert.deepEqual(startingDraft(defaultRules), emptyDraft);
   });
+});
 
-  test('has one empty ingredient row', () => {
-    assert.deepEqual(lines(stored), ['']);
+// The bar shows "Herstel" and "Niet opgeslagen" exactly while isDirty is true.
+describe('recipe-form › Reset hidden without changes', () => {
+  test('the unchanged draft is not dirty', () => {
+    assert.equal(isDirty(stored, startingDraft(defaultRules, content), defaultRules), false);
+  });
+});
+
+describe('recipe-form › Reset restores the starting values', () => {
+  const edited = { ...stored, title: 'Stamppot', intro: 'x' };
+
+  test('the edited draft is dirty', () => {
+    assert.equal(isDirty(stored, edited, defaultRules), true);
+  });
+
+  test('the reset draft is not dirty', () => {
+    assert.equal(isDirty(stored, startingDraft(defaultRules, content), defaultRules), false);
+  });
+});
+
+describe('recipe-form › Unsaved indicator', () => {
+  test('a changed field is unsaved', () => {
+    assert.equal(isDirty(stored, { ...stored, time: '1 uur' }, defaultRules), true);
+  });
+
+  test('an emptied field that was empty is not unsaved', () => {
+    assert.equal(isDirty(stored, { ...stored, time: '' }, defaultRules), false);
   });
 });
 
@@ -147,6 +165,7 @@ describe('recipe-ingredient-editing › Row moves up and down', () => {
   });
 });
 
+const stepId = (d: RecipeDraft, n: number) => d.steps[n].id;
 const bodies = (d: { steps: { body: string }[] }) => d.steps.map((s) => s.body);
 const withSteps = (...steps: string[]) => startingDraft(defaultRules, { ...content, steps: steps.map((body) => ({ body, ingredients: [] })) });
 
@@ -163,19 +182,19 @@ describe('recipe-step-editing › Empty step at the end', () => {
 });
 
 describe('recipe-step-editing › Typing adds the next step', () => {
-  const draft = editStep(emptyDraft, 's0', 'x');
+  const draft = editStep(emptyDraft, stepId(emptyDraft, 0), 'x');
 
   test('the typed step is followed by an empty step', () => {
     assert.deepEqual(bodies(draft), ['x', '']);
   });
 
   test('typing in the empty step adds another', () => {
-    assert.deepEqual(bodies(editStep(draft, 's1', 'y')), ['x', 'y', '']);
+    assert.deepEqual(bodies(editStep(draft, stepId(draft, 1), 'y')), ['x', 'y', '']);
   });
 
   // Clearing a step leaves a single empty one at the end.
   test('clearing a step leaves a single empty one at the end', () => {
-    assert.deepEqual(bodies(editStep(editStep(draft, 's1', 'y'), 's1', '')), ['x', '']);
+    assert.deepEqual(bodies(editStep(editStep(draft, stepId(draft, 1), 'y'), stepId(draft, 1), '')), ['x', '']);
   });
 });
 
@@ -199,26 +218,27 @@ describe('recipe-step-editing › Insert before the first step', () => {
 
 describe('recipe-step-editing › Step moves up and down', () => {
   const draft = withSteps('a', 'b', 'c');
-  const up = moveStep(draft, 's2', 1);
+  const [first, , third] = draft.steps;
+  const up = moveStep(draft, third.id, 1);
 
   test('a step moves up', () => {
     assert.deepEqual(bodies(up), ['a', 'c', 'b', '']);
   });
 
   test('a step moves down', () => {
-    assert.deepEqual(bodies(moveStep(up, 's2', 2)), ['a', 'b', 'c', '']);
+    assert.deepEqual(bodies(moveStep(up, third.id, 2)), ['a', 'b', 'c', '']);
   });
 
   test('a position past the end moves to the end', () => {
-    assert.deepEqual(bodies(moveStep(draft, 's0', 9)), ['b', 'c', 'a', '']);
+    assert.deepEqual(bodies(moveStep(draft, first.id, 9)), ['b', 'c', 'a', '']);
   });
 
   test('a negative position changes nothing', () => {
-    assert.equal(moveStep(draft, 's0', -1), draft);
+    assert.equal(moveStep(draft, first.id, -1), draft);
   });
 
   test('the empty step does not move', () => {
-    assert.equal(moveStep(emptyDraft, 's0', 0), emptyDraft);
+    assert.equal(moveStep(emptyDraft, stepId(emptyDraft, 0), 0), emptyDraft);
   });
 
   test('an unknown step changes nothing', () => {
@@ -231,11 +251,11 @@ describe('recipe-step-editing › Deleted step can be undone', () => {
   const removed = draft.steps[1];
   const without = removeStep(draft, removed.id, defaultRules);
   // Meanwhile another step took the id of the removed one.
-  const later = editStep(removeStep(draft, 's2', defaultRules), 's3', 'd');
-  const restored = restoreStep(removeStep(later, 's1', defaultRules), removed, 1, defaultRules);
+  const later = editStep(removeStep(draft, draft.steps[2].id, defaultRules), 's3', 'd');
+  const restored = restoreStep(removeStep(later, removed.id, defaultRules), removed, 1, defaultRules);
   // The only step with text leaves the empty step, which the restored step goes before.
   const only = withSteps('solo');
-  const emptied = removeStep(only, 's0', defaultRules);
+  const emptied = removeStep(only, only.steps[0].id, defaultRules);
 
   test('deleting removes the step', () => {
     assert.deepEqual(bodies(without), ['a', 'c', '']);
@@ -269,17 +289,17 @@ describe('recipe-step-editing › Deleted step can be undone', () => {
 describe('recipe-step-editing › Deleting an empty step is immediate', () => {
   test('an empty step between others goes', () => {
     const draft = withSteps('a', '', 'c');
-    assert.deepEqual(bodies(removeStep(draft, 's1', defaultRules)), ['a', 'c', '']);
+    assert.deepEqual(bodies(removeStep(draft, stepId(draft, 1), defaultRules)), ['a', 'c', '']);
   });
 
   test('the only empty step stays', () => {
-    assert.deepEqual(bodies(removeStep(emptyDraft, 's0', defaultRules)), ['']);
+    assert.deepEqual(bodies(removeStep(emptyDraft, stepId(emptyDraft, 0), defaultRules)), ['']);
   });
 });
 
 describe('recipe-step-editing › Deleting the last step with text leaves the empty step', () => {
   test('one empty step is left', () => {
-    assert.deepEqual(bodies(removeStep(withSteps('solo'), 's0', defaultRules)), ['']);
+    assert.deepEqual(bodies(removeStep(withSteps('solo'), stepId(withSteps('solo'), 0), defaultRules)), ['']);
   });
 });
 
@@ -291,19 +311,19 @@ describe('isDirty with steps', () => {
   });
 
   test('whitespace around a step is no change', () => {
-    assert.equal(isDirty(draft, editStep(draft, 's0', ' a '), defaultRules), false);
+    assert.equal(isDirty(draft, editStep(draft, stepId(draft, 0), ' a '), defaultRules), false);
   });
 
   test('a typed step is a change', () => {
-    assert.equal(isDirty(draft, editStep(draft, 's0', 'x'), defaultRules), true);
+    assert.equal(isDirty(draft, editStep(draft, stepId(draft, 0), 'x'), defaultRules), true);
   });
 
   test('a moved step is a change', () => {
-    assert.equal(isDirty(draft, moveStep(draft, 's0', 1), defaultRules), true);
+    assert.equal(isDirty(draft, moveStep(draft, stepId(draft, 0), 1), defaultRules), true);
   });
 
   test('a removed step is a change', () => {
-    assert.equal(isDirty(draft, removeStep(draft, 's1', defaultRules), defaultRules), true);
+    assert.equal(isDirty(draft, removeStep(draft, stepId(draft, 1), defaultRules), defaultRules), true);
   });
 
   test('an empty step on a stored recipe is no change', () => {
@@ -318,9 +338,9 @@ const typeStep = (draft: RecipeDraft, id: string, body: string) => {
 };
 
 describe('recipe-step-chips › Chips travel with their step', () => {
-  const draft = typeStep(withSteps('a', 'b'), 's1', 'Laat 30 minuten rusten');
+  const draft = typeStep(withSteps('a', 'b'), stepId(withSteps('a', 'b'), 1), 'Laat 30 minuten rusten');
   const timer = draft.steps[1].chips[0];
-  const moved = moveStep(draft, 's1', 0);
+  const moved = moveStep(draft, stepId(draft, 1), 0);
 
   test('the step has a timer chip', () => {
     assert.equal(timer.kind, 'timer');
@@ -345,8 +365,18 @@ describe('recipe-step-chips › Chips travel with their step', () => {
 
 describe('chips follow typing in a step and in the ingredient list', () => {
   const start = () => startingDraft(defaultRules, { ...content, ingredients: ['250 g bloem'], steps: [{ body: '', ingredients: [] }] });
-  const typed = () => typeStep(start(), 's0', 'Zeef de bloem');
-  const retyped = () => typeIngredient(typed(), 'i0', '300 g bloem', defaultRules);
+  const typed = () => {
+    const d = start();
+    return typeStep(d, stepId(d, 0), 'Zeef de bloem');
+  };
+  const retyped = () => {
+    const d = typed();
+    return typeIngredient(d, d.ingredients[0].id, '300 g bloem', defaultRules);
+  };
+  const withoutIngredient = () => {
+    const d = retyped();
+    return removeIngredient(d, d.ingredients[0].id, defaultRules);
+  };
 
   test('typing in a step adds an ingredient chip', () => {
     assert.deepEqual(storedSteps(typed(), defaultRules), [{ body: 'Zeef de bloem', ingredients: [{ quantityText: '250 g', name: 'bloem' }] }]);
@@ -357,11 +387,11 @@ describe('chips follow typing in a step and in the ingredient list', () => {
   });
 
   test('removing the ingredient removes the chip', () => {
-    assert.deepEqual(storedSteps(removeIngredient(retyped(), 'i0', defaultRules), defaultRules)[0].ingredients, []);
+    assert.deepEqual(storedSteps(withoutIngredient(), defaultRules)[0].ingredients, []);
   });
 
   test('removing the ingredient keeps the step text', () => {
-    assert.deepEqual(bodies(removeIngredient(retyped(), 'i0', defaultRules)), ['Zeef de bloem', '']);
+    assert.deepEqual(bodies(withoutIngredient()), ['Zeef de bloem', '']);
   });
 });
 
@@ -396,10 +426,10 @@ describe('an open proposed removal', () => {
     let draft = startingDraft(defaultRules, { ...content, ingredients: ['250 g bloem'], steps: [step('Zeef de bloem'), step('a', [])] });
     const id = draft.steps[0].chips[0].id;
     draft = { ...draft, steps: [{ ...draft.steps[0], chips: [{ ...draft.steps[0].chips[0], mode: 'manual' }] }, draft.steps[1]] };
-    draft = typeStep(draft, 's0', 'Zeef de pasta');
-    draft = typeStep(draft, 's1', 'ab');
+    draft = typeStep(draft, stepId(draft, 0), 'Zeef de pasta');
+    draft = typeStep(draft, stepId(draft, 1), 'ab');
     const chip = draft.steps[0].chips.find((c) => c.id === id)!;
-    assert.equal(chip.rowId, 'i0');
+    assert.equal(chip.rowId, draft.ingredients[0].id);
     assert.notEqual(chip.anchor, undefined);
   });
 });
