@@ -660,3 +660,31 @@ describe('recipe-storage › Recipe with categories deleted', () => {
     assert.equal(await count(db, 'SELECT id FROM categories WHERE name = ?', 'Blijft'), 1);
   });
 });
+
+const addChipWithValue = (db: D1Database, step: number, value: number) =>
+  db
+    .prepare('INSERT INTO step_ingredient_chips (step_id, position, quantity_text, quantity_value, quantity_unit, name) VALUES (?, 1, ?, ?, ?, ?)')
+    .bind(step, '200 g', value, 'g', 'bloem')
+    .run();
+
+describe('recipe-storage › Chip with value and unit', () => {
+  test('text, value and unit are returned as stored', async ({ db }) => {
+    const step = await addStep(db, await addRecipe(db, 'chip-value'), 1);
+    await addChipWithValue(db, step, 200);
+    assert.deepEqual(await db.prepare('SELECT quantity_text, quantity_value, quantity_unit FROM step_ingredient_chips WHERE step_id = ?').bind(step).first(), {
+      quantity_text: '200 g',
+      quantity_value: 200,
+      quantity_unit: 'g',
+    });
+  });
+});
+
+describe('recipe-storage › Non-positive chip value refused', () => {
+  test('zero is refused', async ({ db }) => {
+    await assert.rejects(addChipWithValue(db, await addStep(db, await addRecipe(db, 'chip-zero'), 1), 0));
+  });
+
+  test('a negative value is refused', async ({ db }) => {
+    await assert.rejects(addChipWithValue(db, await addStep(db, await addRecipe(db, 'chip-negative'), 1), -1));
+  });
+});

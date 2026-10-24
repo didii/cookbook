@@ -4,7 +4,7 @@ Change 2 of 3. Precondition: `store-ingredient-quantities` is merged. Verify eac
 
 ## 1. Database
 
-- [ ] 1.1 Add migration `0011_chip_quantities.sql` with `quantity_value` and `quantity_unit` on `step_ingredient_chips`; test "Chip with value and unit" and "Non-positive chip value refused" in `migrations.test.ts`
+- [x] 1.1 Add migration `0011_chip_quantities.sql` with `quantity_value` and `quantity_unit` on `step_ingredient_chips`; test "Chip with value and unit" and "Non-positive chip value refused" in `migrations.test.ts`
 - [ ] 1.2 Add value and unit to every chip insert in `src/db/seed/dev.sql`; verify `seed/dev.test.ts` passes
 
 ## 2. Server
