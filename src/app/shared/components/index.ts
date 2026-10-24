@@ -2,6 +2,7 @@ export * from './Announcement';
 export * from './AuthorInput';
 export * from './Button';
 export * from './Fret';
+export * from './LikeButton';
 export * from './Plaid';
 export * from './Seal';
 export * from './SkipLink';

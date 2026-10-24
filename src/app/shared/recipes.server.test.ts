@@ -190,9 +190,92 @@ describe('listRecipes', () => {
     await createRecipe(db, { title: 'Eerst', author: 'Oma', time: '30 min', image: '/a.jpg', seal: 'fu' });
     await createRecipe(db, { title: 'Daarna', author: 'Papa', seal: 'fu' });
     assert.deepEqual(await listRecipes(db, 'x@example.com', new Date()), [
-      { slug: 'daarna', title: 'Daarna', author: 'Papa', time: null, image: null, seal: 'fu', categories: [], isNew: true },
-      { slug: 'eerst', title: 'Eerst', author: 'Oma', time: '30 min', image: '/a.jpg', seal: 'fu', categories: [], isNew: true },
+      {
+        slug: 'daarna',
+        title: 'Daarna',
+        author: 'Papa',
+        time: null,
+        image: null,
+        seal: 'fu',
+        categories: [],
+        liked: false,
+        hasNote: false,
+        isNew: true,
+      },
+      {
+        slug: 'eerst',
+        title: 'Eerst',
+        author: 'Oma',
+        time: '30 min',
+        image: '/a.jpg',
+        seal: 'fu',
+        categories: [],
+        liked: false,
+        hasNote: false,
+        isNew: true,
+      },
     ]);
+  });
+});
+
+const me = 'x@example.com';
+const other = 'y@example.com';
+const seedUsers = (db: D1Database) =>
+  db.batch([
+    db.prepare('INSERT INTO users (email, calling_name) VALUES (?, ?)').bind(me, 'Ik'),
+    db.prepare('INSERT INTO users (email, calling_name) VALUES (?, ?)').bind(other, 'Ander'),
+  ]);
+const entry = async (db: D1Database, slug: string, email = me) => (await listRecipes(db, email, new Date())).find((r) => r.slug === slug);
+
+describe('recipe-like › Card of a liked recipe', () => {
+  test('the entry is liked', async ({ db }) => {
+    await seedUsers(db);
+    const slug = await createRecipe(db, { title: 'A', author: 'Oma', seal: 'fu' });
+    await setLike(db, me, slug, true);
+    assert.equal((await entry(db, slug))?.liked, true);
+  });
+});
+
+describe('recipe-like › Card of a recipe not liked', () => {
+  test('the entry is not liked', async ({ db }) => {
+    await seedUsers(db);
+    const slug = await createRecipe(db, { title: 'A', author: 'Oma', seal: 'fu' });
+    assert.equal((await entry(db, slug))?.liked, false);
+  });
+});
+
+describe("recipe-like › Another member's like on a card", () => {
+  test('the other member sees it not liked', async ({ db }) => {
+    await seedUsers(db);
+    const slug = await createRecipe(db, { title: 'A', author: 'Oma', seal: 'fu' });
+    await setLike(db, me, slug, true);
+    assert.equal((await entry(db, slug, other))?.liked, false);
+  });
+});
+
+describe('recipe-note › Recipe with a note', () => {
+  test('the entry has a note', async ({ db }) => {
+    await seedUsers(db);
+    const slug = await createRecipe(db, { title: 'A', author: 'Oma', seal: 'fu' });
+    await setNote(db, me, slug, 'lekker');
+    assert.equal((await entry(db, slug))?.hasNote, true);
+  });
+});
+
+describe('recipe-note › Recipe without a note', () => {
+  test('the entry has no note', async ({ db }) => {
+    await seedUsers(db);
+    const slug = await createRecipe(db, { title: 'A', author: 'Oma', seal: 'fu' });
+    assert.equal((await entry(db, slug))?.hasNote, false);
+  });
+});
+
+describe("recipe-note › Another member's note on a card", () => {
+  test('the other member sees no note', async ({ db }) => {
+    await seedUsers(db);
+    const slug = await createRecipe(db, { title: 'A', author: 'Oma', seal: 'fu' });
+    await setNote(db, me, slug, 'lekker');
+    assert.equal((await entry(db, slug, other))?.hasNote, false);
   });
 });
 

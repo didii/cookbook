@@ -1,17 +1,8 @@
 import { useId } from 'react';
 import { cn } from '../cn';
-import { tiles } from '../tile';
+import { tiles, tileSteps } from '../tile';
 
 type Props = { first: number; responsive?: boolean; rows?: number; className?: string };
-
-/** Tile counts per width of the nearest `@container` ancestor, so tiles stay roughly 50-65px: [count, visibility classes]. */
-const steps = [
-  [6, 'block @min-[21rem]:hidden'],
-  [8, 'hidden @min-[21rem]:block @min-[29rem]:hidden'],
-  [10, 'hidden @min-[29rem]:block @min-[37rem]:hidden'],
-  [14, 'hidden @min-[37rem]:block @min-[49rem]:hidden'],
-  [18, 'hidden @min-[49rem]:block'],
-] as const;
 
 type PatternProps = { file: string; cols: number; rows: number; className?: string };
 
@@ -32,5 +23,5 @@ function Pattern({ file, cols, rows, className }: PatternProps) {
 export function TileBand({ first, responsive, rows = 1, className }: Props) {
   const file = `/img/tile/${tiles[first % tiles.length]}.svg`;
   if (!responsive) return <Pattern file={file} cols={7} rows={rows} className={cn('block', className)} />;
-  return steps.map(([cols, show]) => <Pattern key={cols} file={file} cols={cols} rows={rows} className={cn(show, className)} />);
+  return tileSteps.map(([cols, show]) => <Pattern key={cols} file={file} cols={cols} rows={rows} className={cn(show, className)} />);
 }

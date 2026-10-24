@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { cn } from '~app/shared/cn';
-import { Fret, Seal, TileBand } from '~app/shared/components';
+import { Fret, LikeButton, Seal, TileBand } from '~app/shared/components';
 import { ChevronBack } from '~app/shared/icons';
 import type { Recipe, Step } from '~app/shared/recipe';
 import type { Rules } from '~app/shared/rules';
@@ -10,7 +10,6 @@ import { CookSwitch } from './cook/CookSwitch';
 import { useWakeLock } from './cook/useWakeLock';
 import { DeleteRecipe } from './DeleteRecipe';
 import { IngredientList } from './IngredientList';
-import { LikeButton } from './LikeButton';
 import { NotePanel } from './notes/NotePanel';
 import { NoteSheet } from './notes/NoteSheet';
 import { useNote } from './notes/useNote';
