@@ -25,8 +25,8 @@ const recipe: Omit<Recipe, 'steps'> = {
   image: null,
   seal: null,
   ingredients: [
-    { quantityText: '4', name: 'appels' },
-    { quantityText: '100 g', name: 'suiker' },
+    { quantityText: '4', quantityValue: null, quantityUnit: null, name: 'appels' },
+    { quantityText: '100 g', quantityValue: null, quantityUnit: null, name: 'suiker' },
   ],
 };
 
@@ -165,8 +165,8 @@ describe('recipe-viewing › Optional fields are empty', () => {
 
 describe('recipe-viewing › Ingredient without quantity', () => {
   const ingredients = [
-    { quantityText: '', name: 'zout' },
-    { quantityText: '100 g', name: 'suiker' },
+    { quantityText: '', quantityValue: null, quantityUnit: null, name: 'zout' },
+    { quantityText: '100 g', quantityValue: null, quantityUnit: null, name: 'suiker' },
   ];
 
   test('is shown with its name only: the quantity cell is empty', () => {
@@ -281,6 +281,21 @@ describe('recipe-scaling › Step chips scale', () => {
     page({ recipe: { ...recipe, servings: 4 }, steps: chipSteps });
     fireEvent.change(screen.getByTestId('ScaleControl-field'), { target: { value: '6' } });
     assert.equal(screen.getByTestId('StepChips-quantity').textContent, '300 g');
+  });
+});
+
+describe('RecipeView ingredient list scaling', () => {
+  test('the list quantities are the stored values times the factor', () => {
+    const ingredients = [
+      { quantityText: '200 g', quantityValue: 200, quantityUnit: 'g', name: 'bloem' },
+      { quantityText: '2-3 el', quantityValue: null, quantityUnit: 'el', name: 'olie' },
+    ];
+    page({ recipe: { ...recipe, servings: 4, ingredients } });
+    fireEvent.change(screen.getByTestId('ScaleControl-field'), { target: { value: '6' } });
+    assert.deepEqual(
+      screen.getAllByTestId('IngredientList-quantity').map((q) => q.textContent),
+      ['300 g', '2-3 el'],
+    );
   });
 });
 

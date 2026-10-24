@@ -13,7 +13,7 @@ import { IngredientList } from './IngredientList';
 import { NotePanel } from './notes/NotePanel';
 import { NoteSheet } from './notes/NoteSheet';
 import { useNote } from './notes/useNote';
-import { scaleBody, scaleQuantity } from './scale/scale';
+import { scaleBody, scaleIngredient, scaleQuantity } from './scale/scale';
 import { ScaleControl } from './scale/ScaleControl';
 import { StepList } from './StepList';
 import { TabBar } from './tabs/TabBar';
@@ -39,7 +39,7 @@ export function RecipeView({ recipe: r, tile, steps, rules, liked = false, note:
   const scaled = useMemo(() => {
     const rows = r.ingredients.map((x, i) => ({ id: String(i), ...x }));
     return {
-      ingredients: r.ingredients.map((x) => ({ ...x, quantityText: scaleQuantity(x.quantityText, factor) })),
+      ingredients: r.ingredients.map((x) => ({ ...x, quantityText: scaleIngredient(x, factor) })),
       steps: steps.map((s) => ({
         ...s,
         body: scaleBody(s.body, factor, rows, rules),

@@ -14,8 +14,8 @@ Change 1 of 3. Verify each task with the type check and `pnpm test:ai`; `pnpm te
 
 ## 3. Scaling
 
-- [ ] 3.1 Add `scaleIngredient` to `routes/recipe/lib/scale/scale.ts` with unit tests (value × factor, factor 1, no value, unit kept)
-- [ ] 3.2 Use it in `RecipeView.tsx` for the ingredient list; update `RecipeView.test.tsx` / `IngredientList.test.tsx` fixtures and the scenarios "Ingredient list scales", "Ingredient range stays as written", "Scaled ingredient keeps its unit"; change the scenario "Ranges scale" test to use step text
+- [x] 3.1 Add `scaleIngredient` to `routes/recipe/lib/scale/scale.ts` with unit tests (value × factor, factor 1, no value, unit kept)
+- [x] 3.2 Use it in `RecipeView.tsx` for the ingredient list; update `RecipeView.test.tsx` / `IngredientList.test.tsx` fixtures and the scenarios "Ingredient list scales", "Ingredient range stays as written", "Scaled ingredient keeps its unit"; change the scenario "Ranges scale" test to use step text
 
 ## 4. Wrap-up
 
