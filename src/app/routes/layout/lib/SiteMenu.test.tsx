@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router';
 import { describe, test } from 'vitest';
+import type { Role } from '~app/shared/role';
 import { cssFor } from '~testing/css';
 import { fireEvent, render, screen } from '~testing/dom';
 import { SiteMenu } from './SiteMenu';
-import type { Role } from '../role';
 
 const show = (role: Role = 'user') => {
   const router = createMemoryRouter([
