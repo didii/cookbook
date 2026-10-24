@@ -277,9 +277,19 @@ describe('recipe-step-editing › Stored steps come back in the editor', () => {
 
   test('the steps follow the stored order', async ({ db, photos }) => {
     assert.deepEqual(defined((await load(db, photos, 'stappen')).values.steps), [
-      { body: 'kneed', ingredients: [], quantities: [] },
-      { body: 'bak', ingredients: [], quantities: [] },
+      { body: 'kneed', ingredients: [] },
+      { body: 'bak', ingredients: [] },
     ]);
+  });
+
+  test('stored amounts are not handed to the editor', async ({ db, photos }) => {
+    await db
+      .prepare("INSERT INTO step_quantities (step_id, start_index, end_index, quantity_value) SELECT id, 0, 1, 1 FROM steps WHERE body = 'kneed'")
+      .run();
+    assert.deepEqual(
+      defined((await load(db, photos, 'stappen')).values.steps).map((s) => 'quantities' in s),
+      [false, false],
+    );
   });
 });
 
@@ -338,10 +348,7 @@ describe('a saved recipe with chips', () => {
   test('comes back in the editor with equal chips', async ({ db, photos }) => {
     await addRecipe(db, 'chips-terug');
     await submit(db, photos, 'chips-terug', { title: 'Soep', author: 'Oma', steps: JSON.stringify(posted) });
-    assert.deepEqual(
-      defined((await load(db, photos, 'chips-terug')).values.steps),
-      expected.map((s) => ({ ...s, quantities: [] })),
-    );
+    assert.deepEqual(defined((await load(db, photos, 'chips-terug')).values.steps), expected);
   });
 
   test('a refusal shows the chips again', async ({ db, photos }) => {
