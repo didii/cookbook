@@ -15,7 +15,7 @@ Change 2 of 3. Precondition: `store-ingredient-quantities` is merged. Verify eac
 
 ## 3. Scaling
 
-- [ ] 3.1 Map the chips of `RecipeView.tsx` through `scaleIngredient`; update the fixtures and tests for "Step chips scale", "Chip range stays as written", "Chip keeps its own unit"
+- [x] 3.1 Map the chips of `RecipeView.tsx` through `scaleIngredient`; update the fixtures and tests for "Step chips scale", "Chip range stays as written", "Chip keeps its own unit"
 
 ## 4. Wrap-up
 

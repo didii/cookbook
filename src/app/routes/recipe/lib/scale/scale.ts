@@ -1,5 +1,5 @@
 import { numberPattern, numberValue } from '~app/shared/ingredients';
-import type { RecipeIngredient } from '~app/shared/recipe';
+import type { StepIngredient } from '~app/shared/recipe';
 import type { Rules } from '~app/shared/rules';
 import { findIngredients, type Row } from '~app/shared/stepParsers';
 
@@ -35,9 +35,9 @@ export function scaleQuantity(text: string, factor: number): string {
   return scaled + text.slice(all.length);
 }
 
-/** The quantity of an ingredient row for the factor: its stored value multiplied, followed by its unit. Factor 1 and a row without a stored value (no number, or a range) keep the quantity text as written. */
-export function scaleIngredient({ quantityText, quantityValue, quantityUnit }: RecipeIngredient, factor: number): string {
-  if (factor === 1 || quantityValue === null) return quantityText;
+/** The quantity of an ingredient row or step chip for the factor: its stored value multiplied, followed by its unit. Factor 1 and a row or chip without a stored value (no number, or a range) keep the quantity text as written. */
+export function scaleIngredient({ quantityText, quantityValue, quantityUnit }: StepIngredient, factor: number): string {
+  if (factor === 1 || quantityValue == null) return quantityText;
   return [formatNumber(quantityValue * factor), quantityUnit].filter(Boolean).join(' ');
 }
 

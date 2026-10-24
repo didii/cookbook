@@ -278,10 +278,28 @@ describe('cook-mode › Choice is not kept', () => {
 
 describe('recipe-scaling › Step chips scale', () => {
   test('a chip quantity follows the servings', () => {
-    const chipSteps: Step[] = [{ body: 'meng', ingredients: [{ quantityText: '200 g', name: 'bloem' }] }];
+    const chipSteps: Step[] = [{ body: 'meng', ingredients: [{ quantityText: '200 g', quantityValue: 200, quantityUnit: 'g', name: 'bloem' }] }];
     page({ recipe: { ...recipe, servings: 4 }, steps: chipSteps });
     fireEvent.change(screen.getByTestId('ScaleControl-field'), { target: { value: '6' } });
     assert.equal(screen.getByTestId('StepChips-quantity').textContent, '300 g');
+  });
+});
+
+describe('recipe-scaling › Chip range stays as written', () => {
+  test('a chip without a value keeps its text when doubled', () => {
+    const chipSteps: Step[] = [{ body: 'bak', ingredients: [{ quantityText: '2-3 el', quantityValue: null, quantityUnit: null, name: 'olie' }] }];
+    page({ recipe: { ...recipe, servings: 4 }, steps: chipSteps });
+    fireEvent.change(screen.getByTestId('ScaleControl-field'), { target: { value: '8' } });
+    assert.equal(screen.getByTestId('StepChips-quantity').textContent, '2-3 el');
+  });
+});
+
+describe('recipe-scaling › Chip keeps its own unit', () => {
+  test('a chip with a non-rules unit keeps it when doubled', () => {
+    const chipSteps: Step[] = [{ body: 'bak', ingredients: [{ quantityText: '1 klontje', quantityValue: 1, quantityUnit: 'klontje', name: 'boter' }] }];
+    page({ recipe: { ...recipe, servings: 4 }, steps: chipSteps });
+    fireEvent.change(screen.getByTestId('ScaleControl-field'), { target: { value: '8' } });
+    assert.equal(screen.getByTestId('StepChips-quantity').textContent, '2 klontje');
   });
 });
 
