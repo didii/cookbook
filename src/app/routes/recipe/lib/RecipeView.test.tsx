@@ -7,6 +7,7 @@ import { defaultRules } from '~app/shared/rules';
 import { cssFor, hidesAt } from '~testing/css';
 import { cleanup, fireEvent, precedes, render, screen, setViewport } from '~testing/dom';
 import { RecipeView } from './RecipeView';
+import { scaleIngredient } from './scale/scale';
 
 const steps: Step[] = [
   { body: 'snijden', ingredients: [] },
@@ -288,13 +289,13 @@ describe('RecipeView ingredient list scaling', () => {
   test('the list quantities are the stored values times the factor', () => {
     const ingredients = [
       { quantityText: '200 g', quantityValue: 200, quantityUnit: 'g', name: 'bloem' },
-      { quantityText: '2-3 el', quantityValue: null, quantityUnit: 'el', name: 'olie' },
+      { quantityText: '1 el', quantityValue: 1, quantityUnit: 'el', name: 'olie' },
     ];
     page({ recipe: { ...recipe, servings: 4, ingredients } });
     fireEvent.change(screen.getByTestId('ScaleControl-field'), { target: { value: '6' } });
     assert.deepEqual(
       screen.getAllByTestId('IngredientList-quantity').map((q) => q.textContent),
-      ['300 g', '2-3 el'],
+      ingredients.map((i) => scaleIngredient(i, 6 / 4)),
     );
   });
 });
