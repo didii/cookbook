@@ -13,7 +13,7 @@ Change 2 of 2. Precondition: `add-recipe-categories` is merged. Verify each task
 
 ## 3. The card
 
-- [ ] 3.1 Rewrite `RecipeCard.tsx`: article with image, seal, "Nieuw" label, `TileBand responsive` (`rows={3}` without image), like button and note icon on the band, title link stretched over the card, author and time, categories as pills with "+N"; test the scenarios of `recipe-browsing` (image/band/text order, seal, no image, the whole card opens the recipe, `test.todo` for same height, two cards on a phone and the hover), "Pills are not interactive", the category scenarios, "Leaf is not inside the link", "Note icon only indicates" and the two "Marker on a card" scenarios in `RecipeCard.test.tsx`; remove the tests of the old image ratio
+- [x] 3.1 Rewrite `RecipeCard.tsx`: article with image, seal, "Nieuw" label, `TileBand responsive` (`rows={3}` without image), like button and note icon on the band, title link stretched over the card, author and time, categories as pills with "+N"; test the scenarios of `recipe-browsing` (image/band/text order, seal, no image, the whole card opens the recipe, `test.todo` for same height, two cards on a phone and the hover), "Pills are not interactive", the category scenarios, "Leaf is not inside the link", "Note icon only indicates" and the two "Marker on a card" scenarios in `RecipeCard.test.tsx`; remove the tests of the old image ratio
 - [ ] 3.2 Pass `liked`, `hasNote` and `categories` to the card in `HomePageRoute.tsx` and revalidate after a like (`onSaved`); test "Liking from a card" and "A like from a card is kept" in `HomePageRoute.test.tsx` and update the other tests for the new fixtures
 
 ## 4. Wrap-up
