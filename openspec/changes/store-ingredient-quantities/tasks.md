@@ -5,7 +5,7 @@ Change 1 of 3. Verify each task with the type check and `pnpm test:ai`; `pnpm te
 ## 1. Database
 
 - [x] 1.1 Add migration `0010_ingredient_quantity_columns.sql` renaming `ingredients.amount` → `quantity_value` and `unit` → `quantity_unit`; update `migrations.test.ts` (scenarios "Quantity with amount and unit", "Quantity without a number", "Non-positive amount refused")
-- [ ] 1.2 Add `quantity_value` / `quantity_unit` to the ingredient inserts of `src/db/seed/dev.sql`; verify `seed/dev.test.ts` passes
+- [x] 1.2 Add `quantity_value` / `quantity_unit` to the ingredient inserts of `src/db/seed/dev.sql`; verify `seed/dev.test.ts` passes
 
 ## 2. Server and types
 
