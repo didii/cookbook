@@ -24,8 +24,9 @@ export async function loader({ context }: Route.LoaderArgs) {
 export async function action({ request, context }: Route.ActionArgs) {
   const form = await request.formData();
   const values = readForm(form);
-  const { lines, ingredients, errors: ingredientErrors } = readIngredients(form, await getRules(context.get(envContext).DB));
-  const { lines: stepLines, steps } = readSteps(form);
+  const rules = await getRules(context.get(envContext).DB);
+  const { lines, ingredients, errors: ingredientErrors } = readIngredients(form, rules);
+  const { lines: stepLines, steps } = readSteps(form, ingredients ?? [], rules);
 
   const errors: RecipeFormErrors = validate(values);
   if (Object.keys(ingredientErrors).length) errors.ingredients = ingredientErrors;
