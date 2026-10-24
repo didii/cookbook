@@ -346,30 +346,30 @@ describe('recipe-filtering › Reaching the last recipe', () => {
   });
 });
 
-describe('recipe-like › Liking from a card', () => {
-  const realFetch = globalThis.fetch;
-  afterEach(() => {
-    globalThis.fetch = realFetch;
+const realFetch = globalThis.fetch;
+afterEach(() => {
+  globalThis.fetch = realFetch;
+});
+const sent: string[] = [];
+/** The page with a list the "server" changes when a like is posted, so a refetch shows it. */
+const setup = (liked: boolean) => {
+  const list = [{ ...summary('Erwtensoep', 'Papa'), liked }];
+  sent.length = 0;
+  globalThis.fetch = ((url: string, init: RequestInit) => {
+    sent.push(`${url} ${String(init.body)}`);
+    list[0]!.liked = String(init.body).includes('true');
+    return Promise.resolve(new Response(null, { status: 204 }));
+  }) as typeof fetch;
+  const Page = () => <HomePage {...({ loaderData: useLoaderData() } as Route.ComponentProps)} />;
+  const router = createMemoryRouter([{ path: '/', loader: () => ({ recipes: structuredClone(list) }), Component: Page }], {
+    initialEntries: ['/'],
   });
-  const sent: string[] = [];
-  /** The page with a list the "server" changes when a like is posted, so a refetch shows it. */
-  const setup = (liked: boolean) => {
-    const list = [{ ...summary('Erwtensoep', 'Papa'), liked }];
-    sent.length = 0;
-    globalThis.fetch = ((url: string, init: RequestInit) => {
-      sent.push(`${url} ${String(init.body)}`);
-      list[0]!.liked = String(init.body).includes('true');
-      return Promise.resolve(new Response(null, { status: 204 }));
-    }) as typeof fetch;
-    const Page = () => <HomePage {...({ loaderData: useLoaderData() } as Route.ComponentProps)} />;
-    const router = createMemoryRouter([{ path: '/', loader: () => ({ recipes: structuredClone(list) }), Component: Page }], {
-      initialEntries: ['/'],
-    });
-    return render(<RouterProvider router={router} />);
-  };
-  const leaf = () => screen.getByTestId('LikeButton-leaf');
-  const pressLeaf = () => act(async () => void fireEvent.click(leaf()));
+  return render(<RouterProvider router={router} />);
+};
+const leaf = () => screen.getByTestId('LikeButton-leaf');
+const pressLeaf = () => act(async () => void fireEvent.click(leaf()));
 
+describe('recipe-like › Liking from a card', () => {
   test('the leaf shows liked', async () => {
     setup(false);
     await screen.findByTestId('LikeButton-leaf');
@@ -390,26 +390,32 @@ describe('recipe-like › Liking from a card', () => {
     await pressLeaf();
     assert.ok(screen.getByTestId('HomePage-title'));
   });
+});
 
-  describe('recipe-like › Unliking from a card', () => {
-    test('the leaf shows not liked and the removal is sent', async () => {
-      setup(true);
-      await screen.findByTestId('LikeButton-leaf');
-      await pressLeaf();
-      assert.equal(leaf().getAttribute('aria-pressed'), 'false');
-      assert.deepEqual(sent, ['/recepten/erwtensoep/favoriet liked=false']);
-    });
+describe('recipe-like › Unliking from a card', () => {
+  test('the leaf shows not liked', async () => {
+    setup(true);
+    await screen.findByTestId('LikeButton-leaf');
+    await pressLeaf();
+    assert.equal(leaf().getAttribute('aria-pressed'), 'false');
   });
 
-  describe('recipe-like › A like from a card is kept', () => {
-    test('the card shows the leaf liked after hiding and showing it', async () => {
-      setup(false);
-      await screen.findByTestId('LikeButton-leaf');
-      await pressLeaf();
-      await act(async () => void fireEvent.change(searchBox(), { target: { value: 'zzz' } }));
-      assert.equal(screen.queryAllByTestId('LikeButton-leaf').length, 0);
-      await act(async () => void fireEvent.change(searchBox(), { target: { value: '' } }));
-      assert.equal(leaf().getAttribute('aria-pressed'), 'true');
-    });
+  test('the removal is sent', async () => {
+    setup(true);
+    await screen.findByTestId('LikeButton-leaf');
+    await pressLeaf();
+    assert.deepEqual(sent, ['/recepten/erwtensoep/favoriet liked=false']);
+  });
+});
+
+describe('recipe-like › A like from a card is kept', () => {
+  test('the card shows the leaf liked after hiding and showing it', async () => {
+    setup(false);
+    await screen.findByTestId('LikeButton-leaf');
+    await pressLeaf();
+    await act(async () => void fireEvent.change(searchBox(), { target: { value: 'zzz' } }));
+    assert.equal(screen.queryAllByTestId('LikeButton-leaf').length, 0);
+    await act(async () => void fireEvent.change(searchBox(), { target: { value: '' } }));
+    assert.equal(leaf().getAttribute('aria-pressed'), 'true');
   });
 });
