@@ -96,8 +96,8 @@ describe('RecipeView note', () => {
     page({ liked: true, note: 'minder zout' });
   });
 
-  test('the heart comes before "Bewerk"', () => {
-    assert.ok(precedes(screen.getByTestId('LikeButton-heart'), screen.getByTestId('RecipeView-edit')));
+  test('the leaf comes before "Bewerk"', () => {
+    assert.ok(precedes(screen.getByTestId('LikeButton-leaf'), screen.getByTestId('RecipeView-edit')));
   });
 
   test('the note panel sits under the ingredients', () => {

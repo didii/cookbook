@@ -1,7 +1,8 @@
 import { useRef } from 'react';
 import { Link } from 'react-router';
-import { Cross, Menu } from '../icons';
-import type { Role } from '../role';
+import { Fret, Plaid } from '~app/shared/components';
+import { Cross, Menu } from '~app/shared/icons';
+import type { Role } from '~app/shared/role';
 
 const links = [
   { to: '/recepten/nieuw', label: 'Nieuw recept' },
@@ -37,11 +38,17 @@ export function SiteMenu({ role }: { role: Role }) {
         onClick={(e) => e.target === e.currentTarget && close()}
         className="m-0 h-full max-h-none w-72 max-w-[85vw] -translate-x-full border-r-3 border-ink bg-red p-0 text-white transition-[translate,display,overlay] duration-200 transition-discrete open:translate-x-0 starting:open:-translate-x-full backdrop:bg-black/50 motion-reduce:transition-none"
       >
-        <div data-testid="SiteMenu-panel" className="h-full p-4">
-          <button type="button" aria-label="Sluit menu" data-testid="SiteMenu-close" onClick={close} className={`mb-4 ${iconButton}`}>
-            <Cross />
-          </button>
-          <nav className="flex flex-col gap-2">
+        <div data-testid="SiteMenu-panel" className="h-full">
+          <div data-testid="SiteMenu-top" className="relative h-header">
+            <Plaid className="absolute inset-0" />
+            <div className="relative flex h-[calc(100%-14px)] items-center">
+              <button type="button" aria-label="Sluit menu" data-testid="SiteMenu-close" onClick={close} className={`ml-2 ${iconButton}`}>
+                <Cross />
+              </button>
+            </div>
+            <Fret size={14} className="relative text-yel" />
+          </div>
+          <nav className="flex flex-col gap-2 p-4">
             {links
               .filter((l) => (!l.admin || role !== 'user') && (!l.superadmin || role === 'superadmin'))
               .map(({ to, label }) => (

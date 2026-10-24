@@ -11,6 +11,9 @@
   --color-por: #f4eee0;
   --color-muted: #5c4f48;
 
+  /* Header bar (py-3 + 44px menu button) + fret (14px), without the margin below the header. The menu sidebar's plaid top is as tall. */
+  --spacing-header: 5.125rem;
+
   --shadow-hard-sm: 3px 3px 0 var(--color-ink);
   --shadow-hard: 5px 5px 0 var(--color-ink);
   --shadow-hard-lg: 7px 7px 0 var(--color-ink);

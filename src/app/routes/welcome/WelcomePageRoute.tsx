@@ -1,5 +1,5 @@
 import { data, Form, redirect } from 'react-router';
-import { Button, Fret, TileBand } from '~app/shared/components';
+import { Button, Fret, Plaid, TileBand } from '~app/shared/components';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { safeReturnUrl } from '~app/shared/returnUrl';
 import { tiles } from '~app/shared/tile';
@@ -39,7 +39,8 @@ export function meta() {
 export default function WelcomePage({ loaderData, actionData }: Route.ComponentProps) {
   return (
     <main id="main" className="@container mx-auto max-w-3xl px-[max(1rem,4vw)] pt-8 pb-16 md:pt-16">
-      <div className="border-3 border-ink bg-white shadow-hard">
+      <div data-testid="WelcomePage-card" className="relative overflow-hidden rounded-xl border-3 border-ink bg-white">
+        <Plaid className="h-8" />
         <Fret size={14} className="text-red" />
         <Form method="post" className="p-6">
           <h1 className="text-[clamp(2rem,6vw,3rem)] leading-[1.05] font-black tracking-[-0.03em] text-balance">Welkom in het Familiekookboek</h1>

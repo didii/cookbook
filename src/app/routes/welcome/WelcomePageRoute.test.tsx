@@ -3,7 +3,8 @@ import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react
 import { beforeEach, describe } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { createUser, getUser } from '~app/shared/users.server';
-import { render, screen } from '~testing/dom';
+import { cssFor } from '~testing/css';
+import { precedes, render, screen } from '~testing/dom';
 import { fake } from '~testing/fake';
 import { test } from '~testing/test';
 import type { Route } from './+types/WelcomePageRoute';
@@ -205,3 +206,46 @@ describe('family-access › First visit by a new family member', () => {
     assert.equal((await getUser(db, 'nieuw@example.com'))?.callingName, 'Nel');
   });
 });
+
+describe('plaid-accent › Card has a plaid strip', () => {
+  const card = () => {
+    show({ loaderData: { returnUrl: '/' } });
+    return screen.getByTestId('WelcomePage-card');
+  };
+
+  test('the card starts with a plaid layer', () => {
+    assert.equal(card().firstElementChild, screen.getByTestId('Plaid-layer'));
+  });
+
+  test('the plaid comes before the fret', () => {
+    card();
+    assert.ok(precedes(screen.getByTestId('Plaid-layer'), screen.getByTestId('Fret-strip')));
+  });
+
+  test('the card has an ink border', async () => {
+    assert.ok((await cssFor(card().className)).includes('border-color: var(--color-ink)'));
+  });
+
+  test('the page behind the card has no plaid', () => {
+    card();
+    assert.equal(screen.getAllByTestId('Plaid-layer').length, 1);
+  });
+});
+
+describe('plaid-accent › Card is rounded', () => {
+  const style = async () => {
+    show({ loaderData: { returnUrl: '/' } });
+    return cssFor(screen.getByTestId('WelcomePage-card').className);
+  };
+
+  test('the card has rounded corners', async () => {
+    assert.ok((await style()).includes('border-radius: var(--radius-xl)'));
+  });
+
+  test('the card clips the strip and the tile band to its corners', async () => {
+    assert.match(await style(), /overflow: hidden/);
+  });
+});
+
+// Needs real layout.
+test.todo('plaid-accent › Card on a narrow screen');

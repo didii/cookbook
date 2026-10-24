@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { cn } from '~app/shared/cn';
-import { Heart } from '~app/shared/icons';
+import { MapleLeaf } from '~app/shared/icons';
 import { press } from '~app/shared/press';
 
 type Props = { slug: string; initialLiked: boolean };
 
-/** Heart button in the top row: likes and unlikes the recipe for the member. Changes at once and goes back when the request fails. */
+/** MapleLeaf button in the top row: likes and unlikes the recipe for the member. Changes at once and goes back when the request fails. */
 export function LikeButton({ slug, initialLiked }: Props) {
   const [liked, setLiked] = useState(initialLiked);
   const [pending, setPending] = useState(false);
@@ -28,7 +28,7 @@ export function LikeButton({ slug, initialLiked }: Props) {
   return (
     <button
       type="button"
-      data-testid="LikeButton-heart"
+      data-testid="LikeButton-leaf"
       aria-pressed={liked}
       aria-label={liked ? 'Verwijder uit favorieten' : 'Markeer als favoriet'}
       aria-disabled={pending}
@@ -39,7 +39,7 @@ export function LikeButton({ slug, initialLiked }: Props) {
         liked ? 'bg-red text-white' : 'bg-white text-ink',
       )}
     >
-      <Heart className={cn(liked && 'fill-current')} />
+      <MapleLeaf className={cn('size-7', liked && 'fill-current')} />
     </button>
   );
 }
