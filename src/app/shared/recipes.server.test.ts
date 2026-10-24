@@ -631,17 +631,6 @@ describe('recipe-step-chips › Chips are stored with their step', () => {
     return slug;
   };
 
-  test('a chip comes back with its quantity value and unit', async ({ db }) => {
-    const slug = await createRecipe(db, { title: 'Met chips', author: 'Oma', steps: withChips });
-    assert.deepEqual(
-      (await getRecipe(db, slug))?.steps[0].ingredients.map((c) => [c.quantityValue, c.quantityUnit]),
-      [
-        [250, 'g'],
-        [null, null],
-      ],
-    );
-  });
-
   test('the chips come back with their step', async ({ db }) => {
     const slug = await createRecipe(db, { title: 'Met chips', author: 'Oma', steps: withChips });
     assert.deepEqual(defined((await getRecipe(db, slug))?.steps), withChips);
