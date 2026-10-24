@@ -691,3 +691,70 @@ describe('recipe-storage › Non-positive chip value refused', () => {
     await assert.rejects(addChipWithValue(db, await addStep(db, await addRecipe(db, 'chip-negative'), 1), -1));
   });
 });
+
+const addStepQuantity = (db: D1Database, step: number, start: number, end: number, value = 200) =>
+  db
+    .prepare('INSERT INTO step_quantities (step_id, start_index, end_index, quantity_value, quantity_unit) VALUES (?, ?, ?, ?, ?)')
+    .bind(step, start, end, value, 'g')
+    .run();
+
+describe('recipe-storage › Amounts keep their text order', () => {
+  test('they come back ordered by start', async ({ db }) => {
+    const step = await addStep(db, await addRecipe(db, 'sq-order'), 1);
+    await addStepQuantity(db, step, 20, 21, 2);
+    await addStepQuantity(db, step, 5, 8);
+    const { results } = await db.prepare('SELECT start_index FROM step_quantities WHERE step_id = ? ORDER BY start_index').bind(step).all();
+    assert.deepEqual(
+      results.map((r) => r.start_index),
+      [5, 20],
+    );
+  });
+});
+
+describe('recipe-storage › Amount with place, value and unit', () => {
+  test('place, value and unit are returned as stored', async ({ db }) => {
+    const step = await addStep(db, await addRecipe(db, 'sq-stored'), 1);
+    await addStepQuantity(db, step, 5, 8);
+    assert.deepEqual(
+      await db.prepare('SELECT start_index, end_index, quantity_value, quantity_unit FROM step_quantities WHERE step_id = ?').bind(step).first(),
+      { start_index: 5, end_index: 8, quantity_value: 200, quantity_unit: 'g' },
+    );
+  });
+});
+
+describe('recipe-storage › Non-positive amount in text refused', () => {
+  test('zero is refused', async ({ db }) => {
+    await assert.rejects(addStepQuantity(db, await addStep(db, await addRecipe(db, 'sq-zero'), 1), 5, 8, 0));
+  });
+
+  test('a negative value is refused', async ({ db }) => {
+    await assert.rejects(addStepQuantity(db, await addStep(db, await addRecipe(db, 'sq-negative'), 1), 5, 8, -1));
+  });
+});
+
+describe('recipe-storage › Amount must end after it starts', () => {
+  test('an end equal to the start is refused', async ({ db }) => {
+    await assert.rejects(addStepQuantity(db, await addStep(db, await addRecipe(db, 'sq-empty'), 1), 5, 5));
+  });
+
+  test('an end before the start is refused', async ({ db }) => {
+    await assert.rejects(addStepQuantity(db, await addStep(db, await addRecipe(db, 'sq-backwards'), 1), 5, 4));
+  });
+});
+
+describe('recipe-storage › Two amounts cannot start at the same place', () => {
+  test('the second insert fails', async ({ db }) => {
+    const step = await addStep(db, await addRecipe(db, 'sq-same-start'), 1);
+    await addStepQuantity(db, step, 5, 8);
+    await assert.rejects(addStepQuantity(db, step, 5, 6));
+  });
+});
+
+describe('recipe-storage › Amounts are removed with their step', () => {
+  test('none remain', async ({ db }) => {
+    const step = await addStep(db, await addRecipe(db, 'sq-deleted'), 1);
+    await addStepQuantity(db, step, 5, 8);
+    await db.prepare('DELETE FROM steps WHERE id = ?').bind(step).run();
+    assert.equal(await count(db, 'SELECT start_index FROM step_quantities WHERE step_id = ?', step), 0);
+  });
+});

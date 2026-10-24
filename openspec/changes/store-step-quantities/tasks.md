@@ -4,7 +4,7 @@ Change 3 of 3. Precondition: `store-ingredient-quantities` and `store-chip-quant
 
 ## 1. Database
 
-- [ ] 1.1 Add migration `0012_step_quantities.sql` for `step_quantities`; test the scenarios of "A step stores the amounts in its text" in `migrations.test.ts`
+- [x] 1.1 Add migration `0012_step_quantities.sql` for `step_quantities`; test the scenarios of "A step stores the amounts in its text" in `migrations.test.ts`
 - [ ] 1.2 Generate `step_quantities` rows for the seeded steps in `src/db/seed/dev.sql` with `findQuantities` (once task 2.2 exists); add the span-text check to `seed/dev.test.ts`
 
 ## 2. Move the parsers into the editor
