@@ -8,7 +8,7 @@ const realFetch = globalThis.fetch;
 afterEach(() => {
   globalThis.fetch = realFetch;
 });
-const heart = () => screen.getByTestId('LikeButton-heart');
+const leaf = () => screen.getByTestId('LikeButton-leaf');
 const stub = (answer: () => Promise<Response>) => {
   const sent: { url: string; body: string }[] = [];
   globalThis.fetch = ((url: string, init: RequestInit) => {
@@ -19,73 +19,73 @@ const stub = (answer: () => Promise<Response>) => {
 };
 const press = () =>
   act(async () => {
-    fireEvent.click(heart());
+    fireEvent.click(leaf());
   });
 
 describe('recipe-like › Recipe not liked', () => {
-  test('the heart is not pressed', () => {
+  test('the leaf is not pressed', () => {
     render(<LikeButton slug="soep" initialLiked={false} />);
-    assert.equal(heart().getAttribute('aria-pressed'), 'false');
+    assert.equal(leaf().getAttribute('aria-pressed'), 'false');
   });
 
   test('the label offers to mark it as favourite', () => {
     render(<LikeButton slug="soep" initialLiked={false} />);
-    assert.equal(heart().getAttribute('aria-label'), 'Markeer als favoriet');
+    assert.equal(leaf().getAttribute('aria-label'), 'Markeer als favoriet');
   });
 
   test('the button is white', async () => {
     render(<LikeButton slug="soep" initialLiked={false} />);
-    assert.match(await cssFor(heart().className), /background-color: var\(--color-white\)/);
+    assert.match(await cssFor(leaf().className), /background-color: var\(--color-white\)/);
   });
 
   test('the button is 44px wide and high', async () => {
     render(<LikeButton slug="soep" initialLiked={false} />);
-    assert.match(await cssFor(heart().className), /width: calc\(var\(--spacing\) \* 11\);\s*height: calc\(var\(--spacing\) \* 11\)/);
+    assert.match(await cssFor(leaf().className), /width: calc\(var\(--spacing\) \* 11\);\s*height: calc\(var\(--spacing\) \* 11\)/);
   });
 
-  test('the heart is an outline', async () => {
+  test('the leaf is an outline', async () => {
     render(<LikeButton slug="soep" initialLiked={false} />);
-    assert.doesNotMatch(await cssFor(heart().querySelector('svg')!.getAttribute('class') ?? ''), /fill: currentcolor/);
+    assert.doesNotMatch(await cssFor(leaf().querySelector('svg')!.getAttribute('class') ?? ''), /fill: currentcolor/);
   });
 });
 
 describe('recipe-like › Recipe liked', () => {
-  test('the heart is pressed', () => {
+  test('the leaf is pressed', () => {
     render(<LikeButton slug="soep" initialLiked />);
-    assert.equal(heart().getAttribute('aria-pressed'), 'true');
+    assert.equal(leaf().getAttribute('aria-pressed'), 'true');
   });
 
   test('the label offers to remove it from favourites', () => {
     render(<LikeButton slug="soep" initialLiked />);
-    assert.equal(heart().getAttribute('aria-label'), 'Verwijder uit favorieten');
+    assert.equal(leaf().getAttribute('aria-label'), 'Verwijder uit favorieten');
   });
 
   test('the button is red', async () => {
     render(<LikeButton slug="soep" initialLiked />);
-    assert.match(await cssFor(heart().className), /background-color: var\(--color-red\)/);
+    assert.match(await cssFor(leaf().className), /background-color: var\(--color-red\)/);
   });
 
-  test('the heart is filled', async () => {
+  test('the leaf is filled', async () => {
     render(<LikeButton slug="soep" initialLiked />);
-    assert.match(await cssFor(heart().querySelector('svg')!.getAttribute('class') ?? ''), /fill: currentcolor/);
+    assert.match(await cssFor(leaf().querySelector('svg')!.getAttribute('class') ?? ''), /fill: currentcolor/);
   });
 });
 
 describe('LikeButton', () => {
-  test('pressing the heart changes it at once and states the wanted value', async () => {
+  test('pressing the leaf changes it at once and states the wanted value', async () => {
     const sent = stub(() => Promise.resolve(new Response(null, { status: 204 })));
     render(<LikeButton slug="soep" initialLiked={false} />);
     await press();
     assert.deepEqual(sent, [{ url: '/recepten/soep/favoriet', body: 'liked=true' }]);
-    assert.equal(heart().getAttribute('aria-pressed'), 'true');
+    assert.equal(leaf().getAttribute('aria-pressed'), 'true');
   });
 
-  test('pressing a liked heart states liked=false and unpresses it', async () => {
+  test('pressing a liked leaf states liked=false and unpresses it', async () => {
     const sent = stub(() => Promise.resolve(new Response(null, { status: 204 })));
     render(<LikeButton slug="soep" initialLiked />);
     await press();
     assert.equal(sent[0]!.body, 'liked=false');
-    assert.equal(heart().getAttribute('aria-pressed'), 'false');
+    assert.equal(leaf().getAttribute('aria-pressed'), 'false');
   });
 });
 
@@ -94,13 +94,13 @@ describe('recipe-like › Like cannot be saved', () => {
     stub(() => Promise.resolve(new Response(null, { status: 500 })));
     render(<LikeButton slug="soep" initialLiked={false} />);
     await press();
-    assert.equal(heart().getAttribute('aria-pressed'), 'false');
+    assert.equal(leaf().getAttribute('aria-pressed'), 'false');
   });
 
   test('a request that never arrives goes back as well', async () => {
     stub(() => Promise.reject(new TypeError('offline')));
     render(<LikeButton slug="soep" initialLiked={false} />);
     await press();
-    assert.equal(heart().getAttribute('aria-pressed'), 'false');
+    assert.equal(leaf().getAttribute('aria-pressed'), 'false');
   });
 });
