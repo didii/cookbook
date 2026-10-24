@@ -4,7 +4,7 @@ Change 2 of 2. Precondition: `add-recipe-categories` is merged. Verify each task
 
 ## 1. Data
 
-- [ ] 1.1 Add `liked` and `hasNote` to `RecipeSummary` and return them from `listRecipes` for the member; test "Card of a liked recipe", "Card of a recipe not liked", "Another member's like on a card", "Recipe with a note", "Recipe without a note" and "Another member's note on a card" at data level in `recipes.server.test.ts`, and update fixtures so the type check passes
+- [x] 1.1 Add `liked` and `hasNote` to `RecipeSummary` and return them from `listRecipes` for the member; test "Card of a liked recipe", "Card of a recipe not liked", "Another member's like on a card", "Recipe with a note", "Recipe without a note" and "Another member's note on a card" at data level in `recipes.server.test.ts`, and update fixtures so the type check passes
 
 ## 2. Shared like button
 

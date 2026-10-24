@@ -131,6 +131,8 @@ const summary = (title: string, author: string): RecipeSummary => ({
   image: null,
   seal: null,
   categories: [],
+  liked: false,
+  hasNote: false,
 });
 const family = [
   summary('Erwtensoep', 'Papa'),

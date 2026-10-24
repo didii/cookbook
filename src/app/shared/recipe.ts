@@ -38,6 +38,10 @@ export type RecipeSummary = {
   seal: string | null;
   /** Category names in their stored order. */
   categories: string[];
+  /** The signed-in member has liked the recipe. */
+  liked: boolean;
+  /** The signed-in member has a note for the recipe. */
+  hasNote: boolean;
   /** Added recently and not yet opened by the signed-in member. */
   isNew?: boolean;
 };
