@@ -1,5 +1,6 @@
 -- Dev-only sample data. Run: wrangler d1 execute DB --local --file src/db/seed/dev.sql (never against remote).
 DELETE FROM recipes;
+DELETE FROM categories;
 
 INSERT INTO recipes (slug, title, author, time, servings, intro, image, seal) VALUES ('appeltaart', 'Appeltaart', 'Oma', '1u 20', 8, 'Met een dikke laag zure appels en een rooster van deeg bovenop.', '/img/appeltaart.jpg', 'jia-wei');
 INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 0, 'zelfrijzende bloem', '250 g');
@@ -88,3 +89,15 @@ INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES ((SELE
 INSERT INTO steps (recipe_id, position, body, oven_temperature, timer_minutes, timer_label) VALUES ((SELECT id FROM recipes WHERE slug = 'frikandellen'), 0, 'Frituur de frikandellen 5 minuten tot ze bruin zijn.', NULL, NULL, NULL);
 INSERT INTO steps (recipe_id, position, body, oven_temperature, timer_minutes, timer_label) VALUES ((SELECT id FROM recipes WHERE slug = 'frikandellen'), 1, 'Snijd de ui fijn.', NULL, NULL, NULL);
 INSERT INTO steps (recipe_id, position, body, oven_temperature, timer_minutes, timer_label) VALUES ((SELECT id FROM recipes WHERE slug = 'frikandellen'), 2, 'Snijd de frikandellen open en leg ze op een bord met saus en ui.', NULL, NULL, NULL);
+
+INSERT INTO categories (name) VALUES ('Hoofdgerecht'), ('Nagerecht'), ('Soep'), ('Winter'), ('Bakken'), ('Snel');
+INSERT INTO recipe_categories (recipe_id, category_id, position) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), (SELECT id FROM categories WHERE name = 'Nagerecht'), 0);
+INSERT INTO recipe_categories (recipe_id, category_id, position) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), (SELECT id FROM categories WHERE name = 'Bakken'), 1);
+INSERT INTO recipe_categories (recipe_id, category_id, position) VALUES ((SELECT id FROM recipes WHERE slug = 'stoofvlees'), (SELECT id FROM categories WHERE name = 'Hoofdgerecht'), 0);
+INSERT INTO recipe_categories (recipe_id, category_id, position) VALUES ((SELECT id FROM recipes WHERE slug = 'stoofvlees'), (SELECT id FROM categories WHERE name = 'Winter'), 1);
+INSERT INTO recipe_categories (recipe_id, category_id, position) VALUES ((SELECT id FROM recipes WHERE slug = 'pannenkoeken'), (SELECT id FROM categories WHERE name = 'Hoofdgerecht'), 0);
+INSERT INTO recipe_categories (recipe_id, category_id, position) VALUES ((SELECT id FROM recipes WHERE slug = 'pannenkoeken'), (SELECT id FROM categories WHERE name = 'Snel'), 1);
+INSERT INTO recipe_categories (recipe_id, category_id, position) VALUES ((SELECT id FROM recipes WHERE slug = 'pannenkoeken'), (SELECT id FROM categories WHERE name = 'Bakken'), 2);
+INSERT INTO recipe_categories (recipe_id, category_id, position) VALUES ((SELECT id FROM recipes WHERE slug = 'erwtensoep'), (SELECT id FROM categories WHERE name = 'Soep'), 0);
+INSERT INTO recipe_categories (recipe_id, category_id, position) VALUES ((SELECT id FROM recipes WHERE slug = 'erwtensoep'), (SELECT id FROM categories WHERE name = 'Winter'), 1);
+INSERT INTO recipe_categories (recipe_id, category_id, position) VALUES ((SELECT id FROM recipes WHERE slug = 'rijstpap'), (SELECT id FROM categories WHERE name = 'Nagerecht'), 0);

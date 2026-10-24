@@ -36,6 +36,8 @@ export type RecipeSummary = {
   time: string | null;
   image: string | null;
   seal: string | null;
+  /** Category names in their stored order. */
+  categories: string[];
   /** Added recently and not yet opened by the signed-in member. */
   isNew?: boolean;
 };
