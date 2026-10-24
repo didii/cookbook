@@ -7,6 +7,6 @@ export function parseQuantity(text: string): { quantityValue?: number; quantityU
   const match = leading.exec(text);
   if (!match || match[2]) return {};
   const quantityValue = numberValue(match[1]);
-  if (!quantityValue || quantityValue <= 0) return {};
+  if (!quantityValue) return {};
   return { quantityValue, quantityUnit: match[3].trim() || undefined };
 }
