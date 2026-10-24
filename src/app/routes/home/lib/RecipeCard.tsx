@@ -13,6 +13,7 @@ const maxCategories = 2;
 /** Recipe card: image (two tiles high), tile band with the buttons, then the text. The title link is stretched over the card, the buttons sit above it. */
 export function RecipeCard({ recipe: r, tile, eager, onSaved }: Props) {
   const newId = useId();
+  const titleId = useId();
   const more = r.categories.length - maxCategories;
   return (
     <article
@@ -53,12 +54,13 @@ export function RecipeCard({ recipe: r, tile, eager, onSaved }: Props) {
             </span>
           )}
           <span className="pointer-events-auto">
-            <LikeButton slug={r.slug} initialLiked={r.liked} onSaved={onSaved} />
+            <LikeButton slug={r.slug} initialLiked={r.liked} onSaved={onSaved} describedBy={titleId} />
           </span>
         </div>
       </div>
       <div className="px-4 pt-3 pb-4">
         <Link
+          id={titleId}
           to={`/recepten/${r.slug}`}
           data-testid="RecipeCard-link"
           aria-describedby={r.isNew ? newId : undefined}

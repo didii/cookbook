@@ -1,10 +1,27 @@
 import assert from 'node:assert/strict';
+import type { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router';
-import { describe, test } from 'vitest';
+import { afterEach, describe, test, vi } from 'vitest';
+import type { LikeButton } from '~app/shared/components';
 import type { RecipeSummary } from '~app/shared/recipe';
 import { cssFor } from '~testing/css';
 import { precedes, render, screen, within } from '~testing/dom';
 import { RecipeCard } from './RecipeCard';
+
+/** The last props each shared child got, so the card's tests check what it passes and not the child's markup. */
+const passed = vi.hoisted(() => new Map<string, unknown>());
+vi.mock('~app/shared/components', async (importOriginal) => {
+  const real = await importOriginal<typeof import('~app/shared/components')>();
+  const record =
+    <P extends object>(name: string, Child: (props: P) => ReactNode) =>
+    (props: P) => {
+      passed.set(name, props);
+      return <Child {...props} />;
+    };
+  return { ...real, LikeButton: record('LikeButton', real.LikeButton), Seal: record('Seal', real.Seal), TileBand: record('TileBand', real.TileBand) };
+});
+afterEach(() => passed.clear());
+const propsOf = <C extends (props: never) => ReactNode>(name: string) => passed.get(name) as Parameters<C>[0] | undefined;
 
 const recipe: RecipeSummary = {
   slug: 'soep',
@@ -160,6 +177,13 @@ describe('recipe-like › Leaf is not inside the link', () => {
   test('the link does not contain the leaf', () => {
     card();
     assert.ok(!screen.getByTestId('RecipeCard-link').contains(screen.getByTestId('LikeButton-leaf')));
+  });
+});
+
+describe('RecipeCard leaf', () => {
+  test('is described by the title, so it says which recipe it is for', () => {
+    card();
+    assert.equal(propsOf<typeof LikeButton>('LikeButton')?.describedBy, screen.getByTestId('RecipeCard-link').id);
   });
 });
 

@@ -117,6 +117,18 @@ describe('recipe-like › Leaf reacts to the pointer', () => {
   });
 });
 
+describe('LikeButton describedBy', () => {
+  test('describes the button by the given element', () => {
+    render(<LikeButton slug="soep" initialLiked={false} describedBy="title" />);
+    assert.equal(leaf().getAttribute('aria-describedby'), 'title');
+  });
+
+  test('leaves the button without a description by default', () => {
+    render(<LikeButton slug="soep" initialLiked={false} />);
+    assert.equal(leaf().getAttribute('aria-describedby'), null);
+  });
+});
+
 describe('LikeButton onSaved', () => {
   test('is called after the server accepted the change', async () => {
     stub(() => Promise.resolve(new Response(null, { status: 204 })));

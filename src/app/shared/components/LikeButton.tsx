@@ -3,10 +3,17 @@ import { cn } from '../cn';
 import { MapleLeaf } from '../icons';
 import { press } from '../press';
 
-type Props = { slug: string; initialLiked: boolean; /** Called after the server accepted the change. */ onSaved?: () => void };
+type Props = {
+  slug: string;
+  initialLiked: boolean;
+  /** Called after the server accepted the change. */
+  onSaved?: () => void;
+  /** Id of the element that says which recipe the button is for, where that is not clear from the page. */
+  describedBy?: string;
+};
 
 /** MapleLeaf button (recipe page, recipe card): likes and unlikes the recipe for the member. Changes at once and goes back when the request fails. */
-export function LikeButton({ slug, initialLiked, onSaved }: Props) {
+export function LikeButton({ slug, initialLiked, onSaved, describedBy }: Props) {
   const [liked, setLiked] = useState(initialLiked);
   const [pending, setPending] = useState(false);
 
@@ -33,6 +40,7 @@ export function LikeButton({ slug, initialLiked, onSaved }: Props) {
       aria-pressed={liked}
       aria-label={liked ? 'Verwijder uit favorieten' : 'Markeer als favoriet'}
       aria-disabled={pending}
+      aria-describedby={describedBy}
       onClick={() => void toggle()}
       className={cn(
         'grid size-11 cursor-pointer place-items-center rounded-[10px] border-3 border-ink',
