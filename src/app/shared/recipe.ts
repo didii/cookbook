@@ -6,10 +6,13 @@ export type Ingredient = { quantityText: string; name: string };
 /** An ingredient row of a recipe: the quantity text as typed, plus its numeric value and unit when it has them (null for none, such as a range). */
 export type RecipeIngredient = Ingredient & { quantityValue: number | null; quantityUnit: string | null };
 
+/** A chip of a step: the stored value and unit are there once derived on save (null for none); a chip the editor is still typing has neither. */
+export type StepIngredient = Ingredient & { quantityValue?: number | null; quantityUnit?: string | null };
+
 /** A step and what belongs to it: the ingredients it uses, an oven temperature and a timer, all optional. */
 export type Step = {
   body: string;
-  ingredients: Ingredient[];
+  ingredients: StepIngredient[];
   ovenTemperature?: number;
   timer?: { minutes: number; label?: string };
 };

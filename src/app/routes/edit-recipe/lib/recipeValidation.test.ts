@@ -165,8 +165,8 @@ describe('readSteps', () => {
       {
         body: 'bak',
         ingredients: [
-          { quantityText: '250 g', name: 'bloem' },
-          { quantityText: '', name: 'boter' },
+          { quantityText: '250 g', quantityValue: 250, quantityUnit: 'g', name: 'bloem' },
+          { quantityText: '', quantityValue: null, quantityUnit: null, name: 'boter' },
         ],
         ovenTemperature: 40,
         timer: { minutes: 25, label: 'Bakken' },
@@ -175,5 +175,33 @@ describe('readSteps', () => {
       plain('koel'),
       plain('klaar'),
     ]);
+  });
+});
+
+describe('recipe-storage › Chip quantity is read from its text on save', () => {
+  test('the value and unit come from the quantity text, never from the post', () => {
+    const { steps } = postSteps([
+      {
+        body: 'meng',
+        ingredients: [
+          { quantityText: '½ tl', quantityValue: 99, quantityUnit: 'kg', name: 'zout' },
+          { quantityText: '1 klontje', name: 'boter' },
+        ],
+      },
+    ]);
+    assert.deepEqual(
+      steps?.[0].ingredients.map((c) => [c.quantityValue, c.quantityUnit]),
+      [
+        [0.5, 'tl'],
+        [1, 'klontje'],
+      ],
+    );
+  });
+});
+
+describe('recipe-storage › Chip range has no quantity value', () => {
+  test('the text is kept and the value and unit are null', () => {
+    const { steps } = postSteps([{ body: 'bak', ingredients: [{ quantityText: '2-3 el', name: 'olie' }] }]);
+    assert.deepEqual(steps?.[0].ingredients, [{ quantityText: '2-3 el', quantityValue: null, quantityUnit: null, name: 'olie' }]);
   });
 });
