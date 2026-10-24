@@ -3,7 +3,7 @@ import type { StepIngredient } from '~app/shared/recipe';
 import type { Rules } from '~app/shared/rules';
 import { findIngredients, type Row } from '~app/shared/stepParsers';
 
-// TODO: placeholder logic. Chips and step texts are scaled by parsing text with the parser of `ingredients.ts`; once their values are saved in the DB they multiply those instead (like `scaleIngredient`).
+// TODO: placeholder logic. Step texts are scaled by parsing text with the parser of `ingredients.ts`; once their values are saved in the DB they multiply those instead (like `scaleIngredient`).
 /** A number or range at the start of a text: leading space, first number, the dash, second number. */
 const leading = new RegExp(String.raw`^(\s*)(${numberPattern})(?:(\s*[-–]\s*)(${numberPattern}))?`, 'u');
 const whole = new RegExp(String.raw`^${numberPattern}$`, 'u');
