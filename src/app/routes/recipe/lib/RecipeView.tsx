@@ -4,7 +4,6 @@ import { cn } from '~app/shared/cn';
 import { Fret, LikeButton, Seal, TileBand } from '~app/shared/components';
 import { ChevronBack } from '~app/shared/icons';
 import type { Recipe, Step } from '~app/shared/recipe';
-import type { Rules } from '~app/shared/rules';
 import { initialCook, observe, setByHand, wantsCookMode } from './cook/cookMode';
 import { CookSwitch } from './cook/CookSwitch';
 import { useWakeLock } from './cook/useWakeLock';
@@ -13,7 +12,7 @@ import { IngredientList } from './IngredientList';
 import { NotePanel } from './notes/NotePanel';
 import { NoteSheet } from './notes/NoteSheet';
 import { useNote } from './notes/useNote';
-import { scaleBody, scaleIngredient } from './scale/scale';
+import { scaleIngredient, scaleText } from './scale/scale';
 import { ScaleControl } from './scale/ScaleControl';
 import { StepList } from './StepList';
 import { TabBar } from './tabs/TabBar';
@@ -26,9 +25,9 @@ import { useNarrow } from './useNarrow';
 import { useStackHeight } from './useStackHeight';
 import { useStepsInView } from './useStepsInView';
 
-type Props = { recipe: Omit<Recipe, 'steps'>; tile: number; steps: Step[]; rules: Rules; liked?: boolean; note?: string };
+type Props = { recipe: Omit<Recipe, 'steps'>; tile: number; steps: Step[]; liked?: boolean; note?: string };
 
-export function RecipeView({ recipe: r, tile, steps, rules, liked = false, note: savedNote = '' }: Props) {
+export function RecipeView({ recipe: r, tile, steps, liked = false, note: savedNote = '' }: Props) {
   const [tab, setTab] = useState<TabId>('ingredients');
   // Lives here, not in the list, because both tabs stay mounted and cook mode reads it.
   const [ticked, setTicked] = useState<ReadonlySet<number>>(new Set());
@@ -37,16 +36,15 @@ export function RecipeView({ recipe: r, tile, steps, rules, liked = false, note:
   const [amount, setAmount] = useState(r.servings ?? 1);
   const factor = r.servings ? amount / r.servings : amount;
   const scaled = useMemo(() => {
-    const rows = r.ingredients.map((x, i) => ({ id: String(i), ...x }));
     return {
       ingredients: r.ingredients.map((x) => ({ ...x, quantityText: scaleIngredient(x, factor) })),
       steps: steps.map((s) => ({
         ...s,
-        body: scaleBody(s.body, factor, rows, rules),
+        body: scaleText(s.body, s.quantities ?? [], factor),
         ingredients: s.ingredients.map((x) => ({ ...x, quantityText: scaleIngredient(x, factor) })),
       })),
     };
-  }, [r.ingredients, steps, factor, rules]);
+  }, [r.ingredients, steps, factor]);
 
   const timers = useTimers(r.slug, steps);
   const stack = useRef<HTMLDivElement>(null);

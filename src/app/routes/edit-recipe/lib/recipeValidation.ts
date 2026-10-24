@@ -1,7 +1,8 @@
-import { parseIngredient, type ParsedIngredient } from '~app/shared/ingredients';
-import type { Step } from '~app/shared/recipe';
+import type { Ingredient, Step } from '~app/shared/recipe';
 import type { Rules } from '~app/shared/rules';
+import { findQuantities } from './quantities';
 import { parseQuantity } from './quantity';
+import { parseIngredient, type ParsedIngredient } from './shared/ingredients';
 
 export type RecipeFormField = 'title' | 'author' | 'servings' | 'time' | 'intro' | 'image';
 
@@ -102,9 +103,10 @@ function cleanStep(posted: unknown): Step {
   };
 }
 
-/** Parses the posted steps here, never trusting the client's cleaning (see `cleanStep`); blank ones are dropped. `lines` is every posted step cleaned the same way, to show again after a refusal. `steps` is undefined when the form carried no (valid) list, so a submit without the field leaves the stored steps alone instead of clearing them; an explicit empty list does clear them. */
-export function readSteps(form: FormData) {
+/** Parses the posted steps here, never trusting the client's cleaning (see `cleanStep`); blank ones are dropped. `lines` is every posted step cleaned the same way, to show again after a refusal. `steps` is undefined when the form carried no (valid) list, so a submit without the field leaves the stored steps alone instead of clearing them; an explicit empty list does clear them. Each stored step gets the amounts found in its cleaned text, against the recipe's `ingredients` and the `rules`; the browser sends none. */
+export function readSteps(form: FormData, ingredients: Ingredient[], rules: Rules) {
   const posted = readPosted(form);
+  const rows = ingredients.map((r, i) => ({ id: String(i), ...r }));
   const lines = (posted ?? []).map(cleanStep);
-  return { lines, steps: posted && lines.filter((s) => s.body) };
+  return { lines, steps: posted && lines.filter((s) => s.body).map((s) => ({ ...s, quantities: findQuantities(s.body, rows, rules) })) };
 }

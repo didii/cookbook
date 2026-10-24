@@ -1,12 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'vitest';
-import { defaultRules } from '~app/shared/rules';
-import { formatNumber, nextMultiplier, parseNumber, scaleBody, scaleIngredient, scaleQuantity } from './scale';
-
-const rows = [
-  { id: '0', quantityText: '200 g', name: 'bloem' },
-  { id: '1', quantityText: '2', name: 'eieren' },
-];
+import { formatNumber, nextMultiplier, parseNumber, scaleIngredient, scaleText } from './scale';
 
 const ingredient = (quantityText: string, quantityValue: number | null, quantityUnit: string | null) => ({
   quantityText,
@@ -62,57 +56,26 @@ describe('scaleIngredient', () => {
   });
 });
 
-describe('recipe-scaling › Amounts in step text scale', () => {
-  test('amounts that match a list row', () => {
-    assert.equal(scaleBody('Meng 200 g bloem met 2 eieren', 2, rows, defaultRules), 'Meng 400 g bloem met 4 eieren');
-  });
-
-  test('a unit alone is enough, also without a matching row', () => {
-    assert.equal(scaleBody('Voeg 1,5 el suiker toe', 2, [], defaultRules), 'Voeg 3 el suiker toe');
-  });
-});
-
-describe('recipe-scaling › Times and temperatures do not scale', () => {
-  test('minutes and degrees in words', () => {
-    assert.equal(scaleBody('Bak 20 minuten op 180 graden', 2, rows, defaultRules), 'Bak 20 minuten op 180 graden');
-  });
-
-  test('hours and °C', () => {
-    assert.equal(scaleBody('Bak 1 uur op 200 °C', 2, rows, defaultRules), 'Bak 1 uur op 200 °C');
-  });
-
-  test('a bare degree sign', () => {
-    assert.equal(scaleBody('Bak op 180°', 2, rows, defaultRules), 'Bak op 180°');
-  });
-});
-
-describe('recipe-scaling › Ranges scale', () => {
-  test('in step text', () => {
-    assert.equal(scaleBody('Neem 2-3 el olie', 2, [], defaultRules), 'Neem 4-6 el olie');
-  });
-});
+// Removed by the change store-step-quantities (a range has no stored value, see card #44); drop this line when the change is archived.
+test.todo('recipe-scaling › Ranges scale');
 
 describe('recipe-scaling › Quantity without a number', () => {
   test('an empty quantity stays empty', () => {
-    assert.equal(scaleQuantity('', 3), '');
+    assert.equal(scaleIngredient(ingredient('', null, null), 3), '');
   });
 
   test('a word stays as it is', () => {
-    assert.equal(scaleQuantity('snufje', 3), 'snufje');
+    assert.equal(scaleIngredient(ingredient('snufje', null, null), 3), 'snufje');
   });
 });
 
 describe('recipe-scaling › Original at factor one', () => {
   test('a quantity keeps its own notation', () => {
-    assert.equal(scaleQuantity('1 ½ el', 1), '1 ½ el');
+    assert.equal(scaleIngredient(ingredient('1 ½ el', 1.5, 'el'), 1), '1 ½ el');
   });
 
   test('step text keeps its own notation', () => {
-    assert.equal(scaleBody('Meng 1 ½ el suiker', 1, [], defaultRules), 'Meng 1 ½ el suiker');
-  });
-
-  test('another factor does rewrite it', () => {
-    assert.equal(scaleQuantity('1 ½ el', 2), '3 el');
+    assert.equal(scaleText('Meng 1 ½ el suiker', [{ startIndex: 5, endIndex: 8, quantityValue: 1.5, quantityUnit: 'el' }], 1), 'Meng 1 ½ el suiker');
   });
 });
 
@@ -125,30 +88,6 @@ describe('recipe-scaling › Long numbers are rounded', () => {
 describe('recipe-scaling › Round numbers stay round', () => {
   test('no trailing digits are added', () => {
     assert.deepEqual([2.5, 2.5000001, 300].map(formatNumber), ['2,5', '2,5', '300']);
-  });
-});
-
-describe('scaleQuantity', () => {
-  test('both ends of a range scale', () => {
-    assert.equal(scaleQuantity('2-3 el', 2), '4-6 el');
-  });
-
-  test('a quantity with a unit', () => {
-    assert.equal(scaleQuantity('200 g', 1.5), '300 g');
-  });
-
-  describe('fractions and glyphs', () => {
-    test('a slash fraction', () => {
-      assert.equal(scaleQuantity('1/2 tl', 3), '1,5 tl');
-    });
-
-    test('a fraction glyph', () => {
-      assert.equal(scaleQuantity('½ tl', 1 / 3), '0,167 tl');
-    });
-
-    test('a whole number with a slash fraction', () => {
-      assert.equal(scaleQuantity('1 2/3 kg', 3), '5 kg');
-    });
   });
 });
 
@@ -201,17 +140,61 @@ describe('nextMultiplier', () => {
   });
 });
 
-const withRules = (change: Partial<typeof defaultRules>) => ({ ...defaultRules, ...change });
+describe('recipe-scaling › Amounts in step text scale', () => {
+  test('each stored amount is replaced by its value times the factor', () => {
+    const quantities = [
+      { startIndex: 5, endIndex: 8, quantityValue: 200, quantityUnit: 'g' },
+      { startIndex: 21, endIndex: 22, quantityValue: 2, quantityUnit: null },
+    ];
+    assert.equal(scaleText('Meng 200 g bloem met 2 eieren', quantities, 2), 'Meng 400 g bloem met 4 eieren');
+  });
+});
 
-describe('parsing-rules › Scaling uses the stored units', () => {
-  const rules = withRules({ units: [...defaultRules.units, 'kopje'] });
-  const rows = [{ id: '0', quantityText: '2 kopje', name: 'rijst' }];
+describe('recipe-scaling › Range in step text stays as written', () => {
+  test('a range has no stored amount, so the text is kept', () => {
+    assert.equal(scaleText('Voeg 2-3 el olie toe', [], 2), 'Voeg 2-3 el olie toe');
+  });
+});
 
-  test('a stored unit is scaled', () => {
-    assert.equal(scaleBody('doe 2 kopje bloem erbij', 2, [], rules), 'doe 4 kopje bloem erbij');
+describe('recipe-scaling › Text without stored amounts stays as written', () => {
+  test('a number that is no stored amount is unchanged', () => {
+    const stored = [{ startIndex: 5, endIndex: 8, quantityValue: 200, quantityUnit: 'g' }];
+    assert.equal(scaleText('Meng 200 g bloem, bak 20 minuten', stored, 2), 'Meng 400 g bloem, bak 20 minuten');
+  });
+});
+
+describe('scaleText', () => {
+  const quantities = [{ startIndex: 5, endIndex: 8, quantityValue: 1.5, quantityUnit: null }];
+
+  test('a stored place that holds no number is left alone', () => {
+    assert.equal(scaleText('Meng wat suiker', quantities, 2), 'Meng wat suiker');
   });
 
-  test('without the stored unit it is not', () => {
-    assert.equal(scaleBody('doe 2 kopje bloem erbij', 2, rows, defaultRules), 'doe 2 kopje bloem erbij');
+  test('unsorted amounts are all replaced', () => {
+    const unsorted = [
+      { startIndex: 21, endIndex: 22, quantityValue: 2, quantityUnit: null },
+      { startIndex: 5, endIndex: 8, quantityValue: 200, quantityUnit: 'g' },
+    ];
+    assert.equal(scaleText('Meng 200 g bloem met 2 eieren', unsorted, 2), 'Meng 400 g bloem met 4 eieren');
+  });
+
+  test('an amount that overlaps one already replaced is skipped', () => {
+    const overlapping = [
+      { startIndex: 5, endIndex: 9, quantityValue: 1234, quantityUnit: null },
+      { startIndex: 7, endIndex: 10, quantityValue: 5, quantityUnit: null },
+    ];
+    assert.equal(scaleText('Meng 12345 x', overlapping, 2), 'Meng 1210 x');
+  });
+
+  test('a longer replacement does not shift the amounts after it', () => {
+    const grown = [
+      { startIndex: 0, endIndex: 1, quantityValue: 5, quantityUnit: null },
+      { startIndex: 12, endIndex: 13, quantityValue: 3, quantityUnit: null },
+    ];
+    assert.equal(scaleText('5 tsp zout, 3 el', grown, 2), '10 tsp zout, 6 el');
+  });
+
+  test('the scaled value is rounded like other scaled numbers', () => {
+    assert.equal(scaleText('Meng 1 el', [{ startIndex: 5, endIndex: 6, quantityValue: 1, quantityUnit: null }], 1 / 3), 'Meng 0,333 el');
   });
 });

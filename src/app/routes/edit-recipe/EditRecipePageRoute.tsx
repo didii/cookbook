@@ -1,6 +1,5 @@
 import { data, redirect, useRouteLoaderData } from 'react-router';
 import { envContext } from '~app/shared/context.server';
-import { joinIngredient } from '~app/shared/ingredients';
 import { acceptImage, deletePhoto } from '~app/shared/photos.server';
 import { getRecipe, listAuthors, updateRecipe } from '~app/shared/recipes.server';
 import { defaultRules, type Rules } from '~app/shared/rules';
@@ -10,6 +9,7 @@ import type { Route } from './+types/EditRecipePageRoute';
 import { endDraftAfterSave } from './lib/endDraftAfterSave';
 import { RecipeEditor } from './lib/RecipeEditor';
 import { readForm, readIngredients, readSteps, toRecipeFields, validate, type RecipeFormErrors } from './lib/recipeValidation';
+import { joinIngredient } from './lib/shared/ingredients';
 
 const notFound = () => data('Recept niet gevonden', { status: 404 });
 
@@ -25,7 +25,8 @@ export async function loader({ params, context }: Route.LoaderArgs) {
     intro: recipe.intro,
     image: recipe.image ?? '',
     ingredients: recipe.ingredients.map((i) => joinIngredient({ quantityText: i.quantityText, name: i.name })),
-    steps: recipe.steps,
+    // The editor types the text; stored amounts would go stale and are found again on save.
+    steps: recipe.steps.map(({ body, ingredients, ovenTemperature, timer }) => ({ body, ingredients, ovenTemperature, timer })),
   };
   return {
     slug: params.slug,
@@ -41,16 +42,18 @@ export async function loader({ params, context }: Route.LoaderArgs) {
 export async function action({ request, params, context }: Route.ActionArgs) {
   const form = await request.formData();
   const values = readForm(form);
-  const { lines, ingredients, errors: ingredientErrors } = readIngredients(form, await getRules(context.get(envContext).DB));
-  const { lines: stepLines, steps } = readSteps(form);
+  const { DB, PHOTOS } = context.get(envContext);
+  const rules = await getRules(DB);
+  const stored = await getRecipe(DB, params.slug);
+  const { lines, ingredients, errors: ingredientErrors } = readIngredients(form, rules);
+  // A form without an ingredient list keeps the stored ingredients, so the amounts in the steps are found against those.
+  const { lines: stepLines, steps } = readSteps(form, ingredients ?? stored?.ingredients ?? [], rules);
 
   const errors: RecipeFormErrors = validate(values);
   if (Object.keys(ingredientErrors).length) errors.ingredients = ingredientErrors;
   if (Object.keys(errors).length) return data({ errors, values: { ...values, ingredients: lines, steps: stepLines } }, { status: 400 });
 
-  const { DB, PHOTOS } = context.get(envContext);
   const fields = toRecipeFields(values);
-  const stored = await getRecipe(DB, params.slug);
   const image = stored && acceptImage(fields.image, stored.image);
   const updated = stored && (await updateRecipe(DB, params.slug, { ...fields, image, ingredients, steps }));
   if (!updated) throw notFound();

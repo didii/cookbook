@@ -24,6 +24,7 @@ None.
 ### Modified Capabilities
 
 - `recipe-storage`: new requirement for the amounts stored with a step's text, found on save.
+- `parsing-rules`: "Recognition follows the stored rules" is replaced by "Recognition follows the stored rules on save": the rules are applied when a step is saved, not when the page scales, and "Scaling uses the stored units" becomes "Saving uses the stored units".
 - `recipe-scaling`: "All quantities scale" is replaced by "Every quantity scales from its stored value", which also covers step text from stored spans and no longer scales ranges.
 
 ## Impact

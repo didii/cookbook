@@ -1,5 +1,5 @@
+import { alternation, type Rules } from '~app/shared/rules';
 import { parseIngredient } from './ingredients';
-import { alternation, type Rules } from './rules';
 
 /** A range of a step's text: UTF-16 indexes, `end` exclusive. */
 export type Range = { start: number; end: number };

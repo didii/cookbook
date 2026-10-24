@@ -67,6 +67,7 @@ describe('RecipePageRoute loader', () => {
         ingredients: [{ quantityText: '', quantityValue: null, quantityUnit: null, name: 'boter' }],
         ovenTemperature: 180,
         timer: { minutes: 30 },
+        quantities: [],
       },
     ];
     const slug = await createRecipe(db, { title: 'Uit de database', author: 'Oma', steps });

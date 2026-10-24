@@ -1,14 +1,7 @@
-import { numberPattern, numberValue } from '~app/shared/ingredients';
-import type { StepIngredient } from '~app/shared/recipe';
-import type { Rules } from '~app/shared/rules';
-import { findIngredients, type Row } from '~app/shared/stepParsers';
+import { numberPattern, numberValue } from '~app/shared/numbers';
+import type { StepIngredient, StepQuantity } from '~app/shared/recipe';
 
-// TODO: placeholder logic. Step texts are scaled by parsing text with the parser of `ingredients.ts`; once their values are saved in the DB they multiply those instead (like `scaleIngredient`).
-/** A number or range at the start of a text: leading space, first number, the dash, second number. */
-const leading = new RegExp(String.raw`^(\s*)(${numberPattern})(?:(\s*[-–]\s*)(${numberPattern}))?`, 'u');
 const whole = new RegExp(String.raw`^${numberPattern}$`, 'u');
-// A number or range followed by a word, not glued to other letters or digits.
-const beforeWord = new RegExp(String.raw`(?<![\p{L}\d.,/])(${numberPattern})(?:\s*[-–]\s*(${numberPattern}))?(?![\d.,/])\s*(\p{L}+)`, 'gu');
 
 /** At most 3 significant digits, comma as separator, no trailing zeros; 1000 and up only rounds to a whole number. */
 export function formatNumber(n: number): string {
@@ -22,43 +15,22 @@ export function parseNumber(text: string): number | undefined {
   return whole.test(t) ? numberValue(t) : undefined;
 }
 
-/** The leading number(s) of a quantity multiplied by the factor; the rest stays as written. Factor 1 and text without a leading number are returned as is. */
-export function scaleQuantity(text: string, factor: number): string {
-  if (factor === 1) return text;
-  const m = leading.exec(text);
-  if (!m) return text;
-  const [all, space, from, dash, to] = m;
-  const a = numberValue(from);
-  const b = to === undefined ? undefined : numberValue(to);
-  if (a === undefined || (to !== undefined && b === undefined)) return text;
-  const scaled = space + formatNumber(a * factor) + (to === undefined ? '' : dash + formatNumber(b! * factor));
-  return scaled + text.slice(all.length);
-}
-
 /** The quantity of an ingredient row or step chip for the factor: its stored value multiplied, followed by its unit. Factor 1 and a row or chip without a stored value (no number, or a range) keep the quantity text as written. */
 export function scaleIngredient({ quantityText, quantityValue, quantityUnit }: StepIngredient, factor: number): string {
   if (factor === 1 || quantityValue == null) return quantityText;
   return [formatNumber(quantityValue * factor), quantityUnit].filter(Boolean).join(' ');
 }
 
-/** A step text with its amounts multiplied: those followed by a unit of the rules and those written right before the name of one of the rows. Durations and temperatures are not touched. */
-export function scaleBody(body: string, factor: number, rows: Row[], rules: Rules): string {
+/** A step text with each stored amount replaced by its value multiplied by the factor; the rest of the text, including the unit after the number, stays. Factor 1 gives the text as stored. An amount whose characters are no number any more (text changed outside the editor) or that overlaps one already replaced is left alone, whatever the order of `quantities`. */
+export function scaleText(body: string, quantities: StepQuantity[], factor: number): string {
   if (factor === 1) return body;
-  const spans: [number, number][] = [];
-  for (const m of body.matchAll(beforeWord)) {
-    if (rules.units.includes(m[3].toLowerCase())) spans.push([m.index, m.index + m[0].length - m[3].length]);
-  }
-  for (const f of findIngredients(body, rows, () => '', rules)) {
-    if (f.values.quantity) spans.push([f.start, f.start + f.values.quantity.length]);
-  }
-  // From the end, so earlier positions stay valid; a span that overlaps a later one is skipped.
-  spans.sort((a, b) => b[0] - a[0]);
   let out = body;
-  let limit = Infinity;
-  for (const [start, end] of spans) {
-    if (end > limit) continue;
-    out = out.slice(0, start) + scaleQuantity(body.slice(start, end), factor) + out.slice(end);
-    limit = start;
+  let replacedFrom = body.length;
+  // From the end, so earlier places stay valid.
+  for (const q of [...quantities].sort((a, b) => b.startIndex - a.startIndex)) {
+    if (q.endIndex > replacedFrom || parseNumber(body.slice(q.startIndex, q.endIndex)) === undefined) continue;
+    out = out.slice(0, q.startIndex) + formatNumber(q.quantityValue * factor) + out.slice(q.endIndex);
+    replacedFrom = q.startIndex;
   }
   return out;
 }

@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { describe } from 'vitest';
 import { defined } from '~testing/defined';
 import { test } from '~testing/test';
-import { parseIngredient } from './ingredients';
 import {
   createRecipe,
   deleteRecipe,
@@ -16,12 +15,11 @@ import {
   updateRecipe,
   type StepInput,
 } from './recipes.server';
-import { defaultRules } from './rules';
 import { seals } from './seals';
 
 /** Steps with only a text, as they are stored and as they come back. */
 const plain = (...bodies: string[]): StepInput[] => bodies.map((body) => ({ body }));
-const loaded = (...bodies: string[]) => bodies.map((body) => ({ body, ingredients: [] }));
+const loaded = (...bodies: string[]) => bodies.map((body) => ({ body, ingredients: [], quantities: [] }));
 
 const seedOrdering = (db: D1Database) =>
   db.batch([
@@ -71,14 +69,22 @@ describe('getRecipe', () => {
 
 describe('recipe-storage › Quantity value and unit are read with the recipe', () => {
   test('text, value and unit of an ingredient saved from the editor', async ({ db }) => {
-    const slug = await createRecipe(db, { title: 'Bloem', author: 'Oma', ingredients: [parseIngredient('250 g bloem', defaultRules)] });
+    const slug = await createRecipe(db, {
+      title: 'Bloem',
+      author: 'Oma',
+      ingredients: [{ quantityText: '250 g', quantityValue: 250, quantityUnit: 'g', name: 'bloem' }],
+    });
     assert.deepEqual((await getRecipe(db, slug))?.ingredients, [{ quantityText: '250 g', quantityValue: 250, quantityUnit: 'g', name: 'bloem' }]);
   });
 });
 
 describe('recipe-storage › Range has no quantity value', () => {
   test('a range keeps its text and has no value', async ({ db }) => {
-    const slug = await createRecipe(db, { title: 'Olie', author: 'Oma', ingredients: [parseIngredient('2-3 el olie', defaultRules)] });
+    const slug = await createRecipe(db, {
+      title: 'Olie',
+      author: 'Oma',
+      ingredients: [{ quantityText: '2-3 el', quantityUnit: 'el', name: 'olie' }],
+    });
     const [ingredient] = (await getRecipe(db, slug))?.ingredients ?? [];
     assert.deepEqual([ingredient.quantityText, ingredient.quantityValue], ['2-3 el', null]);
   });
@@ -618,13 +624,16 @@ const withChips: StepInput[] = [
       { quantityText: '', quantityValue: null, quantityUnit: null, name: 'boter' },
     ],
     timer: { minutes: 30, label: 'Deeg rust' },
+    quantities: [],
   },
-  { body: 'Bak op 180 graden.', ingredients: [], ovenTemperature: 180, timer: { minutes: 50 } },
-  { body: 'Eet smakelijk.', ingredients: [] },
+  { body: 'Bak op 180 graden.', ingredients: [], ovenTemperature: 180, timer: { minutes: 50 }, quantities: [] },
+  { body: 'Eet smakelijk.', ingredients: [], quantities: [] },
 ];
 
 describe('recipe-step-chips › Chips are stored with their step', () => {
-  const fewer: StepInput[] = [{ body: 'Kneed.', ingredients: [{ quantityText: '1', quantityValue: 1, quantityUnit: null, name: 'ei' }] }];
+  const fewer: StepInput[] = [
+    { body: 'Kneed.', ingredients: [{ quantityText: '1', quantityValue: 1, quantityUnit: null, name: 'ei' }], quantities: [] },
+  ];
   const saveFewer = async (db: D1Database) => {
     const slug = await createRecipe(db, { title: 'Met chips', author: 'Oma', steps: withChips });
     await updateRecipe(db, slug, { title: 'Met chips', author: 'Oma', steps: fewer });
@@ -915,5 +924,52 @@ describe('a like or note for an unknown recipe or member is refused', () => {
   test('an unknown member has no member data', async ({ db }) => {
     const slug = await memberSetup(db);
     assert.deepEqual(await getMemberRecipeData(db, 'niemand@example.com', slug), { liked: false, note: '' });
+  });
+});
+
+describe('getRecipe › amounts in a step', () => {
+  const quantities = [
+    { startIndex: 21, endIndex: 22, quantityValue: 2, quantityUnit: null },
+    { startIndex: 5, endIndex: 8, quantityValue: 200, quantityUnit: 'g' },
+  ];
+
+  test('are returned in text order', async ({ db }) => {
+    const slug = await createRecipe(db, { title: 'Volgorde', author: 'Oma', steps: [{ body: 'Meng 200 g bloem met 2 eieren', quantities }] });
+    assert.deepEqual((await getRecipe(db, slug))?.steps[0]?.quantities, [quantities[1], quantities[0]]);
+  });
+
+  test('stay with their own step', async ({ db }) => {
+    const slug = await createRecipe(db, {
+      title: 'Twee stappen',
+      author: 'Oma',
+      steps: [{ body: 'Meng 200 g bloem', quantities: [quantities[1]] }, { body: 'rust' }],
+    });
+    assert.deepEqual(
+      (await getRecipe(db, slug))?.steps.map((s) => s.quantities?.length),
+      [1, 0],
+    );
+  });
+});
+
+describe('recipe-storage › Saving again replaces the amounts', () => {
+  test('the step keeps only the amounts of its new text', async ({ db }) => {
+    const slug = await createRecipe(db, {
+      title: 'Opnieuw',
+      author: 'Oma',
+      steps: [{ body: 'Meng 200 g bloem', quantities: [{ startIndex: 5, endIndex: 8, quantityValue: 200, quantityUnit: 'g' }] }],
+    });
+    const next = { startIndex: 5, endIndex: 6, quantityValue: 3, quantityUnit: 'el' };
+    await updateRecipe(db, slug, { title: 'Opnieuw', author: 'Oma', steps: [{ body: 'Meng 3 el bloem', quantities: [next] }] });
+    assert.deepEqual((await getRecipe(db, slug))?.steps[0]?.quantities, [next]);
+  });
+
+  test('a save without a step list keeps the stored amounts', async ({ db }) => {
+    const slug = await createRecipe(db, {
+      title: 'Blijft',
+      author: 'Oma',
+      steps: [{ body: 'Meng 200 g bloem', quantities: [{ startIndex: 5, endIndex: 8, quantityValue: 200, quantityUnit: 'g' }] }],
+    });
+    await updateRecipe(db, slug, { title: 'Blijft', author: 'Oma' });
+    assert.equal((await getRecipe(db, slug))?.steps[0]?.quantities?.length, 1);
   });
 });

@@ -1,6 +1,8 @@
-import { parseIngredient } from '~app/shared/ingredients';
 import type { Step } from '~app/shared/recipe';
 import type { Rules } from '~app/shared/rules';
+import { mapRange } from './anchors';
+import type { TextEdit } from './textEdit';
+import { parseIngredient } from '../shared/ingredients';
 import {
   findIngredients,
   findOven,
@@ -11,9 +13,7 @@ import {
   type Range,
   type Row,
   type TimerValues,
-} from '~app/shared/stepParsers';
-import { mapRange } from './anchors';
-import type { TextEdit } from './textEdit';
+} from '../shared/stepParsers';
 
 export type Kind = 'ingredient' | 'oven' | 'timer';
 export type { IngredientValues, OvenValues, TimerValues };

@@ -281,6 +281,16 @@ describe('recipe-step-editing › Stored steps come back in the editor', () => {
       { body: 'bak', ingredients: [] },
     ]);
   });
+
+  test('stored amounts are not handed to the editor', async ({ db, photos }) => {
+    await db
+      .prepare("INSERT INTO step_quantities (step_id, start_index, end_index, quantity_value) SELECT id, 0, 1, 1 FROM steps WHERE body = 'kneed'")
+      .run();
+    assert.deepEqual(
+      defined((await load(db, photos, 'stappen')).values.steps).map((s) => 'quantities' in s),
+      [false, false],
+    );
+  });
 });
 
 describe('an edit posting steps', () => {

@@ -103,14 +103,18 @@ const stepsForm = (json: string) => {
   form.set('steps', json);
   return form;
 };
-const postSteps = (bodies: unknown) => readSteps(stepsForm(JSON.stringify(bodies)));
+const read = (form: FormData, ingredients: { quantityText: string; name: string }[] = []) => readSteps(form, ingredients, defaultRules);
+const postSteps = (bodies: unknown, ingredients: { quantityText: string; name: string }[] = []) =>
+  read(stepsForm(JSON.stringify(bodies)), ingredients);
 
 const plain = (body: string): Step => ({ body, ingredients: [] });
+/** A step as stored: with the amounts found in its text. */
+const kept = (body: string): Step => ({ ...plain(body), quantities: [] });
 
 describe('recipe-step-editing › Blank steps are not stored', () => {
   test('only the filled steps are kept, trimmed', () => {
     const { steps } = postSteps([{ body: '' }, { body: 'kneed' }, { body: '  ' }, { body: ' bak ' }, { body: '\n' }]);
-    assert.deepEqual(steps, [plain('kneed'), plain('bak')]);
+    assert.deepEqual(steps, [kept('kneed'), kept('bak')]);
   });
 });
 
@@ -119,7 +123,7 @@ describe('readSteps', () => {
     const result = () => postSteps([{ body: 'kneed\r\nen rijs\n\n bak' }, { body: '' }]);
 
     test('the stored steps have no line breaks', () => {
-      assert.deepEqual(result().steps, [plain('kneed en rijs bak')]);
+      assert.deepEqual(result().steps, [kept('kneed en rijs bak')]);
     });
 
     test('the lines keep the blank step', () => {
@@ -129,11 +133,11 @@ describe('readSteps', () => {
 
   describe('a missing or malformed field is "not given", an empty list is "none"', () => {
     test('no field is not given', () => {
-      assert.equal(readSteps(new FormData()).steps, undefined);
+      assert.equal(read(new FormData()).steps, undefined);
     });
 
     test('invalid JSON is not given', () => {
-      assert.equal(readSteps(stepsForm('{')).steps, undefined);
+      assert.equal(read(stepsForm('{')).steps, undefined);
     });
 
     test('not an array is not given', () => {
@@ -145,7 +149,7 @@ describe('readSteps', () => {
     });
 
     test('no field gives no lines', () => {
-      assert.deepEqual(readSteps(new FormData()).lines, []);
+      assert.deepEqual(read(new FormData()).lines, []);
     });
   });
 
@@ -170,10 +174,11 @@ describe('readSteps', () => {
         ],
         ovenTemperature: 40,
         timer: { minutes: 25, label: 'Bakken' },
+        quantities: [],
       },
-      plain('rust'),
-      plain('koel'),
-      plain('klaar'),
+      kept('rust'),
+      kept('koel'),
+      kept('klaar'),
     ]);
   });
 });
@@ -203,5 +208,47 @@ describe('recipe-storage › Chip range has no quantity value', () => {
   test('the text is kept and the value and unit are null', () => {
     const { steps } = postSteps([{ body: 'bak', ingredients: [{ quantityText: '2-3 el', name: 'olie' }] }]);
     assert.deepEqual(steps?.[0].ingredients, [{ quantityText: '2-3 el', quantityValue: null, quantityUnit: null, name: 'olie' }]);
+  });
+});
+
+describe('recipe-storage › Amount before a unit and before an ingredient', () => {
+  test('the amounts are found with their value and unit', () => {
+    const { steps } = postSteps(
+      [{ body: 'Meng 200 g bloem met 2 eieren' }],
+      [
+        { quantityText: '500 g', name: 'bloem' },
+        { quantityText: '4', name: 'ei' },
+      ],
+    );
+    assert.deepEqual(steps?.[0].quantities, [
+      { startIndex: 5, endIndex: 8, quantityValue: 200, quantityUnit: 'g' },
+      { startIndex: 21, endIndex: 22, quantityValue: 2, quantityUnit: null },
+    ]);
+  });
+
+  test('amounts sent by the browser are ignored', () => {
+    const { steps } = postSteps([{ body: 'Meng 200 g bloem', quantities: [{ startIndex: 0, endIndex: 4, quantityValue: 9, quantityUnit: null }] }]);
+    assert.deepEqual(
+      steps?.[0].quantities?.map((q) => q.quantityValue),
+      [200],
+    );
+  });
+});
+
+describe('recipe-storage › Places refer to the stored text', () => {
+  test('each place points at its number in the cleaned text', () => {
+    const { steps } = postSteps([{ body: '  Meng\r\n  200 g bloem \n' }]);
+    const [step] = steps ?? [];
+    assert.deepEqual(
+      step.quantities?.map((q) => step.body.slice(q.startIndex, q.endIndex)),
+      ['200'],
+    );
+  });
+});
+
+describe('recipe-storage › Durations, temperatures and ranges are not stored', () => {
+  test('no amount is found', () => {
+    const { steps } = postSteps([{ body: 'Bak 20 minuten op 180 graden, daarna 2-3 el olie' }], [{ quantityText: '', name: 'olie' }]);
+    assert.deepEqual(steps?.[0].quantities, []);
   });
 });
