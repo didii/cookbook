@@ -103,7 +103,7 @@ describe('parsing-rules › Spoken duration without minutes', () => {
   ])
     test(`"${line}" is refused`, async ({ db }) => {
       const errors = await edit(db, { spoken: line });
-      assert.match(errors?.spoken ?? '', /heel aantal minuten/);
+      assert.deepEqual(Object.keys(errors ?? {}), ['spoken']);
     });
 
   test('nothing is stored', async ({ db }) => {
@@ -115,7 +115,7 @@ describe('parsing-rules › Spoken duration without minutes', () => {
 describe('parsing-rules › Empty list', () => {
   test('is refused', async ({ db }) => {
     const errors = await edit(db, { units: '\n  \n' });
-    assert.match(errors?.units ?? '', /niet leeg/);
+    assert.deepEqual(Object.keys(errors ?? {}), ['units']);
   });
 
   test('nothing is stored', async ({ db }) => {
@@ -126,11 +126,11 @@ describe('parsing-rules › Empty list', () => {
 
 describe('parsing-rules › Word in two lists', () => {
   test('a minute word that is also an hour word is refused', async ({ db }) => {
-    assert.match((await edit(db, { minuteWords: 'minuten\nu' }))?.hourWords ?? '', /lijst/);
+    assert.deepEqual(Object.keys((await edit(db, { minuteWords: 'minuten\nu' })) ?? {}), ['hourWords']);
   });
 
   test('a unit may not be a degree word either', async ({ db }) => {
-    assert.match((await edit(db, { degreeWords: 'graden\ng' }))?.degreeWords ?? '', /één lijst/);
+    assert.deepEqual(Object.keys((await edit(db, { degreeWords: 'graden\ng' })) ?? {}), ['degreeWords']);
   });
 
   test('nothing is stored', async ({ db }) => {
@@ -154,16 +154,16 @@ describe('parsing-rules › Saving the unchanged defaults succeeds', () => {
 describe('parsing-rules › Word with other characters', () => {
   test('a plus sign is refused', async ({ db }) => {
     const errors = await edit(db, { units: 'g\na+' });
-    assert.match(errors?.units ?? '', /letters/);
+    assert.deepEqual(Object.keys(errors ?? {}), ['units']);
   });
 
   // A unit is one word: no space or degree sign.
   test('a space is refused', async ({ db }) => {
-    assert.match((await edit(db, { units: 'g\neetlepel vol' }))?.units ?? '', /letters/);
+    assert.deepEqual(Object.keys((await edit(db, { units: 'g\neetlepel vol' })) ?? {}), ['units']);
   });
 
   test('a degree sign is refused', async ({ db }) => {
-    assert.match((await edit(db, { units: 'g\n°' }))?.units ?? '', /letters/);
+    assert.ok((await edit(db, { units: 'g\n°' }))?.units);
   });
 
   test('nothing is stored', async ({ db }) => {

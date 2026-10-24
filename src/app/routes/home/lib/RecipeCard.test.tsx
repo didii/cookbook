@@ -86,7 +86,9 @@ describe('recipe-new-marker › Marker on a card with an image', () => {
     card({ isNew: true });
     const link = screen.getByTestId('RecipeCard-link');
     assert.ok(link.contains(screen.getByTestId('RecipeCard-new')));
-    assert.match(link.textContent ?? '', /Nieuw.*Soep/);
+    const name = link.textContent ?? '';
+    const marker = screen.getByTestId('RecipeCard-new').textContent!;
+    assert.ok(name.includes(recipe.title) && name.indexOf(marker) < name.indexOf(recipe.title));
   });
 
   test('only a new card has the marker', () => {

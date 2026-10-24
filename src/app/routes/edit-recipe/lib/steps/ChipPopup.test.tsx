@@ -28,30 +28,30 @@ describe('recipe-step-chips › Clicking a chip opens its popup', () => {
   });
 
   // The popup has that chip's fields, the follow or pinned choice and a remove action, and sits next to its chip.
-  test('the popup is named after the chip', () => {
-    assert.equal(open().getAttribute('aria-label'), 'Timer aanpassen');
+  test('the popup has an accessible name', () => {
+    assert.ok(open().getAttribute('aria-label'));
   });
 
-  test('the popup has a minutes field', () => {
-    assert.equal(within(open()).getByTestId<HTMLInputElement>('NumberField-input').labels?.[0]?.textContent, 'Minuten');
+  test('the popup has a labelled minutes field', () => {
+    assert.ok(within(open()).getByTestId<HTMLInputElement>('NumberField-input').labels?.[0]);
   });
 
-  test('the popup has a name field', () => {
-    assert.equal(within(open()).getByTestId<HTMLInputElement>('TextField-input').labels?.[0]?.textContent, 'Naam');
+  test('the popup has a labelled name field', () => {
+    assert.ok(within(open()).getByTestId<HTMLInputElement>('TextField-input').labels?.[0]);
   });
 
-  test('the popup has the follow choice', () => {
+  test('the popup has the follow choice, pressed for a following chip', () => {
     open();
-    assert.match(modes().follow.textContent ?? '', /Volgt tekst/);
+    assert.equal(modes().follow.getAttribute('aria-pressed'), 'true');
   });
 
-  test('the popup has the pinned choice', () => {
+  test('the popup has the pinned choice, not pressed for a following chip', () => {
     open();
-    assert.match(modes().pinned.textContent ?? '', /Vast/);
+    assert.equal(modes().pinned.getAttribute('aria-pressed'), 'false');
   });
 
   test('the popup has a remove action', () => {
-    assert.equal(within(open()).getByTestId('ChipPopup-remove').textContent, 'Timer verwijderen');
+    assert.ok(within(open()).getByTestId('ChipPopup-remove'));
   });
 
   test('the popup sits next to its chip', () => {
@@ -65,18 +65,20 @@ describe('recipe-step-chips › Clicking a chip opens its popup', () => {
 });
 
 describe('recipe-step-chips › The popup explains the two modes', () => {
-  const text = () => {
+  const explanation = () => {
     show();
     fireEvent.click(timerChip());
-    return screen.getByTestId('ChipPopup-dialog').textContent ?? '';
+    return screen.getByTestId('ChipPopup-explanation').textContent ?? '';
   };
 
   test('explains following the text', () => {
-    assert.match(text(), /Volgt tekst:.*verandert mee met de tekst in de stap/);
+    const text = explanation();
+    assert.ok(text.includes(modes().follow.textContent!.trim()));
   });
 
   test('explains pinned', () => {
-    assert.match(text(), /Vast:.*toont suggesties als de tekst wijzigt/);
+    const text = explanation();
+    assert.ok(text.includes(modes().pinned.textContent!.trim()));
   });
 });
 

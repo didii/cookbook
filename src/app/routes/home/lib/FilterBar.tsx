@@ -148,7 +148,7 @@ export function FilterBar({ filters, authors, detailed, onChange }: Props) {
             <span>Filter</span>
             {count > 0 && (
               <span className="absolute -top-2 -right-2 grid h-5.5 min-w-5.5 place-items-center rounded-full border-2 border-ink bg-red px-1 text-[0.8125rem] font-black text-white">
-                {count}
+                <span data-testid="FilterBar-count">{count}</span>
                 <span className="sr-only"> actief</span>
               </span>
             )}

@@ -194,7 +194,7 @@ export function ChipPopup({ chip, values, anchor, onValues, onLabel, onMode, onR
               </button>
             ))}
           </fieldset>
-          <p className="m-0 text-[0.8125rem] leading-snug font-bold text-muted">
+          <p data-testid="ChipPopup-explanation" className="m-0 text-[0.8125rem] leading-snug font-bold text-muted">
             <b className="text-ink">Volgt tekst:</b> verandert mee met de tekst in de stap. <br />
             <b className="text-ink">Vast:</b> verandert niet meer, toont suggesties als de tekst wijzigt
           </p>

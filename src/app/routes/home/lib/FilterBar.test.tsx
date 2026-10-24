@@ -160,23 +160,22 @@ describe('recipe-filtering › Selected and unselected chips', () => {
 });
 
 describe('recipe-filtering › Active filter count', () => {
-  const label = (filters: Filters) => {
+  const count = (filters: Filters) => {
     show(filters);
-    return filterButton().textContent;
+    return screen.queryByTestId('FilterBar-count')?.textContent;
   };
 
-  // The number, with "actief" for a screen reader.
   test('author and order are counted: 2', () => {
-    assert.equal(label({ q: '', author: 'Oma', sort: 'az' }), 'Filter2 actief');
+    assert.equal(count({ q: '', author: 'Oma', sort: 'az' }), '2');
   });
 
   test('author with the default order is counted: 1', () => {
-    assert.equal(label({ q: '', author: 'Oma', sort: 'nieuwste' }), 'Filter1 actief');
+    assert.equal(count({ q: '', author: 'Oma', sort: 'nieuwste' }), '1');
   });
 
   // Nothing active, or only a search text: no number.
   test('only a search text shows no number', () => {
-    assert.equal(label({ ...noFilters, q: 'appel' }), 'Filter');
+    assert.equal(count({ ...noFilters, q: 'appel' }), undefined);
   });
 });
 
