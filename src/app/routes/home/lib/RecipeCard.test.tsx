@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import type { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, test, vi } from 'vitest';
-import type { LikeButton } from '~app/shared/components';
+import type { LikeButton, Seal } from '~app/shared/components';
 import type { RecipeSummary } from '~app/shared/recipe';
 import { cssFor } from '~testing/css';
 import { precedes, render, screen, within } from '~testing/dom';
@@ -72,8 +72,13 @@ describe('recipe-browsing › Image, band, then text', () => {
 
 describe('recipe-browsing › Seal on the image', () => {
   test('the seal is shown with the image', () => {
-    const { container } = card({ seal: 'fu' });
-    assert.ok(container.querySelector('img[src="/img/seal/fu.svg"]'));
+    card({ seal: 'fu' });
+    assert.ok(screen.getByTestId('Seal-image'));
+  });
+
+  test('the seal is the recipe’s own', () => {
+    card({ seal: 'fu' });
+    assert.equal(propsOf<typeof Seal>('Seal')?.id, 'fu');
   });
 });
 
@@ -84,8 +89,8 @@ describe('recipe-browsing › Recipe without time or image', () => {
   });
 
   test('the card shows no seal', () => {
-    const { container } = card({ image: null, seal: 'fu' });
-    assert.equal(container.querySelector('img[src^="/img/seal/"]'), null);
+    card({ image: null, seal: 'fu' });
+    assert.equal(screen.queryByTestId('Seal-image'), null);
   });
 
   test('the tile band is three tiles high', () => {
@@ -221,9 +226,14 @@ describe('recipe-note › Note icon only indicates', () => {
     assert.equal(screen.getByTestId('RecipeCard-note').getAttribute('role'), 'img');
   });
 
-  test('the icon is not inside a link or a button', () => {
+  test('the icon is not inside the link', () => {
     card({ hasNote: true });
-    assert.equal(screen.getByTestId('RecipeCard-note').closest('a, button'), null);
+    assert.ok(!screen.getByTestId('RecipeCard-link').contains(screen.getByTestId('RecipeCard-note')));
+  });
+
+  test('the icon is not inside the like button', () => {
+    card({ hasNote: true });
+    assert.ok(!screen.getByTestId('LikeButton-leaf').contains(screen.getByTestId('RecipeCard-note')));
   });
 });
 
