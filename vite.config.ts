@@ -4,12 +4,12 @@ import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 import checker from 'vite-plugin-checker';
 
-export default defineConfig(({ command }) => ({
+export default defineConfig(({ command, isPreview }) => ({
   plugins: [
     cloudflare({ viteEnvironment: { name: 'ssr' } }),
     tailwindcss(),
     reactRouter(),
-    command === 'serve' && checker({ typescript: { tsconfigPath: 'tsconfig.cloudflare.json' }, oxlint: true }),
+    command === 'serve' && !isPreview && checker({ typescript: { tsconfigPath: 'tsconfig.cloudflare.json' }, oxlint: true }),
   ],
   resolve: {
     tsconfigPaths: true,
