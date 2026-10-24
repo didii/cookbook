@@ -1,6 +1,7 @@
 import { parseIngredient, type ParsedIngredient } from '~app/shared/ingredients';
 import type { Step } from '~app/shared/recipe';
 import type { Rules } from '~app/shared/rules';
+import { parseQuantity } from './quantity';
 
 export type RecipeFormField = 'title' | 'author' | 'servings' | 'time' | 'intro' | 'image';
 
@@ -89,7 +90,13 @@ function cleanStep(posted: unknown): Step {
     body: String(step.body ?? '')
       .replace(/\s*[\r\n]+\s*/g, ' ')
       .trim(),
-    ingredients: chips.map((c) => ({ quantityText: text(c.quantityText), name: text(c.name) })).filter((c) => c.name),
+    ingredients: chips
+      .map((c) => {
+        const quantityText = text(c.quantityText);
+        const { quantityValue, quantityUnit } = parseQuantity(quantityText);
+        return { quantityText, quantityValue: quantityValue ?? null, quantityUnit: quantityUnit ?? null, name: text(c.name) };
+      })
+      .filter((c) => c.name),
     ...(oven && { ovenTemperature: oven }),
     ...(minutes && { timer: { minutes, ...(label && { label }) } }),
   };

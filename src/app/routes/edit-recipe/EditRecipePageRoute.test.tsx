@@ -329,11 +329,16 @@ describe('a saved recipe with chips', () => {
     },
     { body: 'Serveer.', ingredients: [] },
   ];
+  // The server derives the value and unit of a chip; the editor does not post them.
+  const expected = posted.map((s) => ({
+    ...s,
+    ingredients: s.ingredients.map((c) => ({ ...c, quantityValue: 250, quantityUnit: 'g' })),
+  }));
 
   test('comes back in the editor with equal chips', async ({ db, photos }) => {
     await addRecipe(db, 'chips-terug');
     await submit(db, photos, 'chips-terug', { title: 'Soep', author: 'Oma', steps: JSON.stringify(posted) });
-    assert.deepEqual(defined((await load(db, photos, 'chips-terug')).values.steps), posted);
+    assert.deepEqual(defined((await load(db, photos, 'chips-terug')).values.steps), expected);
   });
 
   test('a refusal shows the chips again', async ({ db, photos }) => {
@@ -341,7 +346,7 @@ describe('a saved recipe with chips', () => {
     const refused = (await submit(db, photos, 'chips-weiger', { title: '', author: 'Oma', steps: JSON.stringify(posted) })) as unknown as {
       data: { values: { steps: unknown } };
     };
-    assert.deepEqual(refused.data.values.steps, posted);
+    assert.deepEqual(refused.data.values.steps, expected);
   });
 });
 

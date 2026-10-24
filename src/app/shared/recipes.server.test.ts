@@ -614,8 +614,8 @@ const withChips: StepInput[] = [
   {
     body: 'Kneed bloem en boter. Laat 30 minuten rusten.',
     ingredients: [
-      { quantityText: '250 g', name: 'bloem' },
-      { quantityText: '', name: 'boter' },
+      { quantityText: '250 g', quantityValue: 250, quantityUnit: 'g', name: 'bloem' },
+      { quantityText: '', quantityValue: null, quantityUnit: null, name: 'boter' },
     ],
     timer: { minutes: 30, label: 'Deeg rust' },
   },
@@ -624,7 +624,7 @@ const withChips: StepInput[] = [
 ];
 
 describe('recipe-step-chips › Chips are stored with their step', () => {
-  const fewer: StepInput[] = [{ body: 'Kneed.', ingredients: [{ quantityText: '1', name: 'ei' }] }];
+  const fewer: StepInput[] = [{ body: 'Kneed.', ingredients: [{ quantityText: '1', quantityValue: 1, quantityUnit: null, name: 'ei' }] }];
   const saveFewer = async (db: D1Database) => {
     const slug = await createRecipe(db, { title: 'Met chips', author: 'Oma', steps: withChips });
     await updateRecipe(db, slug, { title: 'Met chips', author: 'Oma', steps: fewer });

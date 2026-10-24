@@ -1,9 +1,9 @@
 import { numberPattern, numberValue } from '~app/shared/ingredients';
-import type { RecipeIngredient } from '~app/shared/recipe';
+import type { StepIngredient } from '~app/shared/recipe';
 import type { Rules } from '~app/shared/rules';
 import { findIngredients, type Row } from '~app/shared/stepParsers';
 
-// TODO: placeholder logic. Chips and step texts are scaled by parsing text with the parser of `ingredients.ts`; once their values are saved in the DB they multiply those instead (like `scaleIngredient`).
+// TODO: placeholder logic. Step texts are scaled by parsing text with the parser of `ingredients.ts`; once their values are saved in the DB they multiply those instead (like `scaleIngredient`).
 /** A number or range at the start of a text: leading space, first number, the dash, second number. */
 const leading = new RegExp(String.raw`^(\s*)(${numberPattern})(?:(\s*[-–]\s*)(${numberPattern}))?`, 'u');
 const whole = new RegExp(String.raw`^${numberPattern}$`, 'u');
@@ -35,9 +35,9 @@ export function scaleQuantity(text: string, factor: number): string {
   return scaled + text.slice(all.length);
 }
 
-/** The quantity of an ingredient row for the factor: its stored value multiplied, followed by its unit. Factor 1 and a row without a stored value (no number, or a range) keep the quantity text as written. */
-export function scaleIngredient({ quantityText, quantityValue, quantityUnit }: RecipeIngredient, factor: number): string {
-  if (factor === 1 || quantityValue === null) return quantityText;
+/** The quantity of an ingredient row or step chip for the factor: its stored value multiplied, followed by its unit. Factor 1 and a row or chip without a stored value (no number, or a range) keep the quantity text as written. */
+export function scaleIngredient({ quantityText, quantityValue, quantityUnit }: StepIngredient, factor: number): string {
+  if (factor === 1 || quantityValue == null) return quantityText;
   return [formatNumber(quantityValue * factor), quantityUnit].filter(Boolean).join(' ');
 }
 
