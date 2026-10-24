@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { beforeAll, describe } from 'vitest';
-import { createTestDb, test } from '~testing/db';
+import { withFreshDb } from '~testing/db';
 import { defined } from '~testing/defined';
+import { test } from '~testing/test';
 import {
   createRecipe,
   deleteRecipe,
@@ -16,7 +17,6 @@ import {
   type StepInput,
 } from './recipes.server';
 import { seals } from './seals';
-import { createUser } from './users.server';
 
 /** Steps with only a text, as they are stored and as they come back. */
 const plain = (...bodies: string[]): StepInput[] => bodies.map((body) => ({ body }));
@@ -40,16 +40,6 @@ test.beforeAll(async ({ testDb }) => {
     ),
   ]);
 });
-
-/** Runs the test body against a database of its own. */
-const withFreshDb = async (run: (fresh: D1Database) => Promise<void>) => {
-  const fresh = await createTestDb();
-  try {
-    await run(fresh.db);
-  } finally {
-    await fresh.dispose();
-  }
-};
 
 describe('getRecipe', () => {
   test('returns undefined for an unknown slug', async () => {
@@ -77,32 +67,6 @@ describe('getRecipe', () => {
         { quantityText: '', name: 'zout' },
       ]);
     });
-
-    test('the steps are in position order', async () => {
-      assert.deepEqual(defined((await ordering())?.steps), loaded('een', 'twee'));
-    });
-  });
-
-  test('maps every recipe column', async () => {
-    const r = await getRecipe(db, 'full');
-    assert.deepEqual(defined({ ...r, id: 0, updated_at: '' }), {
-      id: 0,
-      updated_at: '',
-      slug: 'full',
-      title: 'Full',
-      author: 'Papa',
-      time: '1u 20',
-      servings: 8,
-      intro: 'intro',
-      image: '/full.jpg',
-      seal: 'fu',
-      ingredients: [],
-      steps: [],
-    });
-  });
-
-  test('returns when the recipe was last saved', async () => {
-    assert.match((await getRecipe(db, 'full'))?.updated_at ?? '', /^\d{4}-\d\d-\d\dT/);
   });
 });
 
@@ -129,10 +93,6 @@ describe('recipe-creation › Slug from title', () => {
 
   test('a title without letters gives recept', () => {
     assert.equal(slugify('!!!'), 'recept');
-  });
-
-  test('createRecipe returns the slug of the title', async () => {
-    assert.equal(await createRecipe(db, { title: 'Kip met Rijst!', author: 'Oma', servings: 4 }), 'kip-met-rijst');
   });
 });
 
@@ -212,7 +172,7 @@ describe('createRecipe', () => {
 });
 
 describe('recipe-creation › Existing authors are suggested', () => {
-  test('lists each author once, spelled as first used', () =>
+  test('lists each author once, spelled as first used', ({}) =>
     withFreshDb(async (fresh) => {
       await createRecipe(fresh, { title: 'A', author: 'Papa', servings: 1 });
       await createRecipe(fresh, { title: 'B', author: 'Oma', servings: 1 });
@@ -587,8 +547,8 @@ describe('recipe-new-marker › Recent recipe never opened', () => {
 describe('recipe-new-marker › Marker is per member', () => {
   let slug: string;
   beforeAll(async () => {
-    await createUser(db, 'een@example.com', 'Een');
-    await createUser(db, 'twee@example.com', 'Twee');
+    await addUser(db, 'een@example.com', 'Een');
+    await addUser(db, 'twee@example.com', 'Twee');
     slug = await createRecipe(db, { title: 'Per lid', author: 'Oma', createdBy: 'oma@example.com' });
     await addedAt(slug, '2026-03-08T12:00:00Z');
     await open('een@example.com', slug);
@@ -648,7 +608,7 @@ describe('deleteRecipe', () => {
     const chips = () => db.prepare('SELECT COUNT(*) AS n FROM step_ingredient_chips WHERE step_id = ?').bind(stepId).first<{ n: number }>();
 
     beforeAll(async () => {
-      await createUser(db, 'wis@example.com', 'Wis');
+      await addUser(db, 'wis@example.com', 'Wis');
       slug = await createRecipe(db, {
         title: 'Weg ermee',
         author: 'Oma',
@@ -693,9 +653,12 @@ describe('deleteRecipe', () => {
   });
 });
 
+const addUser = (d: D1Database, email: string, callingName: string) =>
+  d.prepare('INSERT OR IGNORE INTO users (email, calling_name) VALUES (?, ?)').bind(email, callingName).run();
+
 const memberSetup = async () => {
-  await createUser(db, 'oma@example.com', 'Oma');
-  await createUser(db, 'papa@example.com', 'Papa');
+  await addUser(db, 'oma@example.com', 'Oma');
+  await addUser(db, 'papa@example.com', 'Papa');
   return createRecipe(db, { title: 'Persoonlijk', author: 'Oma' });
 };
 

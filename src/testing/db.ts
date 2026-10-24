@@ -40,6 +40,16 @@ export async function createTestDb() {
   return { db, photos, dispose: () => mf.dispose() };
 }
 
+/** Runs the test body against a database of its own, for a test that needs one no other test has touched. */
+export async function withFreshDb(run: (fresh: D1Database) => Promise<void>) {
+  const fresh = await createTestDb();
+  try {
+    await run(fresh.db);
+  } finally {
+    await fresh.dispose();
+  }
+}
+
 type TestDb = Pick<Awaited<ReturnType<typeof createTestDb>>, 'db' | 'photos'>;
 
 /** Empties every table and the bucket, so the next user of a shared TestDb starts from the migrated schema. */

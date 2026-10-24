@@ -8,6 +8,12 @@ describe('render', () => {
     assert.equal(screen.getByTestId('ja').tagName, 'BUTTON');
   });
 
+  // Order-dependent on purpose: the automatic afterEach cleanup can only be seen from the next test.
+  test('renders something to be cleaned up', () => {
+    render(<p data-testid="first">eerste</p>);
+    assert.ok(screen.getByTestId('first'));
+  });
+
   test('the previous render is cleaned up', () => assert.equal(document.body.innerHTML, ''));
 });
 

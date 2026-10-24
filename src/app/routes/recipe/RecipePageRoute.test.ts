@@ -8,11 +8,7 @@ import { createUser } from '~app/shared/users.server';
 import { test } from '~testing/db';
 import { defined } from '~testing/defined';
 import { fake } from '~testing/fake';
-import type { Route as LikeRoute } from './+types/LikeUpdateRoute';
-import type { Route as NoteRoute } from './+types/NoteUpdateRoute';
 import type { Route } from './+types/RecipePageRoute';
-import { action as likeAction } from './LikeUpdateRoute';
-import { action as noteAction } from './NoteUpdateRoute';
 import { action, loader } from './RecipePageRoute';
 
 // Real loader and action against an in-memory D1 holding a recipe the test inserted.
@@ -131,100 +127,5 @@ describe('recipe-deletion › Photo is deleted', () => {
 describe('recipe-deletion › Unknown recipe', () => {
   test('the action answers 404', async () => {
     await assert.rejects(remove('does-not-exist'), (thrown: { init?: { status?: number } }) => thrown.init?.status === 404);
-  });
-});
-
-const post = (handler: typeof likeAction | typeof noteAction, slug: string, fields: Record<string, string>, email = 'oma@example.com') => {
-  const context = new RouterContextProvider();
-  context.set(envContext, fake<Env>({ DB: db, PHOTOS: photos }));
-  context.set(userEmailContext, email);
-  const request = new Request('http://x/', { method: 'POST', body: new URLSearchParams(fields) });
-  return handler(fake<LikeRoute.ActionArgs & NoteRoute.ActionArgs>({ request, params: { slug }, context })) as Promise<Response>;
-};
-
-describe('LikeUpdateRoute', () => {
-  test('stores and removes the like and the loader returns it', async () => {
-    await createUser(db, 'oma@example.com', 'Oma');
-    const slug = await createRecipe(db, { title: 'Favoriet', author: 'Oma' });
-    assert.equal((await post(likeAction, slug, { liked: 'true' })).status, 204);
-    assert.equal((await load(slug)).liked, true);
-    assert.equal((await post(likeAction, slug, { liked: 'false' })).status, 204);
-    assert.equal((await load(slug)).liked, false);
-  });
-
-  describe('refuses what it cannot store', () => {
-    let slug: string;
-    beforeAll(async () => {
-      await createUser(db, 'oma@example.com', 'Oma');
-      slug = await createRecipe(db, { title: 'Streng', author: 'Oma' });
-    });
-
-    test('an unknown liked value gives 400', async () => {
-      assert.equal((await post(likeAction, slug, { liked: 'maybe' })).status, 400);
-    });
-
-    test('a missing liked value gives 400', async () => {
-      assert.equal((await post(likeAction, slug, {})).status, 400);
-    });
-
-    test('an unknown recipe gives 404', async () => {
-      assert.equal((await post(likeAction, 'does-not-exist', { liked: 'true' })).status, 404);
-    });
-
-    test('an unknown user gives 403', async () => {
-      assert.equal((await post(likeAction, slug, { liked: 'true' }, 'vreemd@example.com')).status, 403);
-    });
-  });
-});
-
-describe('NoteUpdateRoute', () => {
-  test('stores the note and the loader returns it', async () => {
-    await createUser(db, 'oma@example.com', 'Oma');
-    const slug = await createRecipe(db, { title: 'Met notitie', author: 'Oma' });
-    assert.equal((await post(noteAction, slug, { note: 'minder zout' })).status, 204);
-    assert.equal((await load(slug)).note, 'minder zout');
-    assert.equal((await post(noteAction, slug, { note: '  ' })).status, 204);
-    assert.equal((await load(slug)).note, '');
-  });
-
-  describe('refuses what it cannot store', () => {
-    let slug: string;
-    beforeAll(async () => {
-      await createUser(db, 'oma@example.com', 'Oma');
-      slug = await createRecipe(db, { title: 'Streng', author: 'Oma' });
-    });
-
-    test('an unknown recipe gives 404', async () => {
-      assert.equal((await post(noteAction, 'does-not-exist', { note: 'x' })).status, 404);
-    });
-
-    test('an unknown user gives 403', async () => {
-      assert.equal((await post(noteAction, slug, { note: 'x' }, 'vreemd@example.com')).status, 403);
-    });
-
-    test('a missing note gives 400', async () => {
-      assert.equal((await post(noteAction, slug, {})).status, 400);
-    });
-
-    test('a note of 4000 characters is accepted', async () => {
-      assert.equal((await post(noteAction, slug, { note: 'x'.repeat(4000) })).status, 204);
-    });
-  });
-});
-
-describe('recipe-note › Note too long', () => {
-  let slug: string;
-  beforeAll(async () => {
-    await createUser(db, 'oma@example.com', 'Oma');
-    slug = await createRecipe(db, { title: 'Lang', author: 'Oma' });
-  });
-
-  test('the action answers 413', async () => {
-    assert.equal((await post(noteAction, slug, { note: 'x'.repeat(4001) })).status, 413);
-  });
-
-  test('the note stays empty', async () => {
-    await post(noteAction, slug, { note: 'x'.repeat(4001) });
-    assert.equal((await load(slug)).note, '');
   });
 });

@@ -320,3 +320,66 @@ describe('findIngredients plural forms', () => {
     });
   }
 });
+
+describe('parsing-rules › Degree words include the degree sign', () => {
+  for (const text of ['180°', '180 °C', '180 graden'])
+    test(`${text} is 180 degrees`, () => {
+      assert.equal(findOven(text, defaultRules)?.values.degrees, 180);
+    });
+});
+
+describe('parsing-rules › Grams are not degrees', () => {
+  test('180 gr is no oven temperature', () => {
+    assert.equal(findOven('180 gr', defaultRules), undefined);
+  });
+
+  test('180 gr bloem has the unit gr', () => {
+    assert.equal(parseIngredient('180 gr bloem', defaultRules).unit, 'gr');
+  });
+});
+
+// Recognition follows the rules.
+const withRules = (change: Partial<typeof defaultRules>) => ({ ...defaultRules, ...change });
+
+describe('parsing-rules › Words are not regular expressions', () => {
+  const rules = withRules({ minuteWords: ['m+'] });
+
+  test('the word m+ matches literally', () => {
+    assert.equal(findTimer('20 m+', rules)?.values.minutes, 20);
+  });
+
+  test('the word m+ does not match mmm', () => {
+    assert.equal(findTimer('20 mmm', rules), undefined);
+  });
+});
+
+describe('parsing-rules › New minute word makes a timer', () => {
+  const rules = withRules({ minuteWords: [...defaultRules.minuteWords, 'mins'] });
+
+  test('the new rules find the timer', () => {
+    assert.equal(findTimer('Bak 20 mins', rules)?.values.minutes, 20);
+  });
+
+  test('the default rules do not', () => {
+    assert.equal(findTimer('Bak 20 mins', defaultRules), undefined);
+  });
+});
+
+describe('parsing-rules › New spoken duration makes a timer', () => {
+  test('the new spoken duration is found', () => {
+    const rules = withRules({ spoken: { ...defaultRules.spoken, 'drie kwartier': 45 } });
+    assert.equal(findTimer('Bak drie kwartier', rules)?.values.minutes, 45);
+  });
+});
+
+describe('parsing-rules › Removed word is not recognised', () => {
+  const rules = withRules({ degreeWords: ['°c', '°'] });
+
+  test('the removed word is not found', () => {
+    assert.equal(findOven('180 graden', rules), undefined);
+  });
+
+  test('the remaining words still are', () => {
+    assert.equal(findOven('180 °C', rules)?.values.degrees, 180);
+  });
+});

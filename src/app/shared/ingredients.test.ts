@@ -94,3 +94,13 @@ describe('joinIngredient', () => {
     assert.equal(joinIngredient({ quantityText: '', name: 'zout' }), 'zout');
   });
 });
+
+// Recognition follows the rules.
+const withRules = (change: Partial<typeof defaultRules>) => ({ ...defaultRules, ...change });
+
+describe('parsing-rules › New unit is recognised', () => {
+  test('the unit and name are split', () => {
+    const parsed = parseIngredient('2 kopje rijst', withRules({ units: [...defaultRules.units, 'kopje'] }));
+    assert.deepEqual([parsed.unit, parsed.name], ['kopje', 'rijst']);
+  });
+});

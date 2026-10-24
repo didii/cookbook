@@ -241,13 +241,8 @@ describe('recipe-ingredient-editing › Edge rows cannot move out of the list', 
 });
 
 describe('recipe-ingredient-editing › Row buttons are one tab stop', () => {
-  // The group comes before the field, has one button in the tab order, and the field is in the tab order after it.
+  // The group comes before the field and the field is in the tab order after it; the group's own tab stop is tested in RowToolbar.
   for (const n of [1, 2, 3]) {
-    test(`row ${n} has one button in the tab order`, () => {
-      show('250 g bloem', '2 eieren', 'zout');
-      assert.equal(buttonsOf(n).filter((b) => b.getAttribute('tabindex') === '0').length, 1);
-    });
-
     test(`row ${n} has its group before the field`, () => {
       show('250 g bloem', '2 eieren', 'zout');
       assert.ok(precedes(toolbar(n), field(n)));
@@ -258,15 +253,6 @@ describe('recipe-ingredient-editing › Row buttons are one tab stop', () => {
       assert.notEqual(field(n).getAttribute('tabindex'), '-1');
     });
   }
-
-  // The arrow keys move between the buttons of the group.
-  test('the arrow keys move between the buttons of the group', () => {
-    show('250 g bloem', '2 eieren', 'zout');
-    const [up, down] = buttonsOf(2);
-    up.focus();
-    press(up, 'ArrowRight');
-    assert.ok(document.activeElement === down);
-  });
 });
 
 describe('recipe-ingredient-editing › Alt and arrow move the row', () => {

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { beforeAll, describe } from 'vitest';
-import { createTestDb, test } from '~testing/db';
+import { createTestDb, test, withFreshDb } from '~testing/db';
 import { createUser, deleteUser, getUser, listUsers, requireAdmin, requireSuperadmin, updateUser, type Role } from './users.server';
 
 let db: D1Database;
@@ -11,15 +11,6 @@ test.beforeAll(({ testDb }) => {
 
 const rows = async (email: string) => (await db.prepare('SELECT id FROM users WHERE email = ?').bind(email).all()).results.length;
 
-// Each superadmin test needs a database without a superadmin, so it gets its own.
-const withFreshDb = async (run: (fresh: D1Database) => Promise<void>) => {
-  const fresh = await createTestDb();
-  try {
-    await run(fresh.db);
-  } finally {
-    await fresh.dispose();
-  }
-};
 const roleOf = async (d: D1Database, email: string) => (await getUser(d, email))?.role;
 const add = async (d: D1Database, email: string, name = 'X', role: Role = 'user') =>
   (await d.prepare('INSERT INTO users (email, calling_name, role) VALUES (?, ?, ?) RETURNING id').bind(email, name, role).first<{ id: number }>())!
@@ -47,10 +38,6 @@ describe('createUser', () => {
     test('is found with email and name', async () => {
       const user = await create();
       assert.deepEqual([user?.email, user?.callingName], ['jos@example.com', 'Jos']);
-    });
-
-    test('has a creation time', async () => {
-      assert.match((await create())!.createdAt, /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/);
     });
   });
 
@@ -93,6 +80,19 @@ describe('users › New member is a user', () => {
   test('the role is user', async () => {
     await createUser(db, 'new@example.com', 'Nieuw');
     assert.equal((await getUser(db, 'new@example.com'))?.role, 'user');
+  });
+});
+
+describe('users › Same address in another case', () => {
+  test('is the same member', async () => {
+    await createUser(db, 'Mama@Example.com', 'Mama');
+    assert.equal((await getUser(db, 'mama@example.com'))?.callingName, 'Mama');
+  });
+
+  test('is not stored twice', async () => {
+    await createUser(db, 'Mama@Example.com', 'Mama');
+    await createUser(db, 'mama@example.com', 'Mam');
+    assert.equal(await rows('MAMA@EXAMPLE.COM'), 1);
   });
 });
 

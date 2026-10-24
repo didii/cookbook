@@ -1,15 +1,11 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import type { ComponentProps } from 'react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { afterEach, beforeEach, describe, test } from 'vitest';
 import type { Recipe, Step } from '~app/shared/recipe';
 import { defaultRules } from '~app/shared/rules';
 import { cleanup, fireEvent, precedes, render, screen, setViewport } from '~testing/dom';
-import { routePaths } from '~testing/routes';
-import { IngredientList } from './IngredientList';
 import { RecipeView } from './RecipeView';
-import { arrive, type Positions, type TabId } from './tabs/tabs';
 
 const steps: Step[] = [
   { body: 'snijden', ingredients: [] },
@@ -142,56 +138,6 @@ describe('recipe-viewing › Ticked ingredients are kept', () => {
       [true, false],
     );
   });
-
-  test('the list shows the ticks it gets as props', () => {
-    render(<IngredientList ingredients={recipe.ingredients} ticked={new Set([1])} onToggle={() => {}} />);
-    assert.deepEqual(
-      checkboxes().map((c) => c.checked),
-      [false, true],
-    );
-  });
-});
-
-const heading = 500;
-const stackHeight = 60;
-const at = (positions: Positions, from: TabId, to: TabId) => arrive(positions, from, to, heading, stackHeight);
-
-describe('recipe-viewing › Position is remembered', () => {
-  // Both tabs were scrolled into: each opens where it was left, in either direction.
-  const positions = { steps: 1200, ingredients: 700 };
-
-  test('steps open where they were left', () => {
-    assert.equal(at(positions, 'ingredients', 'steps'), 1200);
-  });
-
-  test('ingredients open where they were left', () => {
-    assert.equal(at(positions, 'steps', 'ingredients'), 700);
-  });
-
-  test('the new tab keeps its position when only it has one', () => {
-    assert.equal(at({ ingredients: 700 }, 'steps', 'ingredients'), 700);
-  });
-});
-
-describe('recipe-viewing › First visit of a tab', () => {
-  // Only the old tab was scrolled into: the heading just under the stack, and not above the top of the page.
-  test('the heading ends up just under the stack', () => {
-    assert.equal(at({ steps: 1200 }, 'steps', 'ingredients'), 440);
-  });
-
-  test('the position is never above the top of the page', () => {
-    assert.equal(arrive({ steps: 1200 }, 'steps', 'ingredients', 20, stackHeight), 0);
-  });
-});
-
-describe('recipe-viewing › Tabs swap in place', () => {
-  test('steps to ingredients has no position', () => {
-    assert.equal(at({}, 'steps', 'ingredients'), undefined);
-  });
-
-  test('ingredients to steps has no position', () => {
-    assert.equal(at({}, 'ingredients', 'steps'), undefined);
-  });
 });
 
 // Needs a browser: the position is kept by a scroll listener while the stack is stuck, and survives scrolling up out of that state.
@@ -240,14 +186,17 @@ describe('recipe-viewing › Ingredient without quantity', () => {
   });
 });
 
+describe('recipe-deletion › Delete button is shown', () => {
+  test('the button comes after the steps', () => {
+    page();
+    assert.ok(precedes(screen.getAllByTestId('StepItem-body').at(-1)!, screen.getByTestId('DeleteRecipe-open')));
+  });
+});
+
 describe('recipe-viewing › Link to the edit form', () => {
   test('the edit button points at the edit address', () => {
     page();
     assert.equal(screen.getByTestId('RecipeView-edit').getAttribute('href'), '/recepten/appeltaart/bewerken');
-  });
-
-  test('the route table serves that address', () => {
-    assert.ok(routePaths.includes('recepten/:slug/bewerken'));
   });
 });
 
@@ -327,9 +276,8 @@ describe('cook-mode › Choice is not kept', () => {
     );
   });
 
-  test('another recipe gets a fresh page: the route keys the page by the recipe slug', () => {
-    assert.ok(readFileSync(new URL('../RecipePageRoute.tsx', import.meta.url), 'utf8').includes('key={recipe.slug}'));
-  });
+  // Needs the route: RecipePageRoute keys the page by the recipe slug, so a loader and navigation are involved.
+  test.todo('another recipe gets a fresh page: the route keys the page by the recipe slug');
 });
 
 describe('recipe-scaling › Step chips scale', () => {

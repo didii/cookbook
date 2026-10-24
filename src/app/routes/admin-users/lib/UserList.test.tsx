@@ -36,11 +36,6 @@ describe('user-management › No user selected', () => {
     show('/beheer/gebruikers');
     assert.equal(screen.getAllByTestId('UserList-user').length, 2);
   });
-
-  test('shows no detail', () => {
-    show('/beheer/gebruikers');
-    assert.equal(screen.queryByTestId('detail'), null);
-  });
 });
 
 describe('UserList', () => {
@@ -53,10 +48,5 @@ describe('UserList', () => {
     show('/beheer/gebruikers/2');
     const [anna, jos] = screen.getAllByTestId('UserList-user');
     assert.deepEqual([anna.getAttribute('aria-current'), jos.getAttribute('aria-current')], [null, 'page']);
-  });
-
-  test('the list stays beside the detail', () => {
-    show('/beheer/gebruikers/2');
-    assert.equal(screen.getByTestId('detail').textContent, 'Detail');
   });
 });

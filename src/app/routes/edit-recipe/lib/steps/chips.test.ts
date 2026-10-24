@@ -194,6 +194,15 @@ describe('recipe-step-chips › A pinned chip proposes changes instead of making
   });
 });
 
+describe('proposals', () => {
+  test('two pinned chips with changed words have two proposals', () => {
+    const ctx = alone();
+    const step = typed('Bak 30 minuten op 180 graden.', ctx);
+    const pinned = step.chips.reduce((s, c) => setMode(s, c.id, 'manual', ctx), step);
+    assert.equal(proposals(rewrite(rewrite(pinned, ctx, '30', '40'), ctx, '180', '200'), ctx).length, 2);
+  });
+});
+
 describe('recipe-step-chips › Accepting a proposed change', () => {
   const { ctx, step } = pinnedTimer();
   const accepted = acceptProposal(rewrite(step, ctx, '30', '45'), step.chips[0].id, ctx);

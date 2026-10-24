@@ -92,16 +92,17 @@ describe('parsing-rules › Non-admin cannot restore defaults', () => {
 const showsRules = (role: string) => {
   const values = () => open(`${role}@example.com`).then((r) => r.values);
 
-  test('the units include g', async () => {
-    assert.equal((await values()).units.split('\n').includes('g'), true);
+  test('the units are the defaults', async () => {
+    assert.deepEqual((await values()).units.split('\n'), defaultRules.units);
   });
 
   test('the minute words are listed', async () => {
-    assert.equal((await values()).minuteWords, 'minuten\nminuut\nmin');
+    assert.equal((await values()).minuteWords, defaultRules.minuteWords.join('\n'));
   });
 
   test('the spoken amounts start with the first default', async () => {
-    assert.equal((await values()).spoken.split('\n')[0], 'een half uur = 30');
+    const [phrase, minutes] = Object.entries(defaultRules.spoken)[0];
+    assert.equal((await values()).spoken.split('\n')[0], `${phrase} = ${minutes}`);
   });
 };
 

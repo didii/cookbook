@@ -15,6 +15,8 @@ const bytes = (...head: number[]) => {
   return b.buffer;
 };
 const jpeg = () => bytes(0xff, 0xd8, 0xff, 0xe0);
+/** The file name getPhoto takes, from a stored /foto/ path. */
+const fileOf = (path: string) => path.slice('/foto/'.length);
 const count = async () => (await photos.list()).objects.length;
 
 /** The number of stored photos when the test started. */
@@ -34,7 +36,7 @@ describe('recipe-photo › Acceptable photo is stored', () => {
       assert.ok('path' in res);
       assert.match(res.path, new RegExp(`^/foto/[0-9a-f-]{36}.${ext}$`));
       assert.equal(isPhotoPath(res.path), true);
-      const stored = await getPhoto(photos, res.path.slice('/foto/'.length));
+      const stored = await getPhoto(photos, fileOf(res.path));
       assert.equal(stored?.httpMetadata?.contentType, type);
     });
 
@@ -93,13 +95,13 @@ describe('deletePhoto', () => {
     const res = await storePhoto(photos, jpeg());
     assert.ok('path' in res);
     await deletePhoto(photos, '/img/appeltaart.jpg');
-    assert.ok(await getPhoto(photos, res.path.slice(6)));
+    assert.ok(await getPhoto(photos, fileOf(res.path)));
   });
 
   test('removes an upload', async () => {
     const res = await storePhoto(photos, jpeg());
     assert.ok('path' in res);
     await deletePhoto(photos, res.path);
-    assert.equal(await getPhoto(photos, res.path.slice(6)), null);
+    assert.equal(await getPhoto(photos, fileOf(res.path)), null);
   });
 });

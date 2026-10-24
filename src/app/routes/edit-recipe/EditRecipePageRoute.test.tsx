@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import type { ReactElement } from 'react';
 import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
 import { beforeAll, describe } from 'vitest';
 import { envContext } from '~app/shared/context.server';
@@ -10,9 +9,7 @@ import { defined } from '~testing/defined';
 import { render, screen } from '~testing/dom';
 import { fake } from '~testing/fake';
 import type { Route } from './+types/EditRecipePageRoute';
-import type { Route as NewRoute } from './+types/NewRecipePageRoute';
 import EditRecipePage, { action, loader } from './EditRecipePageRoute';
-import NewRecipePage from './NewRecipePageRoute';
 
 // Real loader and action against an in-memory D1 holding a recipe the test inserted.
 let db: D1Database;
@@ -20,10 +17,10 @@ let photos: R2Bucket;
 
 test.beforeAll(async ({ testDb }) => {
   ({ db, photos } = testDb);
-  await db
-    .prepare("INSERT INTO recipes (slug, title, author, time, servings, intro, image) VALUES ('soep', 'Soep', 'Oma', '1u', 4, 'Warm', '/soep.jpg')")
-    .run();
 });
+
+const addRecipe = (slug: string, image: string | null = null) =>
+  db.prepare("INSERT INTO recipes (slug, title, author, image) VALUES (?, 'Soep', 'Oma', ?)").bind(slug, image).run();
 
 const contextWithDb = () => {
   const context = new RouterContextProvider();
@@ -52,7 +49,12 @@ const status = async (run: Promise<unknown>) => {
 
 describe('recipe-editing › Form shows the stored values', () => {
   test('the loader returns the stored values', async () => {
-    const { values } = await load('soep');
+    await db
+      .prepare(
+        "INSERT INTO recipes (slug, title, author, time, servings, intro, image) VALUES ('volledig', 'Soep', 'Oma', '1u', 4, 'Warm', '/soep.jpg')",
+      )
+      .run();
+    const { values } = await load('volledig');
     assert.deepEqual(values, {
       title: 'Soep',
       author: 'Oma',
@@ -96,7 +98,8 @@ describe('recipe-editing › Invalid edit is refused', () => {
   let res: { init?: { status?: number }; data: { errors: object } };
 
   beforeAll(async () => {
-    res = (await submit('soep', { title: '', author: 'Oma' })) as typeof res;
+    await addRecipe('ongeldig');
+    res = (await submit('ongeldig', { title: '', author: 'Oma' })) as typeof res;
   });
 
   test('the answer is 400', () => {
@@ -108,7 +111,7 @@ describe('recipe-editing › Invalid edit is refused', () => {
   });
 
   test('the stored recipe is unchanged', async () => {
-    assert.equal((await getRecipe(db, 'soep'))?.title, 'Soep');
+    assert.equal((await getRecipe(db, 'ongeldig'))?.title, 'Soep');
   });
 });
 
@@ -116,15 +119,16 @@ describe('the edit route', () => {
   let res: Response;
 
   beforeAll(async () => {
-    res = (await submit('soep', { title: 'Tomatensoep', author: 'Oma', servings: '' })) as Response;
+    await addRecipe('bewerkt');
+    res = (await submit('bewerkt', { title: 'Tomatensoep', author: 'Oma', servings: '' })) as Response;
   });
 
   test('goes back to the recipe after saving', () => {
-    assert.equal(res.headers.get('Location'), '/recepten/soep');
+    assert.equal(res.headers.get('Location'), '/recepten/bewerkt');
   });
 
   test('saves the edit', async () => {
-    const r = await getRecipe(db, 'soep');
+    const r = await getRecipe(db, 'bewerkt');
     assert.deepEqual([r?.title, r?.servings], ['Tomatensoep', null]);
   });
 });
@@ -135,8 +139,6 @@ const upload = async () => {
   return stored.path;
 };
 const isStored = async (path: string) => (await getPhoto(photos, path.slice('/foto/'.length))) !== null;
-const addRecipe = (slug: string, image: string | null) =>
-  db.prepare("INSERT INTO recipes (slug, title, author, image) VALUES (?, 'T', 'Oma', ?)").bind(slug, image).run();
 
 describe('recipe-photo › Replaced photo is deleted', () => {
   let old: string;
@@ -208,88 +210,63 @@ describe('image links on save', () => {
   });
 });
 
-// Both routes render the shared editor and write no fields of their own, so the form can only differ in values, heading and cancel target.
-describe('recipe-editing › Same form for new and existing recipes', () => {
+describe('the edit page', () => {
   const values = { title: 'Soep', author: 'Oma', servings: '4', time: '1u', intro: 'Warm', image: '', ingredients: [], steps: [] };
-  const form = (element: ReactElement) => {
-    const router = createMemoryRouter([{ path: '/', element }]);
-    const { container, unmount } = render(<RouterProvider router={router} />);
-    const found = {
-      heading: screen.getByTestId('RecipeEditor-heading').textContent,
-      headingTag: screen.getByTestId('RecipeEditor-heading').tagName,
-      titleLabel: screen.getByTestId<HTMLInputElement>('RecipeEditor-title').labels?.[0]?.textContent,
-      title: screen.getByTestId<HTMLInputElement>('RecipeEditor-title').value,
-      controls: [...container.querySelectorAll('form [name]')].map((el) => el.getAttribute('name')).sort(),
-      cancel: screen.getByTestId('RecipeEditor-cancel').getAttribute('href'),
-    };
-    unmount();
-    return found;
-  };
-  const editProps = fake<Route.ComponentProps>({
+  const props = fake<Route.ComponentProps>({
     loaderData: { slug: 'soep', updatedAt: '2026-01-01T00:00:00Z', authors: ['Oma'], tile: 0, seal: undefined, values },
   });
-  const newProps = fake<NewRoute.ComponentProps>({ loaderData: { authors: ['Oma'], tile: 0, seal: undefined } });
-  const edit = () => form(<EditRecipePage {...editProps} />);
-  const create = () => form(<NewRecipePage {...newProps} />);
+  const show = () => render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <EditRecipePage {...props} /> }])} />);
 
-  // The same fields, in the same form.
-  test('both forms have the same fields', () => {
-    assert.deepEqual(edit().controls, create().controls);
+  test('hands its heading to the editor', () => {
+    show();
+    assert.equal(screen.getByTestId('RecipeEditor-heading').textContent, 'Recept bewerken');
   });
 
-  // Only the starting values, the heading and the way back differ.
-  test('the edit form has its own heading, values and way back', () => {
-    const f = edit();
-    assert.deepEqual([f.heading, f.title, f.cancel], ['Recept bewerken', 'Soep', '/recepten/soep']);
+  test('hands the stored values to the editor', () => {
+    show();
+    assert.equal(screen.getByTestId<HTMLInputElement>('RecipeEditor-title').value, 'Soep');
   });
 
-  test('the new form has its own heading, values and way back', () => {
-    const f = create();
-    assert.deepEqual([f.heading, f.title, f.cancel], ['Nieuw recept', '', '/']);
+  test('sends cancel back to the recipe', () => {
+    show();
+    assert.equal(screen.getByTestId('RecipeEditor-cancel').getAttribute('href'), '/recepten/soep');
   });
-
-  for (const [name, get] of [
-    ['edit', edit],
-    ['new', create],
-  ] as const) {
-    test(`the ${name} form has an h1 heading`, () => {
-      assert.equal(get().headingTag, 'H1');
-    });
-
-    test(`the ${name} form has a title label`, () => {
-      assert.match(get().titleLabel ?? '', /Titel/);
-    });
-  }
 });
 
 describe('an edit posting ingredient lines', () => {
   const ingredients = (...texts: string[]) => JSON.stringify(texts.map((text) => ({ text })));
 
   test('saves the lines', async () => {
-    await submit('soep', { title: 'Soep', author: 'Oma', ingredients: ingredients('250 g bloem', '', '2 grote uien') });
-    assert.deepEqual((await getRecipe(db, 'soep'))?.ingredients, [
+    await addRecipe('regels');
+    await submit('regels', { title: 'Soep', author: 'Oma', ingredients: ingredients('250 g bloem', '', '2 grote uien') });
+    assert.deepEqual((await getRecipe(db, 'regels'))?.ingredients, [
       { quantityText: '250 g', name: 'bloem' },
       { quantityText: '2', name: 'grote uien' },
     ]);
   });
 
   test('a bad row refuses it and names the row', async () => {
-    const res = (await submit('soep', { title: 'Soep', author: 'Oma', ingredients: ingredients('zout', '250 g') })) as {
+    await addRecipe('slechte-regel');
+    const res = (await submit('slechte-regel', { title: 'Soep', author: 'Oma', ingredients: ingredients('zout', '250 g') })) as {
       data: { errors: { ingredients: object } };
     };
     assert.deepEqual(Object.keys(res.data.errors.ingredients), ['1']);
   });
 
   test('a refused edit keeps the stored ingredients', async () => {
-    assert.equal((await getRecipe(db, 'soep'))?.ingredients.length, 2);
+    await addRecipe('geweigerd');
+    await submit('geweigerd', { title: 'Soep', author: 'Oma', ingredients: ingredients('250 g bloem', 'zout') });
+    await submit('geweigerd', { title: 'Soep', author: 'Oma', ingredients: ingredients('zout', '250 g') });
+    assert.equal((await getRecipe(db, 'geweigerd'))?.ingredients.length, 2);
   });
 });
 
 describe('an edit posted without an ingredients field', () => {
   test('keeps the stored ingredients', async () => {
-    await submit('soep', { title: 'Soep', author: 'Oma', ingredients: JSON.stringify([{ text: '2 uien' }]) });
-    await submit('soep', { title: 'Soep 2', author: 'Oma' });
-    assert.deepEqual((await getRecipe(db, 'soep'))?.ingredients, [{ quantityText: '2', name: 'uien' }]);
+    await addRecipe('zonder-regels');
+    await submit('zonder-regels', { title: 'Soep', author: 'Oma', ingredients: JSON.stringify([{ text: '2 uien' }]) });
+    await submit('zonder-regels', { title: 'Soep 2', author: 'Oma' });
+    assert.deepEqual((await getRecipe(db, 'zonder-regels'))?.ingredients, [{ quantityText: '2', name: 'uien' }]);
   });
 });
 
@@ -312,20 +289,24 @@ describe('recipe-step-editing › Stored steps come back in the editor', () => {
 
 describe('an edit posting steps', () => {
   const steps = (...bodies: string[]) => JSON.stringify(bodies.map((body) => ({ body })));
-  const bodiesOf = async () => (await getRecipe(db, 'soep'))?.steps.map((s) => s.body);
+  const bodiesOf = async (slug: string) => (await getRecipe(db, slug))?.steps.map((s) => s.body);
 
   test('saves the steps without the empty ones', async () => {
-    await submit('soep', { title: 'Soep', author: 'Oma', steps: steps('snijd', '', 'kook\nzacht') });
-    assert.deepEqual(await bodiesOf(), ['snijd', 'kook zacht']);
+    await addRecipe('stap-opslaan');
+    await submit('stap-opslaan', { title: 'Soep', author: 'Oma', steps: steps('snijd', '', 'kook\nzacht') });
+    assert.deepEqual(await bodiesOf('stap-opslaan'), ['snijd', 'kook zacht']);
   });
 
   test('a submit without the field keeps them', async () => {
-    await submit('soep', { title: 'Soep 2', author: 'Oma' });
-    assert.deepEqual(await bodiesOf(), ['snijd', 'kook zacht']);
+    await addRecipe('stap-houdt');
+    await submit('stap-houdt', { title: 'Soep', author: 'Oma', steps: steps('snijd', 'kook') });
+    await submit('stap-houdt', { title: 'Soep 2', author: 'Oma' });
+    assert.deepEqual(await bodiesOf('stap-houdt'), ['snijd', 'kook']);
   });
 
   test('a refusal shows the posted steps again', async () => {
-    const res = (await submit('soep', { title: '', author: 'Oma', steps: steps('a', '', 'b') })) as {
+    await addRecipe('stap-weiger');
+    const res = (await submit('stap-weiger', { title: '', author: 'Oma', steps: steps('a', '', 'b') })) as {
       data: { values: { steps: { body: string }[] } };
     };
     assert.deepEqual(
@@ -335,7 +316,10 @@ describe('an edit posting steps', () => {
   });
 
   test('a refusal keeps the stored steps', async () => {
-    assert.deepEqual(await bodiesOf(), ['snijd', 'kook zacht']);
+    await addRecipe('stap-bewaard');
+    await submit('stap-bewaard', { title: 'Soep', author: 'Oma', steps: steps('snijd', 'kook') });
+    await submit('stap-bewaard', { title: '', author: 'Oma', steps: steps('a', 'b') });
+    assert.deepEqual(await bodiesOf('stap-bewaard'), ['snijd', 'kook']);
   });
 });
 
@@ -351,12 +335,14 @@ describe('a saved recipe with chips', () => {
   ];
 
   test('comes back in the editor with equal chips', async () => {
-    await submit('soep', { title: 'Soep', author: 'Oma', steps: JSON.stringify(posted) });
-    assert.deepEqual(defined((await load('soep')).values.steps), posted);
+    await addRecipe('chips-terug');
+    await submit('chips-terug', { title: 'Soep', author: 'Oma', steps: JSON.stringify(posted) });
+    assert.deepEqual(defined((await load('chips-terug')).values.steps), posted);
   });
 
   test('a refusal shows the chips again', async () => {
-    const refused = (await submit('soep', { title: '', author: 'Oma', steps: JSON.stringify(posted) })) as unknown as {
+    await addRecipe('chips-weiger');
+    const refused = (await submit('chips-weiger', { title: '', author: 'Oma', steps: JSON.stringify(posted) })) as unknown as {
       data: { values: { steps: unknown } };
     };
     assert.deepEqual(refused.data.values.steps, posted);
@@ -365,6 +351,7 @@ describe('a saved recipe with chips', () => {
 
 describe('the edit loader', () => {
   test('returns when the recipe was last saved, for flagging a draft that started from an older version', async () => {
-    assert.match((await load('soep')).updatedAt, /^\d{4}-\d\d-\d\dT/);
+    await addRecipe('versie');
+    assert.match((await load('versie')).updatedAt, /^\d{4}-\d\d-\d\dT/);
   });
 });

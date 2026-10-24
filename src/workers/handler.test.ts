@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { generateKeyPair, SignJWT } from 'jose';
 import type { RouterContextProvider } from 'react-router';
-import { afterAll, describe, test } from 'vitest';
+import { describe } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { createUser } from '~app/shared/users.server';
-import { createTestDb } from '~testing/db';
+import { test } from '~testing/db';
 import { fake } from '~testing/fake';
 import { createFetch } from './handler';
 import { accessJwtHeader } from './identity';
@@ -91,7 +91,9 @@ describe('createFetch', () => {
 
 describe('family-access › Local run with a stand-in member', () => {
   test('the request is let through', async () => {
-    assert.equal((await setup(true).fetch(get(), env)).status, 200);
+    const dev = setup(true);
+    await dev.fetch(get(), env);
+    assert.equal(dev.calls.length, 1);
   });
 
   test('the stand-in email is in the context', async () => {
@@ -115,9 +117,12 @@ describe('family-access › Stand-in identity configured on a deployed app', () 
 
 // A request without verified identity never reaches the app, so nothing that would store a user can run.
 describe('users › Forged identity', () => {
+  let db: D1Database;
+  test.beforeAll(({ testDb }) => {
+    ({ db } = testDb);
+  });
+
   const forge = async () => {
-    const { db, dispose } = await createTestDb();
-    afterAll(dispose);
     const reached: string[] = [];
     const fetch = createFetch({
       requestHandler: async (_request, context) => (
@@ -128,8 +133,7 @@ describe('users › Forged identity', () => {
       dev: false,
       getKey: async () => publicKey,
     });
-    const res = await fetch(get('forged'), { ...env, DB: db });
-    return { db, reached, res };
+    return { reached, res: await fetch(get('forged'), { ...env, DB: db }) };
   };
 
   test('is refused with 403', async () => {
@@ -141,7 +145,7 @@ describe('users › Forged identity', () => {
   });
 
   test('stores nobody', async () => {
-    const { db } = await forge();
+    await forge();
     assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM users').first<{ n: number }>())?.n, 0);
   });
 });

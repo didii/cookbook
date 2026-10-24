@@ -1,10 +1,8 @@
 import assert from 'node:assert/strict';
 import { afterEach, describe } from 'vitest';
 import { test } from '~testing/db';
-import { parseIngredient } from './ingredients';
 import { defaultRules } from './rules';
 import { getRules, resetRules, saveRules, toFields, type RulesFields } from './rules.server';
-import { findOven, findTimer } from './stepParsers';
 
 let db: D1Database;
 
@@ -29,43 +27,6 @@ const rowCount = async () => (await db.prepare("SELECT key FROM settings WHERE k
 describe('parsing-rules › Default rules', () => {
   test('the stored rules are the defaults', async () => {
     assert.deepEqual(await getRules(db), defaultRules);
-  });
-
-  test('a timer in minutes is found', async () => {
-    assert.equal(findTimer('30 minuten', await getRules(db))?.values.minutes, 30);
-  });
-
-  test('a timer in decimal hours is found', async () => {
-    assert.equal(findTimer('1,5 uur', await getRules(db))?.values.minutes, 90);
-  });
-
-  test('a spoken timer is found', async () => {
-    assert.equal(findTimer('een kwartier', await getRules(db))?.values.minutes, 15);
-  });
-
-  test('an oven temperature is found', async () => {
-    assert.equal(findOven('180 graden', await getRules(db))?.values.degrees, 180);
-  });
-
-  test('an ingredient unit is found', async () => {
-    assert.equal(parseIngredient('250 g bloem', await getRules(db)).unit, 'g');
-  });
-});
-
-describe('parsing-rules › Degree words include the degree sign', () => {
-  for (const text of ['180°', '180 °C', '180 graden'])
-    test(`${text} is 180 degrees`, () => {
-      assert.equal(findOven(text, defaultRules)?.values.degrees, 180);
-    });
-});
-
-describe('parsing-rules › Grams are not degrees', () => {
-  test('180 gr is no oven temperature', () => {
-    assert.equal(findOven('180 gr', defaultRules), undefined);
-  });
-
-  test('180 gr bloem has the unit gr', () => {
-    assert.equal(parseIngredient('180 gr bloem', defaultRules).unit, 'gr');
   });
 });
 
@@ -219,58 +180,5 @@ describe('parsing-rules › Word with other characters', () => {
     await edit({ units: 'g\neetlepel vol' });
     await edit({ units: 'g\n°' });
     assert.equal(await rowCount(), 0);
-  });
-});
-
-// Recognition follows the rules.
-const withRules = (change: Partial<typeof defaultRules>) => ({ ...defaultRules, ...change });
-
-describe('parsing-rules › Words are not regular expressions', () => {
-  const rules = withRules({ minuteWords: ['m+'] });
-
-  test('the word m+ matches literally', () => {
-    assert.equal(findTimer('20 m+', rules)?.values.minutes, 20);
-  });
-
-  test('the word m+ does not match mmm', () => {
-    assert.equal(findTimer('20 mmm', rules), undefined);
-  });
-});
-
-describe('parsing-rules › New unit is recognised', () => {
-  test('the unit and name are split', () => {
-    const parsed = parseIngredient('2 kopje rijst', withRules({ units: [...defaultRules.units, 'kopje'] }));
-    assert.deepEqual([parsed.unit, parsed.name], ['kopje', 'rijst']);
-  });
-});
-
-describe('parsing-rules › New minute word makes a timer', () => {
-  const rules = withRules({ minuteWords: [...defaultRules.minuteWords, 'mins'] });
-
-  test('the new rules find the timer', () => {
-    assert.equal(findTimer('Bak 20 mins', rules)?.values.minutes, 20);
-  });
-
-  test('the default rules do not', () => {
-    assert.equal(findTimer('Bak 20 mins', defaultRules), undefined);
-  });
-});
-
-describe('parsing-rules › New spoken duration makes a timer', () => {
-  test('the new spoken duration is found', () => {
-    const rules = withRules({ spoken: { ...defaultRules.spoken, 'drie kwartier': 45 } });
-    assert.equal(findTimer('Bak drie kwartier', rules)?.values.minutes, 45);
-  });
-});
-
-describe('parsing-rules › Removed word is not recognised', () => {
-  const rules = withRules({ degreeWords: ['°c', '°'] });
-
-  test('the removed word is not found', () => {
-    assert.equal(findOven('180 graden', rules), undefined);
-  });
-
-  test('the remaining words still are', () => {
-    assert.equal(findOven('180 °C', rules)?.values.degrees, 180);
   });
 });

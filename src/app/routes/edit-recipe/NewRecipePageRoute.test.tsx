@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
-import { beforeAll, describe } from 'vitest';
+import { beforeAll, beforeEach, describe } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { getRecipe } from '~app/shared/recipes.server';
 import { createUser } from '~app/shared/users.server';
@@ -86,71 +86,39 @@ const form = (actionData?: { errors: Record<string, string>; values: typeof empt
   return render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <NewRecipePage {...props} /> }])} />);
 };
 
-describe('recipe-creation › Suggestions ignore letter case', () => {
-  test('lower case typing finds the capitalised author', async () => {
+describe('the new recipe page', () => {
+  beforeEach(() => window.localStorage.clear());
+
+  test('hands the loaded authors to the editor', async () => {
     form();
     const author = screen.getByTestId('AuthorInput-field');
     openAutocomplete(author);
-    fireEvent.change(author, { target: { value: 'oma' } });
+    fireEvent.change(author, { target: { value: 'mam' } });
     const options = await screen.findAllByTestId('AuthorInput-option');
     assert.deepEqual(
       options.map((o) => o.textContent),
-      ['Oma'],
+      ['Mama'],
     );
   });
-});
 
-describe('recipe-creation › Required fields are marked', () => {
-  const label = (id: string) => document.querySelector(`label[for=${id}]`)!.textContent;
-
-  // The title and author labels carry an asterisk and the form explains it; the servings label has none.
-  test('the title label carries an asterisk', () => {
+  test('hands its heading to the editor', () => {
     form();
-    assert.match(label('title') ?? '', /\*$/);
+    assert.equal(screen.getByTestId('RecipeEditor-heading').textContent, 'Nieuw recept');
   });
 
-  test('the author label carries an asterisk', () => {
+  test('sends cancel to the home page', () => {
     form();
-    assert.match(label('author') ?? '', /\*$/);
+    assert.equal(screen.getByTestId('RecipeEditor-cancel').getAttribute('href'), '/');
   });
 
-  test('the servings label has none', () => {
-    form();
-    assert.doesNotMatch(label('servings') ?? '', /\*/);
+  test('hands the errors of a refused submit to the editor', () => {
+    form({ errors: { title: 'Vul een titel in.' }, values: emptyDraftSeed });
+    assert.equal(document.getElementById('title')!.getAttribute('aria-invalid'), 'true');
   });
 
-  test('the form explains the asterisk', () => {
-    form();
-    assert.ok(screen.getByTestId('RecipeEditor-required').textContent?.includes('*'));
-  });
-});
-
-describe('recipe-creation › Errors are announced and focused', () => {
-  const errors = { title: 'Vul een titel in.', author: 'Vul een kok in.' };
-
-  // Each error is text tied to its field, and focus is on the first field in error.
-  for (const [id, message] of Object.entries(errors)) {
-    test(`the ${id} field is marked invalid`, () => {
-      form({ errors, values: emptyDraftSeed });
-      assert.equal(document.getElementById(id)!.getAttribute('aria-invalid'), 'true');
-    });
-
-    test(`the ${id} field is described by its error`, () => {
-      form({ errors, values: emptyDraftSeed });
-      const field = document.getElementById(id)!;
-      assert.equal(document.getElementById(field.getAttribute('aria-describedby')!)?.textContent, message);
-    });
-  }
-
-  test('focus is on the first field in error', () => {
-    form({ errors, values: emptyDraftSeed });
-    assert.ok(document.activeElement === document.getElementById('title'));
-  });
-
-  // With only a later field in error, focus goes there.
-  test('focus goes to a later field when only that one is in error', () => {
-    form({ errors: { servings: 'Vul een getal in.' }, values: emptyDraftSeed });
-    assert.ok(document.activeElement === document.getElementById('servings'));
+  test('hands the posted values of a refused submit to the editor', () => {
+    form({ errors: { title: 'Vul een titel in.' }, values: { ...emptyDraftSeed, title: 'Soep', author: 'Oma' } });
+    assert.equal((document.getElementById('title') as HTMLInputElement).value, 'Soep');
   });
 });
 

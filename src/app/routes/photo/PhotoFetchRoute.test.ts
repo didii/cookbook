@@ -2,12 +2,11 @@ import assert from 'node:assert/strict';
 import { RouterContextProvider } from 'react-router';
 import { describe } from 'vitest';
 import { envContext } from '~app/shared/context.server';
+import { storePhoto } from '~app/shared/photos.server';
 import { test } from '~testing/db';
 import { fake } from '~testing/fake';
 import type { Route as FileRoute } from './+types/PhotoFetchRoute';
-import type { Route as UploadRoute } from './+types/PhotoUploadRoute';
 import { loader } from './PhotoFetchRoute';
-import { action } from './PhotoUploadRoute';
 
 let photos: R2Bucket;
 
@@ -21,22 +20,15 @@ const context = () => {
   return c;
 };
 
-const upload = (body: BodyInit, headers: HeadersInit = {}) =>
-  action(
-    fake<UploadRoute.ActionArgs>({
-      request: new Request('http://localhost/foto', { method: 'POST', body, headers }),
-      context: context(),
-    }),
-  ) as Promise<Response>;
-
 const serve = (file: string) => loader(fake<FileRoute.LoaderArgs>({ params: { file }, context: context() })) as Promise<Response>;
 
 const jpeg = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3]);
 
 describe('recipe-photo › Photo is served', () => {
   const served = async () => {
-    const { path } = (await (await upload(jpeg)).json()) as { path: string };
-    return serve(path.slice('/foto/'.length));
+    const stored = await storePhoto(photos, jpeg.buffer);
+    assert.ok('path' in stored);
+    return serve(stored.path.slice('/foto/'.length));
   };
 
   test('answers 200 as image/jpeg', async () => {

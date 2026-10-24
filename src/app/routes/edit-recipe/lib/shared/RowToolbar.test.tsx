@@ -19,14 +19,6 @@ describe('RowToolbar without insert', () => {
     show();
     assert.equal(inTabOrder().length, 1);
   });
-
-  test('has no insert button', () => {
-    show();
-    assert.equal(
-      buttons().some((b) => b.getAttribute('aria-label')?.startsWith('Voeg')),
-      false,
-    );
-  });
 });
 
 describe('RowToolbar with insert', () => {
@@ -42,12 +34,16 @@ describe('RowToolbar with insert', () => {
     assert.equal(inTabOrder().length, 1);
   });
 
-  test('labels the buttons', () => {
-    show(insert);
-    assert.deepEqual(
-      buttons().map((b) => b.getAttribute('aria-label')),
-      ['Voeg toe', 'Omhoog', 'Omlaag', 'Verwijder'],
-    );
+  test('the buttons run insert, up, down, delete in that order', () => {
+    const calls: string[] = [];
+    show({
+      onInsert: () => calls.push('insert'),
+      onMove: (d) => calls.push(d < 0 ? 'up' : 'down'),
+      onDelete: () => calls.push('delete'),
+      insertLabel: 'x',
+    });
+    buttons().forEach((b) => fireEvent.click(b));
+    assert.deepEqual(calls, ['insert', 'up', 'down', 'delete']);
   });
 
   test('enables the buttons', () => {

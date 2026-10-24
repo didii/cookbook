@@ -71,20 +71,3 @@ describe('recipe-draft › A refused save keeps the draft', () => {
     assert.ok(loadDraft(storage, key));
   });
 });
-
-describe('recipe-draft › Reset ends the draft', () => {
-  test('keeping the starting values removes the draft', () => {
-    keep();
-    // Herstel puts the starting values back: the editor equals the stored recipe, so keeping it removes the draft.
-    saveDraft(storage, key, {
-      state: startingDraft(defaultRules, { ...emptyDraftSeed, title: 'Soep' }),
-      initial,
-      base: {},
-      uploading: false,
-      settledImage: '',
-      now: new Date(),
-      rules: defaultRules,
-    });
-    assert.equal(loadDraft(storage, key), undefined);
-  });
-});

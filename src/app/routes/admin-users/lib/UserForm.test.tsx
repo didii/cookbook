@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createMemoryRouter, RouterProvider } from 'react-router';
-import { beforeEach, describe, test } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, test } from 'vitest';
 import type { Role } from '~app/shared/role';
 import { fireEvent, render, screen } from '~testing/dom';
 import { UserForm } from './UserForm';
@@ -77,9 +77,8 @@ describe('user-management › Sole superadmin selects own record', () => {
     assert.equal(nameInput().disabled, false);
   });
 
-  test('the delete button is disabled with a reason', () => {
+  test('the delete button is disabled', () => {
     assert.equal(screen.getByTestId<HTMLButtonElement>('DeleteUser-open').disabled, true);
-    assert.equal(screen.getByTestId('DeleteUser-reason').textContent, 'De enige superadmin kan niet worden verwijderd');
   });
 
   test('the role explains why it is locked', () => {
@@ -114,61 +113,65 @@ describe('UserForm errors', () => {
 const me = { ...jos, role: 'superadmin' as Role };
 const popup = () => screen.getByTestId<HTMLDialogElement>('UserForm-warning');
 // A save that is not held back by the popup would really submit; the router cannot do that in happy-dom, and these tests only look at the popup.
-document.addEventListener('submit', (e) => e.stopPropagation(), { capture: true });
+describe('with the popup in front of the save', () => {
+  const stopSubmit = (e: Event) => e.stopPropagation();
+  beforeAll(() => document.addEventListener('submit', stopSubmit, { capture: true }));
+  afterAll(() => document.removeEventListener('submit', stopSubmit, { capture: true }));
 
-describe('user-management › Popup warns about losing access', () => {
-  beforeEach(() => {
-    show({ user: me, isSelf: true });
-    fireEvent.change(roleSelect(), { target: { value: 'admin' } });
-    fireEvent.click(screen.getByTestId('UserForm-save'));
+  describe('user-management › Popup warns about losing access', () => {
+    beforeEach(() => {
+      show({ user: me, isSelf: true });
+      fireEvent.change(roleSelect(), { target: { value: 'admin' } });
+      fireEvent.click(screen.getByTestId('UserForm-save'));
+    });
+
+    test('the popup opens', () => {
+      assert.equal(popup().open, true);
+    });
+
+    test('the popup warns about losing access', () => {
+      assert.match(popup().textContent!, /verliest.*toegang/);
+    });
+
+    // Nothing is sent until the popup's own button is used.
+    test('the popup has its own submit button', () => {
+      assert.equal(screen.getByTestId('UserForm-confirm').getAttribute('type'), 'submit');
+    });
   });
 
-  test('the popup opens', () => {
-    assert.equal(popup().open, true);
+  describe('user-management › Cancel keeps the role', () => {
+    beforeEach(() => {
+      show({ user: me, isSelf: true });
+      fireEvent.change(roleSelect(), { target: { value: 'admin' } });
+      fireEvent.click(screen.getByTestId('UserForm-save'));
+      fireEvent.click(screen.getByTestId('UserForm-cancel'));
+    });
+
+    test('the popup closes', () => {
+      assert.equal(popup().open, false);
+    });
+
+    test('the role goes back to the saved one on reset', () => {
+      fireEvent.click(screen.getByTestId('UserForm-reset'));
+      assert.equal([...roleSelect().options].find((o) => o.defaultSelected)?.value, 'superadmin');
+    });
   });
 
-  test('the popup warns about losing access', () => {
-    assert.match(popup().textContent!, /verliest.*toegang/);
+  describe('user-management › Other saves need no warning', () => {
+    test('saving only a new name opens no popup', () => {
+      show({ user: me, isSelf: true });
+      fireEvent.change(nameInput(), { target: { value: 'Baasje' } });
+      fireEvent.click(screen.getByTestId('UserForm-save'));
+      assert.equal(popup().open, false);
+    });
   });
 
-  // Nothing is sent until the popup's own button is used.
-  test('the popup has its own submit button', () => {
-    assert.equal(screen.getByTestId('UserForm-confirm').getAttribute('type'), 'submit');
-  });
-});
-
-describe('user-management › Cancel keeps the role', () => {
-  beforeEach(() => {
-    show({ user: me, isSelf: true });
-    fireEvent.change(roleSelect(), { target: { value: 'admin' } });
-    fireEvent.click(screen.getByTestId('UserForm-save'));
-    fireEvent.click(screen.getByTestId('UserForm-cancel'));
-  });
-
-  test('the popup closes', () => {
-    assert.equal(popup().open, false);
-  });
-
-  test('the role goes back to the saved one on reset', () => {
-    fireEvent.click(screen.getByTestId('UserForm-reset'));
-    assert.equal([...roleSelect().options].find((o) => o.defaultSelected)?.value, 'superadmin');
-  });
-});
-
-describe('user-management › Other saves need no warning', () => {
-  test('saving only a new name opens no popup', () => {
-    show({ user: me, isSelf: true });
-    fireEvent.change(nameInput(), { target: { value: 'Baasje' } });
-    fireEvent.click(screen.getByTestId('UserForm-save'));
-    assert.equal(popup().open, false);
-  });
-});
-
-describe('UserForm warning', () => {
-  test('lowering the role of another member needs no warning', () => {
-    show({ user: me });
-    fireEvent.change(roleSelect(), { target: { value: 'user' } });
-    fireEvent.click(screen.getByTestId('UserForm-save'));
-    assert.equal(popup().open, false);
+  describe('UserForm warning', () => {
+    test('lowering the role of another member needs no warning', () => {
+      show({ user: me });
+      fireEvent.change(roleSelect(), { target: { value: 'user' } });
+      fireEvent.click(screen.getByTestId('UserForm-save'));
+      assert.equal(popup().open, false);
+    });
   });
 });

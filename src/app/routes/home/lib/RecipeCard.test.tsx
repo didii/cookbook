@@ -39,6 +39,18 @@ describe('recipe-browsing › Card image ratio', () => {
   });
 });
 
+describe('RecipeCard without time', () => {
+  test('shows the author', () => {
+    card();
+    assert.equal(screen.getByTestId('RecipeCard-author').textContent, 'van Oma');
+  });
+
+  test('has no time separator', () => {
+    card();
+    assert.ok(!screen.getByTestId('RecipeCard-link').textContent?.includes('·'));
+  });
+});
+
 // Needs a real browser at 390px width to measure what is visible without scrolling.
 test.todo('recipe-browsing › Two recipes on one phone screen');
 

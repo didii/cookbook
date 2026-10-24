@@ -28,24 +28,31 @@ const request = (jwt?: string, headers: Record<string, string> = {}) =>
     headers: jwt ? { ...headers, [accessJwtHeader]: jwt } : headers,
   });
 
+describe('family-access › Request with no identity proof', () => {
+  test('returns null', async () => {
+    assert.equal(await identify(request(), options), null);
+  });
+});
+
+describe('family-access › Forged identity', () => {
+  test('an email header without a token returns null', async () => {
+    const forged = request(undefined, {
+      'Cf-Access-Authenticated-User-Email': 'mum@example.com',
+    });
+    assert.equal(await identify(forged, options), null);
+  });
+});
+
+describe('family-access › Expired identity proof', () => {
+  test('returns null', async () => {
+    const jwt = await token({ exp: Math.floor(Date.now() / 1000) - 60 });
+    assert.equal(await identify(request(jwt), options), null);
+  });
+});
+
 describe('identify', () => {
   test('a valid token returns the email', async () => {
     assert.equal(await identify(request(await token()), options), 'mum@example.com');
-  });
-
-  describe('family-access › Request with no identity proof', () => {
-    test('returns null', async () => {
-      assert.equal(await identify(request(), options), null);
-    });
-  });
-
-  describe('family-access › Forged identity', () => {
-    test('an email header without a token returns null', async () => {
-      const forged = request(undefined, {
-        'Cf-Access-Authenticated-User-Email': 'mum@example.com',
-      });
-      assert.equal(await identify(forged, options), null);
-    });
   });
 
   test('a bad signature is refused', async () => {
@@ -56,13 +63,6 @@ describe('identify', () => {
   test('a wrong audience is refused', async () => {
     const jwt = await token({ aud: 'someone-else' });
     assert.equal(await identify(request(jwt), options), null);
-  });
-
-  describe('family-access › Expired identity proof', () => {
-    test('returns null', async () => {
-      const jwt = await token({ exp: Math.floor(Date.now() / 1000) - 60 });
-      assert.equal(await identify(request(jwt), options), null);
-    });
   });
 
   test('a token without an email claim is refused', async () => {
