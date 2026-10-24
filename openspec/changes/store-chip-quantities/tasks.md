@@ -9,7 +9,7 @@ Change 2 of 3. Precondition: `store-ingredient-quantities` is merged. Verify eac
 
 ## 2. Server
 
-- [ ] 2.1 Add `parseQuantity` in `routes/edit-recipe/lib/quantity.ts` with unit tests (number, fraction, range, unit as the rest, no number)
+- [x] 2.1 Add `parseQuantity` in `routes/edit-recipe/lib/quantity.ts` with unit tests (number, fraction, range, unit as the rest, no number)
 - [ ] 2.2 Have `cleanStep` set `quantityValue` / `quantityUnit` on chips; test scenarios "Chip quantity is read from its text on save" and "Chip range has no quantity value" in `recipeValidation.test.ts`
 - [ ] 2.3 Insert and select the two columns for chips in `recipes.server.ts`; change `Step.ingredients` in `shared/recipe.ts`; update `recipes.server.test.ts` ("Chip without a quantity", "Chips keep their order" still pass)
 
