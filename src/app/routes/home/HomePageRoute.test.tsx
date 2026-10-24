@@ -338,10 +338,3 @@ describe('recipe-filtering › Reaching the last recipe', () => {
     assert.match(await mainCss(), /@media \(width >= 48rem\) \{[^@]*padding-bottom: calc\(var\(--spacing\) \* 16\)/);
   });
 });
-
-describe('plaid-accent › No plaid on recipe pages and cards', () => {
-  test('the home page and its cards have no plaid', () => {
-    renderAt('/', [{ slug: 'soep', title: 'Soep', author: 'Oma', time: null, image: null, seal: null }]);
-    assert.equal(screen.queryByTestId('Plaid-layer'), null);
-  });
-});

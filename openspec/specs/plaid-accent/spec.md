@@ -36,17 +36,9 @@ The system SHALL show the top section of the menu sidebar in plaid, as tall as t
 - **WHEN** a family member opens the menu
 - **THEN** the close button is a white cross with no border and no fill, 0.5rem from the left edge
 
-### Requirement: Plaid is decorative and limited to two places
-The system SHALL draw plaid only from the existing red and ink colours, SHALL hide it from assistive technology, and SHALL NOT show it anywhere other than the welcome card strip and the top of the menu sidebar. In particular the header, the recipe page, the recipe cards and the home page SHALL have no plaid.
+### Requirement: Plaid is decorative
+The system SHALL draw plaid only from the existing red and ink colours and SHALL hide it from assistive technology.
 
 #### Scenario: Plaid is hidden from assistive technology
 - **WHEN** a plaid area is shown
 - **THEN** it is not announced by assistive technology
-
-#### Scenario: No plaid in the header
-- **WHEN** a family member opens any page with the header while the menu is closed
-- **THEN** the header shows no plaid
-
-#### Scenario: No plaid on recipe pages and cards
-- **WHEN** a family member opens the home page or a recipe page
-- **THEN** no plaid is shown on the page

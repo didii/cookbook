@@ -25,15 +25,3 @@ describe('recipe-creation › Link to the form', () => {
     assert.notEqual(screen.queryByTestId('SiteMenu-open'), null);
   });
 });
-
-describe('plaid-accent › No plaid in the header', () => {
-  test('the only plaid sits in the menu sidebar', () => {
-    render(
-      <MemoryRouter>
-        <Header email="oma@example.com" role={memberRole} />
-      </MemoryRouter>,
-    );
-    const dialog = screen.getByTestId('SiteMenu-dialog');
-    assert.ok(screen.getAllByTestId('Plaid-layer').every((layer) => dialog.contains(layer)));
-  });
-});
