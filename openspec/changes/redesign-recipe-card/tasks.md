@@ -19,4 +19,4 @@ Change 2 of 2. Precondition: `add-recipe-categories` is merged. Verify each task
 ## 4. Wrap-up
 
 - [x] 4.1 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check` and `pnpm test:ai`; all clean
-- [ ] 4.2 Start the app with the dev seed, look at the home page at 390px and at a wide screen (cards with and without image, liked and not, with a note, new), fix what is wrong, and run `impeccable detect` once on the changed files
+- [x] 4.2 Start the app with the dev seed, look at the home page at 390px and at a wide screen (cards with and without image, liked and not, with a note, new), fix what is wrong, and run `impeccable detect` once on the changed files
