@@ -20,7 +20,3 @@ The system SHALL store an ingredient's quantity as the text as entered (the quan
 #### Scenario: Quantity value and unit are read with the recipe
 - **WHEN** a recipe with an ingredient "250 g bloem" saved from the editor is read
 - **THEN** the ingredient has quantity text "250 g", quantity value 250 and quantity unit "g"
-
-#### Scenario: Range has no quantity value
-- **WHEN** an ingredient "2-3 el olie" is saved from the editor
-- **THEN** its quantity text is "2-3 el" and it has no quantity value

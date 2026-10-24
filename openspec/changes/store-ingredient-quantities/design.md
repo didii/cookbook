@@ -12,7 +12,7 @@ Change 1 of 3; it has no dependency on the other two, they depend on it (see pro
 
 **Non-Goals:**
 - Chips and step text (changes 2 and 3); `scaleQuantity` and `scaleBody` stay as they are in this change.
-- Scaling ranges, or changing a unit to fit a scaled value.
+- Ranges: the syntax for what a range means is not defined (board card #44). Changing a unit to fit a scaled value.
 - The unused `step_ingredients` table.
 
 ## Decisions
@@ -21,7 +21,7 @@ Change 1 of 3; it has no dependency on the other two, they depend on it (see pro
 - **Property names `quantityValue` / `quantityUnit`**, aliased in SQL like `quantityText`, so the TS shapes mirror the columns. `ParsedIngredient` in `shared/ingredients.ts` renames `amount` → `quantityValue` and `unit` → `quantityUnit`; this removes the old TODO about the future names.
 - **Separate recipe ingredient type.** `recipe.ts` gets `RecipeIngredient = Ingredient & { quantityValue: number | null; quantityUnit: string | null }` for `Recipe.ingredients`; `Step.ingredients` (chips) keeps `Ingredient` until change 2. Alternative: add optional fields to `Ingredient`; rejected, it would let a chip look like it has values when it has none.
 - **Scaled text built from the value.** A new `scaleIngredient(ingredient, factor)` in `scale/scale.ts`: factor 1 or no `quantityValue` → `quantityText`; otherwise `formatNumber(value × factor)` followed by the unit when there is one. `formatNumber` (3 significant digits, comma) is reused, so "Scaled numbers are short" keeps holding. `RecipeView` calls it for the list; chips and step text still use `scaleQuantity` / `scaleBody`.
-- **Ranges.** `parseIngredient` already gives a range no value, so nothing new is stored and the list shows the quantity text as written (decided with the user: ranges in the list stop scaling). The old "Ranges scale" scenario moves to step text, where it still holds until change 3.
+- **Ranges.** Out of scope: the syntax for what a range means is not defined (board card #44).
 - **Seed.** `dev.sql` ingredient inserts get `quantity_value` and `quantity_unit` for every quantity with a number ("½ tl" → 0.5, "tl"; "1" → 1, no unit).
 
 ## Risks / Trade-offs

@@ -78,8 +78,8 @@ describe('recipe-storage › Quantity value and unit are read with the recipe', 
   });
 });
 
-describe('recipe-storage › Range has no quantity value', () => {
-  test('a range keeps its text and has no value', async ({ db }) => {
+describe('ingredient quantity without a number', () => {
+  test('the text is kept and there is no value', async ({ db }) => {
     const slug = await createRecipe(db, {
       title: 'Olie',
       author: 'Oma',

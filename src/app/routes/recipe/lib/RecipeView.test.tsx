@@ -280,7 +280,7 @@ describe('recipe-scaling › Step chips scale', () => {
   });
 });
 
-describe('recipe-scaling › Chip range stays as written', () => {
+describe('chip without a stored value', () => {
   test('a chip without a value keeps its text when doubled', () => {
     const chipSteps: Step[] = [{ body: 'bak', ingredients: [{ quantityText: '2-3 el', quantityValue: null, quantityUnit: null, name: 'olie' }] }];
     page({ recipe: { ...recipe, servings: 4 }, steps: chipSteps });

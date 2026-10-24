@@ -204,7 +204,7 @@ describe('recipe-storage › Chip quantity is read from its text on save', () =>
   });
 });
 
-describe('recipe-storage › Chip range has no quantity value', () => {
+describe('chip quantity without a number', () => {
   test('the text is kept and the value and unit are null', () => {
     const { steps } = postSteps([{ body: 'bak', ingredients: [{ quantityText: '2-3 el', name: 'olie' }] }]);
     assert.deepEqual(steps?.[0].ingredients, [{ quantityText: '2-3 el', quantityValue: null, quantityUnit: null, name: 'olie' }]);
@@ -246,9 +246,9 @@ describe('recipe-storage › Places refer to the stored text', () => {
   });
 });
 
-describe('recipe-storage › Durations, temperatures and ranges are not stored', () => {
+describe('recipe-storage › Durations and temperatures are not stored', () => {
   test('no amount is found', () => {
-    const { steps } = postSteps([{ body: 'Bak 20 minuten op 180 graden, daarna 2-3 el olie' }], [{ quantityText: '', name: 'olie' }]);
+    const { steps } = postSteps([{ body: 'Bak 20 minuten op 180 graden' }], [{ quantityText: '', name: 'olie' }]);
     assert.deepEqual(steps?.[0].quantities, []);
   });
 });

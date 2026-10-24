@@ -11,7 +11,7 @@ This is change 1 of 3 (`store-ingredient-quantities` → `store-chip-quantities`
 - **BREAKING** (database): rename `ingredients.amount` → `quantity_value` and `ingredients.unit` → `quantity_unit`, so the three columns read as one group. A new migration; no live data to keep.
 - Read `quantity_value` and `quantity_unit` of each ingredient in `getRecipe`, and carry them in the ingredient type of the recipe page.
 - The ingredient list scales by `quantity_value × factor`. At the recipe's own servings (factor 1) the list shows `quantity_text` as written. Only the value scales; the unit is shown as stored (no automatic switch to a better fitting unit).
-- An ingredient with no `quantity_value` (no number, or a range like "2-3 el") is shown as written at every factor. **BREAKING** (behaviour): ranges in the ingredient list no longer scale (see board card #44).
+- An ingredient with no `quantity_value` (no number) is shown as written at every factor. Ranges are out of scope: the syntax for what a range means is not defined (board card #44).
 - Update the seed data so every seeded ingredient with a number has `quantity_value` and `quantity_unit`.
 - Out of scope: step chips (`store-chip-quantities`), amounts in step text (`store-step-quantities`), converting the unit, the legacy `step_ingredients` table (not used by the app; left as is).
 
@@ -24,7 +24,7 @@ None.
 ### Modified Capabilities
 
 - `recipe-storage`: "Ingredient quantities can be scaled" uses `quantity_value` and `quantity_unit`, and the stored values are returned when a recipe is read.
-- `recipe-scaling`: "All quantities scale" scales the ingredient list from the stored value and unit; ranges are no longer scaled; a quantity without a stored value is shown as written.
+- `recipe-scaling`: "All quantities scale" is replaced by "Ingredient quantities scale from stored values", which scales the ingredient list from the stored value and unit; a quantity without a stored value is shown as written.
 
 ## Impact
 
