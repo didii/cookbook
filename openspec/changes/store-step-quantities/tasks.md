@@ -9,7 +9,7 @@ Change 3 of 3. Precondition: `store-ingredient-quantities` and `store-chip-quant
 
 ## 2. Move the parsers into the editor
 
-- [ ] 2.1 Move `parseIngredient`, `joinIngredient`, `ParsedIngredient` to `routes/edit-recipe/lib/shared/ingredients.ts` and `shared/stepParsers.ts` to `routes/edit-recipe/lib/shared/stepParsers.ts`, with their tests; update imports in the editor (relative within the module); rename the rest of `shared/ingredients.ts` to `shared/numbers.ts` (`numberPattern`, `numberValue`) and update `scale.ts` and `parseQuantity`
+- [x] 2.1 Move `parseIngredient`, `joinIngredient`, `ParsedIngredient` to `routes/edit-recipe/lib/shared/ingredients.ts` and `shared/stepParsers.ts` to `routes/edit-recipe/lib/shared/stepParsers.ts`, with their tests; update imports in the editor (relative within the module); rename the rest of `shared/ingredients.ts` to `shared/numbers.ts` (`numberPattern`, `numberValue`) and update `scale.ts` and `parseQuantity`
 - [ ] 2.2 Add `routes/edit-recipe/lib/quantities.ts` with `findQuantities(body, rows, rules)` and unit tests (rules unit, before ingredient name, overlap, duration/temperature/range not found)
 
 ## 3. Server

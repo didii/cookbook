@@ -1,7 +1,7 @@
-import { parseIngredient, type ParsedIngredient } from '~app/shared/ingredients';
 import type { Step } from '~app/shared/recipe';
 import type { Rules } from '~app/shared/rules';
 import { parseQuantity } from './quantity';
+import { parseIngredient, type ParsedIngredient } from './shared/ingredients';
 
 export type RecipeFormField = 'title' | 'author' | 'servings' | 'time' | 'intro' | 'image';
 

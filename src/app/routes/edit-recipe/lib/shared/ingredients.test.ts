@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'vitest';
+import { defaultRules } from '~app/shared/rules';
 import { joinIngredient, parseIngredient } from './ingredients';
-import { defaultRules } from './rules';
 
 describe('recipe-ingredient-editing › Quantity with unit and name', () => {
   test('splits quantity text, amount, unit and name', () => {

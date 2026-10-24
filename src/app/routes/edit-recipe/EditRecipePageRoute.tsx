@@ -1,6 +1,5 @@
 import { data, redirect, useRouteLoaderData } from 'react-router';
 import { envContext } from '~app/shared/context.server';
-import { joinIngredient } from '~app/shared/ingredients';
 import { acceptImage, deletePhoto } from '~app/shared/photos.server';
 import { getRecipe, listAuthors, updateRecipe } from '~app/shared/recipes.server';
 import { defaultRules, type Rules } from '~app/shared/rules';
@@ -10,6 +9,7 @@ import type { Route } from './+types/EditRecipePageRoute';
 import { endDraftAfterSave } from './lib/endDraftAfterSave';
 import { RecipeEditor } from './lib/RecipeEditor';
 import { readForm, readIngredients, readSteps, toRecipeFields, validate, type RecipeFormErrors } from './lib/recipeValidation';
+import { joinIngredient } from './lib/shared/ingredients';
 
 const notFound = () => data('Recept niet gevonden', { status: 404 });
 

@@ -1,24 +1,10 @@
-import type { Rules } from './rules';
+import { numberPattern, numberValue } from '~app/shared/numbers';
+import type { Rules } from '~app/shared/rules';
 
 export type ParsedIngredient = { quantityText: string; quantityValue?: number; quantityUnit?: string; name: string };
 
-const fractions: Record<string, number> = { '½': 1 / 2, '⅓': 1 / 3, '⅔': 2 / 3, '¼': 1 / 4, '¾': 3 / 4, '⅛': 1 / 8 };
-const glyph = '[½⅓⅔¼¾⅛]';
-// Longest alternatives first: "1 ½", "1 2/3", "1/2", "1,5", "½".
-export const numberPattern = String.raw`(?:\d+\s?${glyph}|\d+\s+\d+/\d+|\d+/\d+|\d+(?:[.,]\d+)?|${glyph})`;
 const leading = new RegExp(String.raw`^\s*(${numberPattern})(?:\s*[-–]\s*(${numberPattern}))?`, 'u');
 const word = /^\s*(\p{L}+)(\.?)/u;
-
-/** The numeric value of one number as matched by `number`. */
-export function numberValue(text: string): number | undefined {
-  const parts = text.match(new RegExp(String.raw`^(\d+)?\s*(?:(\d+)/(\d+)|(${glyph}))?$`, 'u'));
-  if (parts) {
-    const [, whole, a, b, g] = parts;
-    const fraction = g ? fractions[g] : a ? Number(a) / Number(b) : 0;
-    return Number.isFinite(fraction) ? Number(whole ?? 0) + fraction : undefined;
-  }
-  return Number(text.replace(',', '.'));
-}
 
 /** Splits one typed line into the quantity as typed, its value and unit (one of `rules.units`), and the name. A line without a leading number is all name. */
 export function parseIngredient(text: string, rules: Rules): ParsedIngredient {

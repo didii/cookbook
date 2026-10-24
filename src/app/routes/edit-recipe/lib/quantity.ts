@@ -1,4 +1,4 @@
-import { numberPattern, numberValue } from '~app/shared/ingredients';
+import { numberPattern, numberValue } from '~app/shared/numbers';
 
 const leading = new RegExp(String.raw`^\s*(${numberPattern})(\s*[-–]\s*${numberPattern})?\s*(.*)$`, 'u');
 

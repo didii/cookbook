@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'vitest';
-import type { Range } from '~app/shared/stepParsers';
 import { mapRange } from './anchors';
 import { computeEdit, type TextEdit } from './textEdit';
+import type { Range } from '../shared/stepParsers';
 
 const edit = (start: number, removed: number, inserted: number): TextEdit => ({ start, removed, inserted });
 /** Applies an edit to a text, with the new characters being `with`. */
