@@ -80,8 +80,6 @@ const form = (actionData?: { errors: Record<string, string>; values: typeof empt
 };
 
 describe('the new recipe page', () => {
-  test.beforeEach(() => window.localStorage.clear());
-
   test('hands the loaded authors to the editor', async () => {
     form();
     const author = screen.getByTestId('AuthorInput-field');
@@ -140,7 +138,6 @@ describe('a new recipe', () => {
 
 const openFormAs = async (db: D1Database, email: string) => {
   cleanup();
-  window.localStorage.clear();
   const context = new RouterContextProvider();
   context.set(envContext, fake<Env>({ DB: db }));
   context.set(userEmailContext, email);

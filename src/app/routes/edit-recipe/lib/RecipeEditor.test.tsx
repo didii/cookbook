@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import type { ComponentProps } from 'react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
-import { beforeEach, describe, test } from 'vitest';
+import { describe, test } from 'vitest';
 import { defaultRules } from '~app/shared/rules';
 import { render, screen } from '~testing/dom';
 import { emptyDraftSeed } from './draft';
@@ -21,9 +21,6 @@ test.todo('recipe-form › Cancel leaves without storing');
 test.todo('recipe-form › Reset asks first');
 // Needs a browser: answering "Nee" and pressing Esc.
 test.todo('recipe-form › Reset can be declined');
-
-// An edited field is kept as a draft on the device; start every test without one.
-beforeEach(() => window.localStorage.clear());
 
 const editorProps: ComponentProps<typeof RecipeEditor> = {
   rules: defaultRules,
