@@ -65,15 +65,18 @@ describe('findQuantities', () => {
   });
 });
 
-describe('parsing-rules › Scaling uses the stored units', () => {
+// Replaced by 'Saving uses the stored units' in the change store-step-quantities; drop this line when the change is archived.
+test.todo('parsing-rules › Scaling uses the stored units');
+
+describe('parsing-rules › Saving uses the stored units', () => {
   const rules = { ...defaultRules, units: [...defaultRules.units, 'kopje'] };
 
-  test('a stored unit gives a stored amount', () => {
-    assert.equal(findQuantities('doe 2 kopje bloem erbij', [], rules)[0]?.quantityValue, 2);
+  test('a stored unit gives a stored amount with that unit', () => {
+    assert.deepEqual(findQuantities('doe 2 kopje rijst erbij', [], rules), [{ startIndex: 4, endIndex: 5, quantityValue: 2, quantityUnit: 'kopje' }]);
   });
 
   test('without the stored unit there is none', () => {
-    assert.deepEqual(findQuantities('doe 2 kopje bloem erbij', [], defaultRules), []);
+    assert.deepEqual(findQuantities('doe 2 kopje rijst erbij', [], defaultRules), []);
   });
 });
 
