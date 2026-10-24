@@ -3,7 +3,7 @@
 ## ADDED Requirements
 
 ### Requirement: Every quantity scales from its stored value
-The system SHALL multiply by the factor (chosen servings divided by the recipe's servings, or the multiplier) the stored quantity value of every ingredient in the ingredient list and of every ingredient chip of a step, each shown with its stored quantity unit, and every amount stored with a step's text, replacing the number in that text. An ingredient, chip or amount without a stored quantity value, such as a range, SHALL be shown as written.
+The system SHALL multiply by the factor (chosen servings divided by the recipe's servings, or the multiplier) the stored quantity value of every ingredient in the ingredient list and of every ingredient chip of a step, each shown with its stored quantity unit, and every amount stored with a step's text, replacing the number in that text. An ingredient, chip or amount without a stored quantity value SHALL be shown as written.
 
 #### Scenario: Ingredient list scales
 - **WHEN** a recipe for 4 with "200 g bloem" (quantity value 200, unit "g") is scaled to 6 servings
@@ -21,21 +21,9 @@ The system SHALL multiply by the factor (chosen servings divided by the recipe's
 - **WHEN** an ingredient "½ tl zout" (quantity value 0,5, unit "tl") is scaled to 3 times
 - **THEN** the ingredient shows "1,5 tl zout"
 
-#### Scenario: Ingredient range stays as written
-- **WHEN** an ingredient reads "2-3 el olie" and the recipe is doubled
-- **THEN** the ingredient still shows "2-3 el olie"
-
-#### Scenario: Chip range stays as written
-- **WHEN** a step has the chip "2-3 el olie" and the recipe is doubled
-- **THEN** the chip still shows "2-3 el olie"
-
 #### Scenario: Chip keeps its own unit
 - **WHEN** a step has the chip "1 klontje boter" (quantity value 1, unit "klontje") and the recipe is doubled
 - **THEN** the chip shows "2 klontje boter"
-
-#### Scenario: Range in step text stays as written
-- **WHEN** a step reads "Voeg 2-3 el olie toe" and the recipe is doubled
-- **THEN** it still reads "Voeg 2-3 el olie toe"
 
 #### Scenario: Text without stored amounts stays as written
 - **WHEN** a step has a number that is no stored amount and the recipe is doubled
@@ -43,6 +31,10 @@ The system SHALL multiply by the factor (chosen servings divided by the recipe's
 
 ## REMOVED Requirements
 
-### Requirement: All quantities scale
-**Reason**: Step text is no longer scanned for amounts when the page scales; the amounts are stored when the step is saved. Ranges no longer scale because a range has no single stored value (see board card #44).
-**Migration**: Replaced by "Every quantity scales from its stored value", which keeps the scenarios for the list, chips and step text and adds those for ranges.
+### Requirement: Ingredient quantities scale from stored values
+**Reason**: Restated together with chips and step text as "Every quantity scales from its stored value".
+**Migration**: Replaced by "Every quantity scales from its stored value", which keeps its scenarios.
+
+### Requirement: Chip quantities scale from stored values
+**Reason**: Restated together with the list and step text as "Every quantity scales from its stored value".
+**Migration**: Replaced by "Every quantity scales from its stored value", which keeps its scenarios.

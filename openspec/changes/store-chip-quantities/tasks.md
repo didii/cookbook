@@ -9,13 +9,13 @@ Change 2 of 3. Precondition: `store-ingredient-quantities` is merged. Verify eac
 
 ## 2. Server
 
-- [x] 2.1 Add `parseQuantity` in `routes/edit-recipe/lib/quantity.ts` with unit tests (number, fraction, range, unit as the rest, no number)
-- [x] 2.2 Have `cleanStep` set `quantityValue` / `quantityUnit` on chips; test scenarios "Chip quantity is read from its text on save" and "Chip range has no quantity value" in `recipeValidation.test.ts`
+- [x] 2.1 Add `parseQuantity` in `routes/edit-recipe/lib/quantity.ts` with unit tests (number, fraction, unit as the rest, no number)
+- [x] 2.2 Have `cleanStep` set `quantityValue` / `quantityUnit` on chips; test scenarios "Chip quantity is read from its text on save" in `recipeValidation.test.ts`
 - [x] 2.3 Insert and select the two columns for chips in `recipes.server.ts`; change `Step.ingredients` in `shared/recipe.ts`; update `recipes.server.test.ts` ("Chip without a quantity", "Chips keep their order" still pass)
 
 ## 3. Scaling
 
-- [x] 3.1 Map the chips of `RecipeView.tsx` through `scaleIngredient`; update the fixtures and tests for "Step chips scale", "Chip range stays as written", "Chip keeps its own unit"
+- [x] 3.1 Map the chips of `RecipeView.tsx` through `scaleIngredient`; update the fixtures and tests for "Step chips scale", "Chip keeps its own unit"
 
 ## 4. Wrap-up
 

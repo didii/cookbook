@@ -19,8 +19,8 @@ describe('recipe-scaling › Ingredient list scales', () => {
   });
 });
 
-describe('recipe-scaling › Ingredient range stays as written', () => {
-  test('a range has no value, so its text is kept at every factor', () => {
+describe('ingredient without a stored value', () => {
+  test('its text is kept at every factor', () => {
     assert.deepEqual(
       [2, 0.5].map((f) => scaleIngredient(ingredient('2-3 el', null, 'el'), f)),
       ['2-3 el', '2-3 el'],
@@ -56,7 +56,7 @@ describe('scaleIngredient', () => {
   });
 });
 
-// Removed by the change store-step-quantities (a range has no stored value, see card #44); drop this line when the change is archived.
+// Goes at archive: store-ingredient-quantities removes this scenario (ranges are out of scope, see card #44); drop this line when the change is archived.
 test.todo('recipe-scaling › Ranges scale');
 
 describe('recipe-scaling › Quantity without a number', () => {
@@ -150,8 +150,8 @@ describe('recipe-scaling › Amounts in step text scale', () => {
   });
 });
 
-describe('recipe-scaling › Range in step text stays as written', () => {
-  test('a range has no stored amount, so the text is kept', () => {
+describe('step text without stored amounts', () => {
+  test('the text is kept', () => {
     assert.equal(scaleText('Voeg 2-3 el olie toe', [], 2), 'Voeg 2-3 el olie toe');
   });
 });

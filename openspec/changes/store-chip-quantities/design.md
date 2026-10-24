@@ -11,13 +11,13 @@ Change 2 of 3. Depends on `store-ingredient-quantities` (change 1), which must b
 
 **Non-Goals:**
 - Step text amounts (change 3); a single shared table for chips and text amounts (they can differ, see proposal).
-- Scaling ranges (board card #44); changing units.
+- Ranges: the syntax for what a range means is not defined (board card #44). Changing units.
 
 ## Decisions
 
 - **Same column names as change 1.** Migration `0011_chip_quantities.sql`: `ALTER TABLE step_ingredient_chips ADD COLUMN quantity_value REAL CHECK (quantity_value > 0)` and `ADD COLUMN quantity_unit TEXT`. Both nullable; existing rows stay valid.
 - **The server derives the values.** `cleanStep` sets `quantityValue` / `quantityUnit` from the cleaned `quantityText`; the posted JSON stays `{ quantityText, name }`. The server never trusts a client-computed value, same as ingredient lines (`readIngredients`).
-- **A chip is only a quantity, so the rest after the number is the unit.** `parseIngredient` only accepts words from `rules.units` because a typed line also holds a name. A chip's text has no name, so a new `parseQuantity(text)` (in `edit-recipe/lib/quantity.ts`, reusing `numberPattern` / `numberValue` from `shared/ingredients.ts`) takes the number and returns everything after it as the unit: "1 klontje" → value 1, unit "klontje"; "½ tl" → 0,5, "tl". A range or text without a leading number gives no value. Alternative: reuse `parseIngredient` on the chip text; rejected, "1 klontje" would lose "klontje" when scaled because it is not a rules unit.
+- **A chip is only a quantity, so the rest after the number is the unit.** `parseIngredient` only accepts words from `rules.units` because a typed line also holds a name. A chip's text has no name, so a new `parseQuantity(text)` (in `edit-recipe/lib/quantity.ts`, reusing `numberPattern` / `numberValue` from `shared/ingredients.ts`) takes the number and returns everything after it as the unit: "1 klontje" → value 1, unit "klontje"; "½ tl" → 0,5, "tl". Text without a leading number gives no value. Alternative: reuse `parseIngredient` on the chip text; rejected, "1 klontje" would lose "klontje" when scaled because it is not a rules unit.
 - **Chip type.** `Step.ingredients` becomes `RecipeIngredient[]` (value and unit nullable). Code that builds steps for the editor draft keeps working with the optional fields; the chip logic in the editor continues to work on `quantityText`.
 - **Scaling.** `RecipeView` maps chips through `scaleIngredient` (from change 1); `scaleQuantity` is then only used for step text and goes in change 3.
 - **Seed.** Every seeded chip gets value and unit ("250 g" → 250, "g"; "1" → 1, null; "1 klontje" → 1, "klontje").

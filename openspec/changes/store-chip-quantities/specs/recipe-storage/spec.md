@@ -32,7 +32,3 @@ The system SHALL store for a step any number of ingredient chips, each with free
 #### Scenario: Chip quantity is read from its text on save
 - **WHEN** a step with the chip "½ tl zout" is saved from the editor, or the chip "1 klontje boter"
 - **THEN** the stored chips have quantity value 0,5 and unit "tl", and value 1 and unit "klontje"
-
-#### Scenario: Chip range has no quantity value
-- **WHEN** a step with the chip "2-3 el olie" is saved from the editor
-- **THEN** the stored chip has quantity text "2-3 el" and no quantity value

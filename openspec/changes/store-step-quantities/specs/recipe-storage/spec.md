@@ -30,7 +30,7 @@ The system SHALL store for a step the amounts in its text that scale with the se
 - **THEN** none of its amounts remain
 
 ### Requirement: Amounts in a step's text are found on save
-The system SHALL find, when a recipe is saved from the editor, the amounts in each step's text that are followed by a unit of the recognition rules or written right before the name of one of the recipe's ingredients, from the text as stored, and SHALL NOT trust amounts sent by the browser. Durations, temperatures and ranges SHALL NOT be stored.
+The system SHALL find, when a recipe is saved from the editor, the amounts in each step's text that are followed by a unit of the recognition rules or written right before the name of one of the recipe's ingredients, from the text as stored, and SHALL NOT trust amounts sent by the browser. Durations and temperatures SHALL NOT be stored.
 
 #### Scenario: Amount before a unit and before an ingredient
 - **WHEN** a step "Meng 200 g bloem met 2 eieren" is saved for a recipe with the ingredients "bloem" and "ei"
@@ -40,8 +40,8 @@ The system SHALL find, when a recipe is saved from the editor, the amounts in ea
 - **WHEN** a step is posted with line breaks and spaces around its text
 - **THEN** each stored place points at its number in the cleaned text as stored
 
-#### Scenario: Durations, temperatures and ranges are not stored
-- **WHEN** a step "Bak 20 minuten op 180 graden, daarna 2-3 el olie" is saved
+#### Scenario: Durations and temperatures are not stored
+- **WHEN** a step "Bak 20 minuten op 180 graden" is saved
 - **THEN** no amount is stored for it
 
 #### Scenario: Saving again replaces the amounts
