@@ -1,6 +1,6 @@
 // The shapes of a recipe's ingredients and steps, shared by the server and the browser. The recipes themselves are stored in D1.
 
-/** An ingredient row of a recipe, or a chip of a step: free text, a step's chip never refers to a row. Same shape as the stored ingredient. */
+/** The quantity text and name of an ingredient: the base of a recipe's ingredient row (RecipeIngredient), and a chip of a step on its own. A step's chip never refers to a row. */
 export type Ingredient = { quantityText: string; name: string };
 
 /** An ingredient row of a recipe: the quantity text as typed, plus its numeric value and unit when it has them (null for none, such as a range). */
