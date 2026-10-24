@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import type { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, test, vi } from 'vitest';
-import type { LikeButton, Seal } from '~app/shared/components';
+import type { LikeButton, Seal, TileBand } from '~app/shared/components';
 import type { RecipeSummary } from '~app/shared/recipe';
 import { cssFor } from '~testing/css';
 import { precedes, render, screen, within } from '~testing/dom';
@@ -66,7 +66,7 @@ describe('recipe-browsing › Image, band, then text', () => {
 
   test('the band is one tile high', () => {
     card();
-    for (const band of screen.getAllByTestId('TileBand-band')) assert.match(band.getAttribute('viewBox')!, / 1$/);
+    assert.equal(propsOf<typeof TileBand>('TileBand')?.rows, 1);
   });
 });
 
@@ -95,7 +95,7 @@ describe('recipe-browsing › Recipe without time or image', () => {
 
   test('the tile band is three tiles high', () => {
     card({ image: null });
-    for (const band of screen.getAllByTestId('TileBand-band')) assert.match(band.getAttribute('viewBox')!, / 3$/);
+    assert.equal(propsOf<typeof TileBand>('TileBand')?.rows, 3);
   });
 
   test('the card shows the author without time', () => {
