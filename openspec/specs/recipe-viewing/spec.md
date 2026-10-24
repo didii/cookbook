@@ -43,7 +43,7 @@ The system SHALL show on a recipe page a link to the edit form of that recipe.
 - **THEN** a link to `/recepten/<slug>/bewerken` is available
 
 ### Requirement: Ingredients and steps are tabs on a narrow screen
-The system SHALL, on a screen narrower than 52rem, show the ingredients and the steps as two tabs, Ingrediënten and Bereiding, in a bar that stays at the top of the screen while scrolling, so switching is possible from anywhere on the page. On a wider screen both are shown side by side with the ingredients staying in view while the steps scroll.
+The system SHALL, on a screen narrower than 52rem, show the ingredients and the steps as two tabs, Ingrediënten and Bereiding, in a bar that stays at the top of the screen while scrolling, so switching is possible from anywhere on the page. On a wider screen both are shown side by side and nothing stays in view while scrolling: the timers, the ingredient list and the note scroll away with the page, which is the only thing that scrolls.
 
 #### Scenario: Tabs on a narrow screen
 - **WHEN** a family member opens a recipe on a narrow screen
@@ -51,11 +51,11 @@ The system SHALL, on a screen narrower than 52rem, show the ingredients and the 
 
 #### Scenario: Two columns on a wide screen
 - **WHEN** a family member opens a recipe on a wide screen
-- **THEN** ingredients and steps are shown side by side with no tabs, and the ingredients stay in view while scrolling the steps
+- **THEN** ingredients and steps are shown side by side with no tabs, and the ingredients scroll away with the page like the steps
 
 #### Scenario: Long ingredient list on a wide screen
-- **WHEN** the ingredient column (with any timers above the list) is taller than the window
-- **THEN** the timers and the heading stay in place and the ingredient list scrolls by itself, so every ingredient can be reached
+- **WHEN** the ingredient column (with any timers above the list and the note under it) is taller than the window
+- **THEN** the whole page scrolls and every ingredient can be reached, without the ingredient list scrolling by itself
 
 ### Requirement: Each tab fills the screen
 The system SHALL, on a narrow screen, make each tab's content at least as tall as the screen minus the tab bar, so that when the page is scrolled all the way down nothing but the tab bar, the timer row (when there is one) and the tab's content are on screen, and a short list is not left at the bottom of an otherwise empty page.
