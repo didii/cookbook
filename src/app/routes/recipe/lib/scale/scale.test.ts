@@ -186,6 +186,14 @@ describe('scaleText', () => {
     assert.equal(scaleText('Meng 12345 x', overlapping, 2), 'Meng 1210 x');
   });
 
+  test('a longer replacement does not shift the amounts after it', () => {
+    const grown = [
+      { startIndex: 0, endIndex: 1, quantityValue: 5, quantityUnit: null },
+      { startIndex: 12, endIndex: 13, quantityValue: 3, quantityUnit: null },
+    ];
+    assert.equal(scaleText('5 tsp zout, 3 el', grown, 2), '10 tsp zout, 6 el');
+  });
+
   test('the scaled value is rounded like other scaled numbers', () => {
     assert.equal(scaleText('Meng 1 el', [{ startIndex: 5, endIndex: 6, quantityValue: 1, quantityUnit: null }], 1 / 3), 'Meng 0,333 el');
   });
