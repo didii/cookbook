@@ -5,11 +5,12 @@ export const numberPattern = String.raw`(?:\d+\s?${glyph}|\d+\s+\d+/\d+|\d+/\d+|
 
 /** The numeric value of one number as matched by `number`. */
 export function numberValue(text: string): number | undefined {
+  if (!text.trim()) return undefined;
   const parts = text.match(new RegExp(String.raw`^(\d+)?\s*(?:(\d+)/(\d+)|(${glyph}))?$`, 'u'));
   if (parts) {
     const [, whole, a, b, g] = parts;
     const fraction = g ? fractions[g] : a ? Number(a) / Number(b) : 0;
     return Number.isFinite(fraction) ? Number(whole ?? 0) + fraction : undefined;
   }
-  return Number(text.replace(',', '.'));
+  return /^\d+(?:[.,]\d+)?$/.test(text) ? Number(text.replace(',', '.')) : undefined;
 }
