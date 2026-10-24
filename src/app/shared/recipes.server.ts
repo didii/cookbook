@@ -1,4 +1,4 @@
-import type { Recipe, RecipeIngredient, RecipeSummary, Step } from './recipe';
+import type { Recipe, RecipeIngredient, RecipeSummary, Step, StepQuantity } from './recipe';
 import { pickSeal } from './seals';
 
 export type RecipeRow = {
@@ -22,7 +22,7 @@ type StepRow = { id: number; body: string; oven_temperature: number | null; time
 
 /** One round trip (a single batch): the recipe plus its ingredients and steps (with their chips) in stored order. */
 export async function getRecipe(db: D1Database, slug: string): Promise<Recipe | undefined> {
-  const [recipe, ingredients, steps, chips] = await db.batch([
+  const [recipe, ingredients, steps, chips, quantities] = await db.batch([
     db.prepare('SELECT id, slug, title, author, time, servings, intro, image, seal, updated_at FROM recipes WHERE slug = ?').bind(slug),
     db
       .prepare(
@@ -39,10 +39,16 @@ export async function getRecipe(db: D1Database, slug: string): Promise<Recipe | 
         'SELECT c.step_id, c.quantity_text AS quantityText, c.quantity_value AS quantityValue, c.quantity_unit AS quantityUnit, c.name FROM step_ingredient_chips c JOIN steps s ON s.id = c.step_id JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ? ORDER BY s.position, c.position',
       )
       .bind(slug),
+    db
+      .prepare(
+        'SELECT q.step_id, q.start_index AS startIndex, q.end_index AS endIndex, q.quantity_value AS quantityValue, q.quantity_unit AS quantityUnit FROM step_quantities q JOIN steps s ON s.id = q.step_id JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ? ORDER BY q.start_index',
+      )
+      .bind(slug),
   ]);
   const row = (recipe.results as RecipeRow[])[0];
   if (!row) return undefined;
   const chipRows = chips.results as (RecipeIngredient & { step_id: number })[];
+  const quantityRows = quantities.results as (StepQuantity & { step_id: number })[];
   return {
     ...row,
     ingredients: ingredients.results as RecipeIngredient[],
@@ -51,6 +57,9 @@ export async function getRecipe(db: D1Database, slug: string): Promise<Recipe | 
       ingredients: chipRows
         .filter((c) => c.step_id === s.id)
         .map((c) => ({ quantityText: c.quantityText, quantityValue: c.quantityValue, quantityUnit: c.quantityUnit, name: c.name })),
+      quantities: quantityRows
+        .filter((q) => q.step_id === s.id)
+        .map((q) => ({ startIndex: q.startIndex, endIndex: q.endIndex, quantityValue: q.quantityValue, quantityUnit: q.quantityUnit })),
       ovenTemperature: s.oven_temperature ?? undefined,
       timer: s.timer_minutes === null ? undefined : { minutes: s.timer_minutes, label: s.timer_label ?? undefined },
     })),
@@ -101,7 +110,7 @@ export async function chooseSeal(db: D1Database): Promise<string> {
   return pickSeal(results);
 }
 
-/** Statements that store the steps (and their chips) of the recipe with this slug, at the places 0, 1, …; none if there is no such recipe. */
+/** Statements that store the steps (with their chips and amounts) of the recipe with this slug, at the places 0, 1, …; none if there is no such recipe. */
 function insertSteps(db: D1Database, slug: string, steps: StepInput[]) {
   return steps.flatMap((step, i) => [
     db
@@ -115,6 +124,13 @@ function insertSteps(db: D1Database, slug: string, steps: StepInput[]) {
           'INSERT INTO step_ingredient_chips (step_id, position, quantity_text, quantity_value, quantity_unit, name) SELECT s.id, ?, ?, ?, ?, ? FROM steps s JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ? AND s.position = ?',
         )
         .bind(j, chip.quantityText, chip.quantityValue ?? null, chip.quantityUnit ?? null, chip.name, slug, i),
+    ),
+    ...(step.quantities ?? []).map((q) =>
+      db
+        .prepare(
+          'INSERT INTO step_quantities (step_id, start_index, end_index, quantity_value, quantity_unit) SELECT s.id, ?, ?, ?, ? FROM steps s JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ? AND s.position = ?',
+        )
+        .bind(q.startIndex, q.endIndex, q.quantityValue, q.quantityUnit, slug, i),
     ),
   ]);
 }

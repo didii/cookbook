@@ -277,8 +277,8 @@ describe('recipe-step-editing › Stored steps come back in the editor', () => {
 
   test('the steps follow the stored order', async ({ db, photos }) => {
     assert.deepEqual(defined((await load(db, photos, 'stappen')).values.steps), [
-      { body: 'kneed', ingredients: [] },
-      { body: 'bak', ingredients: [] },
+      { body: 'kneed', ingredients: [], quantities: [] },
+      { body: 'bak', ingredients: [], quantities: [] },
     ]);
   });
 });
@@ -338,7 +338,10 @@ describe('a saved recipe with chips', () => {
   test('comes back in the editor with equal chips', async ({ db, photos }) => {
     await addRecipe(db, 'chips-terug');
     await submit(db, photos, 'chips-terug', { title: 'Soep', author: 'Oma', steps: JSON.stringify(posted) });
-    assert.deepEqual(defined((await load(db, photos, 'chips-terug')).values.steps), expected);
+    assert.deepEqual(
+      defined((await load(db, photos, 'chips-terug')).values.steps),
+      expected.map((s) => ({ ...s, quantities: [] })),
+    );
   });
 
   test('a refusal shows the chips again', async ({ db, photos }) => {

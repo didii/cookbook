@@ -15,7 +15,7 @@ Change 3 of 3. Precondition: `store-ingredient-quantities` and `store-chip-quant
 ## 3. Server
 
 - [x] 3.1 Pass ingredient rows and rules to `readSteps`, compute the quantities of each cleaned body, in the edit and the create action; test "Amount before a unit and before an ingredient", "Places refer to the stored text", "Durations, temperatures and ranges are not stored"
-- [ ] 3.2 Insert, replace and select `step_quantities` in `recipes.server.ts`, add `Step.quantities` in `shared/recipe.ts`; test "Saving again replaces the amounts" and the read order
+- [x] 3.2 Insert, replace and select `step_quantities` in `recipes.server.ts`, add `Step.quantities` in `shared/recipe.ts`; test "Saving again replaces the amounts" and the read order
 
 ## 4. Scaling
 
