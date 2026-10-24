@@ -9,10 +9,15 @@ export type RecipeIngredient = Ingredient & { quantityValue: number | null; quan
 /** A chip of a step: the stored value and unit are there once derived on save (null for none); a chip the editor is still typing has neither. */
 export type StepIngredient = Ingredient & { quantityValue?: number | null; quantityUnit?: string | null };
 
+/** An amount in a step's text that scales with the servings: where its number sits in the body (UTF-16 indexes, end exclusive), its value, and the unit that followed it (null for none). */
+export type StepQuantity = { startIndex: number; endIndex: number; quantityValue: number; quantityUnit: string | null };
+
 /** A step and what belongs to it: the ingredients it uses, an oven temperature and a timer, all optional. */
 export type Step = {
   body: string;
   ingredients: StepIngredient[];
+  /** The amounts in the body in text order; set on a stored step, absent while the editor is typing. */
+  quantities?: StepQuantity[];
   ovenTemperature?: number;
   timer?: { minutes: number; label?: string };
 };
