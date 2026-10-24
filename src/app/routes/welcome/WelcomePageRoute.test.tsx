@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
-import { beforeEach, describe } from 'vitest';
+import { beforeEach, describe, test as plainTest } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { createUser, getUser } from '~app/shared/users.server';
+import { cssFor } from '~testing/css';
 import { render, screen } from '~testing/dom';
 import { fake } from '~testing/fake';
 import { test } from '~testing/test';
@@ -205,3 +206,45 @@ describe('family-access › First visit by a new family member', () => {
     assert.equal((await getUser(db, 'nieuw@example.com'))?.callingName, 'Nel');
   });
 });
+
+describe('plaid-accent › Card is framed in plaid', () => {
+  const frame = () => {
+    show({ loaderData: { returnUrl: '/' } });
+    return screen.getByTestId('WelcomePage-frame');
+  };
+
+  plainTest('the frame holds a plaid layer', () => {
+    assert.ok(frame().contains(screen.getByTestId('Plaid-layer')));
+  });
+
+  plainTest('the frame holds the card', () => {
+    assert.ok(frame().contains(screen.getByTestId('WelcomePage-card')));
+  });
+
+  plainTest('the frame has an ink outline', async () => {
+    assert.match(await cssFor(frame().className), /border-color: var\(--color-ink\)/);
+  });
+
+  plainTest('the page behind the frame has no plaid', () => {
+    frame();
+    assert.equal(screen.getAllByTestId('Plaid-layer').length, 1);
+  });
+});
+
+describe('plaid-accent › Frame and card are rounded', () => {
+  const radius = async (id: string) => (await cssFor(screen.getByTestId(id).className)).match(/border-radius: ([^;]+);/)?.[1];
+
+  plainTest('the frame has a larger corner radius than the card', async () => {
+    show({ loaderData: { returnUrl: '/' } });
+    assert.equal(await radius('WelcomePage-frame'), '22px');
+    assert.notEqual(await radius('WelcomePage-card'), '22px');
+  });
+
+  plainTest('the card clips the tile band to its corners', async () => {
+    show({ loaderData: { returnUrl: '/' } });
+    assert.match(await cssFor(screen.getByTestId('WelcomePage-card').className), /overflow: hidden/);
+  });
+});
+
+// Needs real layout.
+plainTest.todo('plaid-accent › Frame on a narrow screen');

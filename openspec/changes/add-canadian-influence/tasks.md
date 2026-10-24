@@ -14,8 +14,8 @@
 
 ## 3. Welcome frame
 
-- [ ] 3.1 In `WelcomePageRoute.tsx` wrap the card in the plaid frame (16px padding, 3px ink outline, 22px radius, hard shadow) and make the card `overflow-hidden rounded-xl`; verify in the browser at 320px and desktop that the tile band follows the corners and nothing scrolls sideways
-- [ ] 3.2 Add the `plaid-accent` welcome scenarios to `WelcomePageRoute.test.tsx` (`plaid-accent › Card is framed in plaid`, `Frame and card are rounded` through `cssFor`; `Frame on a narrow screen` as `test.todo` with the reason "needs real layout"); verify `pnpm test:ai` passes
+- [x] 3.1 In `WelcomePageRoute.tsx` wrap the card in the plaid frame (16px padding, 3px ink outline, 22px radius, hard shadow) and make the card `overflow-hidden rounded-xl`; verify in the browser at 320px and desktop that the tile band follows the corners and nothing scrolls sideways
+- [x] 3.2 Add the `plaid-accent` welcome scenarios to `WelcomePageRoute.test.tsx` (`plaid-accent › Card is framed in plaid`, `Frame and card are rounded` through `cssFor`; `Frame on a narrow screen` as `test.todo` with the reason "needs real layout"); verify `pnpm test:ai` passes
 
 ## 4. Menu sidebar
 
