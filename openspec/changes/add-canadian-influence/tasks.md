@@ -25,7 +25,7 @@
 ## 5. Finish
 
 - [x] 5.1 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check` and `pnpm test:ai`; verify all pass with no lint errors
-- [ ] 5.2 Check the like button, welcome page and open menu in the browser on a phone-width viewport against the approved mocks; verify the leaf outline is not too thin and fix the plaid strength or stroke if needed
+- [x] 5.2 Check the like button, welcome page and open menu in the browser on a phone-width viewport against the approved mocks; verify the leaf outline is not too thin and fix the plaid strength or stroke if needed
 
 ## Workflow follow-up
 
