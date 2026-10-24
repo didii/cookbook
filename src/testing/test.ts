@@ -2,8 +2,9 @@ import { test as base } from 'vitest';
 import { clearDb, clearPhotos, createBucket, createDb, createMiniflare } from './db';
 
 /**
- * `test` with database fixtures. Booting Miniflare is slow, so one instance (`mf`, `db`, `photos`) lives per worker.
- * The `cleanup` auto fixture empties it when a file is done; a test that needs an empty database calls `clearDb(db)` itself.
+ * `test` with database fixtures. Booting Miniflare is slow, so one instance lives per worker (`mf`, `rawDb`, `rawPhotos`).
+ * `db` and `photos` are test-scoped: a test starts with them empty and they are emptied after every test that asks for them.
+ * Seed in the test or in `test.beforeEach`; suite-level `beforeAll` cannot get a test-scoped fixture.
  */
 export const test = base
   // eslint-disable-next-line no-empty-pattern -- Vitest reads the fixtures from the destructured first argument
@@ -12,18 +13,13 @@ export const test = base
     onCleanup(() => mf.dispose());
     return mf;
   })
-  .extend('db', { scope: 'worker' }, async ({ mf }) => {
-    const db = await createDb(mf);
-    return db;
+  .extend('rawDb', { scope: 'worker' }, async ({ mf }) => createDb(mf))
+  .extend('rawPhotos', { scope: 'worker' }, async ({ mf }) => createBucket(mf))
+  .extend('db', async ({ rawDb }, { onCleanup }) => {
+    onCleanup(() => clearDb(rawDb));
+    return rawDb;
   })
-  .extend('photos', { scope: 'worker' }, async ({ mf }) => {
-    const photos = await createBucket(mf);
-    return photos;
-  })
-  // Empties the worker's database and bucket once the file is done, so the next file starts clean.
-  .extend('cleanup', { scope: 'file', auto: true }, async ({ db, photos }, { onCleanup }) => {
-    onCleanup(async () => {
-      await clearDb(db);
-      await clearPhotos(photos);
-    });
+  .extend('photos', async ({ rawPhotos }, { onCleanup }) => {
+    onCleanup(() => clearPhotos(rawPhotos));
+    return rawPhotos;
   });

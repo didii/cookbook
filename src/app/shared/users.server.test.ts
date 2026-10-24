@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import { describe } from 'vitest';
-import { clearDb } from '~testing/db';
 import { test } from '~testing/test';
 import { createUser, deleteUser, getUser, listUsers, requireAdmin, requireSuperadmin, updateUser, type Role } from './users.server';
 
@@ -11,8 +10,6 @@ const add = async (d: D1Database, email: string, name = 'X', role: Role = 'user'
   (await d.prepare('INSERT INTO users (email, calling_name, role) VALUES (?, ?, ?) RETURNING id').bind(email, name, role).first<{ id: number }>())!
     .id;
 const refused = (thrown: { init?: { status?: number } }) => thrown.init?.status === 403;
-/** Empties the database before every test of the surrounding describe. */
-const clean = () => test.beforeEach(async ({ db }) => clearDb(db));
 
 describe('getUser', () => {
   test('an unknown email has no user', async ({ db }) => {
@@ -97,7 +94,6 @@ describe('users › Existing member is a user', () => {
 });
 
 describe('users › Configured email becomes superadmin', () => {
-  clean();
   test('the role is superadmin', async ({ db }) => {
     await createUser(db, 'boss@example.com', 'Baas', 'boss@example.com');
     assert.equal(await roleOf(db, 'boss@example.com'), 'superadmin');
@@ -105,7 +101,6 @@ describe('users › Configured email becomes superadmin', () => {
 });
 
 describe('users › Configured email in another letter case becomes superadmin', () => {
-  clean();
   test('the role is superadmin', async ({ db }) => {
     await createUser(db, 'Boss@Example.com', 'Baas', 'boss@EXAMPLE.com');
     assert.equal(await roleOf(db, 'boss@example.com'), 'superadmin');
@@ -113,7 +108,6 @@ describe('users › Configured email in another letter case becomes superadmin',
 });
 
 describe('users › Configured email is not promoted when a superadmin exists', () => {
-  clean();
   test('the role is user', async ({ db }) => {
     await db.prepare("INSERT INTO users (email, calling_name, role) VALUES ('first@example.com', 'Eerste', 'superadmin')").run();
     await createUser(db, 'boss@example.com', 'Baas', 'boss@example.com');
@@ -122,7 +116,6 @@ describe('users › Configured email is not promoted when a superadmin exists', 
 });
 
 describe('users › Other emails become users', () => {
-  clean();
   test('the role is user', async ({ db }) => {
     await createUser(db, 'other@example.com', 'Ander', 'boss@example.com');
     assert.equal(await roleOf(db, 'other@example.com'), 'user');
@@ -130,7 +123,6 @@ describe('users › Other emails become users', () => {
 });
 
 describe('users › No configured email promotes nobody', () => {
-  clean();
   test('without a configured email the role is user', async ({ db }) => {
     await createUser(db, 'boss@example.com', 'Baas');
     assert.equal(await roleOf(db, 'boss@example.com'), 'user');
@@ -146,7 +138,7 @@ describe('users › No configured email promotes nobody', () => {
 test.todo("users › Today's features need no role");
 
 describe('requireAdmin', () => {
-  test.beforeAll(async ({ db }) => {
+  test.beforeEach(async ({ db }) => {
     await db
       .prepare(
         "INSERT INTO users (email, calling_name, role) VALUES ('ra-admin@example.com', 'A', 'admin'), ('ra-super@example.com', 'S', 'superadmin')",
@@ -173,7 +165,6 @@ describe('requireAdmin', () => {
 });
 
 describe('requireSuperadmin', () => {
-  clean();
   test.beforeEach(async ({ db }) => {
     await add(db, 'rs-super@example.com', 'S', 'superadmin');
     await add(db, 'rs-admin@example.com', 'A', 'admin');
@@ -195,7 +186,6 @@ describe('requireSuperadmin', () => {
 });
 
 describe('user-management › Users sorted by email', () => {
-  clean();
   const list = async (d: D1Database) => {
     for (const email of ['zoe@example.com', 'Anna@example.com', 'mark@example.com']) await add(d, email, email.slice(0, 3));
     return listUsers(d);
@@ -222,7 +212,6 @@ const fill = (d: D1Database, n: number) =>
   );
 
 describe('user-management › Exactly 100 users', () => {
-  clean();
   test('all 100 are listed, not capped', async ({ db }) => {
     await fill(db, 100);
     const { users, capped } = await listUsers(db);
@@ -231,7 +220,6 @@ describe('user-management › Exactly 100 users', () => {
 });
 
 describe('user-management › More than 100 users', () => {
-  clean();
   test('the first 100 are listed, capped', async ({ db }) => {
     await fill(db, 101);
     const { users, capped } = await listUsers(db);
@@ -240,7 +228,6 @@ describe('user-management › More than 100 users', () => {
 });
 
 describe('user-management › Save a new calling name', () => {
-  clean();
   const save = async (d: D1Database) => {
     const id = await add(d, 'jos@example.com', 'Jos');
     return updateUser(d, id, { callingName: 'Josje', role: 'user' });
@@ -258,7 +245,6 @@ describe('user-management › Save a new calling name', () => {
 });
 
 describe('user-management › Give the admin role', () => {
-  clean();
   test('the role is admin', async ({ db }) => {
     const id = await add(db, 'jos@example.com', 'Jos');
     await updateUser(db, id, { callingName: 'Jos', role: 'admin' });
@@ -267,7 +253,6 @@ describe('user-management › Give the admin role', () => {
 });
 
 describe('user-management › Missing role keeps the role', () => {
-  clean();
   const save = async (d: D1Database) => {
     const id = await add(d, 'jos@example.com', 'Jos', 'admin');
     return updateUser(d, id, { callingName: 'Josje' });
@@ -285,7 +270,6 @@ describe('user-management › Missing role keeps the role', () => {
 });
 
 describe('user-management › Unknown role', () => {
-  clean();
   const save = async (d: D1Database) => {
     const id = await add(d, 'jos@example.com', 'Jos');
     await assert.rejects(updateUser(d, id, { callingName: 'Jos', role: 'owner' as Role }));
@@ -302,7 +286,6 @@ describe('user-management › Unknown role', () => {
 });
 
 describe('user-management › Delete a user', () => {
-  clean();
   const remove = async (d: D1Database) => {
     const id = await add(d, 'jos@example.com', 'Jos');
     const recipe = (await d
@@ -343,7 +326,6 @@ describe('user-management › Delete a user', () => {
 });
 
 describe('user-management › Promote another member', () => {
-  clean();
   const promote = async (d: D1Database) => {
     await add(d, 'boss@example.com', 'Baas', 'superadmin');
     const id = await add(d, 'jos@example.com', 'Jos');
@@ -361,7 +343,6 @@ describe('user-management › Promote another member', () => {
 });
 
 describe('user-management › Sole superadmin demotion is refused', () => {
-  clean();
   test('the demotion is refused', async ({ db }) => {
     const id = await add(db, 'boss@example.com', 'Baas', 'superadmin');
     assert.equal(await updateUser(db, id, { callingName: 'Baas', role: 'admin' }), false);
@@ -381,7 +362,6 @@ describe('user-management › Sole superadmin demotion is refused', () => {
 });
 
 describe('user-management › Sole superadmin deletion is refused', () => {
-  clean();
   const remove = async (d: D1Database) => deleteUser(d, await add(d, 'boss@example.com', 'Baas', 'superadmin'));
 
   test('the deletion is refused', async ({ db }) => {
@@ -395,7 +375,6 @@ describe('user-management › Sole superadmin deletion is refused', () => {
 });
 
 describe('user-management › Two superadmins demote each other', () => {
-  clean();
   const demote = async (d: D1Database) => {
     const a = await add(d, 'a@example.com', 'A', 'superadmin');
     const b = await add(d, 'b@example.com', 'B', 'superadmin');

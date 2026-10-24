@@ -29,7 +29,7 @@ describe('LikeUpdateRoute', () => {
 
   describe('refuses what it cannot store', () => {
     let slug: string;
-    test.beforeAll(async ({ db }) => {
+    test.beforeEach(async ({ db }) => {
       await createUser(db, 'oma@example.com', 'Oma');
       slug = await createRecipe(db, { title: 'Streng', author: 'Oma' });
     });

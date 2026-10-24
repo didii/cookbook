@@ -62,7 +62,7 @@ describe('recipe-editing › Form shows the stored values', () => {
 });
 
 describe('recipe-ingredient-editing › Stored ingredients come back as lines', () => {
-  test.beforeAll(async ({ db }) => {
+  test.beforeEach(async ({ db }) => {
     await db.batch([
       db.prepare("INSERT INTO recipes (slug, title, author) VALUES ('lijst', 'Lijst', 'Oma')"),
       db.prepare("INSERT INTO ingredients (recipe_id, position, name, quantity_text) SELECT id, 1, 'zout', '' FROM recipes WHERE slug = 'lijst'"),
@@ -90,7 +90,7 @@ describe('recipe-editing › Unknown recipe', () => {
 describe('recipe-editing › Invalid edit is refused', () => {
   let res: { init?: { status?: number }; data: { errors: object } };
 
-  test.beforeAll(async ({ db, photos }) => {
+  test.beforeEach(async ({ db, photos }) => {
     await addRecipe(db, 'ongeldig');
     res = (await submit(db, photos, 'ongeldig', { title: '', author: 'Oma' })) as typeof res;
   });
@@ -111,7 +111,7 @@ describe('recipe-editing › Invalid edit is refused', () => {
 describe('the edit route', () => {
   let res: Response;
 
-  test.beforeAll(async ({ db, photos }) => {
+  test.beforeEach(async ({ db, photos }) => {
     await addRecipe(db, 'bewerkt');
     res = (await submit(db, photos, 'bewerkt', { title: 'Tomatensoep', author: 'Oma', servings: '' })) as Response;
   });
@@ -137,7 +137,7 @@ describe('recipe-photo › Replaced photo is deleted', () => {
   let old: string;
   let next: string;
 
-  test.beforeAll(async ({ db, photos }) => {
+  test.beforeEach(async ({ db, photos }) => {
     [old, next] = [await upload(photos), await upload(photos)];
     await addRecipe(db, 'vervangen', old);
     await submit(db, photos, 'vervangen', { title: 'T', author: 'Oma', image: next });
@@ -161,13 +161,14 @@ describe('recipe-photo › Replaced photo is deleted', () => {
     assert.equal((await getRecipe(db, 'vervangen'))?.image, null);
   });
 
-  test('removing the photo deletes it', async ({ photos }) => {
+  test('removing the photo deletes it', async ({ db, photos }) => {
+    await submit(db, photos, 'vervangen', { title: 'T', author: 'Oma', image: '' });
     assert.equal(await isStored(photos, next), false);
   });
 });
 
 describe('recipe-photo › Non-upload images are never deleted', () => {
-  test.beforeAll(async ({ db, photos }) => {
+  test.beforeEach(async ({ db, photos }) => {
     await addRecipe(db, 'voorbeeld', '/img/appeltaart.jpg');
     await photos.put('photos/other', 'x');
     await submit(db, photos, 'voorbeeld', { title: 'T', author: 'Oma', image: await upload(photos) });
@@ -264,7 +265,7 @@ describe('an edit posted without an ingredients field', () => {
 });
 
 describe('recipe-step-editing › Stored steps come back in the editor', () => {
-  test.beforeAll(async ({ db }) => {
+  test.beforeEach(async ({ db }) => {
     await db.batch([
       db.prepare("INSERT INTO recipes (slug, title, author) VALUES ('stappen', 'Stappen', 'Oma')"),
       db.prepare("INSERT INTO steps (recipe_id, position, body) SELECT id, 1, 'bak' FROM recipes WHERE slug = 'stappen'"),

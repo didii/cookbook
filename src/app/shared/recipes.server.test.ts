@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import { describe } from 'vitest';
-import { clearDb } from '~testing/db';
 import { defined } from '~testing/defined';
 import { test } from '~testing/test';
 import {
@@ -22,8 +21,8 @@ import { seals } from './seals';
 const plain = (...bodies: string[]): StepInput[] => bodies.map((body) => ({ body }));
 const loaded = (...bodies: string[]) => bodies.map((body) => ({ body, ingredients: [] }));
 
-test.beforeAll(async ({ db }) => {
-  await db.batch([
+const seedOrdering = (db: D1Database) =>
+  db.batch([
     // Ingredients and steps are inserted out of position order, so the tests prove the query sorts.
     db.prepare("INSERT INTO recipes (slug, title, author, servings) VALUES ('ordering', 'Ordering', 'Oma', 2)"),
     db.prepare("INSERT INTO ingredients (recipe_id, position, name) VALUES ((SELECT id FROM recipes WHERE slug = 'ordering'), 2, 'zout')"),
@@ -36,9 +35,10 @@ test.beforeAll(async ({ db }) => {
       "INSERT INTO recipes (slug, title, author, time, servings, intro, image, seal) VALUES ('full', 'Full', 'Papa', '1u 20', 8, 'intro', '/full.jpg', 'fu')",
     ),
   ]);
-});
 
 describe('getRecipe', () => {
+  test.beforeEach(({ db }) => seedOrdering(db));
+
   test('returns undefined for an unknown slug', async ({ db }) => {
     assert.equal(await getRecipe(db, 'nope'), undefined);
   });
@@ -68,12 +68,16 @@ describe('getRecipe', () => {
 });
 
 describe('recipe-viewing › Order is kept', () => {
+  test.beforeEach(({ db }) => seedOrdering(db));
+
   test('the steps are in position order', async ({ db }) => {
     assert.deepEqual(defined((await getRecipe(db, 'ordering'))?.steps), loaded('een', 'twee'));
   });
 });
 
 describe('recipe-viewing › Existing recipe', () => {
+  test.beforeEach(({ db }) => seedOrdering(db));
+
   test('the recipe is found by its slug', async ({ db }) => {
     assert.equal((await getRecipe(db, 'full'))?.title, 'Full');
   });
@@ -95,7 +99,7 @@ describe('recipe-creation › Slug from title', () => {
 
 describe('recipe-creation › Same title twice', () => {
   let slugs: string[];
-  test.beforeAll(async ({ db }) => {
+  test.beforeEach(async ({ db }) => {
     slugs = [
       await createRecipe(db, { title: 'Dubbel', author: 'Oma', servings: 2 }),
       await createRecipe(db, { title: 'Dubbel', author: 'Papa', servings: 3 }),
@@ -121,7 +125,7 @@ describe('recipe-creation › Title that clashes with the form address', () => {
 describe('createRecipe', () => {
   describe('stores every property, ingredient and step so getRecipe reads them back', () => {
     let slug: string;
-    test.beforeAll(async ({ db }) => {
+    test.beforeEach(async ({ db }) => {
       slug = await createRecipe(db, {
         title: 'Alles',
         author: 'Tante An',
@@ -170,7 +174,6 @@ describe('createRecipe', () => {
 
 describe('recipe-creation › Existing authors are suggested', () => {
   test('lists each author once, spelled as first used', async ({ db }) => {
-    await clearDb(db);
     await createRecipe(db, { title: 'A', author: 'Papa', servings: 1 });
     await createRecipe(db, { title: 'B', author: 'Oma', servings: 1 });
     await db.prepare("INSERT INTO recipes (slug, title, author, servings) VALUES ('c', 'C', 'OMA', 1)").run();
@@ -180,12 +183,10 @@ describe('recipe-creation › Existing authors are suggested', () => {
 
 describe('listRecipes', () => {
   test('lists nothing without recipes', async ({ db }) => {
-    await clearDb(db);
     assert.deepEqual(await listRecipes(db, 'x@example.com', new Date()), []);
   });
 
   test('lists every recipe with its card fields, the most recently added first', async ({ db }) => {
-    await clearDb(db);
     await createRecipe(db, { title: 'Eerst', author: 'Oma', time: '30 min', image: '/a.jpg', seal: 'fu' });
     await createRecipe(db, { title: 'Daarna', author: 'Papa', seal: 'fu' });
     assert.deepEqual(await listRecipes(db, 'x@example.com', new Date()), [
@@ -219,7 +220,6 @@ describe('recipe-creation › Seal is assigned', () => {
 
 describe('recipe-creation › Least used seals are chosen', () => {
   test('every new recipe gets a least used seal', async ({ db }) => {
-    await clearDb(db);
     const left = ['fu', 'jia'];
     await db.batch(
       seals
@@ -249,7 +249,7 @@ const original = { title: 'Origineel', author: 'Papa', servings: 4, time: '1u', 
 describe('recipe-editing › Recipe is updated', () => {
   let slug: string;
   let saved: unknown;
-  test.beforeAll(async ({ db }) => {
+  test.beforeEach(async ({ db }) => {
     slug = await createRecipe(db, { ...original, ingredients: [{ name: 'ei' }], steps: plain('kook') });
     await db.prepare("UPDATE recipes SET updated_at = '2000-01-01T00:00:00Z' WHERE slug = ?").bind(slug).run();
     saved = await updateRecipe(db, slug, { title: 'Nieuw', author: 'Mama', servings: 6, time: '2u', intro: 'nieuw', image: '/nieuw.jpg' });
@@ -313,7 +313,6 @@ describe('recipe-editing › Edited author reuses spelling', () => {
 
 describe('recipe-editing › Own author can be respelled', () => {
   test('the author gets the new spelling', async ({ db }) => {
-    await clearDb(db);
     const slug = await createRecipe(db, { title: 'Enige', author: 'Oma' });
     await updateRecipe(db, slug, { title: 'Enige', author: 'oma' });
     assert.equal((await getRecipe(db, slug))?.author, 'oma');
@@ -545,7 +544,7 @@ describe('recipe-new-marker › Recent recipe never opened', () => {
 
 describe('recipe-new-marker › Marker is per member', () => {
   let slug: string;
-  test.beforeAll(async ({ db }) => {
+  test.beforeEach(async ({ db }) => {
     await addUser(db, 'een@example.com', 'Een');
     await addUser(db, 'twee@example.com', 'Twee');
     slug = await createRecipe(db, { title: 'Per lid', author: 'Oma', createdBy: 'oma@example.com' });
@@ -576,7 +575,7 @@ describe('recipe-new-marker › Recipe older than a month', () => {
 
 describe('recipe-new-marker › Viewing your own recent recipe', () => {
   let slug: string;
-  test.beforeAll(async ({ db }) => {
+  test.beforeEach(async ({ db }) => {
     slug = await createRecipe(db, { title: 'Eigen', author: 'Oma', createdBy: 'Mama@Example.com' });
     await addedAt(db, slug, '2026-03-14T12:00:00Z');
   });
@@ -607,7 +606,7 @@ describe('deleteRecipe', () => {
     const chips = (db: D1Database) =>
       db.prepare('SELECT COUNT(*) AS n FROM step_ingredient_chips WHERE step_id = ?').bind(stepId).first<{ n: number }>();
 
-    test.beforeAll(async ({ db }) => {
+    test.beforeEach(async ({ db }) => {
       await addUser(db, 'wis@example.com', 'Wis');
       slug = await createRecipe(db, {
         title: 'Weg ermee',
@@ -716,7 +715,7 @@ describe('recipe-note › Changed note is stored', () => {
 describe('recipe-note › Emptied note is removed', () => {
   let slug: string;
   let result: boolean;
-  test.beforeAll(async ({ db }) => {
+  test.beforeEach(async ({ db }) => {
     slug = await memberSetup(db);
     await setNote(db, 'oma@example.com', slug, 'minder zout');
     result = await setNote(db, 'oma@example.com', slug, ' \n ');

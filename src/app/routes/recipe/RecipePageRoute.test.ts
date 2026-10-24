@@ -80,7 +80,7 @@ const remove = (db: D1Database, photos: R2Bucket, slug: string) => {
 describe('recipe-deletion › Recipe is deleted', () => {
   let slug: string;
   let response: Response;
-  test.beforeAll(async ({ db, photos }) => {
+  test.beforeEach(async ({ db, photos }) => {
     slug = await createRecipe(db, { title: 'Te verwijderen', author: 'Oma', ingredients: [{ name: 'bloem' }], steps: [{ body: 'Mengen.' }] });
     response = await remove(db, photos, slug);
   });

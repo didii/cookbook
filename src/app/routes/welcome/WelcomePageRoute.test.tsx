@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
 import { beforeEach, describe } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
-import { getUser } from '~app/shared/users.server';
+import { createUser, getUser } from '~app/shared/users.server';
 import { render, screen } from '~testing/dom';
 import { fake } from '~testing/fake';
 import { test } from '~testing/test';
@@ -82,6 +82,7 @@ describe('users › Remembered page is not on this site', () => {
 
   // The same check guards the address the screen is opened with.
   test('the same check guards the address the screen is opened with', async ({ db }) => {
+    await createUser(db, 'jos@example.com', 'Jos');
     const known = await open(db, 'jos@example.com', '?returnUrl=https%3A%2F%2Fevil.test');
     assert.equal((known as Response).headers.get('Location'), '/');
   });

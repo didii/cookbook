@@ -11,7 +11,7 @@ import type { Route } from './+types/AdminRulesPageRoute';
 import { action, loader } from './AdminRulesPageRoute';
 
 // Real loader and action against an in-memory D1.
-test.beforeAll(async ({ db }) => {
+test.beforeEach(async ({ db }) => {
   await createUser(db, 'user@example.com', 'Uli');
   for (const role of ['admin', 'superadmin'])
     await db.prepare('INSERT INTO users (email, calling_name, role) VALUES (?, ?, ?)').bind(`${role}@example.com`, role, role).run();
@@ -71,9 +71,6 @@ describe('parsing-rules › Non-admin cannot restore defaults', () => {
       .prepare("INSERT INTO settings (key, value) VALUES ('parsing-rules', ?)")
       .bind(JSON.stringify({ ...defaultRules, units: ['kopje'] }))
       .run();
-  });
-  test.afterEach(async ({ db }) => {
-    await db.prepare("DELETE FROM settings WHERE key = 'parsing-rules'").run();
   });
 
   test('is refused with 403', async ({ db }) => {

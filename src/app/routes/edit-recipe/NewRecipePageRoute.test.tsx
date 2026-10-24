@@ -26,7 +26,7 @@ const submit = (db: D1Database, fields: Record<string, string>) => {
 describe('recipe-creation › Recipe is created', () => {
   let res: Response;
 
-  test.beforeAll(async ({ db }) => {
+  test.beforeEach(async ({ db }) => {
     res = (await submit(db, { title: ' Soep ', author: 'Oma', servings: '4' })) as Response;
   });
 
@@ -60,7 +60,7 @@ describe('recipe-creation › Time, intro and image are stored', () => {
 describe('recipe-creation › Servings left empty', () => {
   let res: Response;
 
-  test.beforeAll(async ({ db }) => {
+  test.beforeEach(async ({ db }) => {
     res = (await submit(db, { title: 'Zonder porties', author: 'Oma', servings: '' })) as Response;
   });
 

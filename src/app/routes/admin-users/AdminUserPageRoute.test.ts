@@ -3,7 +3,6 @@ import { RouterContextProvider } from 'react-router';
 import { describe } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { getUser } from '~app/shared/users.server';
-import { clearDb } from '~testing/db';
 import { fake } from '~testing/fake';
 import { test } from '~testing/test';
 import type { Route } from './+types/AdminUserPageRoute';
@@ -13,7 +12,6 @@ import { action, loader } from './AdminUserPageRoute';
 const ids: Record<string, number> = {};
 
 test.beforeEach(async ({ db }) => {
-  await clearDb(db);
   for (const [name, role] of [
     ['user', 'user'],
     ['admin', 'admin'],

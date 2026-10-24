@@ -8,7 +8,7 @@ import type { Route } from './+types/AdminUsersPageRoute';
 import { loader } from './AdminUsersPageRoute';
 
 // Real loader against an in-memory D1.
-test.beforeAll(async ({ db }) => {
+test.beforeEach(async ({ db }) => {
   for (const role of ['user', 'admin', 'superadmin'])
     await db.prepare('INSERT INTO users (email, calling_name, role) VALUES (?, ?, ?)').bind(`${role}@example.com`, role, role).run();
 });

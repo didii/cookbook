@@ -4,9 +4,6 @@ import { test } from '~testing/test';
 import { defaultRules } from './rules';
 import { getRules, resetRules, saveRules, toFields, type RulesFields } from './rules.server';
 
-// Every test starts and ends on the defaults, so the order does not matter.
-test.afterEach(({ db }) => resetRules(db));
-
 const stored = (db: D1Database, value: string) =>
   db
     .prepare("INSERT INTO settings (key, value) VALUES ('parsing-rules', ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value")

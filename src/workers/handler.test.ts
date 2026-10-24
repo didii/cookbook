@@ -4,7 +4,6 @@ import type { RouterContextProvider } from 'react-router';
 import { describe } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { createUser } from '~app/shared/users.server';
-import { clearDb } from '~testing/db';
 import { fake } from '~testing/fake';
 import { test } from '~testing/test';
 import { createFetch } from './handler';
@@ -118,8 +117,6 @@ describe('family-access › Stand-in identity configured on a deployed app', () 
 
 // A request without verified identity never reaches the app, so nothing that would store a user can run.
 describe('users › Forged identity', () => {
-  test.beforeEach(async ({ db }) => clearDb(db));
-
   const forge = async (db: D1Database) => {
     const reached: string[] = [];
     const fetch = createFetch({

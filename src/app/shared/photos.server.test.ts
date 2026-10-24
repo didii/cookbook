@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import { describe } from 'vitest';
-import { clearPhotos } from '~testing/db';
 import { test } from '~testing/test';
 import { deletePhoto, getPhoto, isPhotoPath, maxPhotoBytes, storePhoto } from './photos.server';
 
@@ -13,9 +12,6 @@ const jpeg = () => bytes(0xff, 0xd8, 0xff, 0xe0);
 /** The file name getPhoto takes, from a stored /foto/ path. */
 const fileOf = (path: string) => path.slice('/foto/'.length);
 const count = async (photos: R2Bucket) => (await photos.list()).objects.length;
-
-// Every test starts on an empty bucket.
-test.beforeEach(async ({ photos }) => clearPhotos(photos));
 
 describe('recipe-photo › Acceptable photo is stored', () => {
   for (const [name, data, ext, type] of [

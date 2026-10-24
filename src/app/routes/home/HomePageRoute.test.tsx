@@ -5,7 +5,6 @@ import { envContext, userEmailContext } from '~app/shared/context.server';
 import type { RecipeSummary } from '~app/shared/recipe';
 import { createRecipe } from '~app/shared/recipes.server';
 import { cssFor } from '~testing/css';
-import { clearDb } from '~testing/db';
 import { act, fireEvent, precedes, render, screen } from '~testing/dom';
 import { fake } from '~testing/fake';
 import { test } from '~testing/test';
@@ -39,10 +38,6 @@ const searchBox = () => screen.getByTestId<HTMLInputElement>('FilterBar-search')
 
 // Empty the database first: other describes add recipes.
 describe('recipe-browsing › No recipes yet', () => {
-  test.beforeEach(async ({ db }) => {
-    await clearDb(db);
-  });
-
   test('the loader returns no recipes', async ({ db }) => {
     assert.deepEqual(await load(db), []);
   });
@@ -99,6 +94,7 @@ describe('recipe-browsing › A new recipe appears', () => {
   };
 
   test('the page counts the stored recipes', async ({ db }) => {
+    await createRecipe(db, { title: 'Bestaand', author: 'Oma' });
     assert.equal(await shownCount(db), (await load(db)).length);
   });
 
@@ -118,6 +114,7 @@ describe('recipe-browsing › A new recipe appears', () => {
 
 describe('recipe-browsing › Welcome above the recipes', () => {
   test('the title comes before the intro and the intro before the list', async ({ db }) => {
+    await createRecipe(db, { title: 'Bestaand', author: 'Oma' });
     const { container } = renderAt('/', await load(db));
     const heading = screen.getByTestId('HomePage-title');
     const intro = screen.getByTestId('HomePage-intro');

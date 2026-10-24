@@ -13,10 +13,10 @@ Where tests live: see `STRUCTURE.md`.
 ## Database tests
 
 - Prefer not to use unless necessary
-- Import `test` from `~testing/db` (a drop-in for vitest's). It boots Miniflare once per worker and empties it between users.
-- `test.beforeAll(({ testDb }) => ...)`: one database for the tests of a file, emptied when the file is done.
-- `test.beforeEach(({ freshDb }) => ...)`: emptied after every test.
-- `createTestDb()` boots an instance of its own; use it only when a test needs a different one.
+- Import `test` from `~testing/test` (a drop-in for vitest's). It boots Miniflare once per worker and gives the test the fixtures `db` (D1 with the migrations applied) and `photos` (R2 bucket): `test('...', async ({ db }) => ...)`.
+- Both fixtures are test-scoped: a test starts with an empty database and bucket, and they are emptied again after every test that asked for them. Tests never see each other's data, so each test inserts what it needs.
+- Seed with a helper the tests call, or in `test.beforeEach(async ({ db }) => ...)` (also inside a `describe`). Do not seed in `beforeAll`: suite-level hooks cannot get a test-scoped fixture, and the data would be gone after the first test.
+- Clearing costs time on each test (a `SELECT` and one `DELETE` per table), so a test that needs no database must not ask for `db`; the fixture is only created when requested.
 
 ## Component tests
 

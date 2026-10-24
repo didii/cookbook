@@ -96,7 +96,7 @@ describe('recipe-storage › Ingredients keep their order', () => {
   let r: number;
   let first: number;
   let second: number;
-  test.beforeAll(async ({ db }) => {
+  test.beforeEach(async ({ db }) => {
     r = await addRecipe(db, 'ingredient-order');
     second = await addIngredient(db, r, 2);
     first = await addIngredient(db, r, 1);
@@ -157,7 +157,7 @@ describe('recipe-storage › Steps keep their order', () => {
   let r: number;
   let first: number;
   let second: number;
-  test.beforeAll(async ({ db }) => {
+  test.beforeEach(async ({ db }) => {
     r = await addRecipe(db, 'step-order');
     second = await addStep(db, r, 2);
     first = await addStep(db, r, 1);
@@ -248,7 +248,7 @@ describe('recipe-storage › Same ingredient linked twice refused', () => {
 
 describe('recipe-storage › Recipe deleted', () => {
   let r: number;
-  test.beforeAll(async ({ db }) => {
+  test.beforeEach(async ({ db }) => {
     r = await addRecipe(db, 'del-recipe');
     await link(db, await addStep(db, r, 1), await addIngredient(db, r, 1), r);
     await db.prepare('DELETE FROM recipes WHERE id = ?').bind(r).run();
@@ -269,7 +269,7 @@ describe('recipe-storage › Recipe deleted', () => {
 
 describe('recipe-storage › Ingredient deleted', () => {
   let step: number;
-  test.beforeAll(async ({ db }) => {
+  test.beforeEach(async ({ db }) => {
     const r = await addRecipe(db, 'del-ingredient');
     step = await addStep(db, r, 1);
     const ing = await addIngredient(db, r, 1);
@@ -388,7 +388,7 @@ const addUser = (db: D1Database, email: string, name: string) =>
 
 describe('users table', () => {
   describe('an email address is one user whatever its letter case', () => {
-    test.beforeAll(async ({ db }) => {
+    test.beforeEach(async ({ db }) => {
       await addUser(db, 'Jos@Example.com', 'Jos');
     });
 
@@ -445,7 +445,7 @@ describe('recipe_views table', () => {
   describe('a member and a recipe have one view row', () => {
     let user: number;
     let recipe: number;
-    test.beforeAll(async ({ db }) => {
+    test.beforeEach(async ({ db }) => {
       user = await userId(db, 'viewer@example.com');
       recipe = await addRecipe(db, 'view-once');
       await addView(db, user, recipe);
@@ -472,7 +472,7 @@ describe('recipe_views table', () => {
   describe('views are removed with their recipe or member', () => {
     let user: number;
     let other: number;
-    test.beforeAll(async ({ db }) => {
+    test.beforeEach(async ({ db }) => {
       user = await userId(db, 'cascade-viewer@example.com');
       const recipe = await addRecipe(db, 'view-cascade');
       other = await addRecipe(db, 'view-cascade-user');
@@ -518,7 +518,7 @@ const addNote = (db: D1Database, user: number, recipe: number, body = 'minder zo
 describe('recipe-like › Liking twice stores one like', () => {
   let user: number;
   let recipe: number;
-  test.beforeAll(async ({ db }) => {
+  test.beforeEach(async ({ db }) => {
     user = await userId(db, 'liker@example.com');
     recipe = await addRecipe(db, 'like-twice');
     await addLike(db, user, recipe);
