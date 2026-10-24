@@ -1,24 +1,17 @@
 import assert from 'node:assert/strict';
 import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
-import { beforeAll, beforeEach, describe } from 'vitest';
+import { describe } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { getRecipe } from '~app/shared/recipes.server';
 import { createUser } from '~app/shared/users.server';
-import { test } from '~testing/db';
 import { cleanup, fireEvent, openAutocomplete, render, screen } from '~testing/dom';
 import { fake } from '~testing/fake';
+import { test } from '~testing/test';
 import type { Route } from './+types/NewRecipePageRoute';
 import { emptyDraftSeed } from './lib/draft';
 import NewRecipePage, { action, loader } from './NewRecipePageRoute';
 
-// Action-level tests: real action, real queries against an in-memory D1.
-let db: D1Database;
-
-test.beforeAll(({ testDb }) => {
-  ({ db } = testDb);
-});
-
-const submit = (fields: Record<string, string>) => {
+const submit = (db: D1Database, fields: Record<string, string>) => {
   const context = new RouterContextProvider();
   context.set(envContext, fake<Env>({ DB: db }));
   context.set(userEmailContext, 'oma@example.com');
@@ -33,8 +26,8 @@ const submit = (fields: Record<string, string>) => {
 describe('recipe-creation › Recipe is created', () => {
   let res: Response;
 
-  beforeAll(async () => {
-    res = (await submit({ title: ' Soep ', author: 'Oma', servings: '4' })) as Response;
+  test.beforeAll(async ({ db }) => {
+    res = (await submit(db, { title: ' Soep ', author: 'Oma', servings: '4' })) as Response;
   });
 
   test('the answer is a redirect', () => {
@@ -45,20 +38,20 @@ describe('recipe-creation › Recipe is created', () => {
     assert.equal(res.headers.get('Location'), '/recepten/soep');
   });
 
-  test('the title, author and servings are stored', async () => {
+  test('the title, author and servings are stored', async ({ db }) => {
     const r = await getRecipe(db, 'soep');
     assert.deepEqual([r?.title, r?.author, r?.servings], ['Soep', 'Oma', 4]);
   });
 
-  test('the creator is stored', async () => {
+  test('the creator is stored', async ({ db }) => {
     assert.equal((await db.prepare("SELECT created_by FROM recipes WHERE slug = 'soep'").first())?.created_by, 'oma@example.com');
   });
 });
 
 describe('recipe-creation › Time, intro and image are stored', () => {
-  test('the time, intro and image are stored', async () => {
+  test('the time, intro and image are stored', async ({ db }) => {
     const image = '/foto/00000000-0000-4000-8000-000000000000.webp';
-    await submit({ title: 'Compleet', author: 'Oma', time: ' 45 min ', intro: 'Lekker', image });
+    await submit(db, { title: 'Compleet', author: 'Oma', time: ' 45 min ', intro: 'Lekker', image });
     const r = await getRecipe(db, 'compleet');
     assert.deepEqual([r?.time, r?.intro, r?.image], ['45 min', 'Lekker', image]);
   });
@@ -67,15 +60,15 @@ describe('recipe-creation › Time, intro and image are stored', () => {
 describe('recipe-creation › Servings left empty', () => {
   let res: Response;
 
-  beforeAll(async () => {
-    res = (await submit({ title: 'Zonder porties', author: 'Oma', servings: '' })) as Response;
+  test.beforeAll(async ({ db }) => {
+    res = (await submit(db, { title: 'Zonder porties', author: 'Oma', servings: '' })) as Response;
   });
 
   test('the recipe is created', () => {
     assert.equal(res.headers.get('Location'), '/recepten/zonder-porties');
   });
 
-  test('the servings are empty', async () => {
+  test('the servings are empty', async ({ db }) => {
     assert.equal((await getRecipe(db, 'zonder-porties'))?.servings, null);
   });
 });
@@ -87,7 +80,7 @@ const form = (actionData?: { errors: Record<string, string>; values: typeof empt
 };
 
 describe('the new recipe page', () => {
-  beforeEach(() => window.localStorage.clear());
+  test.beforeEach(() => window.localStorage.clear());
 
   test('hands the loaded authors to the editor', async () => {
     form();
@@ -124,7 +117,7 @@ describe('the new recipe page', () => {
 
 // Only the action stores anything: opening the editor (the loader) leaves the database as it was.
 describe('recipe-form › Nothing stored before saving', () => {
-  test('opening the editor leaves the database as it was', async () => {
+  test('opening the editor leaves the database as it was', async ({ db }) => {
     const count = async () => (await db.prepare('SELECT COUNT(*) AS n FROM recipes').first<{ n: number }>())?.n;
     const rowsBefore = await count();
     const context = new RouterContextProvider();
@@ -136,8 +129,8 @@ describe('recipe-form › Nothing stored before saving', () => {
 });
 
 describe('a new recipe', () => {
-  test('stores its non-blank steps in order', async () => {
-    await submit({ title: 'Met stappen', author: 'Oma', steps: JSON.stringify([{ body: 'een' }, { body: '' }, { body: 'twee' }]) });
+  test('stores its non-blank steps in order', async ({ db }) => {
+    await submit(db, { title: 'Met stappen', author: 'Oma', steps: JSON.stringify([{ body: 'een' }, { body: '' }, { body: 'twee' }]) });
     assert.deepEqual(
       (await getRecipe(db, 'met-stappen'))?.steps.map((s) => s.body),
       ['een', 'twee'],
@@ -145,7 +138,7 @@ describe('a new recipe', () => {
   });
 });
 
-const openFormAs = async (email: string) => {
+const openFormAs = async (db: D1Database, email: string) => {
   cleanup();
   window.localStorage.clear();
   const context = new RouterContextProvider();
@@ -157,17 +150,17 @@ const openFormAs = async (email: string) => {
 };
 
 describe('recipe-creation › Author is prefilled', () => {
-  test('the author field holds the calling name', async () => {
+  test('the author field holds the calling name', async ({ db }) => {
     await createUser(db, 'jos@example.com', 'Jos');
-    await openFormAs('jos@example.com');
+    await openFormAs(db, 'jos@example.com');
     assert.equal((document.getElementById('author') as HTMLInputElement).value, 'Jos');
   });
 });
 
 describe('recipe-creation › Prefilled author can be changed', () => {
-  test('the changed author is stored', async () => {
+  test('the changed author is stored', async ({ db }) => {
     await createUser(db, 'jos2@example.com', 'Jos');
-    await openFormAs('jos2@example.com');
+    await openFormAs(db, 'jos2@example.com');
     const author = document.getElementById('author') as HTMLInputElement;
     fireEvent.change(author, { target: { value: 'Oma' } });
     fireEvent.change(document.getElementById('title')!, { target: { value: 'Oma kookt' } });
@@ -175,15 +168,15 @@ describe('recipe-creation › Prefilled author can be changed', () => {
     const posted = Object.fromEntries(
       [...author.form!.elements].filter((e): e is HTMLInputElement => e instanceof HTMLInputElement && !!e.name).map((e) => [e.name, e.value]),
     );
-    await submit(posted);
+    await submit(db, posted);
     assert.equal((await getRecipe(db, 'oma-kookt'))?.author, 'Oma');
   });
 });
 
 describe('recipe-creation › Prefill alone is not a draft', () => {
-  test('nothing is kept on the device', async () => {
+  test('nothing is kept on the device', async ({ db }) => {
     await createUser(db, 'jos3@example.com', 'Jos');
-    await openFormAs('jos3@example.com');
+    await openFormAs(db, 'jos3@example.com');
     cleanup();
     assert.equal(window.localStorage.length, 0);
   });

@@ -4,8 +4,9 @@ import type { RouterContextProvider } from 'react-router';
 import { describe } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { createUser } from '~app/shared/users.server';
-import { test } from '~testing/db';
+import { clearDb } from '~testing/db';
 import { fake } from '~testing/fake';
+import { test } from '~testing/test';
 import { createFetch } from './handler';
 import { accessJwtHeader } from './identity';
 
@@ -117,12 +118,9 @@ describe('family-access › Stand-in identity configured on a deployed app', () 
 
 // A request without verified identity never reaches the app, so nothing that would store a user can run.
 describe('users › Forged identity', () => {
-  let db: D1Database;
-  test.beforeAll(({ testDb }) => {
-    ({ db } = testDb);
-  });
+  test.beforeEach(async ({ db }) => clearDb(db));
 
-  const forge = async () => {
+  const forge = async (db: D1Database) => {
     const reached: string[] = [];
     const fetch = createFetch({
       requestHandler: async (_request, context) => (
@@ -136,16 +134,16 @@ describe('users › Forged identity', () => {
     return { reached, res: await fetch(get('forged'), { ...env, DB: db }) };
   };
 
-  test('is refused with 403', async () => {
-    assert.equal((await forge()).res.status, 403);
+  test('is refused with 403', async ({ db }) => {
+    assert.equal((await forge(db)).res.status, 403);
   });
 
-  test('never reaches the app', async () => {
-    assert.deepEqual((await forge()).reached, []);
+  test('never reaches the app', async ({ db }) => {
+    assert.deepEqual((await forge(db)).reached, []);
   });
 
-  test('stores nobody', async () => {
-    await forge();
+  test('stores nobody', async ({ db }) => {
+    await forge(db);
     assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM users').first<{ n: number }>())?.n, 0);
   });
 });
