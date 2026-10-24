@@ -37,19 +37,23 @@ The system SHALL store each ingredient with a name and its position within exact
 - **THEN** the insert fails
 
 ### Requirement: Ingredient quantities can be scaled
-The system SHALL store an ingredient's quantity as the text as entered plus an optional numeric amount and an optional unit, without requiring the user to choose a unit.
+The system SHALL store an ingredient's quantity as the text as entered (the quantity text) plus an optional numeric quantity value and an optional quantity unit, without requiring the user to choose a unit, and SHALL return all three when the recipe is read.
 
 #### Scenario: Quantity with amount and unit
-- **WHEN** an ingredient is stored with text "250 g", amount 250 and unit "g"
+- **WHEN** an ingredient is stored with text "250 g", quantity value 250 and quantity unit "g"
 - **THEN** all three are returned as stored
 
 #### Scenario: Quantity without a number
-- **WHEN** an ingredient such as "boter om te bakken" is stored with empty text and no amount or unit
+- **WHEN** an ingredient such as "boter om te bakken" is stored with empty text and no quantity value or unit
 - **THEN** it is accepted
 
 #### Scenario: Non-positive amount refused
-- **WHEN** an ingredient is stored with an amount of zero or less
+- **WHEN** an ingredient is stored with a quantity value of zero or less
 - **THEN** the insert fails
+
+#### Scenario: Quantity value and unit are read with the recipe
+- **WHEN** a recipe with an ingredient "250 g bloem" saved from the editor is read
+- **THEN** the ingredient has quantity text "250 g", quantity value 250 and quantity unit "g"
 
 ### Requirement: Steps are ordered and belong to one recipe
 The system SHALL store each preparation step as text with its position within exactly one recipe.
@@ -123,7 +127,7 @@ The system SHALL allow a step to have an oven temperature in degrees Celsius and
 - **THEN** the insert fails
 
 ### Requirement: A step has ingredient chips of its own
-The system SHALL store for a step any number of ingredient chips, each with free text for the quantity (which may be empty) and a name, in order, independent of the recipe's ingredient rows, and SHALL remove them with their step.
+The system SHALL store for a step any number of ingredient chips, each with free text for the quantity (which may be empty), an optional numeric quantity value (greater than zero), an optional quantity unit and a name, in order, independent of the recipe's ingredient rows, SHALL return all of them when the recipe is read, and SHALL remove them with their step.
 
 #### Scenario: Chips keep their order
 - **WHEN** a step's ingredient chips are read ordered by position
@@ -140,6 +144,18 @@ The system SHALL store for a step any number of ingredient chips, each with free
 #### Scenario: Chips are removed with their step
 - **WHEN** a step with ingredient chips is deleted
 - **THEN** none of its chips remain
+
+#### Scenario: Chip with value and unit
+- **WHEN** a chip is stored with text "200 g", quantity value 200 and quantity unit "g"
+- **THEN** all three are returned as stored
+
+#### Scenario: Non-positive chip value refused
+- **WHEN** a chip is stored with a quantity value of zero or less
+- **THEN** the insert fails
+
+#### Scenario: Chip quantity is read from its text on save
+- **WHEN** a step with the chip "½ tl zout" is saved from the editor, or the chip "1 klontje boter"
+- **THEN** the stored chips have quantity value 0,5 and unit "tl", and value 1 and unit "klontje"
 
 ### Requirement: A recipe has categories
 The system SHALL store categories by name, each name once (letter case ignored, never empty), and SHALL let a recipe have any number of them, each at most once per recipe and in a stored order. A category SHALL be shared by the recipes that have it. The system SHALL return a recipe's categories, in that order, when recipes are listed, and an empty list for a recipe without any. Links between a recipe and its categories SHALL be removed when the recipe is deleted, and a category SHALL remain when a recipe that had it is deleted. Categories are only seeded for now: nothing in the application changes them.
@@ -175,3 +191,49 @@ The system SHALL store categories by name, each name once (letter case ignored, 
 #### Scenario: Listing returns categories in order
 - **WHEN** recipes are listed and a recipe has the categories "Soep" and "Winter" in that order
 - **THEN** its entry has the categories "Soep" and "Winter" in that order
+
+### Requirement: A step stores the amounts in its text
+The system SHALL store for a step the amounts in its text that scale with the servings, each with where it sits in the text (start and end of the number), a quantity value greater than zero and an optional quantity unit, SHALL return them in the order they appear in the text, and SHALL remove them with their step.
+
+#### Scenario: Amounts keep their text order
+- **WHEN** a step's amounts are read
+- **THEN** they come back ordered by where they start in the text
+
+#### Scenario: Amount with place, value and unit
+- **WHEN** an amount is stored for the text "Meng 200 g bloem" at 5 to 8 with value 200 and unit "g"
+- **THEN** place, value and unit are returned as stored
+
+#### Scenario: Non-positive amount in text refused
+- **WHEN** an amount is stored with a value of zero or less
+- **THEN** the insert fails
+
+#### Scenario: Amount must end after it starts
+- **WHEN** an amount is stored whose end is not after its start
+- **THEN** the insert fails
+
+#### Scenario: Two amounts cannot start at the same place
+- **WHEN** a step gets two amounts with the same start
+- **THEN** the second insert fails
+
+#### Scenario: Amounts are removed with their step
+- **WHEN** a step with amounts is deleted
+- **THEN** none of its amounts remain
+
+### Requirement: Amounts in a step's text are found on save
+The system SHALL find, when a recipe is saved from the editor, the amounts in each step's text that are followed by a unit of the recognition rules or written right before the name of one of the recipe's ingredients, from the text as stored, and SHALL NOT trust amounts sent by the browser. Durations and temperatures SHALL NOT be stored.
+
+#### Scenario: Amount before a unit and before an ingredient
+- **WHEN** a step "Meng 200 g bloem met 2 eieren" is saved for a recipe with the ingredients "bloem" and "ei"
+- **THEN** the amounts are 200 with unit "g" at the number "200", and 2 without a unit at the number "2"
+
+#### Scenario: Places refer to the stored text
+- **WHEN** a step is posted with line breaks and spaces around its text
+- **THEN** each stored place points at its number in the cleaned text as stored
+
+#### Scenario: Durations and temperatures are not stored
+- **WHEN** a step "Bak 20 minuten op 180 graden" is saved
+- **THEN** no amount is stored for it
+
+#### Scenario: Saving again replaces the amounts
+- **WHEN** a recipe is saved again with a changed step text
+- **THEN** the step's amounts match the new text and none of the old ones remain

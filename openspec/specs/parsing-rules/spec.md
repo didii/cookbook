@@ -108,8 +108,8 @@ The system SHALL let an admin restore the default rules with one button on the r
 - **WHEN** an admin has saved a unit "kopje" and presses "Standaardwaarden herstellen"
 - **THEN** the rules in use are the defaults and "kopje" is no longer a unit
 
-### Requirement: Recognition follows the stored rules
-The system SHALL use the stored rules, not fixed lists, when it splits an ingredient line into amount, unit and name, when it finds a timer or an oven temperature in a step, and when it scales the amounts in a step, and SHALL pick up a saved change without the member reloading the page.
+### Requirement: Recognition follows the stored rules on save
+The system SHALL use the stored rules, not fixed lists, when it splits an ingredient line into amount, unit and name, when it finds a timer or an oven temperature in a step, and when it finds the amounts in a step to store them on save, and SHALL pick up a saved change without the member reloading the page. A unit saved after a step was saved SHALL apply to that step only once the step is saved again.
 
 #### Scenario: New unit is recognised
 - **WHEN** "kopje" is a stored unit and a member types the ingredient "2 kopje rijst"
@@ -127,9 +127,9 @@ The system SHALL use the stored rules, not fixed lists, when it splits an ingred
 - **WHEN** "graden" is not a stored degree word and a step's text contains "180 graden"
 - **THEN** the step gets no oven temperature
 
-#### Scenario: Scaling uses the stored units
-- **WHEN** "kopje" is a stored unit and a recipe with "2 kopje rijst" is scaled to double
-- **THEN** a step saying "doe 2 kopje rijst erbij" shows "4 kopje"
+#### Scenario: Saving uses the stored units
+- **WHEN** "kopje" is a stored unit and a step "doe 2 kopje rijst erbij" is saved
+- **THEN** the amount 2 with unit "kopje" is stored for the step
 
 #### Scenario: Saved change applies at once
 - **WHEN** an admin saves a new unit and then opens the recipe form

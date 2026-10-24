@@ -51,25 +51,6 @@ The system SHALL show on a recipe page without servings a multiplier control, st
 - **WHEN** a family member types 1/3 as the multiplier
 - **THEN** the page scales to a third
 
-### Requirement: All quantities scale
-The system SHALL multiply by the factor (chosen servings divided by the recipe's servings, or the multiplier) the quantity of every ingredient in the ingredient list, of every ingredient chip of a step, and every amount in a step's text that is followed by an ingredient unit or written right before the name of one of the recipe's ingredients. Both ends of a range ("2-3 el") SHALL scale.
-
-#### Scenario: Ingredient list scales
-- **WHEN** a recipe for 4 with "200 g bloem" is scaled to 6 servings
-- **THEN** the ingredient shows "300 g bloem"
-
-#### Scenario: Step chips scale
-- **WHEN** a step has the chip "200 g bloem" and the recipe is scaled from 4 to 6 servings
-- **THEN** the chip shows "300 g bloem"
-
-#### Scenario: Amounts in step text scale
-- **WHEN** a step reads "Meng 200 g bloem met 2 eieren" and the recipe is doubled
-- **THEN** it reads "Meng 400 g bloem met 4 eieren"
-
-#### Scenario: Ranges scale
-- **WHEN** an ingredient reads "2-3 el olie" and the recipe is doubled
-- **THEN** it shows "4-6 el olie"
-
 ### Requirement: Other text stays as written
 The system SHALL leave a quantity without a number, a duration, an oven temperature, units and names as written when scaling. At factor 1 all texts SHALL be shown exactly as stored.
 
@@ -102,3 +83,30 @@ The system SHALL start every visit to a recipe at the recipe's own servings (or 
 #### Scenario: Reload resets
 - **WHEN** a family member scales a recipe and reloads the page
 - **THEN** the control shows the recipe's own servings again
+
+### Requirement: Every quantity scales from its stored value
+The system SHALL multiply by the factor (chosen servings divided by the recipe's servings, or the multiplier) the stored quantity value of every ingredient in the ingredient list and of every ingredient chip of a step, each shown with its stored quantity unit, and every amount stored with a step's text, replacing the number in that text. An ingredient, chip or amount without a stored quantity value SHALL be shown as written.
+
+#### Scenario: Ingredient list scales
+- **WHEN** a recipe for 4 with "200 g bloem" (quantity value 200, unit "g") is scaled to 6 servings
+- **THEN** the ingredient shows "300 g bloem"
+
+#### Scenario: Step chips scale
+- **WHEN** a step has the chip "200 g bloem" (quantity value 200, unit "g") and the recipe is scaled from 4 to 6 servings
+- **THEN** the chip shows "300 g bloem"
+
+#### Scenario: Amounts in step text scale
+- **WHEN** a step reads "Meng 200 g bloem met 2 eieren" with stored amounts 200 and 2 and the recipe is doubled
+- **THEN** it reads "Meng 400 g bloem met 4 eieren"
+
+#### Scenario: Scaled ingredient keeps its unit
+- **WHEN** an ingredient "½ tl zout" (quantity value 0,5, unit "tl") is scaled to 3 times
+- **THEN** the ingredient shows "1,5 tl zout"
+
+#### Scenario: Chip keeps its own unit
+- **WHEN** a step has the chip "1 klontje boter" (quantity value 1, unit "klontje") and the recipe is doubled
+- **THEN** the chip shows "2 klontje boter"
+
+#### Scenario: Text without stored amounts stays as written
+- **WHEN** a step has a number that is no stored amount and the recipe is doubled
+- **THEN** that number is unchanged
