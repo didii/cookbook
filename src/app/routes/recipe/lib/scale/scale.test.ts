@@ -172,10 +172,8 @@ describe('recipe-scaling › Range in step text stays as written', () => {
 
 describe('recipe-scaling › Text without stored amounts stays as written', () => {
   test('a number that is no stored amount is unchanged', () => {
-    assert.equal(
-      scaleText('Bak 20 minuten op 180 graden', [{ startIndex: 0, endIndex: 3, quantityValue: 5, quantityUnit: null }], 2),
-      'Bak 20 minuten op 180 graden',
-    );
+    const stored = [{ startIndex: 5, endIndex: 8, quantityValue: 200, quantityUnit: 'g' }];
+    assert.equal(scaleText('Meng 200 g bloem, bak 20 minuten', stored, 2), 'Meng 400 g bloem, bak 20 minuten');
   });
 });
 
