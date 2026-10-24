@@ -104,8 +104,6 @@ describe('recipe-browsing › Recipe without time or image', () => {
   });
 });
 
-// Removed by redesign-recipe-card (the image ratio now follows the tile count); this goes when the change is archived.
-test.todo('recipe-browsing › Card image ratio');
 // Needs real layout to measure heights.
 test.todo('recipe-browsing › Card without image is as tall as with');
 // Needs a real browser at 390px width.
@@ -206,14 +204,14 @@ describe('recipe-like › Card of a recipe not liked', () => {
   });
 });
 
-describe('recipe-note › Recipe with a note', () => {
+describe('recipe-note › Card of a recipe with a note', () => {
   test('the note icon is named', () => {
     card({ hasNote: true });
     assert.equal(screen.getByTestId('RecipeCard-note').getAttribute('aria-label'), 'Je hebt een notitie');
   });
 });
 
-describe('recipe-note › Recipe without a note', () => {
+describe('recipe-note › Card of a recipe without a note', () => {
   test('no note icon is shown', () => {
     card();
     assert.equal(screen.queryByTestId('RecipeCard-note'), null);

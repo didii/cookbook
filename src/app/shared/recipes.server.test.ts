@@ -253,7 +253,7 @@ describe("recipe-like › Another member's like on a card", () => {
   });
 });
 
-describe('recipe-note › Recipe with a note', () => {
+describe('recipe-note › Card of a recipe with a note', () => {
   test('the entry has a note', async ({ db }) => {
     await seedUsers(db);
     const slug = await createRecipe(db, { title: 'A', author: 'Oma', seal: 'fu' });
@@ -262,7 +262,7 @@ describe('recipe-note › Recipe with a note', () => {
   });
 });
 
-describe('recipe-note › Recipe without a note', () => {
+describe('recipe-note › Card of a recipe without a note', () => {
   test('the entry has no note', async ({ db }) => {
     await seedUsers(db);
     const slug = await createRecipe(db, { title: 'A', author: 'Oma', seal: 'fu' });
