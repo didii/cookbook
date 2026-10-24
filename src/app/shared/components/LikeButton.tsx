@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { cn } from '~app/shared/cn';
-import { MapleLeaf } from '~app/shared/icons';
-import { press } from '~app/shared/press';
+import { cn } from '../cn';
+import { MapleLeaf } from '../icons';
+import { press } from '../press';
 
 type Props = { slug: string; initialLiked: boolean };
 

@@ -8,7 +8,7 @@ Change 2 of 2. Precondition: `add-recipe-categories` is merged. Verify each task
 
 ## 2. Shared like button
 
-- [ ] 2.1 Move `LikeButton` and its test to `shared/components/`, export it from `index.ts`, import it in `RecipeView.tsx`; keep the recipe-like tests passing unchanged
+- [x] 2.1 Move `LikeButton` and its test to `shared/components/`, export it from `index.ts`, import it in `RecipeView.tsx`; keep the recipe-like tests passing unchanged
 - [ ] 2.2 Add the hover colour (yellow unliked, darker red liked) and the optional `onSaved` prop (called after the request succeeded); test "Leaf reacts to the pointer" (declaration exists, `cssFor`) and `onSaved` called on success, not on failure, in `LikeButton.test.tsx`
 
 ## 3. The card

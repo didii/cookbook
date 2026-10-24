@@ -173,7 +173,13 @@ export async function listRecipes(db: D1Database, email: string, now: Date): Pro
     )
     .bind(cutoff.toISOString().replace(/\.\d+Z$/, 'Z'), email)
     .all<Omit<RecipeSummary, 'isNew' | 'categories' | 'liked' | 'hasNote'> & { isNew: 0 | 1; liked: 0 | 1; hasNote: 0 | 1; categories: string }>();
-  return results.map((r) => ({ ...r, isNew: r.isNew === 1, liked: r.liked === 1, hasNote: r.hasNote === 1, categories: JSON.parse(r.categories) as string[] }));
+  return results.map((r) => ({
+    ...r,
+    isNew: r.isNew === 1,
+    liked: r.liked === 1,
+    hasNote: r.hasNote === 1,
+    categories: JSON.parse(r.categories) as string[],
+  }));
 }
 
 /** Every author once(case variants count as one), for suggestions. */
