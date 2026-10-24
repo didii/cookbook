@@ -76,3 +76,17 @@ describe('parsing-rules › Scaling uses the stored units', () => {
     assert.deepEqual(findQuantities('doe 2 kopje bloem erbij', [], defaultRules), []);
   });
 });
+
+describe('recipe-scaling › Times and temperatures do not scale', () => {
+  test('minutes and degrees in words are no stored amount', () => {
+    assert.deepEqual(find('Bak 20 minuten op 180 graden'), []);
+  });
+
+  test('hours and °C are no stored amount', () => {
+    assert.deepEqual(find('Bak 1 uur op 200 °C'), []);
+  });
+
+  test('a bare degree sign is no stored amount', () => {
+    assert.deepEqual(find('Bak op 180°'), []);
+  });
+});

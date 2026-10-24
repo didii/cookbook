@@ -59,20 +59,6 @@ describe('scaleIngredient', () => {
 // Removed by the change store-step-quantities (a range has no stored value, see card #44); drop this line when the change is archived.
 test.todo('recipe-scaling › Ranges scale');
 
-describe('recipe-scaling › Times and temperatures do not scale', () => {
-  test('minutes and degrees in words are no stored amount, so they stay', () => {
-    assert.equal(scaleText('Bak 20 minuten op 180 graden', [], 2), 'Bak 20 minuten op 180 graden');
-  });
-
-  test('hours and °C', () => {
-    assert.equal(scaleText('Bak 1 uur op 200 °C', [], 2), 'Bak 1 uur op 200 °C');
-  });
-
-  test('a bare degree sign', () => {
-    assert.equal(scaleText('Bak op 180°', [], 2), 'Bak op 180°');
-  });
-});
-
 describe('recipe-scaling › Quantity without a number', () => {
   test('an empty quantity stays empty', () => {
     assert.equal(scaleIngredient(ingredient('', null, null), 3), '');
