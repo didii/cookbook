@@ -635,7 +635,10 @@ describe('recipe-step-chips › Chips are stored with their step', () => {
     const slug = await createRecipe(db, { title: 'Met chips', author: 'Oma', steps: withChips });
     assert.deepEqual(
       (await getRecipe(db, slug))?.steps[0].ingredients.map((c) => [c.quantityValue, c.quantityUnit]),
-      [[250, 'g'], [null, null]],
+      [
+        [250, 'g'],
+        [null, null],
+      ],
     );
   });
 

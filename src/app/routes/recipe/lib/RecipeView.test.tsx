@@ -296,7 +296,9 @@ describe('recipe-scaling › Chip range stays as written', () => {
 
 describe('recipe-scaling › Chip keeps its own unit', () => {
   test('a chip with a non-rules unit keeps it when doubled', () => {
-    const chipSteps: Step[] = [{ body: 'bak', ingredients: [{ quantityText: '1 klontje', quantityValue: 1, quantityUnit: 'klontje', name: 'boter' }] }];
+    const chipSteps: Step[] = [
+      { body: 'bak', ingredients: [{ quantityText: '1 klontje', quantityValue: 1, quantityUnit: 'klontje', name: 'boter' }] },
+    ];
     page({ recipe: { ...recipe, servings: 4 }, steps: chipSteps });
     fireEvent.change(screen.getByTestId('ScaleControl-field'), { target: { value: '8' } });
     assert.equal(screen.getByTestId('StepChips-quantity').textContent, '2 klontje');

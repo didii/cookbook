@@ -48,7 +48,9 @@ export async function getRecipe(db: D1Database, slug: string): Promise<Recipe | 
     ingredients: ingredients.results as RecipeIngredient[],
     steps: (steps.results as StepRow[]).map((s) => ({
       body: s.body,
-      ingredients: chipRows.filter((c) => c.step_id === s.id).map(({ step_id, ...chip }) => chip),
+      ingredients: chipRows
+        .filter((c) => c.step_id === s.id)
+        .map((c) => ({ quantityText: c.quantityText, quantityValue: c.quantityValue, quantityUnit: c.quantityUnit, name: c.name })),
       ovenTemperature: s.oven_temperature ?? undefined,
       timer: s.timer_minutes === null ? undefined : { minutes: s.timer_minutes, label: s.timer_label ?? undefined },
     })),

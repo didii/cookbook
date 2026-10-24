@@ -62,7 +62,12 @@ describe('RecipePageRoute loader', () => {
 
   test('the page gets the steps of the database with their chips', async ({ db, photos }) => {
     const steps = [
-      { body: 'Bak 30 minuten op 180 graden.', ingredients: [{ quantityText: '', quantityValue: null, quantityUnit: null, name: 'boter' }], ovenTemperature: 180, timer: { minutes: 30 } },
+      {
+        body: 'Bak 30 minuten op 180 graden.',
+        ingredients: [{ quantityText: '', quantityValue: null, quantityUnit: null, name: 'boter' }],
+        ovenTemperature: 180,
+        timer: { minutes: 30 },
+      },
     ];
     const slug = await createRecipe(db, { title: 'Uit de database', author: 'Oma', steps });
     const { recipe, steps: loaded } = await load(db, photos, slug);

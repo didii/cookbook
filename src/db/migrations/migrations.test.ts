@@ -671,11 +671,14 @@ describe('recipe-storage › Chip with value and unit', () => {
   test('text, value and unit are returned as stored', async ({ db }) => {
     const step = await addStep(db, await addRecipe(db, 'chip-value'), 1);
     await addChipWithValue(db, step, 200);
-    assert.deepEqual(await db.prepare('SELECT quantity_text, quantity_value, quantity_unit FROM step_ingredient_chips WHERE step_id = ?').bind(step).first(), {
-      quantity_text: '200 g',
-      quantity_value: 200,
-      quantity_unit: 'g',
-    });
+    assert.deepEqual(
+      await db.prepare('SELECT quantity_text, quantity_value, quantity_unit FROM step_ingredient_chips WHERE step_id = ?').bind(step).first(),
+      {
+        quantity_text: '200 g',
+        quantity_value: 200,
+        quantity_unit: 'g',
+      },
+    );
   });
 });
 
