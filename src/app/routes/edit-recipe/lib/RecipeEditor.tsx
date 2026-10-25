@@ -321,10 +321,10 @@ export function RecipeEditor({
             </label>
             <input {...text('time')} type="text" autoComplete="off" placeholder="1u30" className={inputClass} />
           </div>
-          <PhotoField key={resets} value={current.image} onChange={set('image')} onStateChange={setPhoto} tile={tile} seal={seal} />
+          <PhotoField key={resets} value={current.image} onPhotoChange={set('image')} onStateChange={setPhoto} tile={tile} seal={seal} />
           {seal && <input type="hidden" name="seal" value={seal} />}
         </div>
-        <SaveBar cancelTo={cancelTo} busy={busy} saveBlocked={photo !== 'ready'} dirty={dirty} kept={kept} onReset={reset}>
+        <SaveBar cancelTo={cancelTo} busy={busy} saveBlocked={photo !== 'ready'} dirty={dirty} kept={kept} onFormReset={reset}>
           {restored && restored.draft === current && <span>Concept van {describeSavedAt(restored.at, new Date())} hersteld</span>}
           <OpenProposals count={proposalCount} />
           {photo === 'uploading' && <span>Foto wordt geüpload…</span>}

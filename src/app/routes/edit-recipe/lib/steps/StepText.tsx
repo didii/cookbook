@@ -1,4 +1,4 @@
-import { useImperativeHandle, useRef, type KeyboardEvent, type ReactNode, type Ref } from 'react';
+import { useImperativeHandle, useRef, type ComponentProps, type KeyboardEvent, type ReactNode, type Ref } from 'react';
 import { cn } from '~app/shared/cn';
 import type { TextEdit } from './textEdit';
 import { useTextEdit } from './useTextEdit';
@@ -6,15 +6,15 @@ import { useTextEdit } from './useTextEdit';
 /** A range of the text to draw under: UTF-16 indexes into the value, `end` exclusive. Marks must not overlap; of two that do, the first wins. */
 export type Mark = { id: string; start: number; end: number; kind: 'auto' | 'manual'; hot?: boolean };
 
-type Props = {
+interface StepTextProps extends ComponentProps<'div'> {
   /** The textarea itself, for focus and selection. */
-  ref?: Ref<HTMLTextAreaElement>;
+  textAreaRef?: Ref<HTMLTextAreaElement>;
   /** Accessible name of the field. */
   label: string;
   value: string;
   marks?: Mark[];
   placeholder?: string;
-  onChange: (value: string) => void;
+  onTextChange: (value: string) => void;
   /** What each change replaced, with the new text (see `useTextEdit`). */
   onEdit?: (edit: TextEdit, value: string) => void;
   /** Where the caret is (no selection), or undefined when there is a selection or the field lost focus. */
@@ -24,8 +24,8 @@ type Props = {
   /** Backspace was pressed in an empty field. */
   onBackspaceEmpty?: () => void;
   /** Called first for every key; a handler that calls preventDefault stops the field's own handling. */
-  onKeyDown?: (e: KeyboardEvent<HTMLTextAreaElement>) => void;
-};
+  onTextAreaKeyDown?: (e: KeyboardEvent<HTMLTextAreaElement>) => void;
+}
 
 /** A step is one paragraph. */
 const oneLine = (text: string) => text.replace(/[\r\n]/g, ' ');
@@ -71,13 +71,27 @@ const field =
  * The text of a step: a real textarea over a mirror of its own text. The mirror, not the textarea, sets the height (so the field grows without scripting) and carries the marks.
  * Enter never inserts a line break; pasted line breaks become spaces.
  */
-export function StepText({ ref, label, value, marks = [], placeholder, onChange, onEdit, onCaret, onEnter, onBackspaceEmpty, onKeyDown }: Props) {
+export function StepText({
+  textAreaRef,
+  label,
+  value,
+  marks = [],
+  placeholder,
+  onTextChange,
+  onEdit,
+  onCaret,
+  onEnter,
+  onBackspaceEmpty,
+  onTextAreaKeyDown,
+  className,
+  ...props
+}: StepTextProps) {
   const textarea = useRef<HTMLTextAreaElement>(null);
-  useImperativeHandle(ref, () => textarea.current!);
-  const handlers = useTextEdit(textarea, { value, sanitize: oneLine, onChange, onEdit: (edit, next) => onEdit?.(edit, next) });
+  useImperativeHandle(textAreaRef, () => textarea.current!);
+  const handlers = useTextEdit(textarea, { value, sanitize: oneLine, onChange: onTextChange, onEdit: (edit, next) => onEdit?.(edit, next) });
 
   const keyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    onKeyDown?.(e);
+    onTextAreaKeyDown?.(e);
     // Safari reports the Enter that confirms a composition after the composition ended, with key code 229.
     if (e.defaultPrevented || e.nativeEvent.isComposing || e.keyCode === 229) return;
     const el = e.currentTarget;
@@ -91,7 +105,7 @@ export function StepText({ ref, label, value, marks = [], placeholder, onChange,
   };
 
   return (
-    <div className="grid">
+    <div {...props} className={cn('grid', className)}>
       <div aria-hidden="true" className={cn(field, 'border-transparent bg-white')} />
       <div aria-hidden="true" className={cn(field, 'pointer-events-none border-transparent text-transparent')}>
         {segments(value, marks)}

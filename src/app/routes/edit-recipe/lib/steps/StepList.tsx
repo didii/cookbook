@@ -111,7 +111,7 @@ export function StepList({ steps, contexts, onChips, onType, onEdit, onAdd, onRe
           <Fragment key={step.id}>
             {removed?.at === i && offer}
             <StepEditor
-              ref={(handle) => {
+              handleRef={(handle) => {
                 if (handle) items.current.set(step.id, handle);
                 else items.current.delete(step.id);
               }}

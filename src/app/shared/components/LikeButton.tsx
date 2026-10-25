@@ -1,19 +1,17 @@
-import { useState } from 'react';
+import { useState, type ComponentProps } from 'react';
 import { cn } from '../cn';
 import { MapleLeaf } from '../icons';
 import { press } from '../press';
 
-type Props = {
+interface LikeButtonProps extends ComponentProps<'button'> {
   slug: string;
   initialLiked: boolean;
   /** Called after the server accepted the change. */
   onSaved?: () => void;
-  /** Id of the element that says which recipe the button is for, where that is not clear from the page. */
-  describedBy?: string;
-};
+}
 
 /** MapleLeaf button (recipe page, recipe card): likes and unlikes the recipe for the member. Changes at once and goes back when the request fails. */
-export function LikeButton({ slug, initialLiked, onSaved, describedBy }: Props) {
+export function LikeButton({ slug, initialLiked, onSaved, className, ...props }: LikeButtonProps) {
   const [liked, setLiked] = useState(initialLiked);
   const [pending, setPending] = useState(false);
 
@@ -35,17 +33,18 @@ export function LikeButton({ slug, initialLiked, onSaved, describedBy }: Props) 
 
   return (
     <button
+      {...props}
       type="button"
       data-testid="LikeButton-leaf"
       aria-pressed={liked}
       aria-label={liked ? 'Verwijder uit favorieten' : 'Markeer als favoriet'}
       aria-disabled={pending}
-      aria-describedby={describedBy}
       onClick={() => void toggle()}
       className={cn(
         'grid size-11 cursor-pointer place-items-center rounded-[10px] border-3 border-ink',
         press,
         liked ? 'bg-red text-white hover:bg-[color-mix(in_srgb,var(--color-red),var(--color-ink)_25%)]' : 'bg-white text-ink hover:bg-yel',
+        className,
       )}
     >
       <MapleLeaf className={cn('size-7', liked && 'fill-current')} />

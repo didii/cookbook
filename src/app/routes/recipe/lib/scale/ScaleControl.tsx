@@ -1,7 +1,12 @@
-import { useId, useState } from 'react';
+import { useId, useState, type ComponentProps } from 'react';
+import { cn } from '~app/shared/cn';
 import { formatNumber, nextMultiplier, parseNumber } from './scale';
 
-type Props = { value: number; onChange: (value: number) => void; servings: boolean };
+interface ScaleControlProps extends ComponentProps<'div'> {
+  value: number;
+  onScaleChange: (value: number) => void;
+  servings: boolean;
+}
 
 const fractions: Record<string, string> = { '0.1': '1/10', '0.125': '1/8', '0.167': '1/6', '0.25': '1/4', '0.333': '1/3', '0.5': '1/2' };
 
@@ -12,7 +17,7 @@ const button =
   'inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-full border-3 border-ink bg-white text-xl leading-none font-black hover:bg-yel';
 
 /** Minus and plus buttons around a field: the servings to cook for, or without servings a multiplier. */
-export function ScaleControl({ value, onChange, servings }: Props) {
+export function ScaleControl({ value, onScaleChange, servings, className, ...props }: ScaleControlProps) {
   // What is typed while it differs from the last valid value.
   const [draft, setDraft] = useState<string>();
   const fieldId = useId();
@@ -24,11 +29,11 @@ export function ScaleControl({ value, onChange, servings }: Props) {
   };
   const step = (direction: 1 | -1) => {
     setDraft(undefined);
-    onChange(servings ? Math.max(1, value + direction) : nextMultiplier(value, direction));
+    onScaleChange(servings ? Math.max(1, value + direction) : nextMultiplier(value, direction));
   };
 
   return (
-    <div className="inline-flex flex-col gap-1">
+    <div {...props} className={cn('inline-flex flex-col gap-1', className)}>
       <label data-testid="ScaleControl-label" htmlFor={fieldId} className="font-extrabold">
         {servings ? 'Personen' : 'Vermenigvuldiger'}
       </label>
@@ -50,7 +55,7 @@ export function ScaleControl({ value, onChange, servings }: Props) {
           onChange={(e) => {
             setDraft(e.target.value);
             const n = parse(e.target.value);
-            if (n !== undefined) onChange(n);
+            if (n !== undefined) onScaleChange(n);
           }}
           onBlur={() => setDraft(undefined)}
           onKeyDown={(e) => e.key === 'Enter' && setDraft(undefined)}

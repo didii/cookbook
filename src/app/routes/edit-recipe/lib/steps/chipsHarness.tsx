@@ -22,7 +22,7 @@ export function ChipsHarness({
   const [step, setStep] = useState<StepDraft>(initial);
   return (
     <div>
-      <StepChips step={step} context={context} number={1} onHot={() => {}} onChange={(change) => setStep((s) => change(s, context))} />
+      <StepChips step={step} context={context} number={1} onHot={() => {}} onChipsChange={(change) => setStep((s) => change(s, context))} />
       {extra?.(step)}
     </div>
   );

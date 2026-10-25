@@ -5,12 +5,12 @@ import { Seal } from './Seal';
 
 describe('Seal', () => {
   test('shows the image of the given seal', () => {
-    render(<Seal id="fu" />);
+    render(<Seal sealId="fu" />);
     assert.equal(screen.getByTestId('Seal-image').getAttribute('src'), '/img/seal/fu.svg');
   });
 
   test('is decorative', () => {
-    render(<Seal id="fu" />);
+    render(<Seal sealId="fu" />);
     assert.equal(screen.getByTestId('Seal-image').getAttribute('alt'), '');
   });
 });

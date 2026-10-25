@@ -21,7 +21,7 @@ const chip = (view?: TimerView) => {
   return render(
     <TimersContext value={controls}>
       <ul>
-        <TimerChip id="1" minutes={30} label="Deeg rust" />
+        <TimerChip timerId="1" minutes={30} label="Deeg rust" />
       </ul>
     </TimersContext>,
   );

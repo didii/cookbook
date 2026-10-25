@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState, type ComponentProps } from 'react';
 import { cn } from '~app/shared/cn';
 import { Button } from '~app/shared/components';
 import { Search, Sliders } from '~app/shared/icons';
@@ -6,13 +6,13 @@ import { press } from '~app/shared/press';
 import { activeFilterCount, noFilters, sameAuthor, type Filters, type Sort } from './filterRecipes';
 import { useKeyboardOffset } from './useKeyboardOffset';
 
-type Props = {
+interface FilterBarProps extends ComponentProps<'search'> {
   filters: Filters;
   authors: string[];
   /** Whether the author chips and the sort control are offered; the search box always is. */
   detailed: boolean;
-  onChange: (filters: Filters) => void;
-};
+  onFiltersChange: (filters: Filters) => void;
+}
 
 const sorts: { value: Sort; label: string }[] = [
   { value: 'nieuwste', label: 'Nieuwste' },
@@ -23,7 +23,7 @@ const control =
   'inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[0.625rem] border-3 border-ink px-4 text-base font-black text-ink';
 
 /** The search box and the detailed filters. Fixed to the bottom of the screen below 48rem, with the details in a sheet above the box; inline from 48rem. */
-export function FilterBar({ filters, authors, detailed, onChange }: Props) {
+export function FilterBar({ filters, authors, detailed, onFiltersChange, className, ...props }: FilterBarProps) {
   const sheetId = useId();
   const toggle = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
@@ -51,8 +51,12 @@ export function FilterBar({ filters, authors, detailed, onChange }: Props) {
 
   return (
     <search
+      {...props}
       data-testid="FilterBar-bar"
-      className="fixed inset-x-0 bottom-(--kb,0px) z-10 border-t-3 border-ink bg-por px-[max(1rem,4vw)] pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:static md:z-auto md:mt-6 md:flex md:flex-col-reverse md:gap-4 md:border-0 md:bg-transparent md:p-0"
+      className={cn(
+        'fixed inset-x-0 bottom-(--kb,0px) z-10 border-t-3 border-ink bg-por px-[max(1rem,4vw)] pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:static md:z-auto md:mt-6 md:flex md:flex-col-reverse md:gap-4 md:border-0 md:bg-transparent md:p-0',
+        className,
+      )}
     >
       {detailed && (
         <div
@@ -64,14 +68,14 @@ export function FilterBar({ filters, authors, detailed, onChange }: Props) {
           <fieldset data-testid="FilterBar-authors" className="m-0 mb-4 min-w-0 border-0 p-0 md:mr-6 md:mb-3 md:inline-flex md:items-center md:gap-3">
             <legend className="mb-2 p-0 font-black md:float-left md:mb-0">Van wie</legend>
             <div className="flex flex-wrap gap-2">
-              <Chip pressed={filters.author === undefined} onClick={() => onChange({ ...filters, author: undefined })}>
+              <Chip pressed={filters.author === undefined} onClick={() => onFiltersChange({ ...filters, author: undefined })}>
                 Iedereen
               </Chip>
               {authors.map((a) => (
                 <Chip
                   key={a}
                   pressed={filters.author !== undefined && sameAuthor(filters.author, a)}
-                  onClick={() => onChange({ ...filters, author: a })}
+                  onClick={() => onFiltersChange({ ...filters, author: a })}
                 >
                   {a}
                 </Chip>
@@ -90,7 +94,7 @@ export function FilterBar({ filters, authors, detailed, onChange }: Props) {
                     id={`${sheetId}-${value}`}
                     value={value}
                     checked={(filters.sort ?? 'nieuwste') === value}
-                    onChange={() => onChange({ ...filters, sort: value })}
+                    onChange={() => onFiltersChange({ ...filters, sort: value })}
                     className="peer sr-only"
                   />
                   <label
@@ -109,7 +113,7 @@ export function FilterBar({ filters, authors, detailed, onChange }: Props) {
             </div>
           </fieldset>
           <div className="flex gap-3 md:hidden">
-            <Button type="button" data-testid="FilterBar-clear" className="min-h-11 text-base" onClick={() => onChange(noFilters)}>
+            <Button type="button" data-testid="FilterBar-clear" className="min-h-11 text-base" onClick={() => onFiltersChange(noFilters)}>
               Wis filters
             </Button>
           </div>
@@ -128,7 +132,7 @@ export function FilterBar({ filters, authors, detailed, onChange }: Props) {
             autoComplete="off"
             onChange={(e) => {
               setText(e.target.value);
-              onChange({ ...filters, q: e.target.value });
+              onFiltersChange({ ...filters, q: e.target.value });
             }}
             onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
             className="min-h-12 w-full rounded-[0.625rem] border-3 border-ink bg-white pr-4 pl-11 text-base font-bold text-ink placeholder:font-medium placeholder:text-muted focus-visible:outline-offset-0"

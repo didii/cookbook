@@ -7,7 +7,7 @@ const tabs = () => screen.getAllByTestId('TabBar-tab');
 
 describe('TabBar', () => {
   test('is a tablist of two tabs', () => {
-    render(<TabBar tab="ingredients" onSelect={() => {}} />);
+    render(<TabBar tab="ingredients" onTabSelect={() => {}} />);
     assert.equal(screen.getByTestId('TabBar-list').getAttribute('role'), 'tablist');
     assert.deepEqual(
       tabs().map((t) => t.getAttribute('role')),
@@ -16,7 +16,7 @@ describe('TabBar', () => {
   });
 
   test('marks only the given tab as selected', () => {
-    render(<TabBar tab="steps" onSelect={() => {}} />);
+    render(<TabBar tab="steps" onTabSelect={() => {}} />);
     assert.deepEqual(
       tabs().map((t) => t.getAttribute('aria-selected')),
       ['false', 'true'],
@@ -25,7 +25,7 @@ describe('TabBar', () => {
 
   test('a click selects that tab', () => {
     const chosen: string[] = [];
-    render(<TabBar tab="ingredients" onSelect={(t) => chosen.push(t)} />);
+    render(<TabBar tab="ingredients" onTabSelect={(t) => chosen.push(t)} />);
     fireEvent.click(tabs()[1]);
     assert.deepEqual(chosen, ['steps']);
   });

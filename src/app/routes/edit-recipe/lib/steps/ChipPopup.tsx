@@ -1,9 +1,9 @@
-import { useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent, type Ref } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ComponentProps, type KeyboardEvent, type Ref } from 'react';
 import { cn } from '~app/shared/cn';
 import { Link, Pin, Trash } from '~app/shared/icons';
 import type { Chip, ChipValues, IngredientValues, OvenValues, TimerValues } from './chips';
 
-type Props = {
+interface ChipPopupProps extends ComponentProps<'dialog'> {
   chip: Chip;
   /** What the chip shows now. */
   values: ChipValues;
@@ -15,8 +15,8 @@ type Props = {
   onMode: (mode: 'auto' | 'manual') => void;
   onRemove: () => void;
   /** Closes the popup; `refocus` when focus should go back to the chip. */
-  onClose: (refocus: boolean) => void;
-};
+  onChipClose: (refocus: boolean) => void;
+}
 
 const inputClass =
   'mt-0.5 block min-h-11 w-full rounded-[0.625rem] border-2 border-ink bg-white px-3 text-base font-bold text-ink hover:not-focus:bg-[color-mix(in_srgb,var(--color-ink)_5%,white)]';
@@ -98,7 +98,7 @@ function TextField({
 }
 
 /** The popup of a chip: its fields, whether it follows the text or is pinned (with what that means), and remove. Not modal and without a focus trap: Escape or a click elsewhere closes it. */
-export function ChipPopup({ chip, values, anchor, onValues, onLabel, onMode, onRemove, onClose }: Props) {
+export function ChipPopup({ chip, values, anchor, onValues, onLabel, onMode, onRemove, onChipClose, className, ...props }: ChipPopupProps) {
   const popup = useRef<HTMLDialogElement>(null);
   const first = useRef<HTMLInputElement>(null);
   const title = `${kindLabel[chip.kind]} aanpassen`;
@@ -121,7 +121,7 @@ export function ChipPopup({ chip, values, anchor, onValues, onLabel, onMode, onR
   useEffect(() => {
     const away = (e: PointerEvent) => {
       const target = e.target as Node;
-      if (!popup.current?.contains(target) && !anchor()?.contains(target)) onClose(false);
+      if (!popup.current?.contains(target) && !anchor()?.contains(target)) onChipClose(false);
     };
     document.addEventListener('pointerdown', away);
     return () => document.removeEventListener('pointerdown', away);
@@ -131,7 +131,7 @@ export function ChipPopup({ chip, values, anchor, onValues, onLabel, onMode, onR
     if (e.key !== 'Escape' || e.nativeEvent.isComposing) return;
     e.preventDefault();
     e.stopPropagation();
-    onClose(true);
+    onChipClose(true);
   };
 
   const values_ = values as IngredientValues & OvenValues & TimerValues;
@@ -142,12 +142,16 @@ export function ChipPopup({ chip, values, anchor, onValues, onLabel, onMode, onR
     // The dialog is not interactive itself; the key handler only catches Escape from the fields inside.
     // oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
     <dialog
+      {...props}
       open
       ref={popup}
       aria-label={title}
       data-testid="ChipPopup-dialog"
       onKeyDown={keyDown}
-      className="absolute top-(--pop-top) m-0 z-20 grid overflow-visible gap-3 rounded-xl border-3 border-ink bg-white p-3.5 font-bold text-ink shadow-hard max-sm:inset-x-0 max-sm:w-auto sm:right-auto sm:left-(--pop-left) sm:w-80"
+      className={cn(
+        'absolute top-(--pop-top) m-0 z-20 grid overflow-visible gap-3 rounded-xl border-3 border-ink bg-white p-3.5 font-bold text-ink shadow-hard max-sm:inset-x-0 max-sm:w-auto sm:right-auto sm:left-(--pop-left) sm:w-80',
+        className,
+      )}
     >
       {/* The arrow is two triangles: an ink one, and a white one 3px smaller whose base covers the popup's border. */}
       <span

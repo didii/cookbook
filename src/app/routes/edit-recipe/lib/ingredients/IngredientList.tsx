@@ -78,11 +78,11 @@ export function IngredientList({ rows, rules, errors = noErrors, usedIn = () => 
           return (
             <IngredientItem
               key={row.id}
-              ref={(handle) => {
+              handleRef={(handle) => {
                 if (handle) items.current.set(row.id, handle);
                 else items.current.delete(row.id);
               }}
-              id={`ingredient-${row.id}`}
+              rowId={`ingredient-${row.id}`}
               rules={rules}
               label={`Ingrediënt ${i + 1}`}
               toolbarLabel={`Acties voor ingrediënt ${i + 1}`}

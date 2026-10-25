@@ -32,7 +32,7 @@ export function StepChips({ step, index, done, className, ...props }: StepChipsP
           <b className="font-black text-red">{step.ovenTemperature} °C</b> oven
         </li>
       )}
-      {step.timer && <TimerChip id={`${index}`} minutes={step.timer.minutes} label={step.timer.label} />}
+      {step.timer && <TimerChip timerId={`${index}`} minutes={step.timer.minutes} label={step.timer.label} />}
     </ul>
   );
 }

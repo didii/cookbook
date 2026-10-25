@@ -78,7 +78,7 @@ describe('recipe-browsing › Seal on the image', () => {
 
   test('the seal is the recipe’s own', () => {
     card({ seal: 'fu' });
-    assert.equal(propsOf<typeof Seal>('Seal')?.id, 'fu');
+    assert.equal(propsOf<typeof Seal>('Seal')?.sealId, 'fu');
   });
 });
 
@@ -186,7 +186,7 @@ describe('recipe-like › Leaf is not inside the link', () => {
 describe('RecipeCard leaf', () => {
   test('is described by the title, so it says which recipe it is for', () => {
     card();
-    assert.equal(propsOf<typeof LikeButton>('LikeButton')?.describedBy, screen.getByTestId('RecipeCard-link').id);
+    assert.equal(propsOf<typeof LikeButton>('LikeButton')?.['aria-describedby'], screen.getByTestId('RecipeCard-link').id);
   });
 });
 

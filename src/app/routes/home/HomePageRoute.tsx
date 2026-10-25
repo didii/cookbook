@@ -54,7 +54,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
           <p data-testid="HomePage-intro" className="mt-2 text-lg text-pretty text-muted">
             {intro}
           </p>
-          <FilterBar filters={filters} authors={authorsOf(recipes)} detailed={detailed} onChange={change} />
+          <FilterBar filters={filters} authors={authorsOf(recipes)} detailed={detailed} onFiltersChange={change} />
           <output data-testid="HomePage-count" className="mt-6 mb-4 block font-extrabold text-muted">
             {isFiltered(filters) ? `${shown.length} van ${recipes.length}` : shown.length} {recipes.length === 1 ? 'recept' : 'recepten'}
           </output>

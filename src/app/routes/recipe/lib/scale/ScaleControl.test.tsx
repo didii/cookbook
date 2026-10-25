@@ -10,7 +10,7 @@ afterEach(cleanup);
 function Harness({ start, servings, seen }: { start: number; servings: boolean; seen: number[] }) {
   const [value, setValue] = useState(start);
   seen.push(value);
-  return <ScaleControl value={value} onChange={setValue} servings={servings} />;
+  return <ScaleControl value={value} onScaleChange={setValue} servings={servings} />;
 }
 
 const field = () => screen.getByTestId<HTMLInputElement>('ScaleControl-field');

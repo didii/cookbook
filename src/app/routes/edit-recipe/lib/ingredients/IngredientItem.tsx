@@ -1,4 +1,4 @@
-import { useImperativeHandle, useLayoutEffect, useRef, type ComponentProps, type CSSProperties, type KeyboardEvent, type Ref } from 'react';
+import { useImperativeHandle, useLayoutEffect, useRef, type ComponentProps, type KeyboardEvent, type Ref } from 'react';
 import { cn } from '~app/shared/cn';
 import { Ingredient } from '~app/shared/icons';
 import type { Rules } from '~app/shared/rules';
@@ -8,13 +8,13 @@ import { RowGrip } from '../shared/RowGrip';
 import { RowToolbar } from '../shared/RowToolbar';
 import { useAfterRender } from '../shared/useAfterRender';
 
-type Props = {
-  ref?: Ref<ItemHandle>;
+interface IngredientItemProps extends ComponentProps<'li'> {
+  handleRef?: Ref<ItemHandle>;
   /** Accessible name of the field and the base of the id of its error. */
   label: string;
   /** Accessible name of the row's button group. */
   toolbarLabel: string;
-  id: string;
+  rowId: string;
   text: string;
   /** The words that count as a unit, to tell the quantity from the name. */
   rules: Rules;
@@ -34,18 +34,17 @@ type Props = {
   onStep: (direction: -1 | 1) => void;
   /** Pointer handlers for the grip, and the style the row gets while it is dragged or shifted aside. */
   gripProps: ComponentProps<'span'>;
-  style?: CSSProperties;
   /** Backspace was pressed in an empty field. */
   onBackspaceEmpty: () => void;
-};
+}
 
 const field = 'col-start-1 row-start-1 h-13 rounded-[0.625rem] border-3 px-3 text-lg leading-[1.4] font-bold';
 /** One ingredient line: the quantity is painted blue by a mirror layer under the real (transparent-text) input, so editing stays native. */
 export function IngredientItem({
-  ref,
+  handleRef,
   label,
   toolbarLabel,
-  id,
+  rowId,
   text,
   rules,
   placeholder,
@@ -60,8 +59,9 @@ export function IngredientItem({
   onStep,
   onBackspaceEmpty,
   gripProps,
-  style,
-}: Props) {
+  className,
+  ...props
+}: IngredientItemProps) {
   const input = useRef<HTMLInputElement>(null);
   const mirror = useRef<HTMLDivElement>(null);
   const item = useRef<HTMLLIElement>(null);
@@ -73,7 +73,7 @@ export function IngredientItem({
 
   const afterRender = useAfterRender();
 
-  useImperativeHandle(ref, () => ({
+  useImperativeHandle(handleRef, () => ({
     rect: () => item.current?.getBoundingClientRect(),
     focusField: (caret) => {
       const el = input.current;
@@ -110,10 +110,10 @@ export function IngredientItem({
 
   const quantity = parseIngredient(text, rules).quantityText;
   const at = quantity ? text.indexOf(quantity) : -1;
-  const errorId = `${id}-error`;
+  const errorId = `${rowId}-error`;
 
   return (
-    <li ref={item} style={style} className="relative grid grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-x-1">
+    <li {...props} ref={item} className={cn('relative grid grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-x-1', className)}>
       <RowGrip {...gripProps} className={cn('col-start-1 row-start-1 min-h-11 w-6', free && 'cursor-default opacity-50')} />
       <RowToolbar
         label={toolbarLabel}

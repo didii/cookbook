@@ -1,4 +1,4 @@
-import { useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useRef, useState, type ComponentProps, type KeyboardEvent, type ReactNode } from 'react';
 import { cn } from '~app/shared/cn';
 import { formatMinutes } from '~app/shared/formatter';
 import { Arrow, Check, Clock, Cross, Ingredient, Link, Pin, Plus, Thermometer, Trash } from '~app/shared/icons';
@@ -29,7 +29,7 @@ import {
 import { proposalAttribute } from './OpenProposals';
 import { useAfterRender } from '../shared/useAfterRender';
 
-type Props = {
+interface StepChipsProps extends ComponentProps<'div'> {
   step: StepDraft;
   context: Context;
   /** The step's number, counting from 1. */
@@ -38,8 +38,8 @@ type Props = {
   hotId?: string;
   onHot: (id: string | undefined) => void;
   /** Changes the step's chips with a function of the chip logic. */
-  onChange: (change: (step: StepDraft, context: Context) => StepDraft) => void;
-};
+  onChipsChange: (change: (step: StepDraft, context: Context) => StepDraft) => void;
+}
 
 const chipClass =
   'relative inline-flex min-h-9 items-center gap-1.5 rounded-lg border-2 border-transparent bg-ink/8 px-2.5 text-[0.9375rem] font-bold text-muted hover:border-ink';
@@ -89,7 +89,7 @@ const KindIcon = ({ kind }: { kind: Kind }) =>
   kind === 'oven' ? <Thermometer /> : kind === 'timer' ? <Clock className={icon} /> : <Ingredient className={icon} />;
 
 /** The chips of one step under its text, and the row to add one by hand or bring a removed one back. All of it is one toolbar: one Tab stop, the arrow keys move between the chips. */
-export function StepChips({ step, context, number, hotId, onHot, onChange }: Props) {
+export function StepChips({ step, context, number, hotId, onHot, onChipsChange, className, ...props }: StepChipsProps) {
   const toolbar = useRef<HTMLDivElement>(null);
   const afterRender = useAfterRender();
   const [current, setCurrent] = useState<string>();
@@ -137,30 +137,30 @@ export function StepChips({ step, context, number, hotId, onHot, onChange }: Pro
   const remove = (id: string, index: number) => {
     setOpenId(undefined);
     focusKey('', index);
-    onChange((s, c) => removeChip(s, id, c));
+    onChipsChange((s, c) => removeChip(s, id, c));
   };
   const accept = (id: string) => {
     focusKey(`chip:${id}`, at(`ok:${id}`));
-    onChange((s, c) => acceptProposal(s, id, c));
+    onChipsChange((s, c) => acceptProposal(s, id, c));
   };
   const discard = (id: string) => {
     focusKey(`chip:${id}`, at(`no:${id}`));
-    onChange((s, c) => discardProposal(s, id, c));
+    onChipsChange((s, c) => discardProposal(s, id, c));
   };
   const restore = (ghost: Ghost) => {
     focusKey(`chip:${ghost.id}`, at(`ghost:${ghost.id}`));
-    onChange((s, c) => restoreGhost(s, ghost.id, c));
+    onChipsChange((s, c) => restoreGhost(s, ghost.id, c));
   };
   /** Adds a hand-made chip and opens its popup, to fill it in. */
   const add = (kind: Kind) => {
     const id = nextChipId(step);
-    onChange((s) => addChip(s, kind, id));
+    onChipsChange((s) => addChip(s, kind, id));
     setOpenId(id);
   };
   /** The icon button: pins a following chip, makes a pinned chip with words follow them again, and opens the popup. */
   const switchMode = (chip: Chip) => {
-    if (chip.mode === 'auto') onChange((s, c) => setMode(s, chip.id, 'manual', c));
-    else if (chip.anchor && !chip.lost) onChange((s, c) => setMode(s, chip.id, 'auto', c));
+    if (chip.mode === 'auto') onChipsChange((s, c) => setMode(s, chip.id, 'manual', c));
+    else if (chip.anchor && !chip.lost) onChipsChange((s, c) => setMode(s, chip.id, 'auto', c));
     setOpenId(chip.id);
   };
   const close = (refocus: boolean) => {
@@ -177,7 +177,7 @@ export function StepChips({ step, context, number, hotId, onHot, onChange }: Pro
   const hot = (chip: Chip) => hotId === chip.id && (chip.mode === 'auto' ? 'border-ink bg-yel/50' : 'border-ink bg-blu/18');
 
   return (
-    <div ref={wrapper} className="relative">
+    <div {...props} ref={wrapper} className={cn('relative', className)}>
       {/* The group itself is not focusable: its buttons are, with a roving tabindex. */}
       {/* oxlint-disable-next-line jsx-a11y/interactive-supports-focus */}
       <div
@@ -322,11 +322,11 @@ export function StepChips({ step, context, number, hotId, onHot, onChange }: Pro
           chip={open.chip}
           values={open.values}
           anchor={() => wrapper.current?.querySelector<HTMLElement>(`[data-chip-id="${open.chip.id}"]`)}
-          onValues={(patch) => onChange((s, c) => editValues(s, open.chip.id, patch, c))}
-          onLabel={(label) => onChange((s) => setLabel(s, open.chip.id, label))}
-          onMode={(mode) => onChange((s, c) => setMode(s, open.chip.id, mode, c))}
+          onValues={(patch) => onChipsChange((s, c) => editValues(s, open.chip.id, patch, c))}
+          onLabel={(label) => onChipsChange((s) => setLabel(s, open.chip.id, label))}
+          onMode={(mode) => onChipsChange((s, c) => setMode(s, open.chip.id, mode, c))}
           onRemove={() => remove(open.chip.id, at(`chip:${open.chip.id}`))}
-          onClose={close}
+          onChipClose={close}
         />
       )}
     </div>

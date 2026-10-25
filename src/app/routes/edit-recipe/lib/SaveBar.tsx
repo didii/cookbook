@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from 'react';
 import { Link } from 'react-router';
+import { cn } from '~app/shared/cn';
 import { Button } from '~app/shared/components';
 
-type Props = {
+interface SaveBarProps extends ComponentProps<'div'> {
   /** Where "Annuleren" leads. */
   cancelTo: string;
   /** Whether "Opslaan" has been used and the answer has not arrived yet. */
@@ -14,13 +15,13 @@ type Props = {
   /** Whether the unsaved changes are kept on this device (see `useDraftPersistence`). */
   kept: boolean;
   /** Puts every field back to its starting values. */
-  onReset: () => void;
+  onFormReset: () => void;
   /** Extra status next to "Niet opgeslagen" (used by later changes). */
   children?: ReactNode;
-};
+}
 
 /** The bar fixed to the bottom of the editor: status, Herstel, Annuleren and Opslaan. */
-export function SaveBar({ cancelTo, busy, saveBlocked, dirty, kept, onReset, children }: Props) {
+export function SaveBar({ cancelTo, busy, saveBlocked, dirty, kept, onFormReset, children, className, ...props }: SaveBarProps) {
   const [asking, setAsking] = useState(false);
   // The question only exists while there is something to reset.
   const question = asking && dirty;
@@ -43,7 +44,7 @@ export function SaveBar({ cancelTo, busy, saveBlocked, dirty, kept, onReset, chi
   }, [question]);
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-10 border-t-3 border-ink bg-por pb-[env(safe-area-inset-bottom)]">
+    <div {...props} className={cn('fixed inset-x-0 bottom-0 z-10 border-t-3 border-ink bg-por pb-[env(safe-area-inset-bottom)]', className)}>
       <div className="mx-auto flex max-w-290 items-center gap-3 px-[max(1rem,4vw)] py-2.5 max-sm:flex-wrap max-sm:gap-y-0">
         {/* On a phone the status gets a row of its own above the buttons. */}
         <div className="flex flex-wrap items-center gap-x-3 text-sm font-extrabold empty:hidden max-sm:basis-full sm:text-base">
@@ -64,7 +65,7 @@ export function SaveBar({ cancelTo, busy, saveBlocked, dirty, kept, onReset, chi
                 type="button"
                 onClick={() => {
                   setAsking(false);
-                  onReset();
+                  onFormReset();
                 }}
                 className="min-h-11 cursor-pointer px-2 font-black text-red underline"
               >
