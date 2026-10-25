@@ -30,7 +30,7 @@ const recipe: RecipeSummary = {
   time: null,
   image: '/soep.jpg',
   seal: null,
-  categories: [],
+  tags: [],
   liked: false,
   hasNote: false,
 };
@@ -40,7 +40,7 @@ const card = (r: Partial<RecipeSummary> = {}) =>
       <RecipeCard recipe={{ ...recipe, ...r }} tile={0} />
     </MemoryRouter>,
   );
-const pills = () => screen.queryAllByTestId('RecipeCard-category').map((p) => p.textContent);
+const pills = () => screen.queryAllByTestId('RecipeCard-tag').map((p) => p.textContent);
 const firstBand = () => screen.getAllByTestId('TileBand-band')[0]!;
 
 describe('recipe-browsing › Image, band, then text', () => {
@@ -59,9 +59,9 @@ describe('recipe-browsing › Image, band, then text', () => {
     assert.ok(precedes(screen.getByTestId('RecipeCard-link'), screen.getByTestId('RecipeCard-author')));
   });
 
-  test('the categories follow the author', () => {
-    card({ categories: ['Soep'] });
-    assert.ok(precedes(screen.getByTestId('RecipeCard-author'), screen.getByTestId('RecipeCard-categories')));
+  test('the tags follow the author', () => {
+    card({ tags: ['Soep'] });
+    assert.ok(precedes(screen.getByTestId('RecipeCard-author'), screen.getByTestId('RecipeCard-tags')));
   });
 
   test('the band is one tile high', () => {
@@ -133,46 +133,46 @@ describe('recipe-browsing › Card reacts to the pointer', () => {
   });
 });
 
-describe('recipe-browsing › Recipe with two categories', () => {
+describe('recipe-browsing › Recipe with two tags', () => {
   test('both pills are shown in order', () => {
-    card({ categories: ['Soep', 'Winter'] });
+    card({ tags: ['Soep', 'Winter'] });
     assert.deepEqual(pills(), ['Soep', 'Winter']);
   });
 
   test('there is no "+" pill', () => {
-    card({ categories: ['Soep', 'Winter'] });
+    card({ tags: ['Soep', 'Winter'] });
     assert.equal(screen.queryByTestId('RecipeCard-more'), null);
   });
 });
 
-describe('recipe-browsing › Recipe with more categories', () => {
+describe('recipe-browsing › Recipe with more tags', () => {
   test('the first two pills are shown', () => {
-    card({ categories: ['Hoofdgerecht', 'Winter', 'Vlees'] });
-    assert.deepEqual(pills(), ['Hoofdgerecht', 'Winter']);
+    card({ tags: ['Hoofdgerecht', 'Vlees', 'Winter'] });
+    assert.deepEqual(pills(), ['Hoofdgerecht', 'Vlees']);
   });
 
   test('a pill says how many are left', () => {
-    card({ categories: ['Hoofdgerecht', 'Winter', 'Vlees'] });
+    card({ tags: ['Hoofdgerecht', 'Vlees', 'Winter'] });
     assert.equal(screen.getByTestId('RecipeCard-more').textContent, '+1');
   });
 });
 
-describe('recipe-browsing › Recipe without categories', () => {
+describe('recipe-browsing › Recipe without tags', () => {
   test('no pills are shown', () => {
     card();
-    assert.equal(screen.queryByTestId('RecipeCard-categories'), null);
+    assert.equal(screen.queryByTestId('RecipeCard-tags'), null);
   });
 });
 
 describe('recipe-browsing › Pills are not interactive', () => {
   test('no pill is a link', () => {
-    card({ categories: ['A', 'B', 'C'] });
-    assert.equal(within(screen.getByTestId('RecipeCard-categories')).queryAllByRole('link').length, 0);
+    card({ tags: ['A', 'B', 'C'] });
+    assert.equal(within(screen.getByTestId('RecipeCard-tags')).queryAllByRole('link').length, 0);
   });
 
   test('no pill is a button', () => {
-    card({ categories: ['A', 'B', 'C'] });
-    assert.equal(within(screen.getByTestId('RecipeCard-categories')).queryAllByRole('button').length, 0);
+    card({ tags: ['A', 'B', 'C'] });
+    assert.equal(within(screen.getByTestId('RecipeCard-tags')).queryAllByRole('button').length, 0);
   });
 });
 

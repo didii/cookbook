@@ -16,7 +16,7 @@ Change 1 of 2; the tag manager follows. Verify each task with the type check and
 
 ## 3. Card
 
-- [ ] 3.1 Rename the card's props and test ids to tags (`RecipeCard-tags`, `RecipeCard-tag`) and the `describe`s in `RecipeCard.test.tsx` and `HomePageRoute.test.tsx` to the renamed "recipe-browsing" scenarios; add `tags: []` to fixtures; verify type check and tests pass
+- [x] 3.1 Rename the card's props and test ids to tags (`RecipeCard-tags`, `RecipeCard-tag`) and the `describe`s in `RecipeCard.test.tsx` and `HomePageRoute.test.tsx` to the renamed "recipe-browsing" scenarios; add `tags: []` to fixtures; verify type check and tests pass
 
 ## 4. Editor
 

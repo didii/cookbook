@@ -13,13 +13,13 @@ interface RecipeCardProps extends ComponentProps<'article'> {
   onSaved?: () => void;
 }
 
-const maxCategories = 2;
+const maxTags = 2;
 
 /** Recipe card: image (two tiles high), tile band with the buttons, then the text. The title link is stretched over the card, the buttons sit above it. */
 export function RecipeCard({ recipe: r, tile, eager, onSaved, className, ...props }: RecipeCardProps) {
   const newId = useId();
   const titleId = useId();
-  const more = r.categories.length - maxCategories;
+  const more = r.tags.length - maxTags;
   return (
     <article
       {...props}
@@ -81,12 +81,12 @@ export function RecipeCard({ recipe: r, tile, eager, onSaved, className, ...prop
           van {r.author}
           {r.time && ` · ${r.time}`}
         </p>
-        {r.categories.length > 0 && (
-          <div data-testid="RecipeCard-categories" className="mt-1.5 flex flex-wrap gap-1.5">
-            {r.categories.slice(0, maxCategories).map((name) => (
+        {r.tags.length > 0 && (
+          <div data-testid="RecipeCard-tags" className="mt-1.5 flex flex-wrap gap-1.5">
+            {r.tags.slice(0, maxTags).map((name) => (
               <span
                 key={name}
-                data-testid="RecipeCard-category"
+                data-testid="RecipeCard-tag"
                 className="rounded-full border-2 border-ink bg-por px-2.5 text-[0.8125rem] leading-[1.45] font-extrabold"
               >
                 {name}
