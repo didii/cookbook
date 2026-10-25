@@ -173,3 +173,18 @@ describe('parsing-rules › Word with other characters', () => {
     assert.equal(await rowCount(db), 0);
   });
 });
+
+describe('parsing-rules › Default loose units', () => {
+  test('the stored rules hold the default loose units', async ({ db }) => {
+    assert.deepEqual((await getRules(db)).looseUnits, 'snuf snufje scheut scheutje mespunt mespuntje handvol klont klontje'.split(' '));
+  });
+});
+
+describe('parsing-rules › Saved rules without loose units', () => {
+  test('use the default loose units and keep the other saved words', async ({ db }) => {
+    await stored(db, '{"units":["g","kopje"]}');
+    const rules = await getRules(db);
+    assert.deepEqual(rules.units, ['g', 'kopje']);
+    assert.deepEqual(rules.looseUnits, defaultRules.looseUnits);
+  });
+});

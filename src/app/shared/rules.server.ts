@@ -5,6 +5,8 @@ const key = 'parsing-rules';
 const valid = /^[\p{L}° ]+$/u;
 const maxMinutes = 1440;
 const isWords = (v: unknown): v is string[] => Array.isArray(v) && v.length > 0 && v.every((w) => typeof w === 'string' && valid.test(w));
+// Loose units match as one word, like units; an empty list switches them off.
+const isLooseUnits = (v: unknown): v is string[] => Array.isArray(v) && v.every((w) => typeof w === 'string' && /^\p{L}+$/u.test(w));
 const isSpoken = (v: unknown): v is Record<string, number> =>
   typeof v === 'object' &&
   v !== null &&
@@ -20,7 +22,7 @@ export async function getRules(db: D1Database): Promise<Rules> {
     const saved: Record<string, unknown> = JSON.parse(row.value);
     if (typeof saved !== 'object' || saved === null || Array.isArray(saved)) return defaultRules;
     const rules = { ...defaultRules, ...saved };
-    const ok = isWords(rules.units) && isWords(rules.minuteWords) && isWords(rules.hourWords) && isWords(rules.degreeWords) && isSpoken(rules.spoken);
+    const ok = isWords(rules.units) && isLooseUnits(rules.looseUnits) && isWords(rules.minuteWords) && isWords(rules.hourWords) && isWords(rules.degreeWords) && isSpoken(rules.spoken);
     return ok ? rules : defaultRules;
   } catch {
     return defaultRules;
