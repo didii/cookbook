@@ -4,6 +4,7 @@ import { cn } from '~app/shared/cn';
 import { AuthorInput } from '~app/shared/components';
 import { ChevronBack } from '~app/shared/icons';
 import type { Rules } from '~app/shared/rules';
+import { DeleteRecipe } from './DeleteRecipe';
 import {
   addStep,
   changeChips,
@@ -223,6 +224,7 @@ export function RecipeEditor({
       )}
       <Form
         method="post"
+        data-testid="RecipeEditor-form"
         onSubmit={(e) => {
           // Enter in a field can submit while the save button is disabled; the photo must be settled first.
           if (photo !== 'ready') return e.preventDefault();
@@ -331,6 +333,8 @@ export function RecipeEditor({
           {photo === 'error' && <span className="text-red">Foto is niet geüpload</span>}
         </SaveBar>
       </Form>
+      {/* Outside the save form (forms cannot nest); it posts to its own route. */}
+      {slug && <DeleteRecipe headingText={initial.title} slug={slug} />}
     </main>
   );
 }

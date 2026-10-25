@@ -5,7 +5,8 @@ import { fireEvent, render, screen, within } from '~testing/dom';
 import { DeleteRecipe } from './DeleteRecipe';
 
 // The delete form is a data-router `Form`, so the popup needs a data router around it.
-const show = () => render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <DeleteRecipe headingText="Appeltaart" /> }])} />);
+const show = () =>
+  render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <DeleteRecipe headingText="Appeltaart" slug="appeltaart" /> }])} />);
 const trigger = () => screen.getByTestId('DeleteRecipe-open');
 const dialog = () => document.querySelector('dialog')!;
 /** Opens the popup. Happy-dom has no real modal, so `open` is what the tests look at. */
@@ -14,10 +15,10 @@ const open = () => {
   fireEvent.click(trigger());
 };
 
-describe('recipe-deletion › Delete button is shown', () => {
-  test('the page has the button', () => {
+describe('DeleteRecipe', () => {
+  test('the form posts to the delete route of the slug', () => {
     show();
-    assert.ok(trigger());
+    assert.equal(screen.getByTestId('DeleteRecipe-form').getAttribute('action'), '/recepten/appeltaart/verwijderen');
   });
 });
 

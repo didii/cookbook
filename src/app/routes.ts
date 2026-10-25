@@ -6,6 +6,7 @@ export default [
   route('foto/:file', 'routes/photo/PhotoFetchRoute.ts'),
   route('recepten/:slug/favoriet', 'routes/recipe/LikeUpdateRoute.ts'),
   route('recepten/:slug/notitie', 'routes/recipe/NoteUpdateRoute.ts'),
+  route('recepten/:slug/verwijderen', 'routes/recipe/RecipeDeleteRoute.ts'),
   layout('routes/layout/LayoutRoute.tsx', [
     index('routes/home/HomePageRoute.tsx'),
     route('instellingen', 'routes/settings/SettingsPageRoute.tsx'),
