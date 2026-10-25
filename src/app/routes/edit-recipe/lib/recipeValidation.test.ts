@@ -252,3 +252,23 @@ describe('recipe-storage › Durations and temperatures are not stored', () => {
     assert.deepEqual(steps?.[0].quantities, []);
   });
 });
+
+describe('recipe-storage › Chip quantity that is a loose unit', () => {
+  test('the chip is stored with value 1 and that unit', () => {
+    const { steps } = postSteps([{ body: 'meng', ingredients: [{ quantityText: 'scheutje', name: 'rode wijn' }] }]);
+    assert.deepEqual(
+      steps?.[0].ingredients.map((c) => [c.quantityValue, c.quantityUnit]),
+      [[1, 'scheutje']],
+    );
+  });
+});
+
+describe('recipe-storage › Chip quantity word that is not a loose unit', () => {
+  test('the chip is stored with no value and no unit', () => {
+    const { steps } = postSteps([{ body: 'meng', ingredients: [{ quantityText: 'el', name: 'olie' }] }]);
+    assert.deepEqual(
+      steps?.[0].ingredients.map((c) => [c.quantityValue, c.quantityUnit]),
+      [[null, null]],
+    );
+  });
+});

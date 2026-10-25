@@ -9,7 +9,7 @@
 ## 2. Parsing
 
 - [x] 2.1 In `parseIngredient` (`lib/shared/ingredients.ts`) give a line that starts with a loose unit and no number value 1 and that unit, and verify with `ingredients.test.ts` scenarios "Loose unit without a number", "Loose unit with a number", "Measure without a number is part of the name", "Loose unit alone has no name", "Loose unit is a whole word" and "Removed loose unit is not recognised"
-- [ ] 2.2 Give `parseQuantity` (`lib/quantity.ts`) the rules, return value 1 and the unit for a text that is exactly a loose unit, pass the rules from `cleanStep` in `lib/recipeValidation.ts`, and verify with `quantity.test.ts` and `recipeValidation.test.ts` scenarios "Chip quantity that is a loose unit" and "Chip quantity word that is not a loose unit"
+- [x] 2.2 Give `parseQuantity` (`lib/quantity.ts`) the rules, return value 1 and the unit for a text that is exactly a loose unit, pass the rules from `cleanStep` in `lib/recipeValidation.ts`, and verify with `quantity.test.ts` and `recipeValidation.test.ts` scenarios "Chip quantity that is a loose unit" and "Chip quantity word that is not a loose unit"
 - [ ] 2.3 Check that chips in `chips.test.ts` and `stepParsers.test.ts` still pass, and add a test that "scheutje" written before an ingredient name is the chip's amount with value 1 (design: Risks)
 
 ## 3. Finish
