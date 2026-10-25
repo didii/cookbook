@@ -7,7 +7,7 @@ import { TagInput } from './TagInput';
 // The field is controlled, so the screen keeps the picked tags.
 function Field({ tags = ['Soep', 'Winter'], start = [] }: { tags?: string[]; start?: string[] }) {
   const [value, setValue] = useState(start);
-  return <TagInput tags={tags} value={value} onValueChange={setValue} />;
+  return <TagInput id="tags" tags={tags} value={value} onValueChange={setValue} />;
 }
 
 const input = () => screen.getByTestId('TagInput-field');
@@ -64,8 +64,9 @@ describe('recipe-form › Picked tag is not suggested again', () => {
   test('the picked tag is left out', async () => {
     render(<Field start={['Soep']} />);
     type('so');
-    await settle();
+    await screen.findAllByTestId('TagInput-option');
     assert.ok(!options().includes('Soep'));
+    await settle();
   });
 });
 

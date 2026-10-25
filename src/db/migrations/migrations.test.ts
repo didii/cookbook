@@ -606,7 +606,9 @@ describe('recipe-storage › Recipe with tags', () => {
       ['Soep', 'Winter'],
     );
   });
+});
 
+describe('migration 0013', () => {
   test('rows written before the migration survive it', async () => {
     const mf = createMiniflare();
     try {

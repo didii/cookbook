@@ -9,6 +9,8 @@ type Props = {
   /** The picked tags. */
   value: string[];
   onValueChange: (tags: string[]) => void;
+  /** The id of the input, for the label that names the field. */
+  id: string;
   invalid?: boolean;
   describedBy?: string;
 };
@@ -16,7 +18,7 @@ type Props = {
 const sameTag = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
 
 /** Multi-select for tags: suggests the stored tags that contain the typed text, and offers text that matches none as a new tag. Picked tags are shown alphabetically, each with a button to remove it. */
-export function TagInput({ tags, value, onValueChange, invalid, describedBy }: Props) {
+export function TagInput({ tags, value, onValueChange, id, invalid, describedBy }: Props) {
   // Ignores letter case and accents: "soep" finds "Soép".
   const { contains } = Combobox.useFilter({ sensitivity: 'base' });
   const [text, setText] = useState('');
@@ -46,7 +48,7 @@ export function TagInput({ tags, value, onValueChange, invalid, describedBy }: P
       >
         <Combobox.Value>
           {(picked: string[]) =>
-            picked.map((tag) => (
+            sortTags(picked).map((tag) => (
               <Combobox.Chip
                 key={tag}
                 data-testid="TagInput-chip"
@@ -65,7 +67,7 @@ export function TagInput({ tags, value, onValueChange, invalid, describedBy }: P
           }
         </Combobox.Value>
         <Combobox.Input
-          id="tags"
+          id={id}
           data-testid="TagInput-field"
           maxLength={maxTagLength}
           autoComplete="off"

@@ -4,6 +4,8 @@ import { useState } from 'react';
 type Props = {
   authors: string[];
   value: string;
+  /** The id of the input, for the label that names the field. */
+  id: string;
   onValueChange: (value: string) => void;
   invalid?: boolean;
   describedBy?: string;
@@ -11,7 +13,7 @@ type Props = {
 };
 
 /** Free-text author field that suggests the authors already on stored recipes; a name that isn't listed is submitted as typed. */
-export function AuthorInput({ authors, value, onValueChange, invalid, describedBy, className }: Props) {
+export function AuthorInput({ authors, value, onValueChange, id, invalid, describedBy, className }: Props) {
   // Ignores letter case and accents: "oma" finds "Oma".
   const { contains } = Autocomplete.useFilter({ sensitivity: 'base' });
   const [open, setOpen] = useState(false);
@@ -31,7 +33,7 @@ export function AuthorInput({ authors, value, onValueChange, invalid, describedB
       autoHighlight={false}
     >
       <Autocomplete.Input
-        id="author"
+        id={id}
         data-testid="AuthorInput-field"
         required
         autoComplete="off"

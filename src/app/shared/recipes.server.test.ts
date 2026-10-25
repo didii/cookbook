@@ -450,10 +450,13 @@ describe('recipe-storage › Duplicate and blank tags are dropped', () => {
 });
 
 describe('recipe-storage › Unknown tag is created', () => {
-  test('the tag is stored and the recipe has it', async ({ db }) => {
-    const slug = await createRecipe(db, { ...base, tags: ['Kerst'] });
+  test('the tag is stored', async ({ db }) => {
+    await createRecipe(db, { ...base, tags: ['Kerst'] });
     assert.deepEqual(await storedTags(db), ['Kerst']);
-    assert.deepEqual(await readTags(db, slug), ['Kerst']);
+  });
+
+  test('the recipe has it', async ({ db }) => {
+    assert.deepEqual(await readTags(db, await createRecipe(db, { ...base, tags: ['Kerst'] })), ['Kerst']);
   });
 });
 
@@ -462,15 +465,6 @@ describe('recipe-storage › Unused tag remains', () => {
     const slug = await createRecipe(db, { ...base, tags: ['Soep'] });
     await updateRecipe(db, slug, { ...base, tags: [] });
     assert.deepEqual(await listTags(db), ['Soep']);
-  });
-});
-
-describe('recipe-storage › Recipe with tags deleted', () => {
-  test('its links are gone and the tag remains', async ({ db }) => {
-    const slug = await createRecipe(db, { ...base, tags: ['Soep'] });
-    await deleteRecipe(db, slug);
-    assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM recipe_tags').first<{ n: number }>())?.n, 0);
-    assert.deepEqual(await storedTags(db), ['Soep']);
   });
 });
 

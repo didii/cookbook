@@ -1,5 +1,6 @@
 import type { Step } from '~app/shared/recipe';
 import type { Rules } from '~app/shared/rules';
+import { sortTags } from '~app/shared/tags';
 import type { IngredientLine } from './ingredients/IngredientList';
 import type { RecipeForm } from './recipeValidation';
 import { classifyStored, reconcile, rowsOf, toStored, type Context, type StepDraft } from './steps/chips';
@@ -155,6 +156,7 @@ const normalize = (draft: RecipeDraft, rules: Rules) =>
   JSON.stringify(
     {
       ...draft,
+      tags: sortTags(draft.tags),
       ingredients: draft.ingredients.filter((r) => !blank(r)).map((r) => r.text),
       steps: storedSteps(draft, rules),
     },

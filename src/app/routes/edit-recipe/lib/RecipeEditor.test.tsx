@@ -163,7 +163,7 @@ describe('recipe-form › Tags field in the side column', () => {
 
 describe('recipe-form › Stored tags are shown when editing', () => {
   test('both tags are shown, alphabetically', () => {
-    const stored = withTags('Soep', 'Winter');
+    const stored = withTags('Winter', 'Soep');
     show({ initial: stored, values: stored, slug: 'soep', updatedAt: '2026-01-01T00:00:00Z' });
     assert.deepEqual(pickedTags(), ['Soep', 'Winter']);
   });

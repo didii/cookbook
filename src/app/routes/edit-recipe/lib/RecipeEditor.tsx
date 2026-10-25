@@ -305,6 +305,7 @@ export function RecipeEditor({
               Van wie is het recept?{asterisk}
             </label>
             <AuthorInput
+              id="author"
               authors={authors}
               value={current.author}
               onValueChange={set('author')}
@@ -333,6 +334,7 @@ export function RecipeEditor({
             </label>
             <input type="hidden" name="tags" data-testid="RecipeEditor-tags" value={JSON.stringify(current.tags)} />
             <TagInput
+              id="tags"
               tags={tags}
               value={current.tags}
               onValueChange={(next) => setCurrent((c) => ({ ...c, tags: next }))}
