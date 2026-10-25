@@ -4,10 +4,12 @@ import { cn } from '~app/shared/cn';
 
 interface DeleteRecipeProps extends ComponentProps<'div'> {
   headingText: string;
+  /** The recipe's slug: the delete form posts to its delete route. */
+  slug: string;
 }
 
-/** Button at the bottom of the recipe page; it opens a modal popup that asks for confirmation before the recipe is deleted. */
-export function DeleteRecipe({ headingText, className, ...props }: DeleteRecipeProps) {
+/** Button at the bottom of the edit page; it opens a modal popup that asks for confirmation before the recipe is deleted. */
+export function DeleteRecipe({ headingText, slug, className, ...props }: DeleteRecipeProps) {
   const dialog = useRef<HTMLDialogElement>(null);
   return (
     <div {...props} className={cn('mt-10 flex justify-center', className)}>
@@ -27,7 +29,7 @@ export function DeleteRecipe({ headingText, className, ...props }: DeleteRecipeP
         onClick={(e) => e.target === e.currentTarget && e.currentTarget.close()}
         className="m-auto w-[min(26rem,calc(100vw-2rem))] rounded-xl border-3 border-ink bg-white p-0 text-ink shadow-hard backdrop:bg-ink/40"
       >
-        <Form method="post" className="grid gap-5 p-6">
+        <Form method="post" action={`/recepten/${slug}/verwijderen`} className="grid gap-5 p-6">
           <h2 id="delete-title" data-testid="DeleteRecipe-title" className="text-xl font-black text-balance">
             Recept “{headingText}” verwijderen?
           </h2>
