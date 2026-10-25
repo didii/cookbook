@@ -4,7 +4,7 @@
 
 - [x] 1.1 Add `looseUnits` and its defaults to `Rules`/`defaultRules` in `shared/rules.ts`; in `rules.server.ts` let `getRules` fall back to the defaults when the saved value lacks it or holds an invalid one, and verify with `rules.server.test.ts` scenarios "Default loose units" and "Saved rules without loose units"
 - [x] 1.2 Add the `looseUnits` form field to `RulesFields`, `toFields` and `readRules` (letters only, may be empty, exempt from the two-lists check) and verify with the scenarios "Add a loose unit", "No loose units", "Loose unit that is also a unit" and "Loose unit with other characters"
-- [ ] 1.3 Add the "Losse eenheden" field to `AdminRulesPageRoute.tsx` and verify with its route test that the page shows and saves the list ("Add a loose unit")
+- [x] 1.3 Add the "Losse eenheden" field to `AdminRulesPageRoute.tsx` and verify with its route test that the page shows and saves the list ("Add a loose unit")
 
 ## 2. Parsing
 
