@@ -9,6 +9,7 @@ import {
   getRecipe,
   listAuthors,
   listRecipes,
+  listTags,
   setLike,
   setNote,
   slugify,
@@ -181,6 +182,7 @@ describe('createRecipe', () => {
           { quantityText: '', quantityValue: null, quantityUnit: null, name: 'zout' },
         ],
         steps: loaded('mengen', 'bakken'),
+        tags: [],
       });
     });
 
@@ -220,7 +222,7 @@ describe('listRecipes', () => {
         time: null,
         image: null,
         seal: 'fu',
-        categories: [],
+        tags: [],
         liked: false,
         hasNote: false,
         isNew: true,
@@ -232,7 +234,7 @@ describe('listRecipes', () => {
         time: '30 min',
         image: '/a.jpg',
         seal: 'fu',
-        categories: [],
+        tags: [],
         liked: false,
         hasNote: false,
         isNew: true,
@@ -302,44 +304,84 @@ describe("recipe-note › Another member's note on a card", () => {
   });
 });
 
-const categorize = async (db: D1Database, slug: string, ...names: string[]) => {
-  for (const [position, name] of names.entries()) {
-    await db.prepare('INSERT OR IGNORE INTO categories (name) VALUES (?)').bind(name).run();
+const tagRecipe = async (db: D1Database, slug: string, ...names: string[]) => {
+  for (const name of names) {
+    await db.prepare('INSERT OR IGNORE INTO tags (name) VALUES (?)').bind(name).run();
     await db
-      .prepare(
-        'INSERT INTO recipe_categories (recipe_id, category_id, position) VALUES ((SELECT id FROM recipes WHERE slug = ?), (SELECT id FROM categories WHERE name = ?), ?)',
-      )
-      .bind(slug, name, position)
+      .prepare('INSERT INTO recipe_tags (recipe_id, tag_id) VALUES ((SELECT id FROM recipes WHERE slug = ?), (SELECT id FROM tags WHERE name = ?))')
+      .bind(slug, name)
       .run();
   }
 };
+const listedTags = async (db: D1Database, slug: string) => (await listRecipes(db, 'x@example.com', new Date())).find((r) => r.slug === slug)?.tags;
+const storedTags = async (db: D1Database) =>
+  (await db.prepare('SELECT name FROM tags ORDER BY name').all<{ name: string }>()).results.map((r) => r.name);
 
-describe('recipe-storage › Recipe without categories', () => {
+describe('recipe-storage › Recipe with tags', () => {
+  test('reading a recipe gives its tags alphabetically', async ({ db }) => {
+    const slug = await createRecipe(db, { title: 'Erwtensoep', author: 'Oma', seal: 'fu' });
+    await tagRecipe(db, slug, 'Winter', 'Soep');
+    assert.deepEqual((await getRecipe(db, slug))?.tags, ['Soep', 'Winter']);
+  });
+});
+
+describe('recipe-storage › Recipe without tags', () => {
   test('its entry has an empty list', async ({ db }) => {
     const slug = await createRecipe(db, { title: 'Kaal', author: 'Oma', seal: 'fu' });
-    assert.deepEqual((await listRecipes(db, 'x@example.com', new Date())).find((r) => r.slug === slug)?.categories, []);
+    assert.deepEqual(await listedTags(db, slug), []);
   });
 });
 
-describe('recipe-storage › Listing returns categories in order', () => {
-  test('the entry has its categories in stored order', async ({ db }) => {
-    const slug = await createRecipe(db, { title: 'Erwtensoep', author: 'Oma', seal: 'fu' });
-    await categorize(db, slug, 'Soep', 'Winter');
-    assert.deepEqual((await listRecipes(db, 'x@example.com', new Date())).find((r) => r.slug === slug)?.categories, ['Soep', 'Winter']);
-  });
-});
-
-describe('recipe-storage › Category is shared', () => {
-  test('both recipes are listed with the category', async ({ db }) => {
+describe('recipe-storage › Tag is shared', () => {
+  test('both recipes are listed with the tag', async ({ db }) => {
     const a = await createRecipe(db, { title: 'A', author: 'Oma', seal: 'fu' });
     const b = await createRecipe(db, { title: 'B', author: 'Oma', seal: 'fu' });
-    await categorize(db, a, 'Snel');
-    await categorize(db, b, 'Snel');
+    await tagRecipe(db, a, 'Snel');
+    await tagRecipe(db, b, 'Snel');
     const listed = await listRecipes(db, 'x@example.com', new Date());
     assert.deepEqual(
-      listed.map((r) => r.categories),
+      listed.map((r) => r.tags),
       [['Snel'], ['Snel']],
     );
+  });
+
+  test('only one tag is stored', async ({ db }) => {
+    await tagRecipe(db, await createRecipe(db, { title: 'A', author: 'Oma', seal: 'fu' }), 'Snel');
+    await tagRecipe(db, await createRecipe(db, { title: 'B', author: 'Oma', seal: 'fu' }), 'Snel');
+    assert.deepEqual(await storedTags(db), ['Snel']);
+  });
+});
+
+describe('recipe-storage › Listing returns the most used tags first', () => {
+  test('the entry has the most used tag first', async ({ db }) => {
+    const slug = await createRecipe(db, { title: 'Hoofd', author: 'Oma', seal: 'fu' });
+    await tagRecipe(db, slug, 'Soep', 'Bakken', 'winter');
+    for (const title of ['B', 'C']) await tagRecipe(db, await createRecipe(db, { title, author: 'Oma', seal: 'fu' }), 'winter');
+    await tagRecipe(db, await createRecipe(db, { title: 'D', author: 'Oma', seal: 'fu' }), 'Soep');
+    assert.deepEqual(await listedTags(db, slug), ['winter', 'Soep', 'Bakken']);
+  });
+});
+
+describe('recipe-storage › Equally used tags are alphabetical', () => {
+  test('equal counts are in alphabetical order', async ({ db }) => {
+    const slug = await createRecipe(db, { title: 'Gelijk', author: 'Oma', seal: 'fu' });
+    await tagRecipe(db, slug, 'winter', 'Soep');
+    assert.deepEqual(await listedTags(db, slug), ['Soep', 'winter']);
+  });
+});
+
+describe('recipe-storage › Reading a recipe returns tags alphabetically', () => {
+  test('the recipe has its tags in alphabetical order', async ({ db }) => {
+    const slug = await createRecipe(db, { title: 'Alfabet', author: 'Oma', seal: 'fu' });
+    await tagRecipe(db, slug, 'winter', 'Soep');
+    assert.deepEqual((await getRecipe(db, slug))?.tags, ['Soep', 'winter']);
+  });
+});
+
+describe('recipe-storage › Tags are listed alphabetically', () => {
+  test('the tags come back alphabetically', async ({ db }) => {
+    await db.batch(['winter', 'Soep', 'Bakken'].map((name) => db.prepare('INSERT INTO tags (name) VALUES (?)').bind(name)));
+    assert.deepEqual(await listTags(db), ['Bakken', 'Soep', 'winter']);
   });
 });
 
