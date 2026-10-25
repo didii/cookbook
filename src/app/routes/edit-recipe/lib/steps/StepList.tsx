@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useLayoutEffect, useRef, useState, type ComponentProps } from 'react';
 import { Announcement } from '~app/shared/components';
 import type { Context, StepDraft } from './chips';
 import { StepEditor } from './StepEditor';
@@ -7,7 +7,7 @@ import type { ItemHandle } from '../shared/ItemHandle';
 import { useAfterRender } from '../shared/useAfterRender';
 import { useReorder } from '../shared/useReorder';
 
-type Props = {
+interface StepListProps extends ComponentProps<'div'> {
   steps: StepDraft[];
   /** What each step's chips are read against, one per step. */
   contexts: Context[];
@@ -23,7 +23,7 @@ type Props = {
   onRestore: (step: StepDraft, at: number) => void;
   /** Move a step to a place in the list. */
   onMove: (id: string, to: number) => void;
-};
+}
 
 /** How long a removed step can be brought back. */
 const undoSeconds = 8;
@@ -32,7 +32,7 @@ const undoSeconds = 8;
 type Removed = { step: StepDraft; at: number };
 
 /** The steps of a recipe: numbered and reorderable, ending with an empty step that typing fills. */
-export function StepList({ steps, contexts, onChips, onType, onEdit, onAdd, onRemove, onRestore, onMove }: Props) {
+export function StepList({ steps, contexts, onChips, onType, onEdit, onAdd, onRemove, onRestore, onMove, ...props }: StepListProps) {
   const items = useRef(new Map<string, ItemHandle>());
   const undoButton = useRef<HTMLButtonElement>(null);
   // The steps as of the latest render, for focus requests that run after the next one. Declared before `useAfterRender`, so it is up to date when a request runs.
@@ -105,7 +105,7 @@ export function StepList({ steps, contexts, onChips, onType, onEdit, onAdd, onRe
   );
 
   return (
-    <div>
+    <div {...props}>
       <ol className="m-0 grid list-none p-0">
         {steps.map((step, i) => (
           <Fragment key={step.id}>

@@ -1,17 +1,22 @@
+import type { ComponentProps } from 'react';
+import { cn } from '~app/shared/cn';
 import { Lock, StickyNote } from '~app/shared/icons';
 import { maxNoteLength } from './note';
 import { NoteCue } from './NoteCue';
 import type { Note } from './useNote';
 
-type Props = { note: Note };
+interface NotePanelProps extends ComponentProps<'section'> {
+  note: Note;
+}
 
 /** Wide screens: the note under the ingredient list, always visible, saved when the field loses focus or typing pauses. Hidden below 52rem, where `NoteSheet` takes over. */
-export function NotePanel({ note }: Props) {
+export function NotePanel({ note, className, ...props }: NotePanelProps) {
   return (
     <section
+      {...props}
       aria-labelledby="note-title"
       data-testid="NotePanel-panel"
-      className="mt-6 rounded-xl border-3 border-ink bg-white px-4 pt-3.5 pb-4 shadow-hard max-[51.99rem]:hidden"
+      className={cn('mt-6 rounded-xl border-3 border-ink bg-white px-4 pt-3.5 pb-4 shadow-hard max-[51.99rem]:hidden', className)}
     >
       <div className="flex items-center justify-between gap-2">
         <h2 id="note-title" className="inline-flex items-center gap-2 text-xl font-black">

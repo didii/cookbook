@@ -1,15 +1,21 @@
-import { useRef } from 'react';
+import { useRef, type ComponentProps } from 'react';
 import { Form } from 'react-router';
+import { cn } from '~app/shared/cn';
 
-type Props = { name: string; isSelf: boolean; accessUrl: string; disabledReason?: string };
+interface DeleteUserProps extends ComponentProps<'div'> {
+  name: string;
+  isSelf: boolean;
+  accessUrl: string;
+  disabledReason?: string;
+}
 
 const lostAccess = 'Je verliest hiermee de toegang tot deze pagina.';
 
 /** "Verwijderen" button with a modal confirm popup. Disabled, with its reason as visible text beside it, when `disabledReason` is given. */
-export function DeleteUser({ name, isSelf, accessUrl, disabledReason }: Props) {
+export function DeleteUser({ name, isSelf, accessUrl, disabledReason, className, ...props }: DeleteUserProps) {
   const dialog = useRef<HTMLDialogElement>(null);
   return (
-    <div className="mt-6">
+    <div {...props} className={cn('mt-6', className)}>
       <button
         type="button"
         data-testid="DeleteUser-open"

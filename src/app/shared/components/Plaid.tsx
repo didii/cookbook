@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import type { ComponentProps, CSSProperties } from 'react';
 import { cn } from '../cn';
 
 const plaidClassName =
@@ -10,9 +10,20 @@ const plaidStyle = (strength = 0.45, cell = 32) =>
     '--plaid-cell': `${cell}px`,
   }) as CSSProperties;
 
-type Props = { strength?: number; cell?: number; className?: string };
+interface PlaidProps extends ComponentProps<'div'> {
+  strength?: number;
+  cell?: number;
+}
 
 /** Buffalo plaid on a red ground: ink bands cross both ways, `cell` px apart and `strength` (0 to 1) dark. Fills the nearest `relative` parent behind its content. */
-export function Plaid({ strength = 0.45, cell = 32, className }: Props) {
-  return <div data-testid="Plaid-layer" aria-hidden="true" className={cn(plaidClassName, className)} style={plaidStyle(strength, cell)} />;
+export function Plaid({ strength = 0.45, cell = 32, className, style, ...props }: PlaidProps) {
+  return (
+    <div
+      {...props}
+      data-testid="Plaid-layer"
+      aria-hidden="true"
+      className={cn(plaidClassName, className)}
+      style={{ ...plaidStyle(strength, cell), ...style }}
+    />
+  );
 }

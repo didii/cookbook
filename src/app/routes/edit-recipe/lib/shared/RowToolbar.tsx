@@ -1,9 +1,9 @@
-import { useRef, useState, type KeyboardEvent } from 'react';
+import { useRef, useState, type ComponentProps, type KeyboardEvent } from 'react';
 import { cn } from '~app/shared/cn';
 import { ChevronDown, ChevronUp, Cross, Plus, Trash } from '~app/shared/icons';
 import { useAfterRender } from './useAfterRender';
 
-type Props = {
+interface RowToolbarProps extends ComponentProps<'div'> {
   /** Accessible name of the button group. */
   label: string;
   /** Accessible name of the delete button. */
@@ -18,13 +18,12 @@ type Props = {
   trash?: boolean;
   /** Shown but inert: the row has nothing to act on yet. */
   disabled?: boolean;
-  className?: string;
   /** Move one place up (-1) or down (1). */
   onMove: (direction: -1 | 1) => void;
   onDelete: () => void;
   /** When given, a first button that inserts a row above this one. */
   onInsert?: () => void;
-};
+}
 
 const iconClass = 'size-[1.05em]';
 const icons = {
@@ -52,7 +51,8 @@ export function RowToolbar({
   onMove,
   onDelete,
   onInsert,
-}: Props) {
+  ...props
+}: RowToolbarProps) {
   const buttons = useRef<(HTMLButtonElement | null)[]>([]);
   const afterRender = useAfterRender();
   // The one button that is in the Tab order: the last one used, or the first enabled one when that is disabled.
@@ -89,6 +89,7 @@ export function RowToolbar({
     // The group itself is not focusable: its buttons are, with a roving tabindex.
     // oxlint-disable-next-line jsx-a11y/interactive-supports-focus
     <div
+      {...props}
       role="toolbar"
       data-testid="RowToolbar-toolbar"
       aria-label={label}

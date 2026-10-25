@@ -1,17 +1,28 @@
 import { Switch } from '@base-ui/react/switch';
+import type { ComponentProps } from 'react';
+import { cn } from '~app/shared/cn';
 import { switchText, type LockState } from './cookMode';
 
-type Props = { wanted: boolean; lock: LockState; manual: boolean | undefined; onToggle: () => void };
+interface CookSwitchProps extends ComponentProps<'label'> {
+  wanted: boolean;
+  lock: LockState;
+  manual: boolean | undefined;
+  onToggle: () => void;
+}
 
 /** The cook mode switch for narrow screens. Its text says whether the screen really stays awake, not what was asked for. */
-export function CookSwitch({ wanted, lock, manual, onToggle }: Props) {
+export function CookSwitch({ wanted, lock, manual, onToggle, className, ...props }: CookSwitchProps) {
   const { title, sub } = switchText(wanted, lock, manual);
   const unable = wanted && (lock === 'unsupported' || lock === 'refused');
 
   return (
     <label
+      {...props}
       data-testid="CookSwitch-label"
-      className="mt-6 flex min-h-12 w-full cursor-pointer items-center gap-3 rounded-[0.625rem] border-3 border-ink bg-white py-1 pr-3.5 pl-2 text-left font-extrabold min-[52rem]:hidden"
+      className={cn(
+        'mt-6 flex min-h-12 w-full cursor-pointer items-center gap-3 rounded-[0.625rem] border-3 border-ink bg-white py-1 pr-3.5 pl-2 text-left font-extrabold min-[52rem]:hidden',
+        className,
+      )}
     >
       <Switch.Root
         checked={wanted}

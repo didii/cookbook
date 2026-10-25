@@ -1,13 +1,19 @@
+import type { ComponentProps } from 'react';
 import { cn } from '~app/shared/cn';
 import { Check } from '~app/shared/icons';
 import type { Cue } from './useNote';
 
-type Props = { cue: Cue; onClear: () => void; onEnd: () => void; className?: string };
+// `className` styles the cue button, not the output element around it.
+interface NoteCueProps extends ComponentProps<'output'> {
+  cue: Cue;
+  onClear: () => void;
+  onEnd: () => void;
+}
 
 /** "Notitie bewaard": announced when it appears, fades by itself, and a tap removes it at once. The live region stays in the page so the appearance is announced. */
-export function NoteCue({ cue, onClear, onEnd, className }: Props) {
+export function NoteCue({ cue, onClear, onEnd, className, ...props }: NoteCueProps) {
   return (
-    <output data-testid="NoteCue-status" className="block">
+    <output {...props} data-testid="NoteCue-status" className="block">
       {cue !== 'off' && (
         <button
           type="button"

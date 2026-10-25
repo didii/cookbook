@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef } from 'react';
+import { useContext, useEffect, useRef, type ComponentProps } from 'react';
 import { cn } from '~app/shared/cn';
 import { Stop } from '~app/shared/icons';
 import { TimerButton } from './TimerButton';
@@ -6,7 +6,11 @@ import { formatCountdown, type TimerView } from './timers';
 import { TimersContext } from './timersContext';
 
 type Peek = (step: number | undefined) => void;
-type Props = { timers: TimerView[]; onJump: (step: number) => void; onPeek: Peek };
+interface TimerSidebarProps extends ComponentProps<'section'> {
+  timers: TimerView[];
+  onJump: (step: number) => void;
+  onPeek: Peek;
+}
 
 /** One timer with all its controls. Hovering it tints its step; the tint is also cleared when the card goes away under the mouse (stop, done). */
 function SidebarCard({ timer: t, onJump, onPeek }: { timer: TimerView; onJump: (step: number) => void; onPeek: Peek }) {
@@ -88,11 +92,11 @@ function SidebarCard({ timer: t, onJump, onPeek }: { timer: TimerView; onJump: (
 }
 
 /** Wide screens: every running or finished timer above the ingredients, with all its controls, whatever the scroll position. */
-export function TimerSidebar({ timers, onJump, onPeek }: Props) {
+export function TimerSidebar({ timers, onJump, onPeek, className, ...props }: TimerSidebarProps) {
   if (timers.length === 0) return null;
 
   return (
-    <section aria-label="Timers" className="mb-6 grid shrink-0 gap-2 max-[51.99rem]:hidden">
+    <section {...props} aria-label="Timers" className={cn('mb-6 grid shrink-0 gap-2 max-[51.99rem]:hidden', className)}>
       <h3 className="text-[0.8125rem] font-black tracking-[0.08em] text-muted uppercase">Timers</h3>
       <ul className="m-0 grid list-none gap-2 p-0">
         {timers.map((t) => (

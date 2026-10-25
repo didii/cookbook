@@ -1,13 +1,19 @@
+import type { ComponentProps } from 'react';
 import { NavLink } from 'react-router';
+import { cn } from '~app/shared/cn';
 import type { UserListItem } from '~app/shared/users.server';
 
-type Props = { users: UserListItem[]; capped: boolean; limit: number };
+interface UserListProps extends ComponentProps<'ul'> {
+  users: UserListItem[];
+  capped: boolean;
+  limit: number;
+}
 
 /** The users, one link each to its detail; the selected one is marked by `aria-current` (the URL is the selection). */
-export function UserList({ users, capped, limit }: Props) {
+export function UserList({ users, capped, limit, className, ...props }: UserListProps) {
   return (
     <>
-      <ul className="mt-4 grid gap-2">
+      <ul {...props} className={cn('mt-4 grid gap-2', className)}>
         {users.map((user) => (
           <li key={user.id}>
             <NavLink
