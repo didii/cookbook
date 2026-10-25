@@ -157,6 +157,14 @@ The system SHALL store for a step any number of ingredient chips, each with free
 - **WHEN** a step with the chip "½ tl zout" is saved from the editor, or the chip "1 klontje boter"
 - **THEN** the stored chips have quantity value 0,5 and unit "tl", and value 1 and unit "klontje"
 
+#### Scenario: Chip quantity that is a loose unit
+- **WHEN** a step with the chip "scheutje" as quantity and the name "rode wijn" is saved from the editor, and "scheutje" is a loose unit
+- **THEN** the stored chip has quantity value 1 and unit "scheutje"
+
+#### Scenario: Chip quantity word that is not a loose unit
+- **WHEN** a step with the chip "el" as quantity is saved from the editor, and "el" is a unit but not a loose unit
+- **THEN** the stored chip has no quantity value and no unit
+
 ### Requirement: A recipe has categories
 The system SHALL store categories by name, each name once (letter case ignored, never empty), and SHALL let a recipe have any number of them, each at most once per recipe and in a stored order. A category SHALL be shared by the recipes that have it. The system SHALL return a recipe's categories, in that order, when recipes are listed, and an empty list for a recipe without any. Links between a recipe and its categories SHALL be removed when the recipe is deleted, and a category SHALL remain when a recipe that had it is deleted. Categories are only seeded for now: nothing in the application changes them.
 
