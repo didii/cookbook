@@ -13,4 +13,4 @@ Verify each task with the type check and `pnpm test:ai`; `pnpm test:spec move-de
 
 ## 3. Wrap-up
 
-- [ ] 3.1 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check`, `pnpm test:ai` and `pnpm test:spec move-delete-to-edit-page`; all clean.
+- [x] 3.1 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check`, `pnpm test:ai` and `pnpm test:spec move-delete-to-edit-page`; all clean.

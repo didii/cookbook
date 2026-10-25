@@ -4,6 +4,7 @@ import { cn } from '~app/shared/cn';
 import { AuthorInput } from '~app/shared/components';
 import { ChevronBack } from '~app/shared/icons';
 import type { Rules } from '~app/shared/rules';
+import { DeleteRecipe } from './DeleteRecipe';
 import {
   addStep,
   changeChips,
@@ -34,7 +35,6 @@ import {
   purgeDrafts,
   resolveStart,
 } from './draftStore';
-import { DeleteRecipe } from './DeleteRecipe';
 import { IngredientList } from './ingredients/IngredientList';
 import { PhotoField, type PhotoState } from './photo/PhotoField';
 import type { RecipeFormErrors, RecipeFormField } from './recipeValidation';
