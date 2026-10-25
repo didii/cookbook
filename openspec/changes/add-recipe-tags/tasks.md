@@ -26,4 +26,4 @@ Change 1 of 2; the tag manager follows. Verify each task with the type check and
 
 ## 5. Wrap-up
 
-- [ ] 5.1 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check`, `pnpm test:ai` and `pnpm test:spec add-recipe-tags`; all clean
+- [x] 5.1 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check`, `pnpm test:ai` and `pnpm test:spec add-recipe-tags`; all clean
