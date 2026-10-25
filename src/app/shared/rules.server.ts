@@ -29,28 +29,30 @@ export async function getRules(db: D1Database): Promise<Rules> {
   }
 }
 
-/** The five fields of the admin form: one word per line, and for spoken durations `phrase = minutes`. */
-export type RulesFields = Record<'units' | 'minuteWords' | 'hourWords' | 'degreeWords' | 'spoken', string>;
+/** The six fields of the admin form: one word per line, and for spoken durations `phrase = minutes`. */
+export type RulesFields = Record<'units' | 'looseUnits' | 'minuteWords' | 'hourWords' | 'degreeWords' | 'spoken', string>;
 export type RulesErrors = Partial<Record<keyof RulesFields, string>>;
 
-const label = { units: 'Eenheden', minuteWords: 'Minuutwoorden', hourWords: 'Uurwoorden', degreeWords: 'Graadwoorden', spoken: 'Uitgesproken duur' };
+const label = { units: 'Eenheden', looseUnits: 'Losse eenheden', minuteWords: 'Minuutwoorden', hourWords: 'Uurwoorden', degreeWords: 'Graadwoorden', spoken: 'Uitgesproken duur' };
 const clean = (line: string) => line.trim().replace(/\s+/g, ' ').toLowerCase();
 const lines = (text: string) => text.split(/\r?\n/).map(clean).filter(Boolean);
 
 /** Checks and cleans the form: blank lines and repeats dropped, words lowercased. Either the rules or one message per faulty field; nothing is stored. */
 export function readRules(fields: RulesFields): { rules: Rules } | { errors: RulesErrors } {
   const errors: RulesErrors = {};
-  const words = (field: 'units' | 'minuteWords' | 'hourWords' | 'degreeWords') => {
+  const words = (field: 'units' | 'looseUnits' | 'minuteWords' | 'hourWords' | 'degreeWords') => {
     const list = [...new Set(lines(fields[field]))];
-    if (!list.length) errors[field] = `${label[field]} mogen niet leeg zijn.`;
+    // Spoken durations and loose units may be empty; an empty loose list switches the feature off.
+    if (!list.length && field !== 'looseUnits') errors[field] = `${label[field]} mogen niet leeg zijn.`;
     // Units match as one letters-only word, so they take no spaces or °.
-    const ok = field === 'units' ? /^\p{L}+$/u : valid;
+    const ok = field === 'units' || field === 'looseUnits' ? /^\p{L}+$/u : valid;
     const bad = list.find((w) => !ok.test(w));
-    if (bad) errors[field] = field === 'units' ? `"${bad}" mag alleen letters bevatten.` : `"${bad}" mag alleen letters, ° en spaties bevatten.`;
+    if (bad) errors[field] = field === 'units' || field === 'looseUnits' ? `"${bad}" mag alleen letters bevatten.` : `"${bad}" mag alleen letters, ° en spaties bevatten.`;
     return list;
   };
   const rules: Rules = {
     units: words('units'),
+    looseUnits: words('looseUnits'),
     minuteWords: words('minuteWords'),
     hourWords: words('hourWords'),
     degreeWords: words('degreeWords'),
@@ -95,6 +97,7 @@ export async function resetRules(db: D1Database): Promise<void> {
 /** The rules as the admin form shows them. */
 export const toFields = (rules: Rules): RulesFields => ({
   units: rules.units.join('\n'),
+  looseUnits: rules.looseUnits.join('\n'),
   minuteWords: rules.minuteWords.join('\n'),
   hourWords: rules.hourWords.join('\n'),
   degreeWords: rules.degreeWords.join('\n'),
