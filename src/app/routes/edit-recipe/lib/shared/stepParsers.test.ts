@@ -384,7 +384,7 @@ describe('parsing-rules › Removed word is not recognised', () => {
   });
 });
 
-describe('recipe-step-chips › Loose unit written before the name', () => {
+describe('findIngredients loose unit amount', () => {
   // "een" stays outside the amount; "scheutje" is the amount, its value 1 is read when the chip is saved.
   test('is the chip amount, without the word before it', () => {
     assert.deepEqual(
