@@ -6,10 +6,17 @@ export type ParsedIngredient = { quantityText: string; quantityValue?: number; q
 const leading = new RegExp(String.raw`^\s*(${numberPattern})(?:\s*[-–]\s*(${numberPattern}))?`, 'u');
 const word = /^\s*(\p{L}+)(\.?)/u;
 
-/** Splits one typed line into the quantity as typed, its value and unit (one of `rules.units`), and the name. A line without a leading number is all name. */
+/** Splits one typed line into the quantity as typed, its value and unit (one of `rules.units`), and the name. A line with no leading number is all name, unless it starts with a loose unit (`rules.looseUnits`): that word is the quantity, with value 1. */
 export function parseIngredient(text: string, rules: Rules): ParsedIngredient {
   const match = leading.exec(text);
-  if (!match) return { quantityText: '', name: text.trim() };
+  if (!match) {
+    const first = word.exec(text);
+    if (first && rules.looseUnits.includes(first[1].toLowerCase())) {
+      const end = first[0].length;
+      return { quantityText: text.slice(0, end).trim(), quantityValue: 1, quantityUnit: first[1].toLowerCase(), name: text.slice(end).trim() };
+    }
+    return { quantityText: '', name: text.trim() };
+  }
   const [number, from, to] = match;
   let end = number.length;
   let unit: string | undefined;
