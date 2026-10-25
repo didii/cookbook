@@ -69,7 +69,10 @@ describe('parsing-rules › Admin sees the link', () => {
 
   test('it points to the parsing rules', () => {
     labels('admin');
-    assert.deepEqual(links(screen.getByTestId('SiteMenu-dialog')).at(-2), ['Herkenning', '/beheer/herkenning']);
+    assert.deepEqual(
+      links(screen.getByTestId('SiteMenu-dialog')).find(([label]) => label === 'Herkenning'),
+      ['Herkenning', '/beheer/herkenning'],
+    );
   });
 });
 
@@ -90,9 +93,12 @@ describe('site-menu › Menu lists the links for a superadmin', () => {
     assert.deepEqual(labels('superadmin'), ['Nieuw recept', 'Instellingen', 'Over', 'Herkenning', 'Gebruikers', 'Uitloggen']);
   });
 
-  test('the link before the last points to the users page', () => {
+  test('Gebruikers points to the users page', () => {
     labels('superadmin');
-    assert.deepEqual(links(screen.getByTestId('SiteMenu-dialog')).at(-2), ['Gebruikers', '/beheer/gebruikers']);
+    assert.deepEqual(
+      links(screen.getByTestId('SiteMenu-dialog')).find(([label]) => label === 'Gebruikers'),
+      ['Gebruikers', '/beheer/gebruikers'],
+    );
   });
 });
 
@@ -103,10 +109,16 @@ describe('site-menu › Menu lists the links for an admin', () => {
 });
 
 describe('site-menu › Logging out', () => {
-  test('Uitloggen is a plain link to the Access logout', () => {
-    const { dialog } = show();
+  test('Uitloggen points to the Access logout', () => {
+    show();
     openMenu();
-    assert.deepEqual(links(dialog).at(-1), ['Uitloggen', '/cdn-cgi/access/logout']);
+    assert.equal(screen.getByTestId('SiteMenu-logout').getAttribute('href'), '/cdn-cgi/access/logout');
+  });
+
+  test('a click is not intercepted by the router', () => {
+    show();
+    openMenu();
+    assert.equal(fireEvent.click(screen.getByTestId('SiteMenu-logout')), true);
   });
 });
 
