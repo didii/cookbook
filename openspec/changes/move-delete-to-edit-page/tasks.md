@@ -4,7 +4,7 @@ Verify each task with the type check and `pnpm test:ai`; `pnpm test:spec move-de
 
 ## 1. Delete action
 
-- [ ] 1.1 Add `routes/recipe/RecipeDeleteRoute.ts` (the action from `RecipePageRoute`, unchanged) and the route `recepten/:slug/verwijderen` in `routes.ts`; remove the action and its imports from `RecipePageRoute.tsx`. Move the "Recipe is deleted", "Photo is deleted" and "Unknown recipe" tests from `RecipePageRoute.test.ts` to `RecipeDeleteRoute.test.ts`, the action tests calling the new action.
+- [x] 1.1 Add `routes/recipe/RecipeDeleteRoute.ts` (the action from `RecipePageRoute`, unchanged) and the route `recepten/:slug/verwijderen` in `routes.ts`; remove the action and its imports from `RecipePageRoute.tsx`. Move the "Recipe is deleted", "Photo is deleted" and "Unknown recipe" tests from `RecipePageRoute.test.ts` to `RecipeDeleteRoute.test.ts`, the action tests calling the new action.
 
 ## 2. Button
 

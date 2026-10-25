@@ -1,7 +1,6 @@
-import { data, redirect } from 'react-router';
+import { data } from 'react-router';
 import { envContext, userEmailContext } from '~app/shared/context.server';
-import { deletePhoto } from '~app/shared/photos.server';
-import { deleteRecipe, getMemberRecipeData, getRecipe, recordView } from '~app/shared/recipes.server';
+import { getMemberRecipeData, getRecipe, recordView } from '~app/shared/recipes.server';
 import { tileFor } from '~app/shared/tile';
 import type { Route } from './+types/RecipePageRoute';
 import { RecipeView } from './lib/RecipeView';
@@ -15,16 +14,6 @@ export async function loader({ params, context }: Route.LoaderArgs) {
   await recordView(db, email, params.slug);
   const { steps, ...recipe } = found;
   return { recipe, steps, tile: tileFor(recipe.id), ...(await getMemberRecipeData(db, email, params.slug)) };
-}
-
-export async function action({ params, context }: Route.ActionArgs) {
-  const { DB, PHOTOS } = context.get(envContext);
-  const deleted = await deleteRecipe(DB, params.slug);
-  if (!deleted) throw data('Recept niet gevonden', { status: 404 });
-  // After the delete, so a failed photo delete leaves an orphan and never a recipe pointing at a missing file. The recipe is gone either way, so the failure must not turn into an error page.
-  // An orphaned photo is an accepted risk; it is logged so it can be found and removed by hand (see the design of delete-recipe).
-  if (deleted.image) await deletePhoto(PHOTOS, deleted.image).catch((error: unknown) => console.error('Photo not deleted', deleted.image, error));
-  return redirect('/');
 }
 
 export function meta({ loaderData }: Route.MetaArgs) {
