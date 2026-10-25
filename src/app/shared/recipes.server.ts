@@ -80,6 +80,8 @@ export type RecipeInput = {
   createdBy?: string;
   ingredients?: { name: string; quantityText?: string; quantityValue?: number; quantityUnit?: string }[];
   steps?: StepInput[];
+  /** Tag names; a name matching a stored tag (letter case ignored) uses that tag, any other is created. */
+  tags?: string[];
 };
 
 /** Addresses that are routes of their own and so can't be a recipe slug. */
@@ -138,6 +140,18 @@ function insertSteps(db: D1Database, slug: string, steps: StepInput[]) {
   ]);
 }
 
+/** Statements that link the recipe with this slug to the given tags, creating unknown ones. Blanks and case-insensitive duplicates are dropped; a stored tag keeps its spelling. */
+function insertTags(db: D1Database, slug: string, tags: string[]) {
+  const names = new Map<string, string>();
+  for (const t of tags.map((t) => t.trim())) if (t && !names.has(t.toLowerCase())) names.set(t.toLowerCase(), t);
+  return [...names.values()].flatMap((name) => [
+    db.prepare('INSERT OR IGNORE INTO tags (name) VALUES (?)').bind(name),
+    db
+      .prepare('INSERT OR IGNORE INTO recipe_tags (recipe_id, tag_id) SELECT r.id, t.id FROM recipes r, tags t WHERE r.slug = ? AND t.name = ?')
+      .bind(slug, name),
+  ]);
+}
+
 /** Stores a recipe with its ingredients and steps in one batch and returns its slug. */
 export async function createRecipe(db: D1Database, recipe: RecipeInput): Promise<string> {
   const slug = await freeSlug(db, recipe.title);
@@ -167,6 +181,7 @@ export async function createRecipe(db: D1Database, recipe: RecipeInput): Promise
         .bind(slug, i, ing.name, ing.quantityText ?? '', ing.quantityValue ?? null, ing.quantityUnit ?? null),
     ),
     ...insertSteps(db, slug, recipe.steps ?? []),
+    ...insertTags(db, slug, recipe.tags ?? []),
   ]);
   return slug;
 }
@@ -215,11 +230,11 @@ export async function listAuthors(db: D1Database): Promise<string[]> {
   return results.map((r) => r.author);
 }
 
-/** Replaces the base information of a recipe; an omitted optional field is cleared, but an omitted seal is kept. When ingredients or steps are given they replace the stored ones in the same batch (so atomically); when omitted the stored ones stay. Returns the image the recipe had before, or undefined when the recipe doesn't exist. */
+/** Replaces the base information of a recipe; an omitted optional field is cleared, but an omitted seal is kept. When ingredients, steps or tags are given they replace the stored ones in the same batch (so atomically); when omitted the stored ones stay. Returns the image the recipe had before, or undefined when the recipe doesn't exist. */
 export async function updateRecipe(
   db: D1Database,
   slug: string,
-  recipe: Pick<RecipeInput, 'title' | 'author' | 'servings' | 'time' | 'intro' | 'image' | 'seal' | 'ingredients' | 'steps'>,
+  recipe: Pick<RecipeInput, 'title' | 'author' | 'servings' | 'time' | 'intro' | 'image' | 'seal' | 'ingredients' | 'steps' | 'tags'>,
 ): Promise<{ previousImage: string | null } | undefined> {
   const [before, result] = await db.batch([
     db.prepare('SELECT image FROM recipes WHERE slug = ?').bind(slug),
@@ -256,6 +271,12 @@ export async function updateRecipe(
       : []),
     ...(recipe.steps
       ? [db.prepare('DELETE FROM steps WHERE recipe_id = (SELECT id FROM recipes WHERE slug = ?)').bind(slug), ...insertSteps(db, slug, recipe.steps)]
+      : []),
+    ...(recipe.tags
+      ? [
+          db.prepare('DELETE FROM recipe_tags WHERE recipe_id = (SELECT id FROM recipes WHERE slug = ?)').bind(slug),
+          ...insertTags(db, slug, recipe.tags),
+        ]
       : []),
   ]);
   return result.meta.changes > 0 ? { previousImage: (before.results[0] as { image: string | null }).image } : undefined;

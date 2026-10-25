@@ -392,6 +392,88 @@ describe('recipe-creation › New author is accepted', () => {
   });
 });
 
+const base = { title: 'Soepje', author: 'Oma', seal: 'fu' };
+const readTags = async (db: D1Database, slug: string) => (await getRecipe(db, slug))?.tags;
+
+describe('recipe-storage › Recipe is created with tags', () => {
+  test('the recipe has the tags', async ({ db }) => {
+    assert.deepEqual(await readTags(db, await createRecipe(db, { ...base, tags: ['Soep', 'Winter'] })), ['Soep', 'Winter']);
+  });
+
+  test('both tags exist', async ({ db }) => {
+    await createRecipe(db, { ...base, tags: ['Soep', 'Winter'] });
+    assert.deepEqual(await storedTags(db), ['Soep', 'Winter']);
+  });
+});
+
+describe('recipe-storage › Recipe tags are replaced', () => {
+  test('only the new tags remain', async ({ db }) => {
+    const slug = await createRecipe(db, { ...base, tags: ['Soep', 'Winter'] });
+    await updateRecipe(db, slug, { ...base, tags: ['Snel'] });
+    assert.deepEqual(await readTags(db, slug), ['Snel']);
+  });
+});
+
+describe('recipe-storage › Update without tags keeps them', () => {
+  test('the tags remain', async ({ db }) => {
+    const slug = await createRecipe(db, { ...base, tags: ['Soep'] });
+    await updateRecipe(db, slug, base);
+    assert.deepEqual(await readTags(db, slug), ['Soep']);
+  });
+});
+
+describe('recipe-storage › Update with an empty list clears them', () => {
+  test('the recipe has no tags', async ({ db }) => {
+    const slug = await createRecipe(db, { ...base, tags: ['Soep'] });
+    await updateRecipe(db, slug, { ...base, tags: [] });
+    assert.deepEqual(await readTags(db, slug), []);
+  });
+});
+
+describe('recipe-storage › Existing spelling is reused', () => {
+  test('the recipe gets the stored spelling', async ({ db }) => {
+    await createRecipe(db, { ...base, title: 'Eerste', tags: ['Soep'] });
+    assert.deepEqual(await readTags(db, await createRecipe(db, { ...base, title: 'Tweede', tags: ['soep'] })), ['Soep']);
+  });
+
+  test('no second tag is created', async ({ db }) => {
+    await createRecipe(db, { ...base, title: 'Eerste', tags: ['Soep'] });
+    await createRecipe(db, { ...base, title: 'Tweede', tags: ['soep'] });
+    assert.deepEqual(await storedTags(db), ['Soep']);
+  });
+});
+
+describe('recipe-storage › Duplicate and blank tags are dropped', () => {
+  test('the recipe has each tag once', async ({ db }) => {
+    assert.deepEqual(await readTags(db, await createRecipe(db, { ...base, tags: ['Soep', ' ', 'soep', 'Winter'] })), ['Soep', 'Winter']);
+  });
+});
+
+describe('recipe-storage › Unknown tag is created', () => {
+  test('the tag is stored and the recipe has it', async ({ db }) => {
+    const slug = await createRecipe(db, { ...base, tags: ['Kerst'] });
+    assert.deepEqual(await storedTags(db), ['Kerst']);
+    assert.deepEqual(await readTags(db, slug), ['Kerst']);
+  });
+});
+
+describe('recipe-storage › Unused tag remains', () => {
+  test('the tag is still stored and listed', async ({ db }) => {
+    const slug = await createRecipe(db, { ...base, tags: ['Soep'] });
+    await updateRecipe(db, slug, { ...base, tags: [] });
+    assert.deepEqual(await listTags(db), ['Soep']);
+  });
+});
+
+describe('recipe-storage › Recipe with tags deleted', () => {
+  test('its links are gone and the tag remains', async ({ db }) => {
+    const slug = await createRecipe(db, { ...base, tags: ['Soep'] });
+    await deleteRecipe(db, slug);
+    assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM recipe_tags').first<{ n: number }>())?.n, 0);
+    assert.deepEqual(await storedTags(db), ['Soep']);
+  });
+});
+
 describe('recipe-creation › Existing spelling is reused', () => {
   test('the author gets the existing spelling', async ({ db }) => {
     await createRecipe(db, { title: 'Eerste', author: 'Opa Jos', servings: 2 });
