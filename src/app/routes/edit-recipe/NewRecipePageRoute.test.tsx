@@ -113,7 +113,10 @@ describe('recipe-form › Many tags are accepted', () => {
 
 /** The new recipe page as the router shows it, with what a refused submit hands back (nothing on first opening). */
 const form = (actionData?: { errors: Record<string, string>; values: typeof emptyDraftSeed }) => {
-  const props = fake<Route.ComponentProps>({ loaderData: { callingName: '', authors: ['Oma', 'Mama'], tile: 0, seal: undefined }, actionData });
+  const props = fake<Route.ComponentProps>({
+    loaderData: { callingName: '', authors: ['Oma', 'Mama'], tags: [], tile: 0, seal: undefined },
+    actionData,
+  });
   return render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <NewRecipePage {...props} /> }])} />);
 };
 

@@ -1,7 +1,7 @@
 import { data, redirect, useRouteLoaderData } from 'react-router';
 import { envContext } from '~app/shared/context.server';
 import { acceptImage, deletePhoto } from '~app/shared/photos.server';
-import { getRecipe, listAuthors, updateRecipe } from '~app/shared/recipes.server';
+import { getRecipe, listAuthors, listTags, updateRecipe } from '~app/shared/recipes.server';
 import { defaultRules, type Rules } from '~app/shared/rules';
 import { getRules } from '~app/shared/rules.server';
 import { tileFor } from '~app/shared/tile';
@@ -15,7 +15,7 @@ const notFound = () => data('Recept niet gevonden', { status: 404 });
 
 export async function loader({ params, context }: Route.LoaderArgs) {
   const db = context.get(envContext).DB;
-  const [recipe, authors] = await Promise.all([getRecipe(db, params.slug), listAuthors(db)]);
+  const [recipe, authors, tags] = await Promise.all([getRecipe(db, params.slug), listAuthors(db), listTags(db)]);
   if (!recipe) throw notFound();
   const values = {
     title: recipe.title,
@@ -33,6 +33,7 @@ export async function loader({ params, context }: Route.LoaderArgs) {
     slug: params.slug,
     title: recipe.title,
     authors,
+    tags,
     values,
     tile: tileFor(recipe.id),
     seal: recipe.seal ?? undefined,
@@ -83,6 +84,7 @@ export default function EditRecipePage({ loaderData, actionData }: Route.Compone
       updatedAt={loaderData.updatedAt}
       heading="Recept bewerken"
       authors={loaderData.authors}
+      tags={loaderData.tags}
       tile={loaderData.tile}
       seal={loaderData.seal}
       initial={loaderData.values}

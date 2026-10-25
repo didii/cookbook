@@ -208,7 +208,7 @@ describe('image links on save', () => {
 describe('the edit page', () => {
   const values = { title: 'Soep', author: 'Oma', servings: '4', time: '1u', intro: 'Warm', image: '', ingredients: [], steps: [] };
   const props = fake<Route.ComponentProps>({
-    loaderData: { slug: 'soep', updatedAt: '2026-01-01T00:00:00Z', authors: ['Oma'], tile: 0, seal: undefined, values },
+    loaderData: { slug: 'soep', updatedAt: '2026-01-01T00:00:00Z', authors: ['Oma'], tags: [], tile: 0, seal: undefined, values },
   });
   const show = () => render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <EditRecipePage {...props} /> }])} />);
 

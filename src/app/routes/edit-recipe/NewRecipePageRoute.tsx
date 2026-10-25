@@ -1,7 +1,7 @@
 import { data, redirect, useRouteLoaderData } from 'react-router';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { acceptImage } from '~app/shared/photos.server';
-import { chooseSeal, createRecipe, listAuthors } from '~app/shared/recipes.server';
+import { chooseSeal, createRecipe, listAuthors, listTags } from '~app/shared/recipes.server';
 import { defaultRules, type Rules } from '~app/shared/rules';
 import { getRules } from '~app/shared/rules.server';
 import { seals } from '~app/shared/seals';
@@ -18,7 +18,13 @@ export async function loader({ context }: Route.LoaderArgs) {
   // The author field starts as the member's calling name; the welcome gate means there is a user (empty only when it is bypassed).
   const callingName = (await getUser(db, context.get(userEmailContext)))?.callingName ?? '';
   // The tile is picked here rather than while rendering, so the server and the browser agree. The seal is posted back, so the recipe gets the one the editor showed.
-  return { callingName, authors: await listAuthors(db), tile: Math.floor(Math.random() * tiles.length), seal: await chooseSeal(db) };
+  return {
+    callingName,
+    authors: await listAuthors(db),
+    tags: await listTags(db),
+    tile: Math.floor(Math.random() * tiles.length),
+    seal: await chooseSeal(db),
+  };
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
@@ -63,6 +69,7 @@ export default function NewRecipePage({ loaderData, actionData }: Route.Componen
       rules={useRouteLoaderData<{ rules?: Rules }>('root')?.rules ?? defaultRules}
       heading="Nieuw recept"
       authors={loaderData.authors}
+      tags={loaderData.tags}
       tile={loaderData.tile}
       seal={loaderData.seal}
       initial={seed}
