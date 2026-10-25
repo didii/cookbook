@@ -15,6 +15,13 @@ const open = () => {
   fireEvent.click(trigger());
 };
 
+describe('DeleteRecipe', () => {
+  test('the form posts to the delete route of the slug', () => {
+    show();
+    assert.equal(screen.getByTestId('DeleteRecipe-form').getAttribute('action'), '/recepten/appeltaart/verwijderen');
+  });
+});
+
 describe('recipe-deletion › Popup asks for confirmation', () => {
   test('the popup is closed at first', () => {
     show();

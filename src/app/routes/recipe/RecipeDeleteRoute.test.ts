@@ -1,22 +1,13 @@
 import assert from 'node:assert/strict';
 import { RouterContextProvider } from 'react-router';
 import { describe } from 'vitest';
-import { envContext, userEmailContext } from '~app/shared/context.server';
+import { envContext } from '~app/shared/context.server';
 import { getPhoto, storePhoto } from '~app/shared/photos.server';
-import { createRecipe, listRecipes } from '~app/shared/recipes.server';
+import { createRecipe, getRecipe, listRecipes } from '~app/shared/recipes.server';
 import { fake } from '~testing/fake';
 import { test } from '~testing/test';
 import type { Route } from './+types/RecipeDeleteRoute';
-import type { Route as PageRoute } from './+types/RecipePageRoute';
 import { action } from './RecipeDeleteRoute';
-import { loader } from './RecipePageRoute';
-
-const load = (db: D1Database, photos: R2Bucket, slug: string) => {
-  const context = new RouterContextProvider();
-  context.set(envContext, fake<Env>({ DB: db, PHOTOS: photos }));
-  context.set(userEmailContext, 'oma@example.com');
-  return loader(fake<PageRoute.LoaderArgs>({ params: { slug }, context }));
-};
 
 const remove = (db: D1Database, photos: R2Bucket, slug: string) => {
   const context = new RouterContextProvider();
@@ -37,8 +28,8 @@ describe('recipe-deletion › Recipe is deleted', () => {
     assert.equal(response.headers.get('Location'), '/');
   });
 
-  test('the recipe can no longer be loaded', async ({ db, photos }) => {
-    await assert.rejects(load(db, photos, slug), (thrown: { init?: { status?: number } }) => thrown.init?.status === 404);
+  test('the recipe can no longer be found', async ({ db }) => {
+    assert.equal(await getRecipe(db, slug), undefined);
   });
 
   test('its ingredients are gone', async ({ db }) => {

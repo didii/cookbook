@@ -29,7 +29,7 @@ export function DeleteRecipe({ headingText, slug, className, ...props }: DeleteR
         onClick={(e) => e.target === e.currentTarget && e.currentTarget.close()}
         className="m-auto w-[min(26rem,calc(100vw-2rem))] rounded-xl border-3 border-ink bg-white p-0 text-ink shadow-hard backdrop:bg-ink/40"
       >
-        <Form method="post" action={`/recepten/${slug}/verwijderen`} className="grid gap-5 p-6">
+        <Form method="post" data-testid="DeleteRecipe-form" action={`/recepten/${slug}/verwijderen`} className="grid gap-5 p-6">
           <h2 id="delete-title" data-testid="DeleteRecipe-title" className="text-xl font-black text-balance">
             Recept “{headingText}” verwijderen?
           </h2>

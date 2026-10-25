@@ -47,6 +47,19 @@ describe('recipe-deletion › Delete button is shown', () => {
   });
 });
 
+describe('RecipeEditor delete button', () => {
+  test('it names the stored title, not the edited one', () => {
+    const initial = { ...emptyDraftSeed, title: 'Appeltaart' };
+    show({ slug: 'appeltaart', initial, values: { ...initial, title: 'Peretaart' } });
+    assert.ok(screen.getByTestId('DeleteRecipe-title').textContent?.includes('Appeltaart'));
+  });
+
+  test('it posts to the delete route of the editor slug', () => {
+    show({ slug: 'appeltaart' });
+    assert.equal(screen.getByTestId('DeleteRecipe-form').getAttribute('action'), '/recepten/appeltaart/verwijderen');
+  });
+});
+
 describe('recipe-deletion › No delete button for a new recipe', () => {
   test('the page has no delete button', () => {
     show();

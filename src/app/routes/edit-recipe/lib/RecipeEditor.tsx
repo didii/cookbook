@@ -333,8 +333,8 @@ export function RecipeEditor({
           {photo === 'error' && <span className="text-red">Foto is niet geüpload</span>}
         </SaveBar>
       </Form>
-      {/* Outside the save form (forms cannot nest); it posts to its own route. The padding keeps it clear of the sticky save bar on a phone. */}
-      {slug && <DeleteRecipe headingText={initial.title} slug={slug} className="max-[51.99rem]:pb-16" />}
+      {/* Outside the save form (forms cannot nest); it posts to its own route. */}
+      {slug && <DeleteRecipe headingText={initial.title} slug={slug} />}
     </main>
   );
 }
