@@ -4,7 +4,7 @@ Change 1 of 2; the tag manager follows. Verify each task with the type check and
 
 ## 1. Database
 
-- [ ] 1.1 Add migration `0013_recipe_tags.sql` renaming `categories` → `tags`, `recipe_categories` → `recipe_tags` and `category_id` → `tag_id`, and dropping `position`; rename the categories tests in `migrations.test.ts` to the "recipe-storage › … tag …" scenarios and add one that rows written before the migration survive it
+- [x] 1.1 Add migration `0013_recipe_tags.sql` renaming `categories` → `tags`, `recipe_categories` → `recipe_tags` and `category_id` → `tag_id`, and dropping `position`; rename the categories tests in `migrations.test.ts` to the "recipe-storage › … tag …" scenarios and add one that rows written before the migration survive it
 - [ ] 1.2 Update `src/db/seed/dev.sql` to the new names; verify `seed/dev.test.ts` passes
 
 ## 2. Server

@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
+import { readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe } from 'vitest';
+import { applySql, createMiniflare } from '~testing/db';
 import { test } from '~testing/test';
 
 // Each test uses its own recipe slug, so one database serves the whole file.
@@ -584,18 +587,18 @@ describe('recipe_notes table', () => {
   });
 });
 
-const addCategory = async (db: D1Database, name: string) =>
-  (await db.prepare('INSERT INTO categories (name) VALUES (?) RETURNING id').bind(name).first<{ id: number }>())!.id;
-const linkCategory = (db: D1Database, recipe: number, category: number, position = 1) =>
-  db.prepare('INSERT INTO recipe_categories (recipe_id, category_id, position) VALUES (?, ?, ?)').bind(recipe, category, position).run();
+const addTag = async (db: D1Database, name: string) =>
+  (await db.prepare('INSERT INTO tags (name) VALUES (?) RETURNING id').bind(name).first<{ id: number }>())!.id;
+const linkTag = (db: D1Database, recipe: number, tag: number) =>
+  db.prepare('INSERT INTO recipe_tags (recipe_id, tag_id) VALUES (?, ?)').bind(recipe, tag).run();
 
-describe('recipe-storage › Recipe with categories', () => {
-  test('categories read back in position order', async ({ db }) => {
-    const recipe = await addRecipe(db, 'cat-order');
-    await linkCategory(db, recipe, await addCategory(db, 'Winter'), 2);
-    await linkCategory(db, recipe, await addCategory(db, 'Soep'), 1);
+describe('recipe-storage › Recipe with tags', () => {
+  test('tags read back with their recipe', async ({ db }) => {
+    const recipe = await addRecipe(db, 'tag-read');
+    await linkTag(db, recipe, await addTag(db, 'Winter'));
+    await linkTag(db, recipe, await addTag(db, 'Soep'));
     const { results } = await db
-      .prepare('SELECT c.name FROM recipe_categories rc JOIN categories c ON c.id = rc.category_id WHERE rc.recipe_id = ? ORDER BY rc.position')
+      .prepare('SELECT t.name FROM recipe_tags rt JOIN tags t ON t.id = rt.tag_id WHERE rt.recipe_id = ? ORDER BY t.name')
       .bind(recipe)
       .all<{ name: string }>();
     assert.deepEqual(
@@ -603,61 +606,83 @@ describe('recipe-storage › Recipe with categories', () => {
       ['Soep', 'Winter'],
     );
   });
+
+  test('rows written before the migration survive it', async () => {
+    const mf = createMiniflare();
+    try {
+      const db: D1Database = await mf.getD1Database('DB');
+      const dir = import.meta.dirname;
+      const files = readdirSync(dir)
+        .filter((f) => f.endsWith('.sql'))
+        .sort();
+      for (const f of files.filter((f) => f < '0013')) await applySql(db, join(dir, f));
+      await db.prepare("INSERT INTO recipes (id, slug, title, author, servings) VALUES (1, 'old', 'old', 'Oma', 4)").run();
+      await db.prepare("INSERT INTO categories (id, name) VALUES (1, 'Soep')").run();
+      await db.prepare('INSERT INTO recipe_categories (recipe_id, category_id, position) VALUES (1, 1, 1)').run();
+      for (const f of files.filter((f) => f >= '0013')) await applySql(db, join(dir, f));
+      assert.deepEqual(await db.prepare('SELECT t.name, rt.recipe_id FROM recipe_tags rt JOIN tags t ON t.id = rt.tag_id').first(), {
+        name: 'Soep',
+        recipe_id: 1,
+      });
+    } finally {
+      await mf.dispose();
+    }
+  });
 });
 
-describe('recipe-storage › Category name is unique', () => {
+describe('recipe-storage › Tag name is unique', () => {
   test('the same name in another letter case is refused', async ({ db }) => {
-    await addCategory(db, 'Nagerecht');
-    await assert.rejects(addCategory(db, 'NAGERECHT'));
+    await addTag(db, 'Nagerecht');
+    await assert.rejects(addTag(db, 'NAGERECHT'));
   });
 
   test('an empty name is refused', async ({ db }) => {
-    await assert.rejects(addCategory(db, '  '));
+    await assert.rejects(addTag(db, '  '));
   });
 });
 
-describe('recipe-storage › Category is shared', () => {
-  test('two recipes link to one stored category', async ({ db }) => {
-    const category = await addCategory(db, 'Bakken');
-    await linkCategory(db, await addRecipe(db, 'cat-shared-a'), category);
-    await linkCategory(db, await addRecipe(db, 'cat-shared-b'), category);
-    assert.equal(await count(db, 'SELECT recipe_id FROM recipe_categories WHERE category_id = ?', category), 2);
-    assert.equal(await count(db, 'SELECT id FROM categories WHERE name = ?', 'Bakken'), 1);
+describe('recipe-storage › Tag is shared', () => {
+  test('two recipes link to one stored tag', async ({ db }) => {
+    const tag = await addTag(db, 'Bakken');
+    await linkTag(db, await addRecipe(db, 'tag-shared-a'), tag);
+    await linkTag(db, await addRecipe(db, 'tag-shared-b'), tag);
+    assert.equal(await count(db, 'SELECT recipe_id FROM recipe_tags WHERE tag_id = ?', tag), 2);
+    assert.equal(await count(db, 'SELECT id FROM tags WHERE name = ?', 'Bakken'), 1);
   });
 });
 
-describe('recipe-storage › Category linked twice is refused', () => {
-  test('a second link to the same category fails', async ({ db }) => {
-    const recipe = await addRecipe(db, 'cat-twice');
-    const category = await addCategory(db, 'Snel');
-    await linkCategory(db, recipe, category);
-    await assert.rejects(linkCategory(db, recipe, category, 2));
+describe('recipe-storage › Tag linked twice is refused', () => {
+  test('a second link to the same tag fails', async ({ db }) => {
+    const recipe = await addRecipe(db, 'tag-twice');
+    const tag = await addTag(db, 'Snel');
+    await linkTag(db, recipe, tag);
+    await assert.rejects(linkTag(db, recipe, tag));
   });
 });
 
-describe('recipe-storage › Link needs a recipe and a category', () => {
+describe('recipe-storage › Link needs a recipe and a tag', () => {
   test('an unknown recipe is refused', async ({ db }) => {
-    await assert.rejects(linkCategory(db, 999999, await addCategory(db, 'Zonder recept')));
+    await assert.rejects(linkTag(db, 999999, await addTag(db, 'Zonder recept')));
   });
 
-  test('an unknown category is refused', async ({ db }) => {
-    await assert.rejects(linkCategory(db, await addRecipe(db, 'cat-no-category'), 999999));
+  test('an unknown tag is refused', async ({ db }) => {
+    await assert.rejects(linkTag(db, await addRecipe(db, 'tag-no-tag'), 999999));
   });
 });
 
-describe('recipe-storage › Recipe with categories deleted', () => {
+describe('recipe-storage › Recipe with tags deleted', () => {
   test('the links are gone', async ({ db }) => {
-    const recipe = await addRecipe(db, 'cat-deleted');
-    await linkCategory(db, recipe, await addCategory(db, 'Hoofdgerecht'));
+    const recipe = await addRecipe(db, 'tag-deleted');
+    await linkTag(db, recipe, await addTag(db, 'Hoofdgerecht'));
     await db.prepare('DELETE FROM recipes WHERE id = ?').bind(recipe).run();
-    assert.equal(await count(db, 'SELECT category_id FROM recipe_categories WHERE recipe_id = ?', recipe), 0);
+    assert.equal(await count(db, 'SELECT tag_id FROM recipe_tags WHERE recipe_id = ?', recipe), 0);
   });
 
-  test('the category remains', async ({ db }) => {
-    const recipe = await addRecipe(db, 'cat-deleted-keep');
-    await linkCategory(db, recipe, await addCategory(db, 'Blijft'));
+  test('the tag remains', async ({ db }) => {
+    const recipe = await addRecipe(db, 'tag-deleted-keep');
+    await linkTag(db, recipe, await addTag(db, 'Blijft'));
     await db.prepare('DELETE FROM recipes WHERE id = ?').bind(recipe).run();
-    assert.equal(await count(db, 'SELECT id FROM categories WHERE name = ?', 'Blijft'), 1);
+    assert.equal(await count(db, 'SELECT id FROM tags WHERE name = ?', 'Blijft'), 1);
   });
 });
 
