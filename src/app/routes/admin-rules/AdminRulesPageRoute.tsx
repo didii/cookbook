@@ -7,6 +7,7 @@ import type { Route } from './+types/AdminRulesPageRoute';
 
 const fields = [
   { name: 'units', label: 'Eenheden', help: 'Woorden die na een getal een eenheid zijn, zoals "g" of "el".' },
+  { name: 'looseUnits', label: 'Losse eenheden', help: 'Woorden die zonder getal een eenheid zijn, zoals "snuf" of "scheutje"; die tellen als 1.' },
   { name: 'minuteWords', label: 'Minuutwoorden', help: 'Woorden voor minuten, zoals "minuten".' },
   { name: 'hourWords', label: 'Uurwoorden', help: 'Woorden voor uren, zoals "uur".' },
   { name: 'degreeWords', label: 'Graadwoorden', help: 'Woorden na een oventemperatuur, zoals "graden" of "°C".' },

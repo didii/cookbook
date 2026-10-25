@@ -151,3 +151,17 @@ describe('action', () => {
 
 // The revalidation after an action is router behaviour.
 test.todo('parsing-rules › Saved change applies at once');
+
+describe('parsing-rules › Add a loose unit', () => {
+  const ok = { intent: 'save', units: 'g', looseUnits: 'snufje\ndruppel', minuteWords: 'min', hourWords: 'u', degreeWords: 'graden', spoken: '' };
+
+  test('the page shows the saved loose units', async ({ db }) => {
+    await post(db, 'admin@example.com', ok);
+    assert.equal((await open(db, 'admin@example.com')).values.looseUnits, 'snufje\ndruppel');
+  });
+
+  test('saving stores the new loose unit', async ({ db }) => {
+    assert.deepEqual((await post(db, 'admin@example.com', ok)).data, { saved: true });
+    assert.deepEqual((await getRules(db)).looseUnits, ['snufje', 'druppel']);
+  });
+});

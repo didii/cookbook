@@ -2,6 +2,8 @@
 export type Rules = {
   /** Words that count as a unit when they follow a number ("g", "el"). */
   units: string[];
+  /** Words that count as a unit when a line starts with them and has no number ("scheutje rode wijn" is one scheutje). Letters only. */
+  looseUnits: string[];
   minuteWords: string[];
   hourWords: string[];
   /** Words after a temperature ("graden", "°C"). */
@@ -16,6 +18,7 @@ export const defaultRules: Rules = {
     'g gr gram kg mg l liter dl cl ml el tl kl snuf snufje scheut scheutje klont klontje blik blikje pot potje zak zakje bos bosje teen tenen takje takjes plak plakken plakje stuk stuks stukje bakje pak pakje handvol mespunt mespuntje eetlepel eetlepels theelepel theelepels'.split(
       ' ',
     ),
+  looseUnits: 'snuf snufje scheut scheutje mespunt mespuntje handvol klont klontje'.split(' '),
   minuteWords: ['minuten', 'minuut', 'min'],
   hourWords: ['uren', 'uur', 'u'],
   degreeWords: ['graden', '°c', '°'],

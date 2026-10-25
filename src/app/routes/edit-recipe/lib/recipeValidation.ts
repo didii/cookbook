@@ -79,7 +79,7 @@ const isRecord = (value: unknown): value is Record<string, unknown> => typeof va
 const whole = (value: unknown) => (typeof value === 'number' && Number.isInteger(value) && value > 0 ? value : undefined);
 
 /** One posted step, cleaned here and not trusted: the text trimmed with line breaks turned into spaces; ingredient chips need a name (a quantity may be empty); an oven temperature and timer minutes need to be whole numbers above zero or they are left out, and a timer name goes with its minutes. Whatever is missing is simply not there. */
-function cleanStep(posted: unknown): Step {
+function cleanStep(posted: unknown, rules: Rules): Step {
   const step = isRecord(posted) ? posted : {};
   const text = (value: unknown) => (typeof value === 'string' ? value.trim() : '');
   const chips = Array.isArray(step.ingredients) ? step.ingredients.filter(isRecord) : [];
@@ -94,7 +94,7 @@ function cleanStep(posted: unknown): Step {
     ingredients: chips
       .map((c) => {
         const quantityText = text(c.quantityText);
-        const { quantityValue, quantityUnit } = parseQuantity(quantityText);
+        const { quantityValue, quantityUnit } = parseQuantity(quantityText, rules);
         return { quantityText, quantityValue: quantityValue ?? null, quantityUnit: quantityUnit ?? null, name: text(c.name) };
       })
       .filter((c) => c.name),
@@ -107,6 +107,6 @@ function cleanStep(posted: unknown): Step {
 export function readSteps(form: FormData, ingredients: Ingredient[], rules: Rules) {
   const posted = readPosted(form);
   const rows = ingredients.map((r, i) => ({ id: String(i), ...r }));
-  const lines = (posted ?? []).map(cleanStep);
+  const lines = (posted ?? []).map((step) => cleanStep(step, rules));
   return { lines, steps: posted && lines.filter((s) => s.body).map((s) => ({ ...s, quantities: findQuantities(s.body, rows, rules) })) };
 }

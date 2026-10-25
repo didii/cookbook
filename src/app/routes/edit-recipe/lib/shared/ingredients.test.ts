@@ -114,3 +114,61 @@ describe('parsing-rules › New unit is recognised', () => {
     assert.deepEqual([parsed.quantityUnit, parsed.name], ['kopje', 'rijst']);
   });
 });
+
+describe('recipe-ingredient-editing › Loose unit without a number', () => {
+  test('is the quantity with value 1 and the unit', () => {
+    assert.deepEqual(parseIngredient('scheutje rode wijn', defaultRules), {
+      quantityText: 'scheutje',
+      quantityValue: 1,
+      quantityUnit: 'scheutje',
+      name: 'rode wijn',
+    });
+  });
+});
+
+describe('recipe-ingredient-editing › Loose unit with a number', () => {
+  test('keeps the number as the amount', () => {
+    assert.deepEqual(parseIngredient('2 scheutje rode wijn', defaultRules), {
+      quantityText: '2 scheutje',
+      quantityValue: 2,
+      quantityUnit: 'scheutje',
+      name: 'rode wijn',
+    });
+  });
+});
+
+describe('recipe-ingredient-editing › Measure without a number is part of the name', () => {
+  test('a unit that is not loose stays in the name', () => {
+    assert.deepEqual(parseIngredient('el suiker', defaultRules), { quantityText: '', name: 'el suiker' });
+  });
+});
+
+describe('recipe-ingredient-editing › Loose unit alone has no name', () => {
+  test('the quantity is the loose unit and the name is empty', () => {
+    assert.deepEqual(parseIngredient('scheutje', defaultRules), { quantityText: 'scheutje', quantityValue: 1, quantityUnit: 'scheutje', name: '' });
+  });
+});
+
+describe('recipe-ingredient-editing › Loose unit is a whole word', () => {
+  test('a longer word is all name', () => {
+    assert.deepEqual(parseIngredient('scheutjeswijn', defaultRules), { quantityText: '', name: 'scheutjeswijn' });
+  });
+});
+
+describe('parseIngredient', () => {
+  test('a loose unit is matched ignoring case, the quantity text stays as typed', () => {
+    assert.deepEqual(parseIngredient('Scheutje rode wijn', defaultRules), {
+      quantityText: 'Scheutje',
+      quantityValue: 1,
+      quantityUnit: 'scheutje',
+      name: 'rode wijn',
+    });
+  });
+});
+
+describe('recipe-ingredient-editing › Removed loose unit is not recognised', () => {
+  test('the line is all name', () => {
+    const rules = { ...defaultRules, looseUnits: defaultRules.looseUnits.filter((u) => u !== 'scheutje') };
+    assert.deepEqual(parseIngredient('scheutje rode wijn', rules), { quantityText: '', name: 'scheutje rode wijn' });
+  });
+});

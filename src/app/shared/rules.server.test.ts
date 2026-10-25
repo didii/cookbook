@@ -32,6 +32,8 @@ describe('parsing-rules › Unreadable saved rules', () => {
     '{"units":[]}',
     '{"degreeWords":[""]}',
     '{"spoken":{"x":99999999999999999999}}',
+    '{"looseUnits":"snuf"}',
+    '{"looseUnits":["een druppel"]}',
   ])
     test(`${value} gives the defaults`, async ({ db }) => {
       await stored(db, value);
@@ -170,6 +172,70 @@ describe('parsing-rules › Word with other characters', () => {
     await edit(db, { units: 'g\na+' });
     await edit(db, { units: 'g\neetlepel vol' });
     await edit(db, { units: 'g\n°' });
+    assert.equal(await rowCount(db), 0);
+  });
+});
+
+describe('parsing-rules › Default loose units', () => {
+  test('the stored rules hold the default loose units', async ({ db }) => {
+    assert.deepEqual((await getRules(db)).looseUnits, 'snuf snufje scheut scheutje mespunt mespuntje handvol klont klontje'.split(' '));
+  });
+});
+
+describe('getRules', () => {
+  test('an empty saved loose unit list is kept, not replaced by the defaults', async ({ db }) => {
+    await stored(db, '{"looseUnits":[]}');
+    assert.deepEqual((await getRules(db)).looseUnits, []);
+  });
+});
+
+describe('parsing-rules › Saved rules without loose units', () => {
+  test('use the default loose units and keep the other saved words', async ({ db }) => {
+    await stored(db, '{"units":["g","kopje"]}');
+    const rules = await getRules(db);
+    assert.deepEqual(rules.units, ['g', 'kopje']);
+    assert.deepEqual(rules.looseUnits, defaultRules.looseUnits);
+  });
+});
+
+describe('parsing-rules › Add a loose unit', () => {
+  test('the loose units include the new word', async ({ db }) => {
+    assert.equal(await edit(db, { looseUnits: toFields(defaultRules).looseUnits + '\ndruppel' }), undefined);
+    assert.ok((await getRules(db)).looseUnits.includes('druppel'));
+  });
+});
+
+describe('parsing-rules › No loose units', () => {
+  test('the save succeeds', async ({ db }) => {
+    assert.equal(await edit(db, { looseUnits: '' }), undefined);
+  });
+
+  test('no word is a loose unit', async ({ db }) => {
+    await edit(db, { looseUnits: '' });
+    assert.deepEqual((await getRules(db)).looseUnits, []);
+  });
+});
+
+describe('parsing-rules › Loose unit that is also a unit', () => {
+  test('the save succeeds', async ({ db }) => {
+    assert.equal(await edit(db, { units: 'g\nsnufje', looseUnits: 'snufje' }), undefined);
+  });
+
+  test('both lists keep the word', async ({ db }) => {
+    await edit(db, { units: 'g\nsnufje', looseUnits: 'snufje' });
+    const rules = await getRules(db);
+    assert.ok(rules.units.includes('snufje'));
+    assert.ok(rules.looseUnits.includes('snufje'));
+  });
+});
+
+describe('parsing-rules › Loose unit with other characters', () => {
+  test('a space is refused', async ({ db }) => {
+    assert.deepEqual(Object.keys((await edit(db, { looseUnits: 'een druppel' })) ?? {}), ['looseUnits']);
+  });
+
+  test('nothing is stored', async ({ db }) => {
+    await edit(db, { looseUnits: 'een druppel' });
     assert.equal(await rowCount(db), 0);
   });
 });

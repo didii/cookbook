@@ -56,6 +56,11 @@ describe('recipe-ingredient-editing › Quantity without a name is refused', () 
     const { errors } = post([{ text: 'zout' }, { text: '250 g' }]);
     assert.deepEqual(Object.keys(errors), ['1']);
   });
+
+  test('a loose unit alone is reported on its row', () => {
+    const { errors } = post([{ text: 'zout' }, { text: 'scheutje' }]);
+    assert.deepEqual(Object.keys(errors), ['1']);
+  });
 });
 
 describe('readIngredients', () => {
@@ -250,5 +255,25 @@ describe('recipe-storage › Durations and temperatures are not stored', () => {
   test('no amount is found', () => {
     const { steps } = postSteps([{ body: 'Bak 20 minuten op 180 graden' }], [{ quantityText: '', name: 'olie' }]);
     assert.deepEqual(steps?.[0].quantities, []);
+  });
+});
+
+describe('recipe-storage › Chip quantity that is a loose unit', () => {
+  test('the chip is stored with value 1 and that unit', () => {
+    const { steps } = postSteps([{ body: 'meng', ingredients: [{ quantityText: 'scheutje', name: 'rode wijn' }] }]);
+    assert.deepEqual(
+      steps?.[0].ingredients.map((c) => [c.quantityValue, c.quantityUnit]),
+      [[1, 'scheutje']],
+    );
+  });
+});
+
+describe('recipe-storage › Chip quantity word that is not a loose unit', () => {
+  test('the chip is stored with no value and no unit', () => {
+    const { steps } = postSteps([{ body: 'meng', ingredients: [{ quantityText: 'el', name: 'olie' }] }]);
+    assert.deepEqual(
+      steps?.[0].ingredients.map((c) => [c.quantityValue, c.quantityUnit]),
+      [[null, null]],
+    );
   });
 });
