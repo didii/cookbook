@@ -40,6 +40,12 @@ describe('recipe-storage › Chip quantity that is a loose unit', () => {
   });
 });
 
+describe('parseQuantity › Loose unit matched ignoring case', () => {
+  test('the unit is lowercase', () => {
+    assert.deepEqual(parseQuantity('Scheutje', defaultRules), { quantityValue: 1, quantityUnit: 'scheutje' });
+  });
+});
+
 describe('recipe-storage › Chip quantity word that is not a loose unit', () => {
   test('has no value and no unit', () => {
     assert.deepEqual(parseQuantity('el', defaultRules), {});

@@ -155,8 +155,9 @@ test.todo('parsing-rules › Saved change applies at once');
 describe('parsing-rules › Add a loose unit', () => {
   const ok = { intent: 'save', units: 'g', looseUnits: 'snufje\ndruppel', minuteWords: 'min', hourWords: 'u', degreeWords: 'graden', spoken: '' };
 
-  test('the page shows the loose units', async ({ db }) => {
-    assert.equal((await open(db, 'admin@example.com')).values.looseUnits, defaultRules.looseUnits.join('\n'));
+  test('the page shows the saved loose units', async ({ db }) => {
+    await post(db, 'admin@example.com', ok);
+    assert.equal((await open(db, 'admin@example.com')).values.looseUnits, 'snufje\ndruppel');
   });
 
   test('saving stores the new loose unit', async ({ db }) => {

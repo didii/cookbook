@@ -56,6 +56,11 @@ describe('recipe-ingredient-editing › Quantity without a name is refused', () 
     const { errors } = post([{ text: 'zout' }, { text: '250 g' }]);
     assert.deepEqual(Object.keys(errors), ['1']);
   });
+
+  test('a loose unit alone is reported on its row', () => {
+    const { errors } = post([{ text: 'zout' }, { text: 'scheutje' }]);
+    assert.deepEqual(Object.keys(errors), ['1']);
+  });
 });
 
 describe('readIngredients', () => {

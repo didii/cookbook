@@ -144,14 +144,25 @@ describe('recipe-ingredient-editing › Measure without a number is part of the 
 });
 
 describe('recipe-ingredient-editing › Loose unit alone has no name', () => {
-  test('the name is empty', () => {
-    assert.equal(parseIngredient('scheutje', defaultRules).name, '');
+  test('the quantity is the loose unit and the name is empty', () => {
+    assert.deepEqual(parseIngredient('scheutje', defaultRules), { quantityText: 'scheutje', quantityValue: 1, quantityUnit: 'scheutje', name: '' });
   });
 });
 
 describe('recipe-ingredient-editing › Loose unit is a whole word', () => {
   test('a longer word is all name', () => {
     assert.deepEqual(parseIngredient('scheutjeswijn', defaultRules), { quantityText: '', name: 'scheutjeswijn' });
+  });
+});
+
+describe('parseIngredient', () => {
+  test('a loose unit is matched ignoring case, the quantity text stays as typed', () => {
+    assert.deepEqual(parseIngredient('Scheutje rode wijn', defaultRules), {
+      quantityText: 'Scheutje',
+      quantityValue: 1,
+      quantityUnit: 'scheutje',
+      name: 'rode wijn',
+    });
   });
 });
 

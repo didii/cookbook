@@ -32,6 +32,8 @@ describe('parsing-rules › Unreadable saved rules', () => {
     '{"units":[]}',
     '{"degreeWords":[""]}',
     '{"spoken":{"x":99999999999999999999}}',
+    '{"looseUnits":"snuf"}',
+    '{"looseUnits":["een druppel"]}',
   ])
     test(`${value} gives the defaults`, async ({ db }) => {
       await stored(db, value);
@@ -177,6 +179,13 @@ describe('parsing-rules › Word with other characters', () => {
 describe('parsing-rules › Default loose units', () => {
   test('the stored rules hold the default loose units', async ({ db }) => {
     assert.deepEqual((await getRules(db)).looseUnits, 'snuf snufje scheut scheutje mespunt mespuntje handvol klont klontje'.split(' '));
+  });
+});
+
+describe('getRules', () => {
+  test('an empty saved loose unit list is kept, not replaced by the defaults', async ({ db }) => {
+    await stored(db, '{"looseUnits":[]}');
+    assert.deepEqual((await getRules(db)).looseUnits, []);
   });
 });
 
