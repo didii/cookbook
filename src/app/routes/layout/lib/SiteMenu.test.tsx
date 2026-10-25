@@ -53,6 +53,7 @@ describe('site-menu › Menu lists the links', () => {
       ['Nieuw recept', '/recepten/nieuw'],
       ['Instellingen', '/instellingen'],
       ['Over', '/over'],
+      ['Uitloggen', '/cdn-cgi/access/logout'],
     ]);
   });
 });
@@ -68,7 +69,10 @@ describe('parsing-rules › Admin sees the link', () => {
 
   test('it points to the parsing rules', () => {
     labels('admin');
-    assert.deepEqual(links(screen.getByTestId('SiteMenu-dialog')).at(-1), ['Herkenning', '/beheer/herkenning']);
+    assert.deepEqual(
+      links(screen.getByTestId('SiteMenu-dialog')).find(([label]) => label === 'Herkenning'),
+      ['Herkenning', '/beheer/herkenning'],
+    );
   });
 });
 
@@ -86,18 +90,35 @@ describe('parsing-rules › User does not see the link', () => {
 
 describe('site-menu › Menu lists the links for a superadmin', () => {
   test('the menu lists all links', () => {
-    assert.deepEqual(labels('superadmin'), ['Nieuw recept', 'Instellingen', 'Over', 'Herkenning', 'Gebruikers']);
+    assert.deepEqual(labels('superadmin'), ['Nieuw recept', 'Instellingen', 'Over', 'Herkenning', 'Gebruikers', 'Uitloggen']);
   });
 
-  test('the last link points to the users page', () => {
+  test('Gebruikers points to the users page', () => {
     labels('superadmin');
-    assert.deepEqual(links(screen.getByTestId('SiteMenu-dialog')).at(-1), ['Gebruikers', '/beheer/gebruikers']);
+    assert.deepEqual(
+      links(screen.getByTestId('SiteMenu-dialog')).find(([label]) => label === 'Gebruikers'),
+      ['Gebruikers', '/beheer/gebruikers'],
+    );
   });
 });
 
 describe('site-menu › Menu lists the links for an admin', () => {
   test('the menu lists the links without the users page', () => {
-    assert.deepEqual(labels('admin'), ['Nieuw recept', 'Instellingen', 'Over', 'Herkenning']);
+    assert.deepEqual(labels('admin'), ['Nieuw recept', 'Instellingen', 'Over', 'Herkenning', 'Uitloggen']);
+  });
+});
+
+describe('site-menu › Logging out', () => {
+  test('Uitloggen points to the Access logout', () => {
+    show();
+    openMenu();
+    assert.equal(screen.getByTestId('SiteMenu-logout').getAttribute('href'), '/cdn-cgi/access/logout');
+  });
+
+  test('a click is not intercepted by the router', () => {
+    show();
+    openMenu();
+    assert.equal(fireEvent.click(screen.getByTestId('SiteMenu-logout')), true);
   });
 });
 
