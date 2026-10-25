@@ -14,4 +14,4 @@
 
 ## 3. Finish
 
-- [ ] 3.1 Run `pnpm test:spec add-loose-units` and make sure every delta scenario has a test; then `pnpm format:fix`, `pnpm lint:fix`, `pnpm format:check`, `pnpm lint:check` and `pnpm test:ai` pass
+- [x] 3.1 Run `pnpm test:spec add-loose-units` and make sure every delta scenario has a test; then `pnpm format:fix`, `pnpm lint:fix`, `pnpm format:check`, `pnpm lint:check` and `pnpm test:ai` pass

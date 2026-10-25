@@ -22,7 +22,13 @@ export async function getRules(db: D1Database): Promise<Rules> {
     const saved: Record<string, unknown> = JSON.parse(row.value);
     if (typeof saved !== 'object' || saved === null || Array.isArray(saved)) return defaultRules;
     const rules = { ...defaultRules, ...saved };
-    const ok = isWords(rules.units) && isLooseUnits(rules.looseUnits) && isWords(rules.minuteWords) && isWords(rules.hourWords) && isWords(rules.degreeWords) && isSpoken(rules.spoken);
+    const ok =
+      isWords(rules.units) &&
+      isLooseUnits(rules.looseUnits) &&
+      isWords(rules.minuteWords) &&
+      isWords(rules.hourWords) &&
+      isWords(rules.degreeWords) &&
+      isSpoken(rules.spoken);
     return ok ? rules : defaultRules;
   } catch {
     return defaultRules;
@@ -33,7 +39,14 @@ export async function getRules(db: D1Database): Promise<Rules> {
 export type RulesFields = Record<'units' | 'looseUnits' | 'minuteWords' | 'hourWords' | 'degreeWords' | 'spoken', string>;
 export type RulesErrors = Partial<Record<keyof RulesFields, string>>;
 
-const label = { units: 'Eenheden', looseUnits: 'Losse eenheden', minuteWords: 'Minuutwoorden', hourWords: 'Uurwoorden', degreeWords: 'Graadwoorden', spoken: 'Uitgesproken duur' };
+const label = {
+  units: 'Eenheden',
+  looseUnits: 'Losse eenheden',
+  minuteWords: 'Minuutwoorden',
+  hourWords: 'Uurwoorden',
+  degreeWords: 'Graadwoorden',
+  spoken: 'Uitgesproken duur',
+};
 const clean = (line: string) => line.trim().replace(/\s+/g, ' ').toLowerCase();
 const lines = (text: string) => text.split(/\r?\n/).map(clean).filter(Boolean);
 
@@ -47,7 +60,9 @@ export function readRules(fields: RulesFields): { rules: Rules } | { errors: Rul
     // Units match as one letters-only word, so they take no spaces or °.
     const ok = field === 'units' || field === 'looseUnits' ? /^\p{L}+$/u : valid;
     const bad = list.find((w) => !ok.test(w));
-    if (bad) errors[field] = field === 'units' || field === 'looseUnits' ? `"${bad}" mag alleen letters bevatten.` : `"${bad}" mag alleen letters, ° en spaties bevatten.`;
+    if (bad)
+      errors[field] =
+        field === 'units' || field === 'looseUnits' ? `"${bad}" mag alleen letters bevatten.` : `"${bad}" mag alleen letters, ° en spaties bevatten.`;
     return list;
   };
   const rules: Rules = {
