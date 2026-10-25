@@ -8,7 +8,7 @@ import { tileFor } from '~app/shared/tile';
 import type { Route } from './+types/EditRecipePageRoute';
 import { endDraftAfterSave } from './lib/endDraftAfterSave';
 import { RecipeEditor } from './lib/RecipeEditor';
-import { readForm, readIngredients, readSteps, toRecipeFields, validate, type RecipeFormErrors } from './lib/recipeValidation';
+import { readForm, readIngredients, readSteps, readTags, tagError, toRecipeFields, validate, type RecipeFormErrors } from './lib/recipeValidation';
 import { joinIngredient } from './lib/shared/ingredients';
 
 const notFound = () => data('Recept niet gevonden', { status: 404 });
@@ -49,13 +49,17 @@ export async function action({ request, params, context }: Route.ActionArgs) {
   // A form without an ingredient list keeps the stored ingredients, so the amounts in the steps are found against those.
   const { lines: stepLines, steps } = readSteps(form, ingredients ?? stored?.ingredients ?? [], rules);
 
+  const tags = readTags(form);
   const errors: RecipeFormErrors = validate(values);
+  const tooLong = tagError(tags);
+  if (tooLong) errors.tags = tooLong;
   if (Object.keys(ingredientErrors).length) errors.ingredients = ingredientErrors;
-  if (Object.keys(errors).length) return data({ errors, values: { ...values, ingredients: lines, steps: stepLines } }, { status: 400 });
+  if (Object.keys(errors).length)
+    return data({ errors, values: { ...values, ingredients: lines, steps: stepLines, tags: tags ?? [] } }, { status: 400 });
 
   const fields = toRecipeFields(values);
   const image = stored && acceptImage(fields.image, stored.image);
-  const updated = stored && (await updateRecipe(DB, params.slug, { ...fields, image, ingredients, steps }));
+  const updated = stored && (await updateRecipe(DB, params.slug, { ...fields, image, ingredients, steps, tags }));
   if (!updated) throw notFound();
   // After the write, so a failed delete leaves an orphan and never a recipe pointing at a missing file. The recipe is saved either way, so a failure must not turn into an error page.
   if (updated.previousImage && updated.previousImage !== image) await deletePhoto(PHOTOS, updated.previousImage).catch(() => undefined);

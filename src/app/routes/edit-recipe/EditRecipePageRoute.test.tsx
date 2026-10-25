@@ -366,3 +366,18 @@ describe('the edit loader', () => {
     assert.match((await load(db, photos, 'versie')).updatedAt, /^\d{4}-\d\d-\d\dT/);
   });
 });
+
+describe('action tags', () => {
+  test('the posted tags replace the stored ones', async ({ db, photos }) => {
+    await addRecipe(db, 'soep');
+    await submit(db, photos, 'soep', { title: 'Soep', author: 'Oma', tags: JSON.stringify(['Winter']) });
+    assert.deepEqual((await getRecipe(db, 'soep'))?.tags, ['Winter']);
+  });
+
+  test('a form without tags keeps them', async ({ db, photos }) => {
+    await addRecipe(db, 'soep');
+    await submit(db, photos, 'soep', { title: 'Soep', author: 'Oma', tags: JSON.stringify(['Winter']) });
+    await submit(db, photos, 'soep', { title: 'Soep', author: 'Oma' });
+    assert.deepEqual((await getRecipe(db, 'soep'))?.tags, ['Winter']);
+  });
+});

@@ -11,7 +11,7 @@ import type { Route } from './+types/NewRecipePageRoute';
 import { emptyDraftSeed } from './lib/draft';
 import { endDraftAfterSave } from './lib/endDraftAfterSave';
 import { RecipeEditor } from './lib/RecipeEditor';
-import { readForm, readIngredients, readSteps, toRecipeFields, validate, type RecipeFormErrors } from './lib/recipeValidation';
+import { readForm, readIngredients, readSteps, readTags, tagError, toRecipeFields, validate, type RecipeFormErrors } from './lib/recipeValidation';
 
 export async function loader({ context }: Route.LoaderArgs) {
   const db = context.get(envContext).DB;
@@ -28,15 +28,20 @@ export async function action({ request, context }: Route.ActionArgs) {
   const { lines, ingredients, errors: ingredientErrors } = readIngredients(form, rules);
   const { lines: stepLines, steps } = readSteps(form, ingredients ?? [], rules);
 
+  const tags = readTags(form);
   const errors: RecipeFormErrors = validate(values);
+  const tooLong = tagError(tags);
+  if (tooLong) errors.tags = tooLong;
   if (Object.keys(ingredientErrors).length) errors.ingredients = ingredientErrors;
-  if (Object.keys(errors).length) return data({ errors, values: { ...values, ingredients: lines, steps: stepLines } }, { status: 400 });
+  if (Object.keys(errors).length)
+    return data({ errors, values: { ...values, ingredients: lines, steps: stepLines, tags: tags ?? [] } }, { status: 400 });
 
   const fields = toRecipeFields(values);
   const slug = await createRecipe(context.get(envContext).DB, {
     ...fields,
     ingredients,
     steps,
+    tags,
     image: acceptImage(fields.image, null),
     seal: seals.find((s) => s === form.get('seal')),
     createdBy: context.get(userEmailContext),
