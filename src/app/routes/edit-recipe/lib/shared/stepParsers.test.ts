@@ -383,3 +383,13 @@ describe('parsing-rules › Removed word is not recognised', () => {
     assert.equal(findOven('180 °C', rules)?.values.degrees, 180);
   });
 });
+
+describe('recipe-step-chips › Loose unit written before the name', () => {
+  // "een" stays outside the amount; "scheutje" is the amount, its value 1 is read when the chip is saved.
+  test('is the chip amount, without the word before it', () => {
+    assert.deepEqual(
+      found('Voeg een scheutje wijn toe.', [row('w', 'rode wijn')]).map((f) => [f.words, f.quantity]),
+      [['scheutje wijn', 'scheutje']],
+    );
+  });
+});
