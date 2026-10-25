@@ -486,3 +486,33 @@ describe('recipe-form › Leaving without changes does not ask', () => {
     assert.equal(asksBeforeLeaving({ dirty: true, submitting: true }, never), false);
   });
 });
+
+describe('recipe-draft › Tags are kept in the draft', () => {
+  test('the draft on the device holds the tag', () => {
+    const { storage } = fakeStorage();
+    saveDraft(storage, key, keeping({ ...edited, tags: ['Soep'] }));
+    assert.deepEqual(loadDraft(storage, key)?.state.tags, ['Soep']);
+  });
+});
+
+describe('recipe-draft › A draft from before tags restores', () => {
+  const beforeTags = () => {
+    const { storage, items } = fakeStorage();
+    saveDraft(storage, key, keeping());
+    const stored = JSON.parse(items.get(key)!) as { state: { tags?: string[] } };
+    delete stored.state.tags;
+    items.set(key, JSON.stringify(stored));
+    return { storage, items };
+  };
+
+  test('the draft is restored with no tags', () => {
+    const { storage } = beforeTags();
+    assert.deepEqual(loadDraft(storage, key)?.state, edited);
+  });
+
+  test('the draft is not removed', () => {
+    const { storage, items } = beforeTags();
+    loadDraft(storage, key);
+    assert.ok(items.has(key));
+  });
+});

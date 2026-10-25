@@ -111,14 +111,16 @@ function isStoredDraft(d: unknown): d is StoredDraft {
     s.ingredients.every(isRow) &&
     Array.isArray(s.steps) &&
     s.steps.length > 0 &&
-    s.steps.every(isStep)
+    s.steps.every(isStep) &&
+    optional(s.tags, (t) => Array.isArray(t) && t.every(isString))
   );
 }
 
 function parse(text: string | null): StoredDraft | undefined {
   try {
     const parsed: unknown = JSON.parse(text ?? '');
-    return isStoredDraft(parsed) ? parsed : undefined;
+    // A draft kept before tags existed has none.
+    return isStoredDraft(parsed) ? { ...parsed, state: { ...parsed.state, tags: parsed.state.tags ?? [] } } : undefined;
   } catch {
     return undefined;
   }

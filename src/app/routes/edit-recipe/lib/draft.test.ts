@@ -433,3 +433,14 @@ describe('an open proposed removal', () => {
     assert.notEqual(chip.anchor, undefined);
   });
 });
+
+describe('recipe-form › Changing tags counts as an unsaved change', () => {
+  test('a picked tag is unsaved', () => {
+    assert.equal(isDirty(stored, { ...stored, tags: ['Soep'] }, defaultRules), true);
+  });
+
+  test('the starting tags are not unsaved', () => {
+    const withTags = startingDraft(defaultRules, { ...content, tags: ['Soep'] });
+    assert.equal(isDirty(withTags, { ...withTags, tags: ['Soep'] }, defaultRules), false);
+  });
+});

@@ -57,6 +57,7 @@ describe('recipe-editing › Form shows the stored values', () => {
       image: '/soep.jpg',
       ingredients: [],
       steps: [],
+      tags: [],
     });
   });
 });

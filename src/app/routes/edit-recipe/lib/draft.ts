@@ -5,13 +5,23 @@ import type { RecipeForm } from './recipeValidation';
 import { classifyStored, reconcile, rowsOf, toStored, type Context, type StepDraft } from './steps/chips';
 import type { TextEdit } from './steps/textEdit';
 
-/** What the routes hand the editor: the fields, the ingredient lines as plain text and the steps as they are stored. */
-export type DraftSeed = RecipeForm & { ingredients: string[]; steps: Step[] };
+/** What the routes hand the editor: the fields, the ingredient lines as plain text, the steps as they are stored and the tag names (alphabetical). */
+export type DraftSeed = RecipeForm & { ingredients: string[]; steps: Step[]; tags: string[] };
 
 /** The editor's content. */
-export type RecipeDraft = RecipeForm & { ingredients: IngredientLine[]; steps: StepDraft[] };
+export type RecipeDraft = RecipeForm & { ingredients: IngredientLine[]; steps: StepDraft[]; tags: string[] };
 
-export const emptyDraftSeed: DraftSeed = { title: '', author: '', servings: '', time: '', intro: '', image: '', ingredients: [], steps: [] };
+export const emptyDraftSeed: DraftSeed = {
+  title: '',
+  author: '',
+  servings: '',
+  time: '',
+  intro: '',
+  image: '',
+  ingredients: [],
+  steps: [],
+  tags: [],
+};
 
 const newStep = (id: string): StepDraft => ({ id, body: '', chips: [], ghosts: [] });
 

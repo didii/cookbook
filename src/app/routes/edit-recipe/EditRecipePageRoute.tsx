@@ -27,6 +27,7 @@ export async function loader({ params, context }: Route.LoaderArgs) {
     ingredients: recipe.ingredients.map((i) => joinIngredient({ quantityText: i.quantityText, name: i.name })),
     // The editor types the text; stored amounts would go stale and are found again on save.
     steps: recipe.steps.map(({ body, ingredients, ovenTemperature, timer }) => ({ body, ingredients, ovenTemperature, timer })),
+    tags: recipe.tags,
   };
   return {
     slug: params.slug,
