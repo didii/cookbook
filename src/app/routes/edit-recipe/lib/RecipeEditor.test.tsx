@@ -3,7 +3,7 @@ import type { ComponentProps } from 'react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { describe, test } from 'vitest';
 import { defaultRules } from '~app/shared/rules';
-import { render, screen } from '~testing/dom';
+import { precedes, render, screen } from '~testing/dom';
 import { emptyDraftSeed } from './draft';
 import { RecipeEditor } from './RecipeEditor';
 
@@ -34,6 +34,25 @@ const editorProps: ComponentProps<typeof RecipeEditor> = {
 };
 const show = (props: Partial<ComponentProps<typeof RecipeEditor>> = {}) =>
   render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <RecipeEditor {...editorProps} {...props} /> }])} />);
+
+describe('recipe-deletion › Delete button is shown', () => {
+  test('the button comes after the form', () => {
+    show({ slug: 'appeltaart' });
+    assert.ok(precedes(screen.getByTestId('RecipeEditor-form'), screen.getByTestId('DeleteRecipe-open')));
+  });
+
+  test('the button is not inside the form', () => {
+    show({ slug: 'appeltaart' });
+    assert.ok(!screen.getByTestId('RecipeEditor-form').contains(screen.getByTestId('DeleteRecipe-open')));
+  });
+});
+
+describe('recipe-deletion › No delete button for a new recipe', () => {
+  test('the page has no delete button', () => {
+    show();
+    assert.equal(screen.queryByTestId('DeleteRecipe-open'), null);
+  });
+});
 
 describe('recipe-creation › Required fields are marked', () => {
   const label = (id: string) => document.querySelector(`label[for=${id}]`)!.textContent;

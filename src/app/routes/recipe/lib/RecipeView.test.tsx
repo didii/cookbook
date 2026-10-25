@@ -179,10 +179,10 @@ describe('recipe-viewing › Ingredient without quantity', () => {
   });
 });
 
-describe('recipe-deletion › Delete button is shown', () => {
-  test('the button comes after the steps', () => {
+describe('recipe-deletion › No delete button on the recipe page', () => {
+  test('the page has no delete button', () => {
     page();
-    assert.ok(precedes(screen.getAllByTestId('StepItem-body').at(-1)!, screen.getByTestId('DeleteRecipe-open')));
+    assert.equal(screen.queryByTestId('DeleteRecipe-open'), null);
   });
 });
 

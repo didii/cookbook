@@ -7,7 +7,6 @@ import type { Recipe, Step } from '~app/shared/recipe';
 import { initialCook, observe, setByHand, wantsCookMode } from './cook/cookMode';
 import { CookSwitch } from './cook/CookSwitch';
 import { useWakeLock } from './cook/useWakeLock';
-import { DeleteRecipe } from './DeleteRecipe';
 import { IngredientList } from './IngredientList';
 import { NotePanel } from './notes/NotePanel';
 import { NoteSheet } from './notes/NoteSheet';
@@ -209,9 +208,6 @@ export function RecipeView({ recipe: r, tile, steps, liked = false, note: savedN
             <StepList steps={scaled.steps} highlight={flash} peek={peek} />
             <Fret size={18} className="mt-7 text-red" />
           </section>
-        </div>
-        <div className="max-[51.99rem]:pb-16">
-          <DeleteRecipe headingText={r.title} />
         </div>
         <NoteSheet note={note} />
       </main>

@@ -34,6 +34,7 @@ import {
   purgeDrafts,
   resolveStart,
 } from './draftStore';
+import { DeleteRecipe } from './DeleteRecipe';
 import { IngredientList } from './ingredients/IngredientList';
 import { PhotoField, type PhotoState } from './photo/PhotoField';
 import type { RecipeFormErrors, RecipeFormField } from './recipeValidation';
@@ -223,6 +224,7 @@ export function RecipeEditor({
       )}
       <Form
         method="post"
+        data-testid="RecipeEditor-form"
         onSubmit={(e) => {
           // Enter in a field can submit while the save button is disabled; the photo must be settled first.
           if (photo !== 'ready') return e.preventDefault();
@@ -331,6 +333,8 @@ export function RecipeEditor({
           {photo === 'error' && <span className="text-red">Foto is niet geüpload</span>}
         </SaveBar>
       </Form>
+      {/* Outside the save form (forms cannot nest); it posts to its own route. The padding keeps it clear of the sticky save bar on a phone. */}
+      {slug && <DeleteRecipe headingText={initial.title} slug={slug} className="max-[51.99rem]:pb-16" />}
     </main>
   );
 }

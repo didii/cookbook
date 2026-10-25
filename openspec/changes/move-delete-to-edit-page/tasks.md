@@ -9,7 +9,7 @@ Verify each task with the type check and `pnpm test:ai`; `pnpm test:spec move-de
 ## 2. Button
 
 - [x] 2.1 Move `DeleteRecipe.tsx` and its test from `routes/recipe/lib` to `routes/edit-recipe/lib`; add a `slug` prop for the form's `action`. Keep the popup scenarios' `describe`s.
-- [ ] 2.2 Render `DeleteRecipe` in `RecipeEditor` after the form, only when `slug` is set; remove it from `RecipeView` (and its wrapper `div` and test references). Test "Delete button is shown" and "No delete button for a new recipe" in `RecipeEditor.test.tsx`, and "No delete button on the recipe page" in `RecipeView.test.tsx`.
+- [x] 2.2 Render `DeleteRecipe` in `RecipeEditor` after the form, only when `slug` is set; remove it from `RecipeView` (and its wrapper `div` and test references). Test "Delete button is shown" and "No delete button for a new recipe" in `RecipeEditor.test.tsx`, and "No delete button on the recipe page" in `RecipeView.test.tsx`.
 
 ## 3. Wrap-up
 
