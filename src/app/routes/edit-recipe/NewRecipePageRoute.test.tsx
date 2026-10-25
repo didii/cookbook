@@ -73,6 +73,44 @@ describe('recipe-creation › Servings left empty', () => {
   });
 });
 
+const tagsField = (...names: string[]) => ({ tags: JSON.stringify(names) });
+
+describe('recipe-form › Tags are stored with the recipe', () => {
+  test('the recipe has the picked tags', async ({ db }) => {
+    await submit(db, { title: 'Kerstsoep', author: 'Oma', ...tagsField('Soep', 'Kerst') });
+    assert.deepEqual((await getRecipe(db, 'kerstsoep'))?.tags, ['Kerst', 'Soep']);
+  });
+
+  test('the new tag is a stored tag', async ({ db }) => {
+    await submit(db, { title: 'Kerstsoep', author: 'Oma', ...tagsField('Soep', 'Kerst') });
+    assert.ok(await db.prepare("SELECT 1 FROM tags WHERE name = 'Kerst'").first());
+  });
+});
+
+describe('recipe-form › Too long tag is refused on save', () => {
+  let res: { init?: { status?: number }; data: { errors: Record<string, string> } };
+
+  test.beforeEach(async ({ db }) => {
+    res = (await submit(db, { title: 'Te lang', author: 'Oma', ...tagsField('a'.repeat(101)) })) as unknown as typeof res;
+  });
+
+  test('the editor is shown again with a message at the tags field', () => {
+    assert.ok(res.data.errors.tags);
+  });
+
+  test('nothing is stored', async ({ db }) => {
+    assert.equal(await getRecipe(db, 'te-lang'), undefined);
+  });
+});
+
+describe('recipe-form › Many tags are accepted', () => {
+  test('the recipe has all 30', async ({ db }) => {
+    const names = Array.from({ length: 30 }, (_, i) => `Tag ${i}`);
+    await submit(db, { title: 'Veel tags', author: 'Oma', ...tagsField(...names) });
+    assert.equal((await getRecipe(db, 'veel-tags'))?.tags.length, 30);
+  });
+});
+
 /** The new recipe page as the router shows it, with what a refused submit hands back (nothing on first opening). */
 const form = (actionData?: { errors: Record<string, string>; values: typeof emptyDraftSeed }) => {
   const props = fake<Route.ComponentProps>({ loaderData: { callingName: '', authors: ['Oma', 'Mama'], tile: 0, seal: undefined }, actionData });
