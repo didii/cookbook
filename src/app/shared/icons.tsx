@@ -24,15 +24,15 @@ import {
   Utensils,
   X,
   type LucideIcon,
+  type LucideProps,
 } from 'lucide-react';
+import type { ComponentProps } from 'react';
 import { cn } from './cn';
-
-type Props = { className?: string };
 
 /** One look for every icon: Lucide, at a default size that `className` can override. */
 const icon =
   (Icon: LucideIcon, defaultClassName?: string) =>
-  ({ className }: Props) => <Icon className={cn(defaultClassName, 'size-5 shrink-0', className)} />;
+  ({ className, ...props }: LucideProps) => <Icon {...props} className={cn(defaultClassName, 'size-5 shrink-0', className)} />;
 
 export const Play = icon(LucidePlay, 'fill-current');
 export const Stop = icon(Square, 'fill-current');
@@ -56,8 +56,9 @@ export const Search = icon(LucideSearch);
 export const Sliders = icon(SlidersHorizontal);
 export const Clock = icon(Timer);
 export const Ingredient = icon(Utensils);
-export const MapleLeaf = ({ className }: Props) => (
+export const MapleLeaf = ({ className, ...props }: ComponentProps<'svg'>) => (
   <svg
+    {...props}
     viewBox="0 0 14 14"
     aria-hidden="true"
     focusable="false"

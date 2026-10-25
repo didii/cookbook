@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ChangeEvent } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent, type ComponentProps } from 'react';
 import { Button, Seal, TileBand } from '~app/shared/components';
 import { Camera, Trash } from '~app/shared/icons';
 import { resizePhoto, uploadPhoto } from './photoFile';
@@ -6,23 +6,23 @@ import { resizePhoto, uploadPhoto } from './photoFile';
 /** Whether the photo is settled, or still going up / failed to go up (then the recipe can't be saved). */
 export type PhotoState = 'ready' | 'uploading' | 'error';
 
-type Props = {
+interface PhotoFieldProps extends ComponentProps<'div'> {
   /** The recipe's photo: an uploaded path, an older link or empty. Posted as the form field `image`. */
   value: string;
-  onChange: (path: string) => void;
+  onPhotoChange: (path: string) => void;
   onStateChange: (state: PhotoState) => void;
   /** Index of the tile band beneath the photo. */
   tile: number;
   /** Seal stamped on the photo, as on the recipe page. */
   seal?: string;
-};
+}
 
 type Pending = { blob: Blob; preview: string };
 
 const wide = 'inline-flex items-center justify-center gap-2 px-4';
 
 /** The recipe's photo: choose from camera or gallery, shrink and upload, show in the frame the recipe page uses, replace or remove. */
-export function PhotoField({ value, onChange, onStateChange, tile, seal }: Props) {
+export function PhotoField({ value, onPhotoChange, onStateChange, tile, seal, ...props }: PhotoFieldProps) {
   const input = useRef<HTMLInputElement>(null);
   const [pending, setPending] = useState<Pending>();
   const [state, setState] = useState<PhotoState>('ready');
@@ -45,7 +45,7 @@ export function PhotoField({ value, onChange, onStateChange, tile, seal }: Props
     changeState('uploading');
     try {
       const path = await uploadPhoto(photo.blob, controller.signal);
-      onChange(path);
+      onPhotoChange(path);
       setPending(undefined);
       changeState('ready');
     } catch {
@@ -75,14 +75,14 @@ export function PhotoField({ value, onChange, onStateChange, tile, seal }: Props
     setPending(undefined);
     setUnreadable(false);
     changeState('ready');
-    onChange('');
+    onPhotoChange('');
   };
 
   const src = pending?.preview ?? value;
   const pick = () => input.current?.click();
 
   return (
-    <div>
+    <div {...props}>
       <span className="font-extrabold">Foto</span>
       <input ref={input} type="file" accept="image/*" hidden tabIndex={-1} onChange={choose} />
       <input type="hidden" name="image" value={value} />
@@ -125,7 +125,7 @@ export function PhotoField({ value, onChange, onStateChange, tile, seal }: Props
                   onError={() => setFailedSrc(src)}
                   className="block aspect-2/1 w-full border-b-3 border-ink object-cover"
                 />
-                {seal && <Seal id={seal} className="h-13" />}
+                {seal && <Seal sealId={seal} className="h-13" />}
               </div>
               <TileBand first={tile} responsive className="border-b-0" />
             </div>

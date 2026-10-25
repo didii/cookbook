@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ComponentProps } from 'react';
 import { Form, Link, useLocation, useNavigate, useNavigation, useRouteLoaderData } from 'react-router';
 import { cn } from '~app/shared/cn';
 import { AuthorInput } from '~app/shared/components';
@@ -44,7 +44,7 @@ import { StepList } from './steps/StepList';
 import { useDraftPersistence } from './useDraftPersistence';
 import { useLeaveGuard } from './useLeaveGuard';
 
-type Props = {
+interface RecipeEditorProps extends ComponentProps<'main'> {
   /** Visually hidden page heading. */
   heading: string;
   authors: string[];
@@ -65,7 +65,7 @@ type Props = {
   slug?: string;
   /** When the stored recipe was last saved (none for a new recipe): a draft started from another version is flagged. */
   updatedAt?: string;
-};
+}
 
 const inputClass =
   'mt-1 block min-h-13 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-lg text-ink hover:not-focus:bg-[color-mix(in_srgb,var(--color-ink)_5%,white)] focus:shadow-focus focus:outline-transparent aria-invalid:border-red';
@@ -77,7 +77,21 @@ const asterisk = (
 );
 
 /** The one page for creating and editing a recipe; the routes only differ in the values, heading and cancel target they pass. */
-export function RecipeEditor({ rules: rulesNow, heading, authors, initial, values, errors, tile, seal, cancelTo, slug, updatedAt }: Props) {
+export function RecipeEditor({
+  rules: rulesNow,
+  heading,
+  authors,
+  initial,
+  values,
+  errors,
+  tile,
+  seal,
+  cancelTo,
+  slug,
+  updatedAt,
+  className,
+  ...props
+}: RecipeEditorProps) {
   // The rules the edit started with stay for the whole edit: a save by an admin meanwhile does not change an open draft.
   const [rules] = useState(rulesNow);
   const [current, setCurrent] = useState(() => startingDraft(rules, values));
@@ -165,7 +179,7 @@ export function RecipeEditor({ rules: rulesNow, heading, authors, initial, value
   }, [errors]);
 
   return (
-    <main id="main" className="mx-auto max-w-290 px-[max(1rem,4vw)] pt-6 pb-[50vh]">
+    <main {...props} id="main" className={cn('mx-auto max-w-290 px-[max(1rem,4vw)] pt-6 pb-[50vh]', className)}>
       <h1 data-testid="RecipeEditor-heading" className="sr-only">
         {heading}
       </h1>
@@ -307,10 +321,10 @@ export function RecipeEditor({ rules: rulesNow, heading, authors, initial, value
             </label>
             <input {...text('time')} type="text" autoComplete="off" placeholder="1u30" className={inputClass} />
           </div>
-          <PhotoField key={resets} value={current.image} onChange={set('image')} onStateChange={setPhoto} tile={tile} seal={seal} />
+          <PhotoField key={resets} value={current.image} onPhotoChange={set('image')} onStateChange={setPhoto} tile={tile} seal={seal} />
           {seal && <input type="hidden" name="seal" value={seal} />}
         </div>
-        <SaveBar cancelTo={cancelTo} busy={busy} saveBlocked={photo !== 'ready'} dirty={dirty} kept={kept} onReset={reset}>
+        <SaveBar cancelTo={cancelTo} busy={busy} saveBlocked={photo !== 'ready'} dirty={dirty} kept={kept} onFormReset={reset}>
           {restored && restored.draft === current && <span>Concept van {describeSavedAt(restored.at, new Date())} hersteld</span>}
           <OpenProposals count={proposalCount} />
           {photo === 'uploading' && <span>Foto wordt geüpload…</span>}

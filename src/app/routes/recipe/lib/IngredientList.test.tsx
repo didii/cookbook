@@ -12,7 +12,7 @@ describe('IngredientList', () => {
           { quantityText: '100 g', quantityValue: null, quantityUnit: null, name: 'suiker' },
         ]}
         ticked={new Set([1])}
-        onToggle={() => {}}
+        onToggleIngredient={() => {}}
       />,
     );
     assert.deepEqual(

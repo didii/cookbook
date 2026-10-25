@@ -10,7 +10,7 @@ describe('recipe-creation › Link to the form', () => {
   const show = () =>
     render(
       <MemoryRouter>
-        <Header email="oma@example.com" role={memberRole} />
+        <Header email="oma@example.com" userRole={memberRole} />
       </MemoryRouter>,
     );
 

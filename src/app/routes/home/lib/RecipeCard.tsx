@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useId, type ComponentProps } from 'react';
 import { Link } from 'react-router';
 import { cn } from '~app/shared/cn';
 import { LikeButton, Seal, TileBand } from '~app/shared/components';
@@ -6,19 +6,28 @@ import { StickyNote } from '~app/shared/icons';
 import type { RecipeSummary } from '~app/shared/recipe';
 import { twoTileRows } from '~app/shared/tile';
 
-type Props = { recipe: RecipeSummary; tile: number; eager?: boolean; onSaved?: () => void };
+interface RecipeCardProps extends ComponentProps<'article'> {
+  recipe: RecipeSummary;
+  tile: number;
+  eager?: boolean;
+  onSaved?: () => void;
+}
 
 const maxCategories = 2;
 
 /** Recipe card: image (two tiles high), tile band with the buttons, then the text. The title link is stretched over the card, the buttons sit above it. */
-export function RecipeCard({ recipe: r, tile, eager, onSaved }: Props) {
+export function RecipeCard({ recipe: r, tile, eager, onSaved, className, ...props }: RecipeCardProps) {
   const newId = useId();
   const titleId = useId();
   const more = r.categories.length - maxCategories;
   return (
     <article
+      {...props}
       data-testid="RecipeCard-card"
-      className="@container relative overflow-hidden rounded-xl border-3 border-ink bg-white shadow-hard transition-[transform,box-shadow] duration-180 ease-[cubic-bezier(0.22,1,0.36,1)] has-[a:focus-visible]:outline-4 has-[a:focus-visible]:outline-offset-3 has-[a:focus-visible]:outline-blu hover:-translate-0.5 hover:shadow-hard-lg motion-reduce:transition-none"
+      className={cn(
+        '@container relative overflow-hidden rounded-xl border-3 border-ink bg-white shadow-hard transition-[transform,box-shadow] duration-180 ease-[cubic-bezier(0.22,1,0.36,1)] has-[a:focus-visible]:outline-4 has-[a:focus-visible]:outline-offset-3 has-[a:focus-visible]:outline-blu hover:-translate-0.5 hover:shadow-hard-lg motion-reduce:transition-none',
+        className,
+      )}
     >
       {r.isNew && (
         <span
@@ -38,7 +47,7 @@ export function RecipeCard({ recipe: r, tile, eager, onSaved }: Props) {
           className={cn('block h-auto w-full border-b-3 border-ink object-cover', twoTileRows)}
         />
       )}
-      {r.image && r.seal && <Seal id={r.seal} className="h-13" />}
+      {r.image && r.seal && <Seal sealId={r.seal} className="h-13" />}
       <div className="relative">
         <TileBand first={tile} responsive rows={r.image ? 1 : 3} />
         <div className="pointer-events-none absolute inset-x-2 top-0 bottom-[3px] z-2 flex items-end justify-end gap-2 pb-[3px]">
@@ -54,7 +63,7 @@ export function RecipeCard({ recipe: r, tile, eager, onSaved }: Props) {
             </span>
           )}
           <span className="pointer-events-auto">
-            <LikeButton slug={r.slug} initialLiked={r.liked} onSaved={onSaved} describedBy={titleId} />
+            <LikeButton slug={r.slug} initialLiked={r.liked} onSaved={onSaved} aria-describedby={titleId} />
           </span>
         </div>
       </div>

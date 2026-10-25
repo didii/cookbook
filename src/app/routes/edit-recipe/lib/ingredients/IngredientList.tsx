@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, type ComponentProps, type ReactNode } from 'react';
 import { Announcement } from '~app/shared/components';
 import { ArrowDown, ArrowUp } from '~app/shared/icons';
 import type { Rules } from '~app/shared/rules';
@@ -9,7 +9,7 @@ import { useReorder } from '../shared/useReorder';
 /** One ingredient line in the editor. The id is only a stable key for focus and drag; it is never posted or stored. */
 export type IngredientLine = { id: string; text: string };
 
-type Props = {
+interface IngredientListProps extends ComponentProps<'div'> {
   /** The rows to show; the last one is the empty row. */
   rows: IngredientLine[];
   rules: Rules;
@@ -21,7 +21,7 @@ type Props = {
   onRemove: (id: string) => void;
   /** Move a row to a place in the list. */
   onMove: (id: string, to: number) => void;
-};
+}
 
 /** Space between rows (Tailwind gap-1.5), needed to shift rows aside while one is dragged. */
 const gap = 6;
@@ -34,7 +34,7 @@ const none: number[] = [];
 const noErrors: Record<number, string> = {};
 
 /** The ingredient list: one line per row, keyboard navigation between rows, move announcements, and the list as the form field `ingredients`. */
-export function IngredientList({ rows, rules, errors = noErrors, usedIn = () => none, onType, onRemove, onMove }: Props) {
+export function IngredientList({ rows, rules, errors = noErrors, usedIn = () => none, onType, onRemove, onMove, ...props }: IngredientListProps) {
   const items = useRef(new Map<string, ItemHandle>());
   // Work to do once the rows have rendered, such as focusing a row that did not exist yet.
   const afterRender = useRef<() => void>(undefined);
@@ -70,7 +70,7 @@ export function IngredientList({ rows, rules, errors = noErrors, usedIn = () => 
   };
 
   return (
-    <div>
+    <div {...props}>
       <input type="hidden" name="ingredients" value={JSON.stringify(rows.map((r) => ({ text: r.text })))} />
       <ul className="m-0 grid list-none gap-1.5 p-0">
         {rows.map((row, i) => {
@@ -78,11 +78,11 @@ export function IngredientList({ rows, rules, errors = noErrors, usedIn = () => 
           return (
             <IngredientItem
               key={row.id}
-              ref={(handle) => {
+              handleRef={(handle) => {
                 if (handle) items.current.set(row.id, handle);
                 else items.current.delete(row.id);
               }}
-              id={`ingredient-${row.id}`}
+              rowId={`ingredient-${row.id}`}
               rules={rules}
               label={`Ingrediënt ${i + 1}`}
               toolbarLabel={`Acties voor ingrediënt ${i + 1}`}

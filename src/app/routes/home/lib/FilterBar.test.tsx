@@ -7,7 +7,7 @@ import { noFilters, type Filters } from './filterRecipes';
 
 const authors = ['Mama', 'Oma', 'Papa'];
 const show = (filters: Filters = noFilters, detailed = true) =>
-  render(<FilterBar filters={filters} authors={authors} detailed={detailed} onChange={() => {}} />);
+  render(<FilterBar filters={filters} authors={authors} detailed={detailed} onFiltersChange={() => {}} />);
 
 const bar = () => screen.getByTestId('FilterBar-bar');
 const searchBox = () => screen.getByTestId('FilterBar-search');

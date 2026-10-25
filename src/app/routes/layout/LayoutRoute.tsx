@@ -7,7 +7,7 @@ export default function Layout() {
   const root = useRouteLoaderData<{ email: string; role: Role }>('root');
   return (
     <>
-      <Header email={root?.email ?? ''} role={root?.role ?? 'user'} />
+      <Header email={root?.email ?? ''} userRole={root?.role ?? 'user'} />
       <Outlet />
     </>
   );

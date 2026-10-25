@@ -1,20 +1,28 @@
-import { useContext } from 'react';
+import { useContext, type ComponentProps } from 'react';
 import { cn } from '~app/shared/cn';
 import { Alarm, Stop } from '~app/shared/icons';
 import { TimerButton } from './TimerButton';
 import { formatCountdown, type TimerView } from './timers';
 import { TimersContext } from './timersContext';
 
-type Props = { view: TimerView };
+// The root is an output or a div: only the attributes both of them take.
+type CommonProps = Pick<ComponentProps<'div'> & ComponentProps<'output'>, keyof ComponentProps<'div'> & keyof ComponentProps<'output'>>;
+
+interface TimerCardProps extends CommonProps {
+  view: TimerView;
+}
 
 /** A timer under its step's label: running or finished on a narrow screen, so the chips do not move; the note of a hand-over to the app on any screen. */
-export function TimerCard({ view }: Props) {
+export function TimerCard({ view, className, ...props }: TimerCardProps) {
   const timers = useContext(TimersContext);
   const finished = view.state === 'finished';
 
   if (view.state === 'native') {
     return (
-      <output className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border-3 border-dashed border-ink py-2 pr-2 pl-3.5">
+      <output
+        {...props}
+        className={cn('flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border-3 border-dashed border-ink py-2 pr-2 pl-3.5', className)}
+      >
         <span className="grid">
           <span data-testid="TimerCard-note" className="font-black tabular-nums">
             In je app · {formatCountdown(view.remainingMs)}
@@ -48,6 +56,7 @@ export function TimerCard({ view }: Props) {
 
   return (
     <div
+      {...props}
       data-testid="TimerCard-card"
       role={finished ? 'alert' : 'group'}
       aria-label={finished ? undefined : `Timer${view.label ? ` ${view.label}` : ''}`}
@@ -55,6 +64,7 @@ export function TimerCard({ view }: Props) {
         'flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border-3 border-ink py-2 pr-2 pl-3.5 min-[52rem]:hidden',
         // The ring animates box-shadow, so a finished card has no hard shadow to swap with it.
         finished ? 'animate-ring bg-red text-white motion-reduce:animate-none' : 'bg-white shadow-hard-sm',
+        className,
       )}
     >
       <span className={cn('leading-none font-black tracking-tight tabular-nums', finished ? 'text-2xl' : 'text-4xl text-jade')}>

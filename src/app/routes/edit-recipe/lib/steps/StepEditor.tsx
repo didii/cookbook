@@ -1,4 +1,5 @@
-import { useImperativeHandle, useRef, useState, type ComponentProps, type CSSProperties, type KeyboardEvent, type Ref } from 'react';
+import { useImperativeHandle, useRef, useState, type ComponentProps, type KeyboardEvent, type Ref } from 'react';
+import { cn } from '~app/shared/cn';
 import type { Context, StepDraft } from './chips';
 import { StepChips } from './StepChips';
 import { StepText, type Mark } from './StepText';
@@ -8,8 +9,8 @@ import { RowGrip } from '../shared/RowGrip';
 import { RowToolbar } from '../shared/RowToolbar';
 import { useAfterRender } from '../shared/useAfterRender';
 
-type Props = {
-  ref?: Ref<ItemHandle>;
+interface StepEditorProps extends ComponentProps<'li'> {
+  handleRef?: Ref<ItemHandle>;
   /** The step's number, counting from 1. */
   number: number;
   step: StepDraft;
@@ -35,12 +36,11 @@ type Props = {
   onMove: (direction: -1 | 1) => void;
   /** Pointer handlers for the grip, and the style the step gets while it is dragged or shifted aside. */
   gripProps: ComponentProps<'span'>;
-  style?: CSSProperties;
-};
+}
 
 /** One step: its header (number, grip and buttons) above its text. */
 export function StepEditor({
-  ref,
+  handleRef,
   number,
   step,
   context,
@@ -56,8 +56,9 @@ export function StepEditor({
   onInsert,
   onMove,
   gripProps,
-  style,
-}: Props) {
+  className,
+  ...props
+}: StepEditorProps) {
   const field = useRef<HTMLTextAreaElement>(null);
   const item = useRef<HTMLLIElement>(null);
   const afterRender = useAfterRender();
@@ -69,7 +70,7 @@ export function StepEditor({
     c.anchor ? [{ id: c.id, start: c.anchor.start, end: c.anchor.end, kind: c.mode, hot: c.id === hotId }] : [],
   );
 
-  useImperativeHandle(ref, () => ({
+  useImperativeHandle(handleRef, () => ({
     rect: () => item.current?.getBoundingClientRect(),
     focusField: (caret) => {
       const el = field.current;
@@ -95,7 +96,11 @@ export function StepEditor({
   };
 
   return (
-    <li ref={item} style={style} className="group relative border-t-2 border-dashed border-ink/30 pt-4.5 pb-5 first:border-t-0 first:pt-0">
+    <li
+      {...props}
+      ref={item}
+      className={cn('group relative border-t-2 border-dashed border-ink/30 pt-4.5 pb-5 first:border-t-0 first:pt-0', className)}
+    >
       <div className="mb-1 flex items-center gap-2">
         <RowGrip {...gripProps} className="min-h-9 w-6" />
         <span className="mr-auto text-[0.8125rem] font-black tracking-[0.08em] text-red uppercase group-focus-within:text-blu">Stap {number}</span>
@@ -113,19 +118,19 @@ export function StepEditor({
         />
       </div>
       <StepText
-        ref={field}
+        textAreaRef={field}
         label={`Stap ${number}`}
         value={step.body}
         marks={marks}
         placeholder={number === 1 ? 'Kneed de bloem met de boter tot een deeg' : 'Wat doe je in deze stap?'}
-        onChange={onType}
+        onTextChange={onType}
         onEdit={onEdit}
         onCaret={setCaret}
-        onKeyDown={keyDown}
+        onTextAreaKeyDown={keyDown}
         onEnter={onEnter}
         onBackspaceEmpty={onBackspaceEmpty}
       />
-      <StepChips step={step} context={context} number={number} hotId={hotId} onHot={setChipHot} onChange={onChips} />
+      <StepChips step={step} context={context} number={number} hotId={hotId} onHot={setChipHot} onChipsChange={onChips} />
     </li>
   );
 }

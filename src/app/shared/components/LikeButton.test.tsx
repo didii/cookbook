@@ -117,9 +117,9 @@ describe('recipe-like › Leaf reacts to the pointer', () => {
   });
 });
 
-describe('LikeButton describedBy', () => {
+describe('LikeButton aria-describedby', () => {
   test('describes the button by the given element', () => {
-    render(<LikeButton slug="soep" initialLiked={false} describedBy="title" />);
+    render(<LikeButton slug="soep" initialLiked={false} aria-describedby="title" />);
     assert.equal(leaf().getAttribute('aria-describedby'), 'title');
   });
 

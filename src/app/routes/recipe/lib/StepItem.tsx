@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, type ComponentProps } from 'react';
 import { cn } from '~app/shared/cn';
 import type { Step } from '~app/shared/recipe';
 import { StepChips } from './StepChips';
@@ -7,18 +7,29 @@ import { TimersContext } from './timers/timersContext';
 
 const tint = 'pointer-events-none absolute inset-y-0 -inset-x-2 -z-10 rounded-xl bg-yel/55';
 
-type Props = { step: Step; number: number; done: boolean; onToggle: () => void; highlight?: number; peek?: boolean };
+interface StepItemProps extends ComponentProps<'li'> {
+  step: Step;
+  number: number;
+  done: boolean;
+  onToggle: () => void;
+  highlight?: number;
+  peek?: boolean;
+}
 
 /** One step: label with its done square and the chips on one line, the text below as the tap target. */
-export function StepItem({ step, number, done, onToggle, highlight, peek }: Props) {
+export function StepItem({ step, number, done, onToggle, highlight, peek, className, ...props }: StepItemProps) {
   const timers = useContext(TimersContext);
   const timer = step.timer && timers.view(`${number - 1}`);
   const cards = timer && timer.state !== 'idle' ? [timer] : [];
 
   return (
     <li
+      {...props}
       id={`step-${number}`}
-      className="relative isolate scroll-mt-[calc(var(--stack-h,0px)+0.75rem)] border-t-2 border-dashed border-ink/28 py-4 pb-4.5 first:border-t-0 first:pt-0"
+      className={cn(
+        'relative isolate scroll-mt-[calc(var(--stack-h,0px)+0.75rem)] border-t-2 border-dashed border-ink/28 py-4 pb-4.5 first:border-t-0 first:pt-0',
+        className,
+      )}
     >
       {/* Tint between the dashed rules. A jump's highlight is remounted by each jump (new key), which restarts the fade; with reduced motion it
           stays at full tint until removed. Hovering the step's card in the sidebar shows the same tint without the fade and wins over it: the flash keeps running

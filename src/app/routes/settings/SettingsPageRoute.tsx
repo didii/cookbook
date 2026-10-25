@@ -5,5 +5,5 @@ export function meta() {
 }
 
 export default function SettingsPage() {
-  return <WorkInProgress title="Instellingen" />;
+  return <WorkInProgress headingText="Instellingen" />;
 }

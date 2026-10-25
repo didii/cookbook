@@ -172,7 +172,7 @@ export function RecipeView({ recipe: r, tile, steps, liked = false, note: savedN
               className="block aspect-2/1 w-full border-b-3 border-ink object-cover"
             />
           )}
-          {r.image && r.seal && <Seal id={r.seal} className="h-16" />}
+          {r.image && r.seal && <Seal sealId={r.seal} className="h-16" />}
           <TileBand first={tile} responsive className="border-b-0" />
         </div>
 
@@ -180,7 +180,7 @@ export function RecipeView({ recipe: r, tile, steps, liked = false, note: savedN
         <CookSwitch wanted={wanted} lock={lock} manual={cook.manual} onToggle={() => setCook((c) => setByHand(c, !wantsCookMode(c, true)))} />
 
         <div className="mt-6 min-[52rem]:mt-10">
-          <ScaleControl value={amount} onChange={setAmount} servings={r.servings != null} />
+          <ScaleControl value={amount} onScaleChange={setAmount} servings={r.servings != null} />
         </div>
 
         <div
@@ -188,7 +188,7 @@ export function RecipeView({ recipe: r, tile, steps, liked = false, note: savedN
           data-testid="RecipeView-stack"
           className="sticky top-[env(safe-area-inset-top)] z-20 mt-6 -mx-[max(1rem,4vw)] min-[52rem]:hidden"
         >
-          <TabBar tab={tab} onSelect={select} />
+          <TabBar tab={tab} onTabSelect={select} />
           <TimerDock timers={timers.active.filter((t) => !inView.has(t.step))} onJump={jump} />
         </div>
 
@@ -198,7 +198,7 @@ export function RecipeView({ recipe: r, tile, steps, liked = false, note: savedN
             <h2 id="ing" className="mb-4 scroll-mt-[calc(var(--stack-h,0px)+0.75rem)] text-2xl font-black">
               Ingrediënten
             </h2>
-            <IngredientList ingredients={scaled.ingredients} ticked={ticked} onToggle={(i) => setTicked((prev) => toggled(prev, i))} />
+            <IngredientList ingredients={scaled.ingredients} ticked={ticked} onToggleIngredient={(i) => setTicked((prev) => toggled(prev, i))} />
             <NotePanel note={note} />
           </section>
 
@@ -211,7 +211,7 @@ export function RecipeView({ recipe: r, tile, steps, liked = false, note: savedN
           </section>
         </div>
         <div className="max-[51.99rem]:pb-16">
-          <DeleteRecipe title={r.title} />
+          <DeleteRecipe headingText={r.title} />
         </div>
         <NoteSheet note={note} />
       </main>

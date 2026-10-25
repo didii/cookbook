@@ -1,18 +1,27 @@
-import { useRef } from 'react';
+import { useRef, type ComponentProps } from 'react';
 import { Form } from 'react-router';
+import { cn } from '~app/shared/cn';
 import { Button } from '~app/shared/components';
 import { roles } from '~app/shared/role';
 import type { UserListItem } from '~app/shared/users.server';
 import { DeleteUser } from './DeleteUser';
 
-type Props = { user: UserListItem; lastSuperadmin: boolean; isSelf: boolean; accessUrl: string; error?: string; refused?: string; saved?: boolean };
+interface UserFormProps extends ComponentProps<'section'> {
+  user: UserListItem;
+  lastSuperadmin: boolean;
+  isSelf: boolean;
+  accessUrl: string;
+  error?: string;
+  refused?: string;
+  saved?: boolean;
+}
 
 const labels = { user: 'Gebruiker', admin: 'Beheerder', superadmin: 'Superadmin' };
 const field =
   'mt-1 block min-h-12 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-lg text-ink focus:shadow-focus focus:outline-transparent disabled:opacity-40 aria-invalid:border-red';
 
 /** The edit form of one user. Fields are uncontrolled, so "Herstel" (`type="reset"`) puts the stored values back; the caller keys it by user id. */
-export function UserForm({ user, lastSuperadmin, isSelf, accessUrl, error, refused, saved }: Props) {
+export function UserForm({ user, lastSuperadmin, isSelf, accessUrl, error, refused, saved, className, ...props }: UserFormProps) {
   const warning = useRef<HTMLDialogElement>(null);
   /** Lowering your own role ends your access to this page, so ask first; the popup's confirm button does the submit. */
   const warnFirst = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -23,7 +32,7 @@ export function UserForm({ user, lastSuperadmin, isSelf, accessUrl, error, refus
     }
   };
   return (
-    <section aria-labelledby="user-title" className="mt-8 border-t-3 border-ink pt-6">
+    <section {...props} aria-labelledby="user-title" className={cn('mt-8 border-t-3 border-ink pt-6', className)}>
       <h2 id="user-title" data-testid="UserForm-title" className="text-2xl font-black">
         {user.callingName}
       </h2>

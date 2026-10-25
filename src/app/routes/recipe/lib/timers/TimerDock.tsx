@@ -1,16 +1,24 @@
+import type { ComponentProps } from 'react';
 import { cn } from '~app/shared/cn';
 import { formatCountdown, type TimerView } from './timers';
 
-type Props = { timers: TimerView[]; onJump: (step: number) => void };
+interface TimerDockProps extends ComponentProps<'nav'> {
+  timers: TimerView[];
+  onJump: (step: number) => void;
+}
 
 /** Narrow screens: the timers whose step is out of view, in a row under the tab bar. Always mounted (hidden when empty) so the stack can measure it. */
-export function TimerDock({ timers, onJump }: Props) {
+export function TimerDock({ timers, onJump, className, ...props }: TimerDockProps) {
   return (
     <nav
+      {...props}
       data-testid="TimerDock-dock"
       hidden={timers.length === 0}
       aria-label="Lopende timers"
-      className="absolute inset-x-0 top-full flex gap-2 overflow-x-auto border-b-3 border-ink bg-yel px-[max(1rem,4vw)] py-2 scrollbar-none [&::-webkit-scrollbar]:hidden"
+      className={cn(
+        'absolute inset-x-0 top-full flex gap-2 overflow-x-auto border-b-3 border-ink bg-yel px-[max(1rem,4vw)] py-2 scrollbar-none [&::-webkit-scrollbar]:hidden',
+        className,
+      )}
     >
       {timers.map((t) => {
         const finished = t.state === 'finished';

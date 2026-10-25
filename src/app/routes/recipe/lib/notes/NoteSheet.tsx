@@ -1,14 +1,16 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ComponentProps } from 'react';
 import { cn } from '~app/shared/cn';
 import { Check, Cross, Lock, StickyNote } from '~app/shared/icons';
 import { maxNoteLength } from './note';
 import { NoteCue } from './NoteCue';
 import type { Note } from './useNote';
 
-type Props = { note: Note };
+interface NoteSheetProps extends ComponentProps<'div'> {
+  note: Note;
+}
 
 /** Narrow screens: a floating button at the bottom right that opens the note field above it. Hidden from 52rem, where `NotePanel` takes over. */
-export function NoteSheet({ note }: Props) {
+export function NoteSheet({ note, className, ...props }: NoteSheetProps) {
   const button = useRef<HTMLButtonElement>(null);
   const field = useRef<HTMLTextAreaElement>(null);
   const wasOpen = useRef(false);
@@ -30,7 +32,7 @@ export function NoteSheet({ note }: Props) {
   }, [isOpen, dismiss]);
 
   return (
-    <div data-testid="NoteSheet-root" className="min-[52rem]:hidden">
+    <div {...props} data-testid="NoteSheet-root" className={cn('min-[52rem]:hidden', className)}>
       {isOpen && <div data-testid="NoteSheet-scrim" className="fixed inset-0 z-30 bg-ink/30" aria-hidden="true" onClick={dismiss} />}
       {isOpen && (
         <dialog

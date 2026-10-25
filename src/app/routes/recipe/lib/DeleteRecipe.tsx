@@ -1,13 +1,16 @@
-import { useRef } from 'react';
+import { useRef, type ComponentProps } from 'react';
 import { Form } from 'react-router';
+import { cn } from '~app/shared/cn';
 
-type Props = { title: string };
+interface DeleteRecipeProps extends ComponentProps<'div'> {
+  headingText: string;
+}
 
 /** Button at the bottom of the recipe page; it opens a modal popup that asks for confirmation before the recipe is deleted. */
-export function DeleteRecipe({ title }: Props) {
+export function DeleteRecipe({ headingText, className, ...props }: DeleteRecipeProps) {
   const dialog = useRef<HTMLDialogElement>(null);
   return (
-    <div className="mt-10 flex justify-center">
+    <div {...props} className={cn('mt-10 flex justify-center', className)}>
       <button
         type="button"
         data-testid="DeleteRecipe-open"
@@ -26,7 +29,7 @@ export function DeleteRecipe({ title }: Props) {
       >
         <Form method="post" className="grid gap-5 p-6">
           <h2 id="delete-title" data-testid="DeleteRecipe-title" className="text-xl font-black text-balance">
-            Recept “{title}” verwijderen?
+            Recept “{headingText}” verwijderen?
           </h2>
           <p>Het recept met zijn foto wordt verwijderd. Dit kan niet ongedaan worden gemaakt.</p>
           <div className="flex flex-wrap justify-end gap-3">

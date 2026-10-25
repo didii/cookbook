@@ -1,11 +1,16 @@
+import type { ComponentProps } from 'react';
 import { cn } from '~app/shared/cn';
 import type { Recipe } from '~app/shared/recipe';
 
-type Props = { ingredients: Recipe['ingredients']; ticked: ReadonlySet<number>; onToggle: (index: number) => void; className?: string };
+interface IngredientListProps extends ComponentProps<'ul'> {
+  ingredients: Recipe['ingredients'];
+  ticked: ReadonlySet<number>;
+  onToggleIngredient: (index: number) => void;
+}
 
-export function IngredientList({ ingredients, ticked, onToggle, className }: Props) {
+export function IngredientList({ ingredients, ticked, onToggleIngredient, className, ...props }: IngredientListProps) {
   return (
-    <ul className={cn('grid list-none gap-2 p-0', className)}>
+    <ul {...props} className={cn('grid list-none gap-2 p-0', className)}>
       {ingredients.map((x, i) => (
         <li key={i} id={`ingredient-${i + 1}`}>
           <label
@@ -16,7 +21,7 @@ export function IngredientList({ ingredients, ticked, onToggle, className }: Pro
               type="checkbox"
               data-testid="IngredientList-checkbox"
               checked={ticked.has(i)}
-              onChange={() => onToggle(i)}
+              onChange={() => onToggleIngredient(i)}
               className="m-0 size-6 shrink-0 cursor-pointer appearance-none rounded-full border-3 border-ink bg-white checked:bg-jade checked:shadow-[inset_0_0_0_3px_#fff]"
             />
             <b data-testid="IngredientList-quantity" className="min-w-14 font-black text-blu tabular-nums">

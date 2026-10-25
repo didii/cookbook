@@ -5,5 +5,5 @@ export function meta() {
 }
 
 export default function AboutPage() {
-  return <WorkInProgress title="Over" />;
+  return <WorkInProgress headingText="Over" />;
 }
