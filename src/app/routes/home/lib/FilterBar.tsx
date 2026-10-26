@@ -5,12 +5,15 @@ import { control } from '~app/shared/control';
 import { Search, Sliders } from '~app/shared/icons';
 import { press } from '~app/shared/press';
 import { useKeyboardOffset } from '~app/shared/useKeyboardOffset';
-import { activeFilterCount, noFilters, sameAuthor, type Filters, type Sort } from './filterRecipes';
+import { activeFilterCount, noFilters, type Filters, type Sort } from './filterRecipes';
+import { MultiSelect } from './MultiSelect';
 
 interface FilterBarProps extends ComponentProps<'search'> {
   filters: Filters;
   authors: string[];
-  /** Whether the author chips and the sort control are offered; the search box always is. */
+  /** The tags to pick from; the field is left out when there are none. */
+  tags: string[];
+  /** Whether the author field and the sort control are offered; the search box always is. */
   detailed: boolean;
   onFiltersChange: (filters: Filters) => void;
 }
@@ -21,7 +24,7 @@ const sorts: { value: Sort; label: string }[] = [
 ];
 
 /** The search box and the detailed filters. Fixed to the bottom of the screen below 48rem, with the details in a sheet above the box; inline from 48rem. */
-export function FilterBar({ filters, authors, detailed, onFiltersChange, className, ...props }: FilterBarProps) {
+export function FilterBar({ filters, authors, tags, detailed, onFiltersChange, className, ...props }: FilterBarProps) {
   const sheetId = useId();
   const toggle = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
@@ -39,7 +42,8 @@ export function FilterBar({ filters, authors, detailed, onFiltersChange, classNa
   useEffect(() => {
     if (!open) return;
     const close = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return;
+      // An Escape that closed the suggestions was handled by the field; the next one closes the sheet.
+      if (e.key !== 'Escape' || e.defaultPrevented) return;
       setOpen(false);
       toggle.current?.focus();
     };
@@ -65,21 +69,30 @@ export function FilterBar({ filters, authors, detailed, onFiltersChange, classNa
         >
           <fieldset data-testid="FilterBar-authors" className="m-0 mb-4 min-w-0 border-0 p-0 md:mr-6 md:mb-3 md:inline-flex md:items-center md:gap-3">
             <legend className="mb-2 p-0 font-black md:float-left md:mb-0">Van wie</legend>
-            <div className="flex flex-wrap gap-2">
-              <Chip pressed={filters.author === undefined} onClick={() => onFiltersChange({ ...filters, author: undefined })}>
-                Iedereen
-              </Chip>
-              {authors.map((a) => (
-                <Chip
-                  key={a}
-                  pressed={filters.author !== undefined && sameAuthor(filters.author, a)}
-                  onClick={() => onFiltersChange({ ...filters, author: a })}
-                >
-                  {a}
-                </Chip>
-              ))}
+            <div className="md:min-w-72">
+              <MultiSelect
+                options={authors}
+                value={filters.authors ?? []}
+                onValueChange={(next) => onFiltersChange({ ...filters, authors: next })}
+                placeholder="Iedereen"
+                label="Van wie"
+              />
             </div>
           </fieldset>
+          {(tags.length > 0 || (filters.tags ?? []).length > 0) && (
+            <fieldset data-testid="FilterBar-tags" className="m-0 mb-4 min-w-0 border-0 p-0 md:mr-6 md:mb-3 md:inline-flex md:items-center md:gap-3">
+              <legend className="mb-2 p-0 font-black md:float-left md:mb-0">Tags</legend>
+              <div className="md:min-w-72">
+                <MultiSelect
+                  options={tags}
+                  value={filters.tags ?? []}
+                  onValueChange={(next) => onFiltersChange({ ...filters, tags: next })}
+                  placeholder="Alle tags"
+                  label="Tags"
+                />
+              </div>
+            </fieldset>
+          )}
           <Segmented
             legend="Volgorde"
             options={sorts}
@@ -104,7 +117,7 @@ export function FilterBar({ filters, authors, detailed, onFiltersChange, classNa
             type="search"
             data-testid="FilterBar-search"
             value={text}
-            placeholder="Zoek op naam of kok"
+            placeholder="Zoek op naam, kok of tag"
             enterKeyHint="search"
             autoComplete="off"
             onChange={(e) => {
@@ -137,22 +150,5 @@ export function FilterBar({ filters, authors, detailed, onFiltersChange, classNa
         )}
       </div>
     </search>
-  );
-}
-
-type ChipProps = { pressed: boolean; onClick: () => void; children: string };
-
-/** An author choice: dashed and flat when not chosen, solid and dark when chosen. No shadow, so it does not press. */
-function Chip({ pressed, onClick, children }: ChipProps) {
-  return (
-    <button
-      type="button"
-      data-testid="FilterBar-chip"
-      aria-pressed={pressed}
-      onClick={onClick}
-      className={cn(control, 'border-dashed bg-transparent hover:bg-ink/8 aria-pressed:border-solid aria-pressed:bg-red aria-pressed:text-white')}
-    >
-      {children}
-    </button>
   );
 }
