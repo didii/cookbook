@@ -1,0 +1,1139 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tag manager mockup</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;700;800;900&display=swap" />
+    <style>
+      :root {
+        --red: #9c2419;
+        --yel: #c9a04a;
+        --jade: #2f6f5e;
+        --blu: #1f4e79;
+        --ink: #1c1512;
+        --por: #f4eee0;
+        --muted: #5c4f48;
+        --shadow-sm: 3px 3px 0 var(--ink);
+        --r: 0.625rem;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        background: var(--por);
+      }
+      body {
+        margin: 0;
+        font-family: Mulish, system-ui, sans-serif;
+        color: var(--ink);
+        line-height: 1.45;
+        font-size: 1.0625rem;
+        padding-bottom: 7rem;
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        cursor: pointer;
+      }
+      :focus-visible {
+        outline: 4px solid var(--blu);
+        outline-offset: 2px;
+      }
+      ::selection {
+        background: var(--yel);
+      }
+      [hidden] {
+        display: none !important;
+      }
+      svg.i {
+        width: 1.1em;
+        height: 1.1em;
+        flex: none;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2.2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .top {
+        background: var(--red);
+        color: #fff;
+      }
+      .top div {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem max(1rem, 4vw);
+      }
+      .top b {
+        font-size: 1.5rem;
+        font-weight: 900;
+      }
+      .top span {
+        font-weight: 700;
+        font-size: 0.9rem;
+      }
+
+      main {
+        max-width: 48rem;
+        margin: 0 auto;
+        padding: 1.5rem max(1rem, 4vw) 0;
+      }
+      .head {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+      h1 {
+        margin: 0;
+        font-size: clamp(2rem, 6vw, 3rem);
+        line-height: 1.05;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+      }
+      .lead {
+        margin: 0.5rem 0 0;
+        font-size: 1.125rem;
+        color: var(--muted);
+      }
+
+      /* buttons */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        min-height: 3rem;
+        padding: 0 1.1rem;
+        border: 3px solid var(--ink);
+        border-radius: var(--r);
+        background: #fff;
+        font-weight: 900;
+        box-shadow: var(--shadow-sm);
+      }
+      .btn.pri {
+        background: var(--blu);
+        color: #fff;
+      }
+      .btn.dng {
+        background: var(--red);
+        color: #fff;
+      }
+      .btn.sm {
+        min-height: 2.5rem;
+        padding: 0 0.85rem;
+      }
+      .btn:active {
+        transform: translate(2px, 2px);
+        box-shadow: 1px 1px 0 var(--ink);
+      }
+      .btn[aria-pressed='true'] {
+        background: var(--ink);
+        color: #fff;
+      }
+      .btn:disabled {
+        opacity: 0.45;
+        box-shadow: none;
+        cursor: not-allowed;
+      }
+      .link {
+        border: 0;
+        background: none;
+        padding: 0.5rem 0;
+        font-weight: 800;
+        color: var(--blu);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        text-decoration-thickness: 2px;
+      }
+      .link:hover {
+        color: var(--red);
+      }
+
+      /* fields */
+      .in {
+        display: block;
+        width: 100%;
+        min-height: 3rem;
+        border: 3px solid var(--ink);
+        border-radius: var(--r);
+        background: #fff;
+        padding: 0 0.75rem;
+        font: 700 1rem/1.4 Mulish;
+        color: var(--ink);
+      }
+      .in::placeholder {
+        color: var(--muted);
+      }
+      .in:focus {
+        outline: none;
+        border-color: var(--blu);
+        box-shadow: 0 0 0 3px var(--blu);
+      }
+      .in:hover:not(:focus) {
+        background: color-mix(in srgb, var(--ink) 5%, #fff);
+      }
+      .in[aria-invalid='true'] {
+        border-color: var(--red);
+      }
+      .lbl {
+        display: block;
+        margin: 0 0 0.25rem;
+        font-weight: 900;
+        font-size: 0.9375rem;
+      }
+      .err {
+        margin: 0.35rem 0 0;
+        font-weight: 800;
+        font-size: 0.9375rem;
+        color: var(--red);
+      }
+      .help {
+        margin: 0.35rem 0 0;
+        color: var(--muted);
+        font-size: 0.875rem;
+        font-weight: 700;
+      }
+
+      /* tool bar */
+      .tools {
+        margin-top: 1.25rem;
+        display: grid;
+        gap: 0.75rem;
+      }
+      .search {
+        position: relative;
+      }
+      .search svg {
+        position: absolute;
+        left: 0.8rem;
+        top: 50%;
+        translate: 0 -50%;
+        color: var(--muted);
+        pointer-events: none;
+      }
+      .search .in {
+        padding-left: 2.5rem;
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+      }
+      .chips .spacer {
+        flex: 1;
+      }
+      .chip {
+        min-height: 2.5rem;
+        padding: 0 0.9rem;
+        border: 3px solid var(--ink);
+        border-radius: 999px;
+        background: #fff;
+        font-weight: 800;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+      .chip[aria-pressed='true'] {
+        background: var(--yel);
+      }
+      .seg {
+        display: inline-flex;
+        align-items: center;
+      }
+      .segl {
+        margin-right: 0.75rem;
+        font-weight: 900;
+      }
+      /* same control as the sort on the home page */
+      .seg button {
+        min-height: 2.75rem;
+        padding: 0 1rem;
+        border: 3px solid var(--ink);
+        background: #fff;
+        font-weight: 900;
+      }
+      .seg button:nth-of-type(1) {
+        border-radius: var(--r) 0 0 var(--r);
+      }
+      .seg button:nth-of-type(2) {
+        border-radius: 0 var(--r) var(--r) 0;
+        margin-left: -3px;
+      }
+      .seg button[aria-pressed='true'] {
+        background: var(--red);
+        color: #fff;
+      }
+      .ghead {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.5rem 0.75rem;
+        background: var(--por);
+        border-top: 3px solid var(--ink);
+        font-weight: 900;
+      }
+      .ghead:first-child {
+        border-top: 0;
+      }
+      .ghead .n {
+        color: var(--muted);
+        font-weight: 800;
+        font-size: 0.9375rem;
+      }
+      .two {
+        display: grid;
+        gap: 1rem;
+      }
+      @media (min-width: 48rem) {
+        .two {
+          grid-template-columns: 1fr 1fr;
+          gap: 1.25rem;
+        }
+      }
+      .count {
+        margin: 0;
+        color: var(--muted);
+        font-weight: 800;
+        font-size: 0.9375rem;
+      }
+
+      .add {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 0.5rem;
+        align-items: start;
+      }
+
+      /* list */
+      .list {
+        margin: 0.5rem 0 0;
+        padding: 0;
+        list-style: none;
+        border: 3px solid var(--ink);
+        border-radius: var(--r);
+        background: #fff;
+        overflow: clip;
+      }
+      .item + .item {
+        border-top: 2px solid color-mix(in srgb, var(--ink) 18%, transparent);
+      }
+      .row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 0.5rem;
+        width: 100%;
+        min-height: 3.5rem;
+        padding: 0.35rem 0.75rem;
+        border: 0;
+        background: none;
+        text-align: left;
+      }
+      .selecting .row {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+      }
+      .row:hover {
+        background: color-mix(in srgb, var(--yel) 22%, #fff);
+      }
+      .item[data-open='true'] > .row {
+        background: color-mix(in srgb, var(--blu) 10%, #fff);
+      }
+      .item[data-sel='true'] > .row {
+        background: color-mix(in srgb, var(--yel) 30%, #fff);
+      }
+      .pick {
+        display: none;
+        width: 1.5rem;
+        height: 1.5rem;
+        margin: 0;
+        accent-color: var(--blu);
+      }
+      .selecting .pick {
+        display: block;
+      }
+      .name {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.2rem 0.6rem;
+        font-weight: 900;
+        min-width: 0;
+        overflow-wrap: anywhere;
+      }
+      /* tag: same pill as the recipe card on the home page */
+      .tag {
+        display: inline-block;
+        border: 2px solid var(--ink);
+        border-radius: 999px;
+        background: var(--por);
+        padding: 0 0.65rem;
+        font-size: 0.9375rem;
+        line-height: 1.45;
+        font-weight: 800;
+        overflow-wrap: anywhere;
+      }
+      .tag.lg {
+        font-size: 1.0625rem;
+        font-weight: 900;
+      }
+      /* category: same pill shape, filled yellow so it never reads as a tag */
+      .pill {
+        display: inline-block;
+        border: 2px solid var(--ink);
+        border-radius: 999px;
+        background: var(--yel);
+        padding: 0 0.65rem;
+        font-size: 0.8125rem;
+        line-height: 1.45;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .pill.none {
+        background: transparent;
+        border-style: dashed;
+      }
+      .ghead .pill {
+        font-size: 0.9375rem;
+        font-weight: 900;
+      }
+      .uses {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-weight: 800;
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+      .uses.zero {
+        color: var(--red);
+      }
+      .uses svg {
+        color: color-mix(in srgb, var(--ink) 45%, transparent);
+      }
+      .empty {
+        padding: 1.5rem 1rem;
+        text-align: center;
+        font-weight: 700;
+        color: var(--muted);
+      }
+      .empty b {
+        display: block;
+        color: var(--ink);
+        font-weight: 900;
+        font-size: 1.125rem;
+      }
+
+      /* panel: sheet on phones, under the row from 48rem */
+      .panel {
+        border-top: 2px solid var(--ink);
+        background: var(--por);
+        padding: 1rem 0.75rem 1.1rem;
+        display: grid;
+        gap: 1rem;
+      }
+      @media (max-width: 47.99rem) {
+        .backdrop {
+          position: fixed;
+          inset: 0;
+          z-index: 20;
+          background: color-mix(in srgb, var(--ink) 45%, transparent);
+        }
+        .panel {
+          position: fixed;
+          inset: auto 0 0 0;
+          z-index: 21;
+          max-height: 88dvh;
+          overflow: auto;
+          border-top: 3px solid var(--ink);
+          border-radius: 1rem 1rem 0 0;
+          padding: 1rem max(1rem, 4vw) 1.5rem;
+          animation: rise 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+      }
+      @media (min-width: 48rem) {
+        .backdrop {
+          display: none;
+        }
+      }
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(0.75rem);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .panel {
+          animation: none;
+        }
+      }
+      .field {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 0.5rem;
+        align-items: start;
+      }
+      .acts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      .group {
+        display: grid;
+        gap: 0.35rem;
+      }
+      .group + .group {
+        padding-top: 1rem;
+        border-top: 2px dashed color-mix(in srgb, var(--ink) 20%, transparent);
+      }
+      .notice {
+        padding: 0.7rem 0.85rem;
+        border: 3px solid var(--ink);
+        border-radius: var(--r);
+        background: #fff;
+        font-weight: 700;
+      }
+      .notice.bad {
+        border-color: var(--red);
+      }
+      .notice b {
+        font-weight: 900;
+      }
+      .opt {
+        position: relative;
+      }
+      .sug {
+        position: absolute;
+        z-index: 5;
+        top: calc(100% + 0.25rem);
+        left: 0;
+        right: 0;
+        margin: 0;
+        padding: 0.25rem;
+        list-style: none;
+        max-height: 11rem;
+        overflow: auto;
+        background: #fff;
+        border: 3px solid var(--ink);
+        border-radius: var(--r);
+        box-shadow: 4px 4px 0 var(--ink);
+      }
+      .sug li {
+        padding: 0.4rem 0.6rem;
+        border-radius: 0.4rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .sug li[aria-selected='true'] {
+        background: var(--blu);
+        color: #fff;
+      }
+      .sug li small {
+        opacity: 0.75;
+        font-weight: 700;
+      }
+      .sug li.new {
+        font-weight: 900;
+      }
+
+      /* bars */
+      .bar {
+        position: fixed;
+        inset: auto 0 0 0;
+        z-index: 10;
+        background: var(--por);
+        border-top: 3px solid var(--ink);
+      }
+      .bar > div {
+        max-width: 48rem;
+        margin: 0 auto;
+        padding: 0.7rem max(1rem, 4vw);
+        display: grid;
+        gap: 0.6rem;
+      }
+      .bar .line {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+      .bar .line b {
+        font-weight: 900;
+      }
+
+      .toast {
+        position: fixed;
+        inset: auto 0 6.5rem 0;
+        z-index: 30;
+        margin: 0 auto;
+        width: fit-content;
+        max-width: calc(100% - 2rem);
+        padding: 0.65rem 1rem;
+        border: 3px solid var(--ink);
+        border-radius: var(--r);
+        background: var(--jade);
+        color: #fff;
+        font-weight: 800;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .note {
+        margin: 2.5rem 0 0;
+        max-width: 40rem;
+        font-size: 0.9rem;
+        color: var(--muted);
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <symbol id="close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" /></symbol>
+      <symbol id="search" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="7" />
+        <path d="M20 20l-4-4" />
+      </symbol>
+      <symbol id="book" viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 19V5M9 8h6" /></symbol>
+      <symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></symbol>
+      <symbol id="check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" /></symbol>
+    </svg>
+
+    <header class="top">
+      <div><b>Familiekookboek</b><span>dieter.vbroeck@gmail.com</span></div>
+    </header>
+
+    <main id="main">
+      <div class="head">
+        <div>
+          <h1>Tags</h1>
+          <p class="lead">Houd de labels van je recepten netjes: hernoem, voeg samen of ruim op.</p>
+        </div>
+      </div>
+
+      <div class="tools">
+        <form class="add" id="addForm" onsubmit="return false;">
+          <div>
+            <label class="lbl" for="newTag">Nieuwe tag</label>
+            <input class="in" id="newTag" maxlength="100" placeholder="bv. Kerst" autocomplete="off" />
+            <p class="err" id="addErr" role="alert" hidden></p>
+          </div>
+          <button class="btn pri" type="submit" id="addBtn" style="margin-top: 1.55rem">
+            <svg class="i"><use href="#plus" /></svg>Toevoegen
+          </button>
+        </form>
+
+        <div class="search">
+          <svg class="i"><use href="#search" /></svg>
+          <input class="in" id="q" type="search" placeholder="Zoek op naam" aria-label="Zoek op naam" autocomplete="off" />
+        </div>
+
+        <div class="chips">
+          <button class="chip" id="unused" type="button" aria-pressed="false">Ongebruikt</button>
+          <button class="chip" id="nocat" type="button" aria-pressed="false">Zonder categorie</button>
+          <span class="spacer"></span>
+          <button class="chip" id="selMode" type="button" aria-pressed="false">Selecteer</button>
+        </div>
+        <div class="chips">
+          <p class="count" id="count" aria-live="polite"></p>
+          <span class="spacer"></span>
+          <div class="seg" role="group" aria-label="Sorteren op">
+            <span class="segl" aria-hidden="true">Volgorde</span>
+            <button type="button" id="sortName" aria-pressed="true">Naam</button>
+            <button type="button" id="sortCat" aria-pressed="false">Categorie</button>
+          </div>
+        </div>
+      </div>
+
+      <ul class="list" id="list" aria-label="Tags"></ul>
+
+      <p class="note">
+        Mockup: filteren, toevoegen, hernoemen, samenvoegen, verwijderen en categorie instellen werken op voorbeeldgegevens; niets wordt bewaard. Tags
+        en categorieën zijn voorbeelden. Op een telefoon (&lt; 48rem) opent een rij een blad onderaan, daarboven klapt het paneel onder de rij open.
+        Voeg
+        <code>#open</code> toe om te beginnen met een open rij, <code>#taken</code> voor een bestaande naam bij opslaan, <code>#merge</code> voor
+        samenvoegen, <code>#delete</code> voor de verwijderbevestiging, <code>#select</code> voor de selectiemodus, <code>#unused</code> of
+        <code>#nocat</code> voor een filter en <code>#bycat</code> voor sorteren op categorie.
+      </p>
+    </main>
+
+    <div class="bar" id="selBar" hidden>
+      <div>
+        <div class="line">
+          <b id="selCount">0 geselecteerd</b>
+          <span style="display: flex; gap: 0.5rem; flex-wrap: wrap">
+            <button class="link" type="button" id="selAll">Alles selecteren</button>
+            <button class="link" type="button" id="selNone">Niets</button>
+          </span>
+        </div>
+        <div class="field" id="bulk">
+          <div class="opt">
+            <input
+              class="in"
+              id="bulkCat"
+              placeholder="Categorie voor de selectie"
+              aria-label="Categorie voor de selectie"
+              autocomplete="off"
+              role="combobox"
+              aria-expanded="false"
+            />
+            <ul class="sug" role="listbox" hidden></ul>
+          </div>
+          <button class="btn pri" type="button" id="bulkApply" disabled>Instellen</button>
+        </div>
+      </div>
+    </div>
+
+    <output class="toast" id="toast" hidden></output>
+
+    <script>
+      const cats = ['Gerecht', 'Seizoen', 'Dieet', 'Gelegenheid'];
+      let tags = [
+        ['Aardappelen', 'Gerecht', 6],
+        ['Barbecue', 'Gelegenheid', 2],
+        ['Brood', 'Gerecht', 4],
+        ['Dessert', 'Gerecht', 9],
+        ['Hoofdgerecht', 'Gerecht', 14],
+        ['Kerst', 'Gelegenheid', 5],
+        ['Kerstmis', '', 0],
+        ['Soep', 'Gerecht', 7],
+        ['Soepen', '', 1],
+        ['Snel', '', 8],
+        ['Vegetarisch', 'Dieet', 11],
+        ['Vlees', 'Dieet', 10],
+        ['Winter', 'Seizoen', 6],
+        ['Zomer', 'Seizoen', 3],
+        ['Zoet', '', 0],
+      ].map(([name, cat, uses]) => ({ name, cat, uses }));
+
+      const hash = location.hash;
+      const st = {
+        q: '',
+        unused: hash.includes('unused'),
+        nocat: hash.includes('nocat'),
+        sort: hash.includes('bycat') ? 'cat' : 'name',
+        select: hash.includes('select'),
+        open: null,
+        mode: 'main',
+        sel: new Set(),
+      };
+      if (hash.includes('open') || hash.includes('taken') || hash.includes('merge') || hash.includes('delete')) st.open = 'Soepen';
+      if (hash.includes('merge')) st.mode = 'merge';
+      if (hash.includes('delete')) st.mode = 'delete';
+      if (hash.includes('select')) ['Kerstmis', 'Zoet'].forEach((n) => st.sel.add(n));
+
+      const $ = (id) => document.getElementById(id);
+      const icon = (id) => `<svg class="i"><use href="#${id}" /></svg>`;
+      const tg = (n) => `<span class="tag">${esc(n)}</span>`;
+      const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+      const coll = new Intl.Collator('nl', { sensitivity: 'base' });
+      const find = (n) => tags.find((t) => t.name === n);
+      const taken = (n, except) => tags.find((t) => coll.compare(t.name, n) === 0 && t.name !== except);
+      const recipes = (n) => (n === 1 ? '1 recept' : `${n} recepten`);
+
+      function toast(msg) {
+        const el = $('toast');
+        el.textContent = msg;
+        el.hidden = false;
+        clearTimeout(toast.t);
+        toast.t = setTimeout(() => (el.hidden = true), 3200);
+      }
+
+      function visible() {
+        return tags
+          .filter((t) => (!st.q || t.name.toLowerCase().includes(st.q.toLowerCase())) && (!st.unused || t.uses === 0) && (!st.nocat || !t.cat))
+          .sort((a, b) => {
+            // by category: categories alphabetical, tags without one last; names alphabetical inside
+            if (st.sort === 'cat' && a.cat !== b.cat) return !a.cat ? 1 : !b.cat ? -1 : coll.compare(a.cat, b.cat);
+            return coll.compare(a.name, b.name);
+          });
+      }
+
+      function actionsHtml(t) {
+        if (st.mode === 'delete') {
+          return `
+            <div class="notice bad" role="alert">${
+              t.uses
+                ? `${tg(t.name)} staat op <b>${recipes(t.uses)}</b>. De tag verdwijnt daar; de recepten blijven bestaan.`
+                : `${tg(t.name)} staat op geen enkel recept.`
+            }</div>
+            <div class="acts"><button class="btn dng" data-act="delete-yes">Verwijder tag</button><button class="btn" data-act="back">Annuleer</button></div>`;
+        }
+        if (st.mode === 'merge') {
+          return `
+            <label class="lbl" for="mergeTo">Voeg ${tg(t.name)} samen met</label>
+            <div class="opt">
+              <input class="in" id="mergeTo" placeholder="Kies een tag" autocomplete="off" role="combobox" aria-expanded="false" value="${hash.includes('merge') && !st.mergeTo ? 'Soep' : esc(st.mergeTo || '')}" />
+              <ul class="sug" role="listbox" hidden></ul>
+            </div>
+            <div class="notice" id="mergeInfo"></div>
+            <div class="acts"><button class="btn pri" data-act="merge-yes" id="mergeYes">Samenvoegen</button><button class="btn" data-act="back">Annuleer</button></div>`;
+        }
+        return `
+          <div class="acts">
+            <button class="btn pri" data-act="save">Opslaan</button>
+            <button class="btn" data-act="to-merge">Samenvoegen met…</button>
+            <button class="btn dng" data-act="to-delete">Verwijderen</button>
+          </div>`;
+      }
+
+      function clashHtml(clash) {
+        return clash
+          ? `<p class="err" role="alert">${tg(clash.tag.name)} bestaat al.</p>
+             <div class="acts" style="margin-top:.5rem"><button class="btn sm" data-act="merge-into" data-to="${esc(clash.tag.name)}">Voeg samen met ${tg(clash.tag.name)}</button></div>`
+          : '';
+      }
+
+      function panelHtml(t) {
+        const clash = st.taken;
+        return `
+          
+          <div class="two">
+            <div>
+              <label class="lbl" for="rn">Naam</label>
+              <input class="in" id="rn" maxlength="100" value="${esc(clash ? clash.attempt : t.name)}" ${clash ? 'aria-invalid="true"' : ''} aria-describedby="rnErr" autocomplete="off" />
+              <div id="rnErr">${clashHtml(clash)}</div>
+            </div>
+            <div>
+              <label class="lbl" for="cat">Categorie</label>
+              <div class="opt">
+                <input class="in" id="cat" placeholder="Geen categorie" value="${esc(t.cat)}" autocomplete="off" role="combobox" aria-expanded="false" />
+                <ul class="sug" role="listbox" hidden></ul>
+              </div>
+              <p class="help">Kies een bestaande of typ een nieuwe. Leeg laten haalt de categorie weg.</p>
+            </div>
+          </div>
+          <div class="group" id="actions">${actionsHtml(t)}</div>`;
+      }
+
+      function setActions() {
+        const t = find(st.open);
+        $('actions').innerHTML = actionsHtml(t);
+        if (st.mode === 'merge') updateMerge();
+      }
+
+      function render() {
+        const list = $('list');
+        const rows = visible();
+        list.className = 'list' + (st.select ? ' selecting' : '');
+        $('selMode').setAttribute('aria-pressed', st.select);
+        $('unused').setAttribute('aria-pressed', st.unused);
+        $('nocat').setAttribute('aria-pressed', st.nocat);
+        $('sortName').setAttribute('aria-pressed', st.sort === 'name');
+        $('sortCat').setAttribute('aria-pressed', st.sort === 'cat');
+        $('selBar').hidden = !st.select;
+        $('count').textContent = `${rows.length} van ${tags.length} tags`;
+        if (!rows.length) {
+          list.innerHTML = `<li class="empty"><b>Geen tags gevonden</b>${st.q || st.unused || st.nocat ? '<button class="link" data-act="clear">Wis filters</button>' : ''}</li>`;
+        } else {
+          let last;
+          list.innerHTML = rows
+            .map((t) => {
+              const open = st.open === t.name;
+              let head = '';
+              if (st.sort === 'cat' && t.cat !== last) {
+                last = t.cat;
+                const n = rows.filter((r) => r.cat === t.cat).length;
+                head = `<li class="ghead" role="presentation"><span class="pill${t.cat ? '' : ' none'}">${esc(t.cat || 'Zonder categorie')}</span><span class="n">${n}</span></li>`;
+              }
+              return `${head}<li class="item" data-name="${esc(t.name)}" data-open="${open}" data-sel="${st.sel.has(t.name)}">
+                <button class="row" type="button" data-act="row" aria-expanded="${open}" ${st.select ? 'role="checkbox" aria-checked="' + st.sel.has(t.name) + '"' : ''}>
+                  <input class="pick" type="checkbox" tabindex="-1" aria-hidden="true" ${st.sel.has(t.name) ? 'checked' : ''} />
+                  <span class="name"><span class="tag lg">${esc(t.name)}</span>${t.cat && st.sort === 'name' ? `<span class="pill">${esc(t.cat)}</span>` : ''}</span>
+                  <span class="uses ${t.uses ? '' : 'zero'}" title="${recipes(t.uses)}">${icon('book')}${t.uses}<span class="sr" style="position:absolute;left:-999px">recepten</span></span>
+                </button>
+                ${open && !st.select ? '<div class="backdrop" data-act="close"></div><div class="panel" role="dialog" aria-label="Tag bewerken">' + panelHtml(t) + '</div>' : ''}
+              </li>`;
+            })
+            .join('');
+        }
+        const n = st.sel.size;
+        $('selCount').textContent = n === 1 ? '1 geselecteerd' : `${n} geselecteerd`;
+        $('bulkApply').disabled = !n;
+        if (st.mode === 'merge') updateMerge();
+        document.body.style.overflow = st.open && !st.select && matchMedia('(max-width: 47.99rem)').matches ? 'hidden' : '';
+      }
+
+      // suggestions
+      function suggest(input, source, allowNew) {
+        const box = input.parentElement.querySelector('.sug');
+        const q = input.value.trim();
+        let items = source.filter((s) => s.toLowerCase().includes(q.toLowerCase()) && coll.compare(s, q) !== 0);
+        const exact = source.find((s) => coll.compare(s, q) === 0);
+        const out = [];
+        if (exact) out.push(`<li role="option" data-v="${esc(exact)}" aria-selected="${!out.length}">${esc(exact)}</li>`);
+        items.forEach((s) => out.push(`<li role="option" data-v="${esc(s)}" aria-selected="${!out.length}">${esc(s)}</li>`));
+        if (allowNew && q && !exact)
+          out.push(`<li class="new" role="option" data-v="${esc(q)}" aria-selected="${!out.length}">Nieuw: “${esc(q)}”</li>`);
+        box.innerHTML = out.join('');
+        box.hidden = !out.length;
+        input.setAttribute('aria-expanded', String(!box.hidden));
+      }
+      const hideSug = (input) => {
+        const box = input.parentElement.querySelector('.sug');
+        if (box) box.hidden = true;
+        input.setAttribute('aria-expanded', 'false');
+      };
+      function sugSource(input) {
+        if (input.id === 'mergeTo')
+          return [
+            tags
+              .filter((t) => t.name !== st.open)
+              .map((t) => t.name)
+              .sort(coll.compare),
+            false,
+          ];
+        return [cats, true];
+      }
+      function updateMerge() {
+        const input = $('mergeTo');
+        if (!input) return;
+        const to = tags.find((t) => coll.compare(t.name, input.value.trim()) === 0 && t.name !== st.open);
+        const from = find(st.open);
+        st.mergeTo = to ? to.name : '';
+        $('mergeYes').disabled = !to;
+        $('mergeInfo').innerHTML = to
+          ? `<b>${recipes(from.uses)}</b> met ${tg(from.name)} krijgen ${tg(to.name)}. Recepten die al ${tg(to.name)} hebben, houden het één keer. ${tg(from.name)} verdwijnt.`
+          : 'Kies de tag die blijft. Deze tag verdwijnt.';
+      }
+
+      function applyCat(names, cat) {
+        cat = cat.trim();
+        if (cat && !cats.some((c) => coll.compare(c, cat) === 0)) cats.push(cat);
+        else if (cat) cat = cats.find((c) => coll.compare(c, cat) === 0);
+        names.forEach((n) => (find(n).cat = cat));
+      }
+
+      document.addEventListener('input', (e) => {
+        if (e.target.id === 'q') {
+          st.q = e.target.value;
+          render();
+        } else if (e.target.id === 'newTag') {
+          $('addErr').hidden = true;
+          e.target.removeAttribute('aria-invalid');
+        } else if (e.target.matches('#cat, #bulkCat, #mergeTo')) {
+          const [src, nw] = sugSource(e.target);
+          suggest(e.target, src, nw);
+          if (e.target.id === 'mergeTo') updateMerge();
+        }
+      });
+      document.addEventListener('focusin', (e) => {
+        if (e.target.matches('#cat, #bulkCat, #mergeTo')) {
+          const [src, nw] = sugSource(e.target);
+          suggest(e.target, src, nw);
+        }
+      });
+      document.addEventListener('focusout', (e) => {
+        if (e.target.matches('#cat, #bulkCat, #mergeTo')) setTimeout(() => hideSug(e.target), 120);
+      });
+      document.addEventListener('mousedown', (e) => {
+        const o = e.target.closest('[role=option]');
+        if (!o) return;
+        e.preventDefault();
+        const input = o.closest('.opt').querySelector('input');
+        input.value = o.dataset.v;
+        hideSug(input);
+        if (input.id === 'mergeTo') updateMerge();
+      });
+      document.addEventListener('keydown', (e) => {
+        const input = e.target;
+        if (e.key === 'Escape' && st.open && !st.select) {
+          const box = input.parentElement && input.parentElement.querySelector && input.parentElement.querySelector('.sug');
+          if (box && !box.hidden) return hideSug(input);
+          return closePanel();
+        }
+        if (!input.matches || !input.matches('#cat, #bulkCat, #mergeTo')) return;
+        const box = input.parentElement.querySelector('.sug');
+        if (!box || box.hidden) return;
+        const o = [...box.querySelectorAll('[role=option]')];
+        const cur = o.findIndex((x) => x.getAttribute('aria-selected') === 'true');
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+          e.preventDefault();
+          const n = (cur + (e.key === 'ArrowDown' ? 1 : -1) + o.length) % o.length;
+          o.forEach((x, i) => x.setAttribute('aria-selected', String(i === n)));
+        } else if (e.key === 'Enter' && o[cur]) {
+          e.preventDefault();
+          input.value = o[cur].dataset.v;
+          hideSug(input);
+          if (input.id === 'mergeTo') updateMerge();
+        }
+      });
+
+      function closePanel() {
+        const was = st.open;
+        st.open = null;
+        st.mode = 'main';
+        st.taken = null;
+        st.mergeTo = '';
+        render();
+        const row = was && document.querySelector(`[data-name="${CSS.escape(was)}"] .row`);
+        if (row) row.focus();
+      }
+
+      $('addForm').addEventListener('submit', () => {
+        const input = $('newTag');
+        const v = input.value.trim().replace(/\s+/g, ' ');
+        const err = $('addErr');
+        err.hidden = true;
+        if (!v) return;
+        const dupe = taken(v);
+        if (dupe) {
+          err.textContent = `“${dupe.name}” bestaat al.`;
+          err.hidden = false;
+          input.setAttribute('aria-invalid', 'true');
+          return;
+        }
+        tags.push({ name: v, cat: '', uses: 0 });
+        input.value = '';
+        st.q = '';
+        $('q').value = '';
+        st.unused = false;
+        st.nocat = false;
+        render();
+        toast(`Tag “${v}” toegevoegd`);
+      });
+
+      $('unused').addEventListener('click', () => {
+        st.unused = !st.unused;
+        render();
+      });
+      $('nocat').addEventListener('click', () => {
+        st.nocat = !st.nocat;
+        render();
+      });
+      $('sortName').addEventListener('click', () => {
+        st.sort = 'name';
+        render();
+      });
+      $('sortCat').addEventListener('click', () => {
+        st.sort = 'cat';
+        render();
+      });
+      $('selMode').addEventListener('click', () => {
+        st.select = !st.select;
+        st.open = null;
+        st.mode = 'main';
+        if (!st.select) st.sel.clear();
+        render();
+      });
+      $('selAll').addEventListener('click', () => {
+        visible().forEach((t) => st.sel.add(t.name));
+        render();
+      });
+      $('selNone').addEventListener('click', () => {
+        st.sel.clear();
+        render();
+      });
+      $('bulkApply').addEventListener('click', () => {
+        const cat = $('bulkCat').value;
+        const n = st.sel.size;
+        applyCat([...st.sel], cat);
+        st.sel.clear();
+        $('bulkCat').value = '';
+        render();
+        toast(cat.trim() ? `Categorie “${cat.trim()}” ingesteld op ${n} tags` : `Categorie weggehaald bij ${n} tags`);
+      });
+
+      $('list').addEventListener('click', (e) => {
+        const a = e.target.closest('[data-act]');
+        if (!a) return;
+        const li = e.target.closest('.item');
+        const name = li && li.dataset.name;
+        const t = find(st.open) || find(name);
+        switch (a.dataset.act) {
+          case 'row':
+            if (st.select) {
+              st.sel.has(name) ? st.sel.delete(name) : st.sel.add(name);
+            } else {
+              st.open = st.open === name ? null : name;
+              st.mode = 'main';
+              st.taken = null;
+            }
+            render();
+            if (st.open && !st.select) {
+              const li2 = document.querySelector(`[data-name="${CSS.escape(st.open)}"]`);
+              li2.scrollIntoView({ block: 'nearest' });
+            }
+            break;
+          case 'close':
+            closePanel();
+            break;
+          case 'back':
+            st.mode = 'main';
+            setActions();
+            break;
+          case 'clear':
+            st.q = '';
+            st.unused = false;
+            st.nocat = false;
+            $('q').value = '';
+            render();
+            break;
+          case 'to-merge':
+            st.mode = 'merge';
+            setActions();
+            $('mergeTo').focus();
+            break;
+          case 'to-delete':
+            st.mode = 'delete';
+            setActions();
+            break;
+          case 'merge-into':
+            st.mode = 'merge';
+            st.mergeTo = a.dataset.to;
+            setActions();
+            $('mergeTo').value = a.dataset.to;
+            updateMerge();
+            break;
+          case 'save': {
+            const v = $('rn').value.trim().replace(/\s+/g, ' ');
+            if (!v) break;
+            const dupe = taken(v, t.name);
+            if (dupe) {
+              // refuse the whole save; the actions part stays as it is
+              st.taken = { tag: dupe, attempt: v };
+              $('rn').setAttribute('aria-invalid', 'true');
+              $('rnErr').innerHTML = clashHtml(st.taken);
+              $('rn').focus();
+              break;
+            }
+            t.name = v;
+            applyCat([v], $('cat').value);
+            closePanel();
+            toast(`“${v}” opgeslagen`);
+            break;
+          }
+          case 'merge-yes': {
+            const to = find(st.mergeTo);
+            if (!to) break;
+            to.uses += Math.round(t.uses * 0.7);
+            tags = tags.filter((x) => x !== t);
+            const from = t.name;
+            closePanel();
+            toast(`“${from}” samengevoegd met “${to.name}”`);
+            break;
+          }
+          case 'delete-yes': {
+            tags = tags.filter((x) => x !== t);
+            const n = t.name;
+            closePanel();
+            toast(`Tag “${n}” verwijderd`);
+            break;
+          }
+        }
+      });
+
+      if (hash.includes('taken')) st.taken = { tag: find('Soep'), attempt: 'soep' };
+      if (hash.includes('select')) $('selMode').setAttribute('aria-pressed', 'true');
+      render();
+    </script>
+  </body>
+</html>
