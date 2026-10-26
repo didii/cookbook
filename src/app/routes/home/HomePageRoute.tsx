@@ -5,7 +5,17 @@ import { listRecipes } from '~app/shared/recipes.server';
 import { tileFor } from '~app/shared/tile';
 import type { Route } from './+types/HomePageRoute';
 import { FilterBar } from './lib/FilterBar';
-import { authorsOf, filterParams, filterRecipes, isFiltered, minRecipesForFilters, noFilters, parseFilters, type Filters } from './lib/filterRecipes';
+import {
+  authorsOf,
+  filterParams,
+  filterRecipes,
+  isFiltered,
+  minRecipesForFilters,
+  noFilters,
+  parseFilters,
+  tagsOf,
+  type Filters,
+} from './lib/filterRecipes';
 import { RecipeCard } from './lib/RecipeCard';
 
 export async function loader({ context }: Route.LoaderArgs) {
@@ -29,7 +39,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
   const { revalidate } = useRevalidator();
   const detailed = recipes.length >= minRecipesForFilters;
   const parsed = parseFilters(params);
-  // Without the chips and the sort control there is no way to undo them, so an address that sets them is ignored.
+  // Without the fields and the sort control there is no way to undo them, so an address that sets them is ignored.
   const filters: Filters = detailed ? parsed : { ...noFilters, q: parsed.q };
   const change = (next: Filters) => setParams(filterParams(next), { replace: true });
   const shown = filterRecipes(recipes, filters);
@@ -54,7 +64,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
           <p data-testid="HomePage-intro" className="mt-2 text-lg text-pretty text-muted">
             {intro}
           </p>
-          <FilterBar filters={filters} authors={authorsOf(recipes)} detailed={detailed} onFiltersChange={change} />
+          <FilterBar filters={filters} authors={authorsOf(recipes)} tags={tagsOf(recipes)} detailed={detailed} onFiltersChange={change} />
           <output data-testid="HomePage-count" className="mt-6 mb-4 block font-extrabold text-muted">
             {isFiltered(filters) ? `${shown.length} van ${recipes.length}` : shown.length} {recipes.length === 1 ? 'recept' : 'recepten'}
           </output>

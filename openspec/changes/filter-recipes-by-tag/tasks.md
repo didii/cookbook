@@ -12,8 +12,8 @@ Apply after `author-multi-select`. Verify each task with the type check and `pnp
 
 ## 3. The page
 
-- [ ] 3.1 In `HomePageRoute.tsx` pass `tagsOf(recipes)` to the bar, ignore `tags` from the address when not detailed and make "Wis filters" clear tags; update `HomePageRoute.test.tsx`: "Choosing a tag" through the address, "Clearing all filters", "Opening an address with tags"
+- [x] 3.1 In `HomePageRoute.tsx` pass `tagsOf(recipes)` to the bar, ignore `tags` from the address when not detailed and make "Wis filters" clear tags; update `HomePageRoute.test.tsx`: "Choosing a tag" through the address, "Clearing all filters", "Opening an address with tags"
 
 ## 4. Wrap-up
 
-- [ ] 4.1 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check`, `pnpm test:ai` and `pnpm test:spec filter-recipes-by-tag`; all clean
+- [x] 4.1 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check`, `pnpm test:ai` and `pnpm test:spec filter-recipes-by-tag`; all clean
