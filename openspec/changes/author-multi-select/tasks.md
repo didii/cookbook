@@ -8,7 +8,7 @@ Verify each task with the type check and `pnpm test:ai`; `pnpm test:spec author-
 
 ## 2. The field
 
-- [ ] 2.1 Add `home/lib/MultiSelect.tsx` (Base UI `Combobox`, multiple, chips with remove buttons, suggestions ignore case and accents, picked values not suggested, no "new value" offer, `placeholder` shown while nothing is picked); component-test "Finding an author by typing", "Picked author is not suggested again" and "Removing a picked author" through its test ids
+- [x] 2.1 Add `home/lib/MultiSelect.tsx` (Base UI `Combobox`, multiple, chips with remove buttons, suggestions ignore case and accents, picked values not suggested, no "new value" offer, `placeholder` shown while nothing is picked); component-test "Finding an author by typing", "Picked author is not suggested again" and "Removing a picked author" through its test ids
 
 ## 3. The bar
 
