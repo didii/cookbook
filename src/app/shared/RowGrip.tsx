@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react';
-import { cn } from '~app/shared/cn';
+import { cn } from './cn';
 
 interface RowGripProps extends ComponentProps<'span'> {}
 

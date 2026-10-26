@@ -1,10 +1,10 @@
 import { useEffect, useRef, type ComponentProps, type ReactNode } from 'react';
 import { Announcement } from '~app/shared/components';
 import { ArrowDown, ArrowUp } from '~app/shared/icons';
+import type { ItemHandle } from '~app/shared/ItemHandle';
 import type { Rules } from '~app/shared/rules';
+import { useReorder } from '~app/shared/useReorder';
 import { IngredientItem } from './IngredientItem';
-import type { ItemHandle } from '../shared/ItemHandle';
-import { useReorder } from '../shared/useReorder';
 
 /** One ingredient line in the editor. The id is only a stable key for focus and drag; it is never posted or stored. */
 export type IngredientLine = { id: string; text: string };
