@@ -2,6 +2,7 @@ import { useRef, useState, type ComponentProps, type KeyboardEvent, type ReactNo
 import { cn } from '~app/shared/cn';
 import { formatMinutes } from '~app/shared/formatter';
 import { Arrow, Check, Clock, Cross, Ingredient, Link, Pin, Plus, Thermometer, Trash } from '~app/shared/icons';
+import { useAfterRender } from '~app/shared/useAfterRender';
 import { ChipPopup } from './ChipPopup';
 import {
   acceptProposal,
@@ -27,7 +28,6 @@ import {
   type TimerValues,
 } from './chips';
 import { proposalAttribute } from './OpenProposals';
-import { useAfterRender } from '../shared/useAfterRender';
 
 interface StepChipsProps extends ComponentProps<'div'> {
   step: StepDraft;

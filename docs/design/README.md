@@ -37,6 +37,12 @@ The rows work like the ingredient rows, only tighter and without up/down buttons
 
 Colours, fonts and spacing follow the tokens in `app/app.css`; if those change, update the mockup or treat the app as the truth.
 
+Differences in the built page (not compared side by side in a browser yet at 390px and 1000px):
+
+- The suggestions open when an empty loose-unit row gets focus or when typing; on a filled row `↓`/`↑` move between rows, as the list is closed.
+- Errors sit under the faulty row; a message about a whole list sits above the list.
+- The dashed line under a Duur row on a phone is not drawn; "Vast" wraps to a second line below 40rem.
+
 ## `tag-manager.html`
 
 Static mockup of the tag manager ("Tags"), the design reference for the tag manager OpenSpec change (board #47). Open it in a browser; it needs no build. Fonts load from Google Fonts.
