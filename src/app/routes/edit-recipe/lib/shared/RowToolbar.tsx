@@ -1,7 +1,7 @@
 import { useRef, useState, type ComponentProps, type KeyboardEvent } from 'react';
 import { cn } from '~app/shared/cn';
 import { ChevronDown, ChevronUp, Cross, Plus, Trash } from '~app/shared/icons';
-import { useAfterRender } from './useAfterRender';
+import { useAfterRender } from '~app/shared/useAfterRender';
 
 interface RowToolbarProps extends ComponentProps<'div'> {
   /** Accessible name of the button group. */

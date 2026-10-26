@@ -1,11 +1,11 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, type ComponentProps } from 'react';
 import { Announcement } from '~app/shared/components';
+import type { ItemHandle } from '~app/shared/ItemHandle';
+import { useAfterRender } from '~app/shared/useAfterRender';
+import { useReorder } from '~app/shared/useReorder';
 import type { Context, StepDraft } from './chips';
 import { StepEditor } from './StepEditor';
 import type { TextEdit } from './textEdit';
-import type { ItemHandle } from '../shared/ItemHandle';
-import { useAfterRender } from '../shared/useAfterRender';
-import { useReorder } from '../shared/useReorder';
 
 interface StepListProps extends ComponentProps<'div'> {
   steps: StepDraft[];

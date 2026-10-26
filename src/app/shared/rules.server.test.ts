@@ -140,7 +140,7 @@ describe('parsing-rules › Duration per number', () => {
 
 describe('parsing-rules › Spoken duration without minutes', () => {
   const index = toRows(defaultRules).durations.length;
-  for (const minutes of [null, 0, 1.5, 1441, 99999999999999999999])
+  for (const minutes of [null, 0, 1.5, 1441, Number.MAX_SAFE_INTEGER + 2])
     test(`${minutes} minutes is refused on that row`, async ({ db }) => {
       const errors = await edit(db, withDurations({ word: 'een tijdje', minutes, fixed: true }));
       assert.deepEqual(Object.keys(errors?.durations?.rows ?? {}), [String(index)]);

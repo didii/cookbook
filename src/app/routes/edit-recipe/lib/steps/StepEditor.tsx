@@ -1,13 +1,13 @@
 import { useImperativeHandle, useRef, useState, type ComponentProps, type KeyboardEvent, type Ref } from 'react';
 import { cn } from '~app/shared/cn';
+import type { ItemHandle } from '~app/shared/ItemHandle';
+import { RowGrip } from '~app/shared/RowGrip';
+import { useAfterRender } from '~app/shared/useAfterRender';
 import type { Context, StepDraft } from './chips';
 import { StepChips } from './StepChips';
 import { StepText, type Mark } from './StepText';
 import type { TextEdit } from './textEdit';
-import type { ItemHandle } from '../shared/ItemHandle';
-import { RowGrip } from '../shared/RowGrip';
 import { RowToolbar } from '../shared/RowToolbar';
-import { useAfterRender } from '../shared/useAfterRender';
 
 interface StepEditorProps extends ComponentProps<'li'> {
   handleRef?: Ref<ItemHandle>;
