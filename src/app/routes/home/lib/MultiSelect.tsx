@@ -1,6 +1,9 @@
 import { Combobox } from '@base-ui/react/combobox';
 import { useState } from 'react';
 
+// Letter case and accents ignored, like the filter itself: a picked "oma" is the option "Oma".
+const collator = new Intl.Collator('nl', { sensitivity: 'base' });
+
 type Props = {
   /** Every value that can be picked. */
   options: string[];
@@ -17,7 +20,7 @@ type Props = {
 export function MultiSelect({ options, value, onValueChange, placeholder, label }: Props) {
   const { contains } = Combobox.useFilter({ sensitivity: 'base' });
   const [text, setText] = useState('');
-  const items = options.filter((o) => !value.includes(o) && contains(o, text.trim()));
+  const items = options.filter((o) => !value.some((v) => collator.compare(v, o) === 0) && contains(o, text.trim()));
 
   return (
     <Combobox.Root
@@ -49,7 +52,7 @@ export function MultiSelect({ options, value, onValueChange, placeholder, label 
                 <Combobox.ChipRemove
                   data-testid="MultiSelect-remove"
                   aria-label={`${item} verwijderen`}
-                  className="grid size-8 cursor-pointer place-items-center rounded-full font-black hover:bg-ink/10"
+                  className="grid size-11 cursor-pointer place-items-center rounded-full font-black hover:bg-ink/10"
                 >
                   <span aria-hidden="true">×</span>
                 </Combobox.ChipRemove>

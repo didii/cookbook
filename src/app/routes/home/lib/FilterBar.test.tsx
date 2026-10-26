@@ -15,7 +15,10 @@ const searchBox = () => screen.getByTestId('FilterBar-search');
 const filterButton = () => screen.getByTestId('FilterBar-toggle');
 const authorField = (root: HTMLElement = document.body) => within(within(root).getByTestId('FilterBar-authors')).getByTestId('MultiSelect-field');
 const tagField = () => within(screen.getByTestId('FilterBar-tags')).getByTestId('MultiSelect-field');
-const pickedAuthors = () => screen.queryAllByTestId('MultiSelect-value').map((v) => v.textContent);
+const pickedAuthors = () =>
+  within(screen.getByTestId('FilterBar-authors'))
+    .queryAllByTestId('MultiSelect-value')
+    .map((v) => v.textContent);
 const sortInput = (value: string, root: HTMLElement = document.body) =>
   within(root)
     .getAllByTestId<HTMLInputElement>('FilterBar-sort')
@@ -241,17 +244,17 @@ describe('FilterBar chosen order', () => {
 
 describe('button-press › Pressing a chip', () => {
   beforeEach(() => {
-    show({ ...noFilters, authors: ['Oma'] });
+    show();
   });
 
-  // A picked chip's remove button and the segments of the sort control have no hard shadow, so nothing in their classes moves or unshadows them on :active.
-  const chipClasses = () => [screen.getByTestId('MultiSelect-remove').className, screen.getAllByTestId('FilterBar-sortLabel')[0].className].join(' ');
+  // The segments of the sort control have no hard shadow, so nothing in their classes moves or unshadows them on :active.
+  const chipClasses = () => screen.getAllByTestId('FilterBar-sortLabel')[0].className;
 
-  test('remove buttons and sort segments have no :active rule', async () => {
+  test('sort segments have no :active rule', async () => {
     assert.doesNotMatch(await cssFor(chipClasses()), /:active/);
   });
 
-  test('remove buttons and sort segments neither move nor have a shadow', async () => {
+  test('sort segments neither move nor have a shadow', async () => {
     assert.doesNotMatch(await cssFor(chipClasses()), /translate|box-shadow|shadow-hard/);
   });
 
@@ -325,27 +328,45 @@ describe('recipe-filtering › Closing the sheet', () => {
   });
 });
 
-describe('recipe-filtering › Finding a tag by typing', () => {
-  test('a tag that contains the text is suggested and another is not', async () => {
+describe('FilterBar tag field', () => {
+  const changesFor = (filters: Filters) => {
+    const changes: Filters[] = [];
+    render(<FilterBar filters={filters} authors={authors} tags={tags} detailed onFiltersChange={(f) => changes.push(f)} />);
+    return changes;
+  };
+
+  test('offers the tags it was given', async () => {
     show();
     openAutocomplete(tagField());
-    fireEvent.change(tagField(), { target: { value: 'soe' } });
     await screen.findAllByTestId('MultiSelect-option');
     assert.deepEqual(
       screen.getAllByTestId('MultiSelect-option').map((o) => o.textContent),
-      ['Soep'],
+      tags,
     );
     await act(async () => {});
   });
-});
 
-describe('recipe-filtering › Unknown text is not offered', () => {
-  test('no suggestion is shown', async () => {
-    show();
+  test('shows the picked tags as chips', () => {
+    show({ ...noFilters, tags: ['Soep'] });
+    assert.deepEqual(
+      within(screen.getByTestId('FilterBar-tags'))
+        .getAllByTestId('MultiSelect-value')
+        .map((v) => v.textContent),
+      ['Soep'],
+    );
+  });
+
+  test('keeps a picked tag that no recipe has any more, so it can be removed', () => {
+    show({ ...noFilters, tags: ['Soep'] }, true, []);
+    assert.ok(within(screen.getByTestId('FilterBar-tags')).getByTestId('MultiSelect-remove'));
+  });
+
+  test('reports a picked tag together with the other filters', async () => {
+    const changes = changesFor({ ...noFilters, sort: 'az' });
     openAutocomplete(tagField());
-    fireEvent.change(tagField(), { target: { value: 'zzz' } });
+    fireEvent.click((await screen.findAllByTestId('MultiSelect-option')).find((o) => o.textContent === 'Soep')!);
     await act(async () => {});
-    assert.equal(screen.queryAllByTestId('MultiSelect-option').length, 0);
+    assert.deepEqual(changes.at(-1), { ...noFilters, sort: 'az', tags: ['Soep'] });
   });
 });
 
@@ -381,29 +402,66 @@ describe('FilterBar search box', () => {
   });
 });
 
+// The field claims the Escape that closes its popup by preventing its default (see MultiSelect.test.tsx); the sheet then stays open.
 describe('recipe-filtering › Escape closes the suggestions first', () => {
-  const settle = () => act(async () => {});
+  const claimed = (e: Event) => e.preventDefault();
 
-  beforeEach(async () => {
+  beforeEach(() => {
     show();
     fireEvent.click(filterButton());
-    openAutocomplete(authorField());
-    await screen.findAllByTestId('MultiSelect-option');
   });
 
-  test('the first Escape closes the suggestions and the sheet stays open', async () => {
-    fireEvent.keyDown(authorField(), { key: 'Escape' });
-    await settle();
-    assert.equal(screen.queryAllByTestId('MultiSelect-option').length, 0);
+  test('an Escape the field handled keeps the sheet open', () => {
+    const field = authorField();
+    field.addEventListener('keydown', claimed);
+    fireEvent.keyDown(field, { key: 'Escape' });
+    field.removeEventListener('keydown', claimed);
     assert.equal(sheet().hasAttribute('data-open'), true);
   });
 
-  test('the second Escape closes the sheet', async () => {
+  test('a plain Escape closes the sheet', () => {
     fireEvent.keyDown(authorField(), { key: 'Escape' });
-    await settle();
-    fireEvent.keyDown(authorField(), { key: 'Escape' });
-    await settle();
     assert.equal(sheet().hasAttribute('data-open'), false);
+  });
+});
+
+describe('FilterBar author field', () => {
+  const field = () => within(screen.getByTestId('FilterBar-authors'));
+
+  test('offers the authors it was given', async () => {
+    show();
+    openAutocomplete(authorField());
+    await screen.findAllByTestId('MultiSelect-option');
+    assert.deepEqual(
+      screen.getAllByTestId('MultiSelect-option').map((o) => o.textContent),
+      authors,
+    );
+    await act(async () => {});
+  });
+
+  test('reports the authors left after removing one', async () => {
+    const changes: Filters[] = [];
+    render(
+      <FilterBar
+        filters={{ ...noFilters, authors: ['Oma', 'Papa'] }}
+        authors={authors}
+        tags={tags}
+        detailed
+        onFiltersChange={(f) => changes.push(f)}
+      />,
+    );
+    fireEvent.click(field().getAllByTestId('MultiSelect-remove')[0]);
+    await act(async () => {});
+    assert.deepEqual(changes.at(-1)?.authors, ['Papa']);
+  });
+
+  test('reports a picked author together with the other filters', async () => {
+    const changes: Filters[] = [];
+    render(<FilterBar filters={{ ...noFilters, sort: 'az' }} authors={authors} tags={tags} detailed onFiltersChange={(f) => changes.push(f)} />);
+    openAutocomplete(authorField());
+    fireEvent.click((await screen.findAllByTestId('MultiSelect-option')).find((o) => o.textContent === 'Oma')!);
+    await act(async () => {});
+    assert.deepEqual(changes.at(-1), { ...noFilters, sort: 'az', authors: ['Oma'] });
   });
 });
 

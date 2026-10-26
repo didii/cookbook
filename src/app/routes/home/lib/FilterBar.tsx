@@ -81,7 +81,7 @@ export function FilterBar({ filters, authors, tags, detailed, onFiltersChange, c
               />
             </div>
           </fieldset>
-          {tags.length > 0 && (
+          {(tags.length > 0 || (filters.tags ?? []).length > 0) && (
             <fieldset data-testid="FilterBar-tags" className="m-0 mb-4 min-w-0 border-0 p-0 md:mr-6 md:mb-3 md:inline-flex md:items-center md:gap-3">
               <legend className="mb-2 p-0 font-black md:float-left md:mb-0">Tags</legend>
               <div className="md:min-w-72">

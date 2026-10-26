@@ -95,14 +95,6 @@ describe('recipe-filtering › Opening an address with authors', () => {
     assert.deepEqual(parseFilters(new URLSearchParams('auteur=Oma')).authors, ['Oma']);
   });
 
-  test('reads every tag', () => {
-    assert.deepEqual(parseFilters(new URLSearchParams('tag=Soep&tag=Vegetarisch')).tags, ['Soep', 'Vegetarisch']);
-  });
-
-  test('writes one tag per tag', () => {
-    assert.equal(filterParams({ tags: ['Soep', 'Vegetarisch'] }).toString(), 'tag=Soep&tag=Vegetarisch');
-  });
-
   test('writes one auteur per author', () => {
     assert.equal(filterParams({ authors: ['Oma', 'Papa'] }).toString(), 'auteur=Oma&auteur=Papa');
   });
@@ -142,6 +134,16 @@ describe('recipe-filtering › More matches first', () => {
   });
 });
 
+describe('filterRecipes tag ranking', () => {
+  test('a tag picked twice in another letter case counts once', () => {
+    // Erwtensoep has only "Soep"; Crème brûlée has "Dessert" and "Vegetarisch", two different picked tags.
+    assert.deepEqual(titles(filterRecipes(recipes, { tags: ['Soep', 'soep', 'Dessert', 'Vegetarisch'] })).slice(0, 2), [
+      'Crème brûlée',
+      'Groentesoep',
+    ]);
+  });
+});
+
 describe('recipe-filtering › Same number of matches keep the chosen order', () => {
   test('newest first by default', () => {
     assert.deepEqual(titles(filterRecipes(recipes, { tags: ['Soep', 'Vegetarisch'] })).slice(1), ['Erwtensoep', 'Crème brûlée']);
@@ -158,6 +160,16 @@ describe('recipe-filtering › Same number of matches keep the chosen order', ()
       'Erwtensoep',
       'Stoofvlees',
     ]);
+  });
+});
+
+describe('recipe-filtering › Opening an address with tags', () => {
+  test('reads every tag', () => {
+    assert.deepEqual(parseFilters(new URLSearchParams('tag=Soep&tag=Vegetarisch')).tags, ['Soep', 'Vegetarisch']);
+  });
+
+  test('writes one tag per tag', () => {
+    assert.equal(filterParams({ tags: ['Soep', 'Vegetarisch'] }).toString(), 'tag=Soep&tag=Vegetarisch');
   });
 });
 

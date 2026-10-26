@@ -60,7 +60,9 @@ export function filterRecipes<T extends Pick<RecipeSummary, 'title' | 'author' |
   { q = '', authors = [], tags = [], sort }: Filters,
 ): T[] {
   const needle = fold(q).trim();
-  const matches = (r: T) => tags.filter((t) => r.tags.some((x) => sameName(x, t))).length;
+  // A tag picked twice (in another letter case) counts once.
+  const picked = tags.filter((t, i) => tags.findIndex((x) => sameName(x, t)) === i);
+  const matches = (r: T) => picked.filter((t) => r.tags.some((x) => sameName(x, t))).length;
   const found = recipes
     .filter(
       (r) =>
