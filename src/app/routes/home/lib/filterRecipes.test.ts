@@ -47,7 +47,7 @@ describe('search', () => {
 });
 
 describe('recipe-filtering › Clearing the search', () => {
-  const narrowed = { author: 'Papa' };
+  const narrowed = { authors: ['Papa'] };
 
   test('with a search only the matches of the author remain', () => {
     assert.deepEqual(titles(filterRecipes(recipes, { ...narrowed, q: 'soep' })), ['Erwtensoep']);
@@ -60,22 +60,42 @@ describe('recipe-filtering › Clearing the search', () => {
 
 describe('recipe-filtering › Choosing an author', () => {
   test('lists the recipes of the author', () => {
-    assert.deepEqual(titles(filterRecipes(recipes, { author: 'Papa' })), ['Erwtensoep', 'Stoofvlees']);
+    assert.deepEqual(titles(filterRecipes(recipes, { authors: ['Papa'] })), ['Erwtensoep', 'Stoofvlees']);
   });
 
   // Case variants are one author.
   test('treats case variants as one author', () => {
-    assert.deepEqual(titles(filterRecipes(recipes, { author: 'Oma' })), ['Appeltaart', 'Crème brûlée']);
+    assert.deepEqual(titles(filterRecipes(recipes, { authors: ['Oma'] })), ['Appeltaart', 'Crème brûlée']);
+  });
+});
+
+describe('recipe-filtering › Choosing several authors', () => {
+  test('lists the recipes of any of them', () => {
+    assert.deepEqual(titles(filterRecipes(recipes, { authors: ['Papa', 'Mama'] })), ['Erwtensoep', 'Stoofvlees', 'Èclair']);
+  });
+});
+
+describe('recipe-filtering › Opening an address with authors', () => {
+  test('reads every auteur', () => {
+    assert.deepEqual(parseFilters(new URLSearchParams('auteur=Oma&auteur=Papa')).authors, ['Oma', 'Papa']);
+  });
+
+  test('a single old auteur link still works', () => {
+    assert.deepEqual(parseFilters(new URLSearchParams('auteur=Oma')).authors, ['Oma']);
+  });
+
+  test('writes one auteur per author', () => {
+    assert.equal(filterParams({ authors: ['Oma', 'Papa'] }).toString(), 'auteur=Oma&auteur=Papa');
   });
 });
 
 describe('recipe-filtering › Search and author combine', () => {
   test('both must match', () => {
-    assert.deepEqual(titles(filterRecipes(recipes, { author: 'Papa', q: 'stoof' })), ['Stoofvlees']);
+    assert.deepEqual(titles(filterRecipes(recipes, { authors: ['Papa'], q: 'stoof' })), ['Stoofvlees']);
   });
 
   test('a search that no recipe of the author matches finds nothing', () => {
-    assert.deepEqual(filterRecipes(recipes, { author: 'Papa', q: 'appel' }), []);
+    assert.deepEqual(filterRecipes(recipes, { authors: ['Papa'], q: 'appel' }), []);
   });
 });
 
@@ -124,7 +144,11 @@ describe('activeFilterCount', () => {
   });
 
   test('counts author and order', () => {
-    assert.equal(activeFilterCount({ author: 'Oma', sort: 'az' }), 2);
+    assert.equal(activeFilterCount({ authors: ['Oma'], sort: 'az' }), 2);
+  });
+
+  test('counts several authors once', () => {
+    assert.equal(activeFilterCount({ authors: ['Oma', 'Papa'] }), 1);
   });
 
   test('counts the order alone', () => {
@@ -146,7 +170,7 @@ describe('isFiltered', () => {
   });
 
   test('is true for an author', () => {
-    assert.equal(isFiltered({ author: 'Oma' }), true);
+    assert.equal(isFiltered({ authors: ['Oma'] }), true);
   });
 
   test('is true for a non-default order', () => {
@@ -156,11 +180,11 @@ describe('isFiltered', () => {
 
 describe('parseFilters', () => {
   test('reads the address', () => {
-    assert.deepEqual(parseFilters(new URLSearchParams('q=appel&auteur=Oma&sort=az')), { q: 'appel', author: 'Oma', sort: 'az' });
+    assert.deepEqual(parseFilters(new URLSearchParams('q=appel&auteur=Oma&sort=az')), { q: 'appel', authors: ['Oma'], sort: 'az' });
   });
 
   test('falls back to defaults', () => {
-    assert.deepEqual(parseFilters(new URLSearchParams('sort=bogus&auteur=')), { q: '', author: undefined, sort: 'nieuwste' });
+    assert.deepEqual(parseFilters(new URLSearchParams('sort=bogus&auteur=')), { q: '', authors: [], sort: 'nieuwste' });
   });
 });
 
@@ -170,7 +194,7 @@ describe('filterParams', () => {
   });
 
   test('round-trips through parseFilters', () => {
-    const f: Filters = { q: 'crème brûlée', author: 'Tante An', sort: 'az' };
+    const f: Filters = { q: 'crème brûlée', authors: ['Tante An', 'Oma'], sort: 'az' };
     assert.deepEqual(parseFilters(new URLSearchParams(filterParams(f).toString())), f);
   });
 

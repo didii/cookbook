@@ -4,7 +4,7 @@ Verify each task with the type check and `pnpm test:ai`; `pnpm test:spec author-
 
 ## 1. Filter logic
 
-- [ ] 1.1 In `filterRecipes.ts` change `Filters.author` to `authors?: string[]` (any-of match); update `isFiltered`, `activeFilterCount`, `parseFilters` (`getAll('auteur')`) and `filterParams` (one `auteur` per author); test "Choosing an author", "Choosing several authors", "Search and author combine", "Opening an address with authors" (parsing, plus a single old `?auteur=Oma`) in `filterRecipes.test.ts`
+- [x] 1.1 In `filterRecipes.ts` change `Filters.author` to `authors?: string[]` (any-of match); update `isFiltered`, `activeFilterCount`, `parseFilters` (`getAll('auteur')`) and `filterParams` (one `auteur` per author); test "Choosing an author", "Choosing several authors", "Search and author combine", "Opening an address with authors" (parsing, plus a single old `?auteur=Oma`) in `filterRecipes.test.ts`
 
 ## 2. The field
 
