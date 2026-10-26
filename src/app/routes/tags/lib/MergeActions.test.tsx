@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'vitest';
 import type { ManagedTag } from '~app/shared/tags';
 import { fireEvent, render, screen } from '~testing/dom';
-import { recipeCount } from './recipeCount';
 import { MergeActions } from './MergeActions';
+import { recipeCount } from './recipeCount';
 
 const soepen: ManagedTag = { name: 'Soepen', category: null, uses: 3 };
 const show = (props: Partial<Parameters<typeof MergeActions>[0]> = {}) => {
