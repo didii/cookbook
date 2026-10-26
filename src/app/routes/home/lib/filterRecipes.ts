@@ -44,7 +44,9 @@ export function authorsOf(recipes: Pick<RecipeSummary, 'author'>[]): string[] {
 export function filterRecipes<T extends Pick<RecipeSummary, 'title' | 'author'>>(recipes: T[], { q = '', authors = [], sort }: Filters): T[] {
   const needle = fold(q).trim();
   const shown = recipes.filter(
-    (r) => (authors.length === 0 || authors.some((a) => sameAuthor(r.author, a))) && (!needle || fold(r.title).includes(needle) || fold(r.author).includes(needle)),
+    (r) =>
+      (authors.length === 0 || authors.some((a) => sameAuthor(r.author, a))) &&
+      (!needle || fold(r.title).includes(needle) || fold(r.author).includes(needle)),
   );
   return sort === 'az' ? shown.sort((a, b) => collator.compare(a.title, b.title)) : shown;
 }

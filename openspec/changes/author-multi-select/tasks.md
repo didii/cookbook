@@ -12,8 +12,8 @@ Verify each task with the type check and `pnpm test:ai`; `pnpm test:spec author-
 
 ## 3. The bar
 
-- [ ] 3.1 In `FilterBar.tsx` replace the author chips and `Chip` by a `MultiSelect` "Van wie" (placeholder "Iedereen"); update `FilterBar.test.tsx`: drop "Selected and unselected chips", change "Active filter count" (two authors and A–Z → 2), add "No author picked", keep "Wide screen" and "Few recipes" green, keep `button-press › Pressing a chip` but point it at a picked chip's remove button
-- [ ] 3.2 Make the sheet's Escape handler skip an Escape that closed the suggestions; test "Escape closes the suggestions first" and "Closing the sheet"; mark the phone-keyboard/popup placement check as `test.todo` with the reason
+- [x] 3.1 In `FilterBar.tsx` replace the author chips and `Chip` by a `MultiSelect` "Van wie" (placeholder "Iedereen"); update `FilterBar.test.tsx`: drop "Selected and unselected chips", change "Active filter count" (two authors and A–Z → 2), add "No author picked", keep "Wide screen" and "Few recipes" green, keep `button-press › Pressing a chip` but point it at a picked chip's remove button
+- [x] 3.2 Make the sheet's Escape handler skip an Escape that closed the suggestions; test "Escape closes the suggestions first" and "Closing the sheet"; mark the phone-keyboard/popup placement check as `test.todo` with the reason
 
 ## 4. The page
 

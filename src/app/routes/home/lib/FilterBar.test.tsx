@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { beforeEach, describe, test } from 'vitest';
 import { cssFor } from '~testing/css';
-import { fireEvent, precedes, render, screen, within } from '~testing/dom';
+import { act, fireEvent, openAutocomplete, precedes, render, screen, within } from '~testing/dom';
 import { FilterBar } from './FilterBar';
 import { noFilters, type Filters } from './filterRecipes';
 
@@ -12,12 +12,8 @@ const show = (filters: Filters = noFilters, detailed = true) =>
 const bar = () => screen.getByTestId('FilterBar-bar');
 const searchBox = () => screen.getByTestId('FilterBar-search');
 const filterButton = () => screen.getByTestId('FilterBar-toggle');
-const chips = () => screen.getAllByTestId('FilterBar-chip');
-const chip = (name: string, root: HTMLElement = document.body) =>
-  within(root)
-    .getAllByTestId('FilterBar-chip')
-    .find((c) => c.textContent === name)!;
-const pressed = (el: Element) => el.getAttribute('aria-pressed') === 'true';
+const authorField = (root: HTMLElement = document.body) => within(root).getByTestId('MultiSelect-field');
+const pickedAuthors = () => screen.queryAllByTestId('MultiSelect-value').map((v) => v.textContent);
 const sortInput = (value: string, root: HTMLElement = document.body) =>
   within(root)
     .getAllByTestId<HTMLInputElement>('FilterBar-sort')
@@ -122,36 +118,20 @@ describe('recipe-filtering › Reduced motion', () => {
   });
 });
 
-describe('recipe-filtering › Selected and unselected chips', () => {
-  beforeEach(() => {
-    show({ ...noFilters, author: 'Oma' });
+describe('recipe-filtering › No author picked', () => {
+  test('the field says Iedereen', () => {
+    show();
+    assert.equal(authorField().getAttribute('placeholder'), 'Iedereen');
   });
 
-  test('only the chosen author chip is selected', () => {
-    const selected = chips().filter(pressed);
-    assert.deepEqual(
-      selected.map((b) => b.textContent),
-      ['Oma'],
-    );
+  test('no author is shown as picked', () => {
+    show();
+    assert.deepEqual(pickedAuthors(), []);
   });
 
-  test('another chip is not pressed', () => {
-    assert.equal(pressed(chip('Mama')), false);
-  });
-
-  // Unselected: dashed, no fill, no shadow. Selected: solid, dark fill, white text.
-  test('an unselected chip is dashed, without fill or shadow', async () => {
-    const css = flat(await cssFor(chip('Mama').className));
-    assert.match(css, /border-style: dashed/);
-    assert.match(css, /background-color: transparent/);
-    assert.doesNotMatch(css, /box-shadow/);
-  });
-
-  test('a selected chip is solid with a dark fill and white text', async () => {
-    const css = flat(await cssFor(chip('Oma').className));
-    assert.match(css, /border-style: solid/);
-    assert.match(css, /background-color: var\(--color-red\)/);
-    assert.match(css, /color: var\(--color-white\)/);
+  test('picked authors are shown as chips', () => {
+    show({ ...noFilters, authors: ['Oma', 'Papa'] });
+    assert.deepEqual(pickedAuthors(), ['Oma', 'Papa']);
   });
 });
 
@@ -161,12 +141,12 @@ describe('recipe-filtering › Active filter count', () => {
     return screen.queryByTestId('FilterBar-count')?.textContent;
   };
 
-  test('author and order are counted: 2', () => {
-    assert.equal(count({ q: '', author: 'Oma', sort: 'az' }), '2');
+  test('two authors and order are counted: 2', () => {
+    assert.equal(count({ q: '', authors: ['Oma', 'Papa'], sort: 'az' }), '2');
   });
 
   test('author with the default order is counted: 1', () => {
-    assert.equal(count({ q: '', author: 'Oma', sort: 'nieuwste' }), '1');
+    assert.equal(count({ q: '', authors: ['Oma'], sort: 'nieuwste' }), '1');
   });
 
   // Nothing active, or only a search text: no number.
@@ -180,12 +160,12 @@ describe('recipe-filtering › Wide screen', () => {
     show();
   });
 
-  // From 48rem the bar is in the flow with the search box above the chips, nothing is fixed, the sheet is always shown and the Filter button is gone.
+  // From 48rem the bar is in the flow with the search box above the filters, nothing is fixed, the sheet is always shown and the Filter button is gone.
   test('the bar is in the flow', async () => {
     assert.match(wide(await cssFor(bar().className)), /position: static/);
   });
 
-  test('the search box is above the chips', async () => {
+  test('the search box is above the filters', async () => {
     assert.match(wide(await cssFor(bar().className)), /flex-direction: column-reverse/);
   });
 
@@ -226,7 +206,7 @@ describe('FilterBar with few recipes', () => {
   });
 
   test('nothing else is offered', () => {
-    for (const id of ['FilterBar-chip', 'FilterBar-sort', 'FilterBar-toggle', 'FilterBar-clear']) {
+    for (const id of ['MultiSelect-field', 'FilterBar-sort', 'FilterBar-toggle', 'FilterBar-clear']) {
       assert.equal(screen.queryByTestId(id), null, id);
     }
   });
@@ -246,25 +226,21 @@ describe('FilterBar chosen order', () => {
     assert.equal(sortInput('az').labels?.[0]?.textContent, 'A–Z');
     assert.equal(sortInput('nieuwste').labels?.[0]?.textContent, 'Nieuwste');
   });
-
-  test('Iedereen is chosen by default', () => {
-    assert.equal(pressed(chip('Iedereen')), true);
-  });
 });
 
 describe('button-press › Pressing a chip', () => {
   beforeEach(() => {
-    show();
+    show({ ...noFilters, authors: ['Oma'] });
   });
 
-  // Chips and the segments of the sort control have no hard shadow, so nothing in their classes moves or unshadows them on :active.
-  const chipClasses = () => [chip('Iedereen').className, screen.getAllByTestId('FilterBar-sortLabel')[0].className].join(' ');
+  // A picked chip's remove button and the segments of the sort control have no hard shadow, so nothing in their classes moves or unshadows them on :active.
+  const chipClasses = () => [screen.getByTestId('MultiSelect-remove').className, screen.getAllByTestId('FilterBar-sortLabel')[0].className].join(' ');
 
-  test('chips and sort segments have no :active rule', async () => {
+  test('remove buttons and sort segments have no :active rule', async () => {
     assert.doesNotMatch(await cssFor(chipClasses()), /:active/);
   });
 
-  test('chips and sort segments neither move nor have a shadow', async () => {
+  test('remove buttons and sort segments neither move nor have a shadow', async () => {
     assert.doesNotMatch(await cssFor(chipClasses()), /translate|box-shadow|shadow-hard/);
   });
 
@@ -290,8 +266,8 @@ describe('recipe-filtering › Opening the sheet', () => {
     assert.ok(precedes(sheet(), searchBox()));
   });
 
-  test('the sheet holds the chips, the order and "Wis filters"', () => {
-    assert.ok(chip('Iedereen', sheet()));
+  test('the sheet holds the author field, the order and "Wis filters"', () => {
+    assert.ok(authorField(sheet()));
     assert.ok(sortInput('az', sheet()));
     assert.ok(within(sheet()).getByTestId('FilterBar-clear'));
   });
@@ -337,3 +313,32 @@ describe('recipe-filtering › Closing the sheet', () => {
     });
   });
 });
+
+describe('recipe-filtering › Escape closes the suggestions first', () => {
+  const settle = () => act(async () => {});
+
+  beforeEach(async () => {
+    show();
+    fireEvent.click(filterButton());
+    openAutocomplete(authorField());
+    await screen.findAllByTestId('MultiSelect-option');
+  });
+
+  test('the first Escape closes the suggestions and the sheet stays open', async () => {
+    fireEvent.keyDown(authorField(), { key: 'Escape' });
+    await settle();
+    assert.equal(screen.queryAllByTestId('MultiSelect-option').length, 0);
+    assert.equal(sheet().hasAttribute('data-open'), true);
+  });
+
+  test('the second Escape closes the sheet', async () => {
+    fireEvent.keyDown(authorField(), { key: 'Escape' });
+    await settle();
+    fireEvent.keyDown(authorField(), { key: 'Escape' });
+    await settle();
+    assert.equal(sheet().hasAttribute('data-open'), false);
+  });
+});
+
+// Whether the suggestions sit above the phone keyboard needs a real viewport and keyboard.
+test.todo('FilterBar suggestions stay visible above the phone keyboard');
