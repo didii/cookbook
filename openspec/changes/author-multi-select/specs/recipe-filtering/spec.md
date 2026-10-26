@@ -13,7 +13,7 @@ The system SHALL show a "Van wie" field: a multi-select with autocomplete over t
 
 #### Scenario: No author picked
 - **WHEN** no author is picked
-- **THEN** recipes by everyone are shown and the field says "Iedereen" as its placeholder
+- **THEN** recipes by everyone are shown
 
 #### Scenario: Finding an author by typing
 - **WHEN** a family member types "pa" in the field and the authors are "Mama", "Oma" and "Papa"
