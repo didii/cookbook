@@ -4,7 +4,11 @@ import { Button } from '~app/shared/components';
 export function RulesBar() {
   return (
     <div data-testid="RulesBar-bar" className="fixed inset-x-0 bottom-0 z-10 border-t-3 border-ink bg-por pb-[env(safe-area-inset-bottom)]">
-      <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-[max(1rem,4vw)] py-2.5">
+      {/* "Opslaan" comes first in the document, so the Enter of an implicit submit never reaches the restore; the row is reversed to show it on the right. */}
+      <div className="mx-auto flex max-w-3xl flex-row-reverse items-center justify-between gap-3 px-[max(1rem,4vw)] py-2.5">
+        <Button main type="submit" name="intent" value="save" data-testid="RulesBar-save" className="max-w-none min-w-32 flex-none px-5">
+          Opslaan
+        </Button>
         <button
           type="submit"
           name="intent"
@@ -18,9 +22,6 @@ export function RulesBar() {
         >
           Standaardwaarden herstellen
         </button>
-        <Button main type="submit" name="intent" value="save" data-testid="RulesBar-save" className="max-w-none min-w-32 flex-none px-5">
-          Opslaan
-        </Button>
       </div>
     </div>
   );

@@ -124,7 +124,12 @@ export function RuleRow({
   } as const;
 
   return (
-    <li {...props} ref={item} className={cn('relative grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-0.5 gap-y-1', className)}>
+    <li
+      {...props}
+      ref={item}
+      data-testid="RuleRow-row"
+      className={cn('relative grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-0.5 gap-y-1', className)}
+    >
       <RowGrip {...gripProps} className={cn('min-h-10 w-5', free && 'cursor-default opacity-40')} />
       {suggestions ? (
         <Combobox.Root

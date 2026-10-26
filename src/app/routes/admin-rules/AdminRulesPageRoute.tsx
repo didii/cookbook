@@ -33,7 +33,7 @@ export async function action({ request, context }: Route.ActionArgs) {
   const intent = form.get('intent');
   if (intent === 'reset') {
     await resetRules(db);
-    return data({ saved: true as const });
+    return data({ saved: true as const, nonce: crypto.randomUUID() });
   }
   if (intent !== 'save') throw data('Onbekende actie.', { status: 400 });
   let rows: unknown;
@@ -44,8 +44,8 @@ export async function action({ request, context }: Route.ActionArgs) {
   }
   if (!isRows(rows)) throw data('Onleesbare regels.', { status: 400 });
   const { errors } = await saveRules(db, rows);
-  if (errors) return data({ errors, rows }, { status: 400 });
-  return data({ saved: true as const });
+  if (errors) return data({ errors, rows, nonce: crypto.randomUUID() }, { status: 400 });
+  return data({ saved: true as const, nonce: crypto.randomUUID() });
 }
 
 export function meta() {
@@ -64,8 +64,8 @@ export default function AdminRulesPage({ loaderData, actionData }: Route.Compone
           Opgeslagen.
         </output>
       )}
-      {/* Keyed on the stored rules: a save or a restore shows them again, a refused save keeps what was typed. */}
-      <RulesForm key={JSON.stringify(loaderData.rows)} initial={refused?.rows ?? loaderData.rows} errors={refused?.errors} />
+      {/* Keyed on the stored rules and on every answer, so each answer shows its own rows: the stored rules after a save or a restore (also when they did not change), the posted rows with their messages after a refusal. */}
+      <RulesForm key={`${actionData?.nonce}${JSON.stringify(loaderData.rows)}`} initial={refused?.rows ?? loaderData.rows} errors={refused?.errors} />
     </main>
   );
 }

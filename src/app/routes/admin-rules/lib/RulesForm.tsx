@@ -15,6 +15,9 @@ interface RulesFormProps {
 
 const noErrors: RulesErrors = {};
 
+/** A duration row has the minutes and "Vast" after the word (see `DurationCells`). */
+const durationRow = 'grid-cols-[auto_minmax(0,1fr)_5.75rem_auto] gap-x-1.5 sm:grid-cols-[auto_minmax(0,1fr)_5.75rem_auto_auto]';
+
 // Ids of the rows added while typing; only ever compared with each other.
 let added = 0;
 const blank = (): RuleItem => ({ id: `new-${added++}`, text: '' });
@@ -58,6 +61,18 @@ export function RulesForm({ initial, errors = noErrors }: RulesFormProps) {
   const loose = new Set(looseUnits.map((r) => r.text.trim().toLowerCase()));
   const suggestions = [...new Set(units.filter((r) => !isEmptyItem(r)).map((r) => r.text.trim()))].filter((w) => !loose.has(w.toLowerCase()));
 
+  // The messages follow their row, not its place: the rows may move before the next save. The initial rows have the ids `<name>-<index>`.
+  const [messages] = useState(() => {
+    const byId = (list: keyof RulesRows, name: string) =>
+      Object.fromEntries(Object.entries(errors[list]?.rows ?? {}).map(([index, message]) => [`${name}-${index}`, message]));
+    return {
+      units: byId('units', 'units'),
+      looseUnits: byId('looseUnits', 'loose'),
+      durations: byId('durations', 'duration'),
+      degreeWords: byId('degreeWords', 'degrees'),
+    };
+  });
+
   // After a refused save the first list with a message takes focus.
   const firstWithErrors = (['units', 'looseUnits', 'durations', 'degreeWords'] as const).find((list) => errors[list]?.rows);
   const listError = (list: keyof RulesRows) =>
@@ -81,11 +96,13 @@ export function RulesForm({ initial, errors = noErrors }: RulesFormProps) {
             </Help>
             {listError('units')}
             <RuleList
+              data-testid="RulesForm-units"
               aria-labelledby="units-heading"
               rows={units}
               noun="Eenheid"
               blank={blank}
-              errors={errors.units?.rows}
+              errors={messages.units}
+              placeholder="bv. kopje"
               focusError={firstWithErrors === 'units'}
               onChange={setUnits}
             />
@@ -99,12 +116,14 @@ export function RulesForm({ initial, errors = noErrors }: RulesFormProps) {
             </Help>
             {listError('looseUnits')}
             <RuleList
+              data-testid="RulesForm-looseUnits"
               aria-labelledby="loose-units-heading"
               rows={looseUnits}
               noun="Losse eenheid"
               blank={blank}
               suggestions={suggestions}
-              errors={errors.looseUnits?.rows}
+              errors={messages.looseUnits}
+              placeholder="bv. druppel"
               focusError={firstWithErrors === 'looseUnits'}
               onChange={setLooseUnits}
             />
@@ -119,13 +138,18 @@ export function RulesForm({ initial, errors = noErrors }: RulesFormProps) {
         </Help>
         {listError('durations')}
         <RuleList
+          data-testid="RulesForm-durations"
           aria-label="Duur"
           rows={durations}
           noun="Duur"
           blank={blankDuration}
-          errors={errors.durations?.rows}
+          errors={messages.durations}
+          placeholder="bv. een uurtje"
+          rowClassName={durationRow}
           focusError={firstWithErrors === 'durations'}
-          extra={(row, label, change) => <DurationCells label={label} minutes={row.minutes ?? ''} fixed={!!row.fixed} onChange={change} />}
+          extra={(row, label, change, step) => (
+            <DurationCells label={label} minutes={row.minutes ?? ''} fixed={!!row.fixed} onChange={change} onStep={step} />
+          )}
           onChange={setDurations}
         />
       </Section>
@@ -136,11 +160,13 @@ export function RulesForm({ initial, errors = noErrors }: RulesFormProps) {
           </Help>
           {listError('degreeWords')}
           <RuleList
+            data-testid="RulesForm-degreeWords"
             aria-label="Graden"
             rows={degrees}
             noun="Graadwoord"
             blank={blank}
-            errors={errors.degreeWords?.rows}
+            errors={messages.degreeWords}
+            placeholder="bv. graad"
             focusError={firstWithErrors === 'degreeWords'}
             onChange={setDegrees}
           />

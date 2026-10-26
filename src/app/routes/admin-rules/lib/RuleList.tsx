@@ -14,12 +14,16 @@ interface RuleListProps<T extends RuleItem> extends Omit<ComponentProps<'ul'>, '
   blank: () => T;
   /** Words to suggest in the fields. */
   suggestions?: string[];
-  /** Messages by row index. */
-  errors?: Record<number, string>;
+  /** Messages by row id. */
+  errors?: Record<string, string>;
   /** Put focus on the first row in error when the errors change. */
   focusError?: boolean;
   /** The cells a row has after its field. */
-  extra?: (row: T, label: string, change: (patch: Partial<T>) => void) => ReactNode;
+  extra?: (row: T, label: string, change: (patch: Partial<T>) => void, step: (direction: -1 | 1) => void) => ReactNode;
+  /** Classes of every row, to lay out the extra cells. */
+  rowClassName?: string;
+  /** Placeholder of the empty row at the end. */
+  placeholder?: string;
   /** The rows after a change; the list always ends in an empty row. */
   onChange: (rows: T[]) => void;
 }
@@ -37,6 +41,8 @@ export function RuleList<T extends RuleItem>({
   errors = noErrors,
   focusError,
   extra,
+  rowClassName,
+  placeholder,
   onChange,
   ...props
 }: RuleListProps<T>) {
@@ -65,7 +71,7 @@ export function RuleList<T extends RuleItem>({
 
   // After a refused save, put focus on the first row in error so its message is read.
   useEffect(() => {
-    const first = rows.findIndex((_, i) => errors[i]);
+    const first = rows.findIndex((r) => errors[r.id]);
     if (focusError && first >= 0) items.current.get(rows[first].id)?.focusField('end');
     // Only when the errors change, not on every keystroke.
     // oxlint-disable-next-line react/exhaustive-deps
@@ -99,7 +105,7 @@ export function RuleList<T extends RuleItem>({
               free={free}
               canUp={!free && i > 0}
               canDown={i < rows.length - 2}
-              error={errors[i]}
+              error={errors[row.id]}
               suggestions={suggestions}
               onType={(text) => change(row.id, { text } as Partial<T>)}
               onRemove={() => remove(row.id, 'next')}
@@ -108,9 +114,15 @@ export function RuleList<T extends RuleItem>({
               onBackspaceEmpty={() => remove(row.id, 'previous')}
               gripProps={free ? {} : reorder.gripProps(i)}
               style={reorder.styleOf(i)}
-              className={row.minutes === undefined ? undefined : durationRow}
+              className={rowClassName}
+              placeholder={free ? placeholder : undefined}
             >
-              {extra?.(row, `${noun} ${i + 1}`, (patch) => change(row.id, patch))}
+              {extra?.(
+                row,
+                `${noun} ${i + 1}`,
+                (patch) => change(row.id, patch),
+                (direction) => focus(rows[i + direction]?.id, 'end'),
+              )}
             </RuleRow>
           );
         })}
@@ -119,6 +131,3 @@ export function RuleList<T extends RuleItem>({
     </div>
   );
 }
-
-/** A duration row has the minutes and "Vast" after the word; "Vast" moves under the word below 40rem. */
-const durationRow = 'grid-cols-[auto_minmax(0,1fr)_5.75rem_auto] gap-x-1.5 sm:grid-cols-[auto_minmax(0,1fr)_5.75rem_auto_auto]';

@@ -9,9 +9,10 @@ describe('parsing-rules › Save bar', () => {
   // Needs a browser: the bar stays at the bottom of the screen while the page scrolls.
   test.todo('the bar is fixed to the bottom of the screen');
 
-  test('"Standaardwaarden herstellen" comes before "Opslaan"', () => {
+  // The first submit button is the one Enter in a field uses.
+  test('"Opslaan" is the first submit button, so Enter never restores', () => {
     render(<RulesBar />);
-    assert.ok(precedes(screen.getByTestId('RulesBar-reset'), screen.getByTestId('RulesBar-save')));
+    assert.ok(precedes(screen.getByTestId('RulesBar-save'), screen.getByTestId('RulesBar-reset')));
   });
 
   test('"Opslaan" submits with the intent save', () => {
