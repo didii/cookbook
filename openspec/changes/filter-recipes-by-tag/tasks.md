@@ -4,7 +4,7 @@ Apply after `author-multi-select`. Verify each task with the type check and `pnp
 
 ## 1. Filter logic
 
-- [ ] 1.1 In `filterRecipes.ts` add `Filters.tags?: string[]`; match tags in the search text; filter any-of; rank by number of picked tags after the chosen sort (stable); add `tagsOf(recipes)` (each tag once, alphabetical); update `isFiltered`, `activeFilterCount`, `parseFilters` and `filterParams` (`tag` repeated); test "Searching by tag", "Choosing a tag", "Choosing several tags", "Search and tags combine", "More matches first", "Same number of matches keep the chosen order" and "Opening an address with tags" (parsing) in `filterRecipes.test.ts`
+- [x] 1.1 In `filterRecipes.ts` add `Filters.tags?: string[]`; match tags in the search text; filter any-of; rank by number of picked tags after the chosen sort (stable); add `tagsOf(recipes)` (each tag once, alphabetical); update `isFiltered`, `activeFilterCount`, `parseFilters` and `filterParams` (`tag` repeated); test "Searching by tag", "Choosing a tag", "Choosing several tags", "Search and tags combine", "More matches first", "Same number of matches keep the chosen order" and "Opening an address with tags" (parsing) in `filterRecipes.test.ts`
 
 ## 2. The bar
 
