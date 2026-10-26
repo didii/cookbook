@@ -1,6 +1,7 @@
 import { useEffect, useRef, type ComponentProps } from 'react';
 import { cn } from '~app/shared/cn';
 import { Check, Cross, Lock, StickyNote } from '~app/shared/icons';
+import { pressCss } from '~app/shared/press';
 import { maxNoteLength } from './note';
 import { NoteCue } from './NoteCue';
 import type { Note } from './useNote';
@@ -17,6 +18,7 @@ export function NoteSheet({ note, className, ...props }: NoteSheetProps) {
   const { isOpen, dismiss } = note;
 
   // Focus goes into the field on opening and back to the button on closing.
+  // Known bug: the button's press animation does not play on opening, most likely because of this focus change (deferring it a frame did not help).
   useEffect(() => {
     if (isOpen) field.current?.focus();
     else if (wasOpen.current) button.current?.focus();
@@ -89,12 +91,12 @@ export function NoteSheet({ note, className, ...props }: NoteSheetProps) {
         aria-expanded={isOpen}
         onClick={() => (isOpen ? dismiss() : note.open())}
         className={cn(
-          'fixed right-4 bottom-[calc(1.125rem+env(safe-area-inset-bottom))] z-40 grid size-14 cursor-pointer place-items-center rounded-[14px] border-3 border-ink shadow-hard',
-          'transition-[translate,box-shadow] duration-80 active:[translate:3px_3px] active:shadow-none motion-reduce:transition-none',
+          'fixed right-4 bottom-[calc(1.125rem+env(safe-area-inset-bottom))] z-40 grid size-14 cursor-pointer place-items-center rounded-[14px] border-3 border-ink',
+          pressCss(),
           isOpen ? 'bg-red text-white' : 'bg-yel text-ink',
         )}
       >
-        {isOpen ? <Cross /> : <StickyNote />}
+        {isOpen ? <Cross /> : <StickyNote className={'size-6'} />}
         {!isOpen && note.text !== '' && (
           <span data-testid="NoteSheet-marker" className="absolute -top-2 -right-2 size-4.5 rounded-full border-2 border-ink bg-red" />
         )}
