@@ -9,7 +9,7 @@ Verify each task with the type check and `pnpm test:ai`; `pnpm test:spec install
 
 ## 2. Pages
 
-- [ ] 2.1 In `root.tsx` add the manifest link (`crossOrigin: 'use-credentials'`) and the apple-touch-icon link to `links`, and a `meta` export with `theme-color`; test "Pages link the manifest" in `root.test.ts` by calling `links()` and `meta()`
+- [x] 2.1 In `root.tsx` add the manifest link (`crossOrigin: 'use-credentials'`) and the apple-touch-icon link to `links`, and render a `ThemeColor` component (`theme-color` meta, in `shared/components`) in the `Layout` head; test "Pages link the manifest" in `root.test.tsx` by calling `links()` and rendering `ThemeColor`
 
 ## 3. Service worker
 

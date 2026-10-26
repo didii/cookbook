@@ -25,6 +25,6 @@ None.
 ## Impact
 
 - New static files in `public/`: `manifest.webmanifest`, `sw.js`, `icons/*`.
-- `src/app/root.tsx` (`links`, new `meta`), a small `shared/components/ServiceWorker.tsx` mounted from `App`.
+- `src/app/root.tsx` (`links`, `ThemeColor` in the head), small `shared/components/ThemeColor.tsx` and `ServiceWorker.tsx` (the latter mounted from `App`).
 - No DB, API or dependency changes. Icon PNGs are generated once from the SVG and committed.
 - The domain sits behind Cloudflare Access: see design.md for how the manifest, icons and service worker have to be fetched.

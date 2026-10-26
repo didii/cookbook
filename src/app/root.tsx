@@ -1,13 +1,16 @@
 import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router';
 import type { Route } from './+types/root';
 import './app.css';
-import { SkipLink } from './shared/components';
+import { SkipLink, ThemeColor } from './shared/components';
 import { envContext, userEmailContext } from './shared/context.server';
 import { getRules } from './shared/rules.server';
 import { getUser } from './shared/users.server';
 import { redirectToWelcome } from './shared/welcome.server';
 
 export const links: Route.LinksFunction = () => [
+  // With credentials, or Cloudflare Access redirects the manifest request to its sign-in page.
+  { rel: 'manifest', href: '/manifest.webmanifest', crossOrigin: 'use-credentials' },
+  { rel: 'apple-touch-icon', href: '/icons/apple-touch-icon.png' },
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
   {
     rel: 'preconnect',
@@ -26,6 +29,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+        <ThemeColor />
         <Meta />
         <Links />
       </head>
