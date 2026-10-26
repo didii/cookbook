@@ -3,6 +3,7 @@ import { envContext, userEmailContext } from '~app/shared/context.server';
 import { getRules, resetRules, saveRules, toRows, type RulesRows } from '~app/shared/rules.server';
 import { requireAdmin } from '~app/shared/users.server';
 import type { Route } from './+types/AdminRulesPageRoute';
+import { RulesForm } from './lib/RulesForm';
 
 const isStrings = (v: unknown): v is string[] => Array.isArray(v) && v.every((w) => typeof w === 'string');
 const isRows = (v: unknown): v is RulesRows => {
@@ -51,6 +52,20 @@ export function meta() {
   return [{ title: 'Herkenning · Familiekookboek' }];
 }
 
-export default function AdminRulesPage({ loaderData }: Route.ComponentProps) {
-  return <main id="main">{loaderData.rows.units.length}</main>;
+export default function AdminRulesPage({ loaderData, actionData }: Route.ComponentProps) {
+  const refused = actionData && 'errors' in actionData ? actionData : undefined;
+  const saved = actionData && 'saved' in actionData;
+  return (
+    <main id="main" className="mx-auto max-w-3xl px-[max(1rem,4vw)] pt-6">
+      <h1 className="text-[clamp(2rem,6vw,3rem)] leading-[1.05] font-black tracking-[-0.03em]">Herkenning</h1>
+      <p className="mt-2 text-lg text-muted">De woorden die het kookboek herkent in recepten. Hoofdletters maken niet uit.</p>
+      {saved && (
+        <output data-testid="AdminRulesPage-saved" className="mt-4 block font-extrabold text-blu">
+          Opgeslagen.
+        </output>
+      )}
+      {/* Keyed on the stored rules: a save or a restore shows them again, a refused save keeps what was typed. */}
+      <RulesForm key={JSON.stringify(loaderData.rows)} initial={refused?.rows ?? loaderData.rows} errors={refused?.errors} />
+    </main>
+  );
 }

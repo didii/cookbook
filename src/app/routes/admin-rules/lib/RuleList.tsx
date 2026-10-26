@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ComponentProps, type ReactNode } from 'react';
+import { useEffect, useId, useRef, type ComponentProps, type ReactNode } from 'react';
 import { Announcement } from '~app/shared/components';
 import type { ItemHandle } from '~app/shared/ItemHandle';
 import { useReorder } from '~app/shared/useReorder';
@@ -40,6 +40,7 @@ export function RuleList<T extends RuleItem>({
   onChange,
   ...props
 }: RuleListProps<T>) {
+  const base = useId();
   const items = useRef(new Map<string, ItemHandle>());
   // Work to do once the rows have rendered, such as focusing a row that did not exist yet.
   const afterRender = useRef<() => void>(undefined);
@@ -92,7 +93,7 @@ export function RuleList<T extends RuleItem>({
                 if (handle) items.current.set(row.id, handle);
                 else items.current.delete(row.id);
               }}
-              rowId={`${noun}-${row.id}`}
+              rowId={`${base}-${row.id}`}
               label={`${noun} ${i + 1}`}
               text={row.text}
               free={free}
