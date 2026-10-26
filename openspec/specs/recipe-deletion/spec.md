@@ -6,11 +6,19 @@ TBD - created by archiving change delete-recipe. Update Purpose after archive.
 ## Requirements
 
 ### Requirement: A recipe page has a delete button at the bottom
-The system SHALL show on a recipe page, after the steps at the bottom of the page, a button "Verwijder recept". It SHALL NOT be in the site header.
+The system SHALL show on the edit page of a stored recipe, at the bottom of the page after the form and its save bar, a button "Verwijder recept". It SHALL NOT be in the site header, SHALL NOT be on the recipe page, and SHALL NOT be on the page for a new recipe.
 
 #### Scenario: Delete button is shown
+- **WHEN** a family member opens the edit page of a stored recipe
+- **THEN** a button "Verwijder recept" is available at the bottom of the page, after the form
+
+#### Scenario: No delete button on the recipe page
 - **WHEN** a family member opens the page of a stored recipe
-- **THEN** a button "Verwijder recept" is available after the steps
+- **THEN** there is no button "Verwijder recept"
+
+#### Scenario: No delete button for a new recipe
+- **WHEN** a family member opens the page for a new recipe
+- **THEN** there is no button "Verwijder recept"
 
 ### Requirement: Deleting needs a confirmation in a popup
 The system SHALL, when the delete button is used, open a popup that names the recipe and offers "Verwijderen" and "Annuleren", and SHALL NOT delete anything until "Verwijderen" is used. The popup SHALL close without deleting on "Annuleren", on the Escape key, and on a click outside it.

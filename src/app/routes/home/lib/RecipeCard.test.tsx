@@ -284,8 +284,3 @@ describe('recipe-new-marker › Marker on a card without an image', () => {
     assert.equal(screen.getByTestId('RecipeCard-link').getAttribute('aria-describedby'), screen.getByTestId('RecipeCard-new').id);
   });
 });
-
-// Scenarios that add-recipe-tags removes: the main spec keeps them until the change is archived. Delete these then.
-test.todo('recipe-browsing › Recipe with two categories');
-test.todo('recipe-browsing › Recipe with more categories');
-test.todo('recipe-browsing › Recipe without categories');

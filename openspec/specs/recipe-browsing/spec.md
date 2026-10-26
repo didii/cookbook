@@ -13,7 +13,7 @@ The system SHALL, when no recipe is stored, show on the home page that there are
 - **THEN** the page says there are no recipes yet and links to the new recipe form, and shows no search box or filter
 
 ### Requirement: The home page lists the stored recipes as cards
-The system SHALL show a short welcome (the heading "Wat eten we vandaag?" and one line of introduction) on the home page, followed by every stored recipe as a card, linking to the recipe's page. Recipes added most recently come first. The page SHALL state how many recipes there are. A card SHALL show, from top to bottom: the recipe's main image when it has one, with its seal at the top right of the image; a tile band; the title; "van" and the author, followed by the preparation time when there is one; and the recipe's categories. On a phone-width screen the cards are shown one per row; on wider screens as many columns as fit. A card keeps the height its own content gives it; cards in one row are not stretched to match. Where there is no image, the tile band is as tall as the image and the tile band together, in whole tiles, and no seal is shown.
+The system SHALL show a short welcome (the heading "Wat eten we vandaag?" and one line of introduction) on the home page, followed by every stored recipe as a card, linking to the recipe's page. Recipes added most recently come first. The page SHALL state how many recipes there are. A card SHALL show, from top to bottom: the recipe's main image when it has one, with its seal at the top right of the image; a tile band; the title; "van" and the author, followed by the preparation time when there is one; and the recipe's tags. On a phone-width screen the cards are shown one per row; on wider screens as many columns as fit. A card keeps the height its own content gives it; cards in one row are not stretched to match. Where there is no image, the tile band is as tall as the image and the tile band together, in whole tiles, and no seal is shown.
 
 #### Scenario: Stored recipes are listed
 - **WHEN** a family member opens the home page and two recipes are stored
@@ -33,7 +33,7 @@ The system SHALL show a short welcome (the heading "Wat eten we vandaag?" and on
 
 #### Scenario: Image, band, then text
 - **WHEN** a card of a recipe with an image is shown
-- **THEN** the image comes first, the tile band follows it, and the title, author and categories follow the band
+- **THEN** the image comes first, the tile band follows it, and the title, author and tags follow the band
 
 #### Scenario: Seal on the image
 - **WHEN** a card of a recipe with an image and a seal is shown
@@ -59,21 +59,21 @@ The system SHALL show a short welcome (the heading "Wat eten we vandaag?" and on
 - **WHEN** the pointer is over a card
 - **THEN** the card lifts a little and its hard shadow grows, unless the person prefers reduced motion
 
-### Requirement: A card shows the categories of its recipe
-The system SHALL show on a card the first two categories of the recipe, in their stored order, as small pills below the author line. When the recipe has more than two, a further pill SHALL say how many are left ("+1", "+2" and so on). The pills SHALL NOT be links or buttons, and a recipe without categories SHALL show none.
+### Requirement: A card shows the tags of its recipe
+The system SHALL show on a card the first two tags of the recipe, in the order the listing gives them, as small pills below the author line. When the recipe has more than two, a further pill SHALL say how many are left ("+1", "+2" and so on). The pills SHALL NOT be links or buttons, and a recipe without tags SHALL show none.
 
-#### Scenario: Recipe with two categories
-- **WHEN** a card is shown for a recipe with the categories "Soep" and "Winter"
-- **THEN** a pill for each is shown, in that order, and no "+" pill
+#### Scenario: Recipe with two tags
+- **WHEN** a card is shown for a recipe with the tags "Soep" and "Winter", given in that order
+- **THEN** a pill for each is shown, "Soep" first, and no "+" pill
 
-#### Scenario: Recipe with more categories
-- **WHEN** a card is shown for a recipe with the categories "Hoofdgerecht", "Winter" and "Vlees"
-- **THEN** pills for "Hoofdgerecht" and "Winter" are shown, and a pill "+1"
+#### Scenario: Recipe with more tags
+- **WHEN** a card is shown for a recipe with the tags "Hoofdgerecht", "Vlees" and "Winter", given in that order
+- **THEN** pills for "Hoofdgerecht" and "Vlees" are shown, and a pill "+1"
 
-#### Scenario: Recipe without categories
-- **WHEN** a card is shown for a recipe without categories
-- **THEN** it shows no category pills
+#### Scenario: Recipe without tags
+- **WHEN** a card is shown for a recipe without tags
+- **THEN** it shows no tag pills
 
 #### Scenario: Pills are not interactive
-- **WHEN** a card with category pills is shown
+- **WHEN** a card with tag pills is shown
 - **THEN** none of the pills is a link or a button
