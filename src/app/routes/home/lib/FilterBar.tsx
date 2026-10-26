@@ -13,6 +13,8 @@ interface FilterBarProps extends ComponentProps<'search'> {
   authors: string[];
   /** The tags to pick from; the field is left out when there are none. */
   tags: string[];
+  /** The category of the tags that have one, shown in the suggestions. */
+  tagCategories?: Record<string, string>;
   /** Whether the author field and the sort control are offered; the search box always is. */
   detailed: boolean;
   onFiltersChange: (filters: Filters) => void;
@@ -24,7 +26,7 @@ const sorts: { value: Sort; label: string }[] = [
 ];
 
 /** The search box and the detailed filters. Fixed to the bottom of the screen below 48rem, with the details in a sheet above the box; inline from 48rem. */
-export function FilterBar({ filters, authors, tags, detailed, onFiltersChange, className, ...props }: FilterBarProps) {
+export function FilterBar({ filters, authors, tags, tagCategories, detailed, onFiltersChange, className, ...props }: FilterBarProps) {
   const sheetId = useId();
   const toggle = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
@@ -85,6 +87,7 @@ export function FilterBar({ filters, authors, tags, detailed, onFiltersChange, c
               <div className="md:min-w-72">
                 <MultiSelect
                   options={tags}
+                  categories={tagCategories}
                   value={filters.tags ?? []}
                   onValueChange={(next) => onFiltersChange({ ...filters, tags: next })}
                   placeholder="Alle tags"
@@ -102,7 +105,7 @@ export function FilterBar({ filters, authors, tags, detailed, onFiltersChange, c
             labelProps={{ 'data-testid': 'FilterBar-sortLabel' }}
             className="mb-4 md:mr-6 md:mb-3 md:inline-flex md:items-center md:gap-3"
           />
-          <div className="flex gap-3 md:hidden">
+          <div className="flex gap-3 md:mb-3 md:inline-flex">
             <Button type="button" data-testid="FilterBar-clear" className="min-h-11 text-base" onClick={() => onFiltersChange(noFilters)}>
               Wis filters
             </Button>

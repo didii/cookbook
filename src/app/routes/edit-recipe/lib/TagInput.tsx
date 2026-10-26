@@ -61,7 +61,7 @@ export function TagInput({ tags, tagCategories = {}, value, onValueChange, id, i
                 <Combobox.ChipRemove
                   data-testid="TagInput-remove"
                   aria-label={`${tag} verwijderen`}
-                  className="grid size-8 cursor-pointer place-items-center rounded-full font-black hover:bg-ink/10"
+                  className="relative grid size-6 cursor-pointer place-items-center rounded-full font-black before:absolute before:-inset-2.5 before:content-[''] hover:bg-ink/10"
                 >
                   <span aria-hidden="true">×</span>
                 </Combobox.ChipRemove>
@@ -79,35 +79,37 @@ export function TagInput({ tags, tagCategories = {}, value, onValueChange, id, i
           className="min-h-11 min-w-32 flex-1 bg-transparent px-1 text-lg text-ink focus:outline-transparent"
         />
       </Combobox.Chips>
-      <Combobox.Portal>
-        <Combobox.Positioner sideOffset={6} className="z-10 w-(--anchor-width)">
-          <Combobox.Popup className="max-h-60 overflow-y-auto rounded-[0.625rem] border-3 border-ink bg-white shadow-hard-sm empty:hidden">
-            <Combobox.List>
-              {(item: string) => (
-                <Combobox.Item
-                  key={item}
-                  value={item}
-                  data-testid="TagInput-option"
-                  className="flex min-h-11 cursor-pointer items-center justify-between gap-3 px-3 text-lg font-bold data-highlighted:bg-yel"
-                >
-                  {tags.includes(item) ? (
-                    <>
-                      <span data-testid="TagInput-name">{item}</span>
-                      {Object.hasOwn(tagCategories, item) && (
-                        <Pill variant="category" data-testid="TagInput-category">
-                          {tagCategories[item]}
-                        </Pill>
-                      )}
-                    </>
-                  ) : (
-                    `Toevoegen: "${item}"`
-                  )}
-                </Combobox.Item>
-              )}
-            </Combobox.List>
-          </Combobox.Popup>
-        </Combobox.Positioner>
-      </Combobox.Portal>
+      {items.length > 0 && (
+        <Combobox.Portal>
+          <Combobox.Positioner sideOffset={6} className="z-10 w-(--anchor-width)">
+            <Combobox.Popup className="max-h-60 overflow-y-auto rounded-[0.625rem] border-3 border-ink bg-white shadow-hard-sm empty:hidden">
+              <Combobox.List>
+                {(item: string) => (
+                  <Combobox.Item
+                    key={item}
+                    value={item}
+                    data-testid="TagInput-option"
+                    className="flex min-h-11 cursor-pointer items-center justify-between gap-3 px-3 text-lg font-bold data-highlighted:bg-yel"
+                  >
+                    {tags.includes(item) ? (
+                      <>
+                        <span data-testid="TagInput-name">{item}</span>
+                        {Object.hasOwn(tagCategories, item) && (
+                          <Pill variant="category" data-testid="TagInput-category">
+                            {tagCategories[item]}
+                          </Pill>
+                        )}
+                      </>
+                    ) : (
+                      `Toevoegen: "${item}"`
+                    )}
+                  </Combobox.Item>
+                )}
+              </Combobox.List>
+            </Combobox.Popup>
+          </Combobox.Positioner>
+        </Combobox.Portal>
+      )}
     </Combobox.Root>
   );
 }

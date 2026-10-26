@@ -57,9 +57,8 @@ export function RulesForm({ initial, errors = noErrors }: RulesFormProps) {
     durations: posted(durations).map((r) => ({ word: r.text, minutes: r.minutes?.trim() ? Number(r.minutes) : null, fixed: !!r.fixed })),
   };
 
-  // The units on the page as they are edited, that are not yet a loose unit.
-  const loose = new Set(looseUnits.map((r) => r.text.trim().toLowerCase()));
-  const suggestions = [...new Set(units.filter((r) => !isEmptyItem(r)).map((r) => r.text.trim()))].filter((w) => !loose.has(w.toLowerCase()));
+  // The units on the page as they are edited; each loose unit row leaves out the words of the other rows.
+  const suggestions = [...new Set(units.filter((r) => !isEmptyItem(r)).map((r) => r.text.trim()))];
 
   // The messages follow their row, not its place: the rows may move before the next save. The initial rows have the ids `<name>-<index>`.
   const [messages] = useState(() => {
@@ -92,7 +91,7 @@ export function RulesForm({ initial, errors = noErrors }: RulesFormProps) {
               Eenheden
             </h3>
             <Help>
-              Na een getal, zoals “250 <b>g</b>” of “2 <b>el</b>”.
+              Na een getal, bv. “250 <b>g</b>” of “2 <b>el</b>”.
             </Help>
             {listError('units')}
             <RuleList
@@ -112,7 +111,7 @@ export function RulesForm({ initial, errors = noErrors }: RulesFormProps) {
               Losse eenheden
             </h3>
             <Help>
-              Zonder getal; tellen als 1, zoals “een <b>snuf</b> zout”.
+              Zonder getal; telt als 1, bv. “een <b>snuf</b> zout”.
             </Help>
             {listError('looseUnits')}
             <RuleList

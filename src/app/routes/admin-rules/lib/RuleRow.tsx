@@ -151,24 +151,27 @@ export function RuleRow({
             placeholder={placeholder}
             onFocus={() => text === '' && setOpen(true)}
           />
-          <Combobox.Portal>
-            <Combobox.Positioner sideOffset={4} className="z-10 w-(--anchor-width)">
-              <Combobox.Popup className="max-h-44 overflow-y-auto rounded-[0.625rem] border-3 border-ink bg-white p-1 shadow-hard-sm empty:hidden">
-                <Combobox.List>
-                  {(word: string) => (
-                    <Combobox.Item
-                      key={word}
-                      value={word}
-                      data-testid="RuleRow-option"
-                      className="cursor-pointer rounded-md px-2.5 py-1 font-bold data-highlighted:bg-blu data-highlighted:text-white"
-                    >
-                      {word}
-                    </Combobox.Item>
-                  )}
-                </Combobox.List>
-              </Combobox.Popup>
-            </Combobox.Positioner>
-          </Combobox.Portal>
+          {/* No match: nothing to pick, so no popup (APG: shown only while it has options). */}
+          {options.length > 0 && (
+            <Combobox.Portal>
+              <Combobox.Positioner sideOffset={4} className="z-10 w-(--anchor-width)">
+                <Combobox.Popup className="max-h-44 overflow-y-auto rounded-[0.625rem] border-3 border-ink bg-white p-1 shadow-hard-sm empty:hidden">
+                  <Combobox.List>
+                    {(word: string) => (
+                      <Combobox.Item
+                        key={word}
+                        value={word}
+                        data-testid="RuleRow-option"
+                        className="cursor-pointer rounded-md px-2.5 py-1 font-bold data-highlighted:bg-blu data-highlighted:text-white"
+                      >
+                        {word}
+                      </Combobox.Item>
+                    )}
+                  </Combobox.List>
+                </Combobox.Popup>
+              </Combobox.Positioner>
+            </Combobox.Portal>
+          )}
         </Combobox.Root>
       ) : (
         <input

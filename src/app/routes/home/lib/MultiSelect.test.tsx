@@ -186,11 +186,12 @@ describe('MultiSelect Escape', () => {
 });
 
 describe('MultiSelect remove button', () => {
+  // The button is 24px (size-6) and its hit area grows 10px (2.5) on every side: 44px square without making the chip bigger.
   test('is at least 44px square', async () => {
     render(<Field start={['Oma']} />);
     const css = await cssFor(screen.getByTestId('MultiSelect-remove').className);
-    assert.match(css, /width: calc\(var\(--spacing\) \* 11\)/);
-    assert.match(css, /height: calc\(var\(--spacing\) \* 11\)/);
+    assert.match(css, /width: calc\(var\(--spacing\) \* 6\)/);
+    assert.match(css, /inset: calc\(var\(--spacing\) \* -2\.5\)/);
   });
 });
 
