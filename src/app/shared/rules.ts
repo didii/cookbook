@@ -4,12 +4,12 @@ export type Rules = {
   units: string[];
   /** Words that count as a unit when a line starts with them and has no number ("scheutje rode wijn" is one scheutje). Letters only. */
   looseUnits: string[];
-  minuteWords: string[];
-  hourWords: string[];
+  /** Duration words that multiply the number before them, with their minutes per 1 ("uur" = 60). */
+  perNumber: Record<string, number>;
   /** Words after a temperature ("graden", "°C"). */
   degreeWords: string[];
-  /** Spoken durations: a phrase and its whole number of minutes ("een kwartier" = 15). */
-  spoken: Record<string, number>;
+  /** Fixed durations: a phrase and its whole number of minutes ("een kwartier" = 15). */
+  fixed: Record<string, number>;
 };
 
 /** What the cookbook recognised before the rules were configurable; used while no rules are saved. */
@@ -19,10 +19,9 @@ export const defaultRules: Rules = {
       ' ',
     ),
   looseUnits: 'snuf snufje scheut scheutje mespunt mespuntje handvol klont klontje'.split(' '),
-  minuteWords: ['minuten', 'minuut', 'min'],
-  hourWords: ['uren', 'uur', 'u'],
+  perNumber: { minuten: 1, minuut: 1, min: 1, uren: 60, uur: 60, u: 60 },
   degreeWords: ['graden', '°c', '°'],
-  spoken: { 'een half uur': 30, 'een kwartier': 15, 'anderhalf uur': 90, 'een uur': 60 },
+  fixed: { 'een half uur': 30, 'een kwartier': 15, 'anderhalf uur': 90, 'een uur': 60 },
 };
 
 /** The words as one regex alternation, matched literally (special characters escaped), longest first so "minuten" wins over "min". */

@@ -21,15 +21,15 @@ const after = String.raw`(?![\p{L}\d])`;
 type Patterns = { duration: RegExp; temperature: RegExp };
 const cache = new WeakMap<Rules, Patterns>();
 
-/** The regexes of a set of rules, built from its escaped words and kept per rules object. A spoken phrase is tried before a number with an hour word. */
+/** The regexes of a set of rules, built from its escaped words and kept per rules object. A fixed phrase is tried before a number with an hour word. */
 function patternsOf(rules: Rules): Patterns {
   let patterns = cache.get(rules);
   if (!patterns) {
-    const spoken = Object.keys(rules.spoken);
+    const spoken = Object.keys(rules.fixed);
     const phrase = spoken.length ? `(${alternation(spoken)})|` : '(?!)()|';
     patterns = {
       duration: new RegExp(
-        String.raw`${before}(?:${phrase}(${num})(?:\s*[-–]\s*${num})?\s*(${alternation([...rules.minuteWords, ...rules.hourWords])}))${after}`,
+        String.raw`${before}(?:${phrase}(${num})(?:\s*[-–]\s*${num})?\s*(${alternation(Object.keys(rules.perNumber))}))${after}`,
         'giu',
       ),
       temperature: new RegExp(String.raw`${before}(\d+)\s*(?:${alternation(rules.degreeWords)})${after}`, 'giu'),
@@ -42,7 +42,7 @@ function patternsOf(rules: Rules): Patterns {
 /** The first duration in the text ("30 minuten", "1,5 uur", "20-25 minuten", "een kwartier"), in whole minutes; a range gives its lower value. */
 export function findTimer(text: string, rules: Rules): Found<TimerValues> | undefined {
   for (const m of text.matchAll(patternsOf(rules).duration)) {
-    const minutes = m[1] ? rules.spoken[m[1].toLowerCase()] : Math.round(toNumber(m[2]) * (rules.hourWords.includes(m[3].toLowerCase()) ? 60 : 1));
+    const minutes = m[1] ? rules.fixed[m[1].toLowerCase()] : Math.round(toNumber(m[2]) * rules.perNumber[m[3].toLowerCase()]);
     if (minutes > 0) return { start: m.index, end: m.index + m[0].length, values: { minutes } };
   }
 }

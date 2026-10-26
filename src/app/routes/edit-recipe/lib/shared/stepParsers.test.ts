@@ -342,7 +342,7 @@ describe('parsing-rules › Grams are not degrees', () => {
 const withRules = (change: Partial<typeof defaultRules>) => ({ ...defaultRules, ...change });
 
 describe('parsing-rules › Words are not regular expressions', () => {
-  const rules = withRules({ minuteWords: ['m+'] });
+  const rules = withRules({ perNumber: { 'm+': 1 } });
 
   test('the word m+ matches literally', () => {
     assert.equal(findTimer('20 m+', rules)?.values.minutes, 20);
@@ -354,7 +354,7 @@ describe('parsing-rules › Words are not regular expressions', () => {
 });
 
 describe('parsing-rules › New minute word makes a timer', () => {
-  const rules = withRules({ minuteWords: [...defaultRules.minuteWords, 'mins'] });
+  const rules = withRules({ perNumber: { ...defaultRules.perNumber, mins: 1 } });
 
   test('the new rules find the timer', () => {
     assert.equal(findTimer('Bak 20 mins', rules)?.values.minutes, 20);
@@ -365,9 +365,16 @@ describe('parsing-rules › New minute word makes a timer', () => {
   });
 });
 
+describe('parsing-rules › Duration word with its own factor', () => {
+  test('the word multiplies the number by its factor', () => {
+    const rules = withRules({ perNumber: { ...defaultRules.perNumber, dag: 1440 } });
+    assert.equal(findTimer('Laat 1,5 dag staan', rules)?.values.minutes, 2160);
+  });
+});
+
 describe('parsing-rules › New spoken duration makes a timer', () => {
   test('the new spoken duration is found', () => {
-    const rules = withRules({ spoken: { ...defaultRules.spoken, 'drie kwartier': 45 } });
+    const rules = withRules({ fixed: { ...defaultRules.fixed, 'drie kwartier': 45 } });
     assert.equal(findTimer('Bak drie kwartier', rules)?.values.minutes, 45);
   });
 });
