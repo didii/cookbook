@@ -207,4 +207,83 @@ describe('recipe-storage › Unused category is removed', () => {
     await deleteTag(db, 'Winter');
     assert.deepEqual(await categories(db), ['Seizoen']);
   });
+
+  test('when its only tag is merged away', async ({ db }) => {
+    await tag(db, 'Winter', 'Seizoen');
+    await tag(db, 'Koud');
+    await mergeTag(db, 'Winter', 'Koud');
+    assert.deepEqual(await categories(db), []);
+  });
+});
+
+describe('tag-management › Merge moves the recipes', () => {
+  test('every recipe has the target once and the source is gone', async ({ db }) => {
+    await tag(db, 'Soepen');
+    await tag(db, 'Soep');
+    await recipe(db, 'a', 'Soepen');
+    await recipe(db, 'b', 'Soepen', 'Soep');
+    await recipe(db, 'c', 'Soep');
+    assert.deepEqual(await mergeTag(db, 'Soepen', 'Soep'), { ok: true });
+    assert.deepEqual(await recipesOf(db, 'Soep'), ['a', 'b', 'c']);
+    assert.deepEqual(await stored(db), { Soep: null });
+  });
+
+  test('an unknown tag is not found', async ({ db }) => {
+    await tag(db, 'Soep');
+    assert.deepEqual(await mergeTag(db, 'Nope', 'Soep'), { error: 'notFound' });
+    assert.deepEqual(await mergeTag(db, 'Soep', 'Nope'), { error: 'notFound' });
+  });
+});
+
+describe('tag-management › Merge keeps the chosen tag as it is', () => {
+  test('the category of the target stays', async ({ db }) => {
+    await tag(db, 'Soepen', 'Seizoen');
+    await tag(db, 'Soep', 'Gerecht');
+    await mergeTag(db, 'Soepen', 'Soep');
+    assert.deepEqual(await stored(db), { Soep: 'Gerecht' });
+  });
+});
+
+describe('tag-management › Tag is deleted', () => {
+  test('the tag and its links go, the recipes stay', async ({ db }) => {
+    await tag(db, 'Soep');
+    await recipe(db, 'a', 'Soep');
+    await recipe(db, 'b', 'Soep');
+    await recipe(db, 'c', 'Soep');
+    assert.deepEqual(await deleteTag(db, 'Soep'), { ok: true });
+    assert.deepEqual(await listManagedTags(db), []);
+    assert.equal((await db.prepare('SELECT id FROM recipes').all()).results.length, 3);
+    assert.equal((await db.prepare('SELECT * FROM recipe_tags').all()).results.length, 0);
+  });
+
+  test('an unknown tag is not found', async ({ db }) => {
+    assert.deepEqual(await deleteTag(db, 'Nope'), { error: 'notFound' });
+  });
+});
+
+describe('tag-management › Setting a category on the selection', () => {
+  test('every named tag gets it and the count is returned', async ({ db }) => {
+    await tag(db, 'Soep');
+    await tag(db, 'Bakken');
+    await tag(db, 'Rest');
+    assert.deepEqual(await setCategory(db, ['Soep', 'Bakken'], 'gerecht'), { ok: true, changed: 2 });
+    assert.deepEqual(await stored(db), { Soep: 'gerecht', Bakken: 'gerecht', Rest: null });
+  });
+
+  test('the stored spelling is reused', async ({ db }) => {
+    await tag(db, 'Soep');
+    await tag(db, 'Bakken', 'Gerecht');
+    await setCategory(db, ['Soep'], 'gerecht');
+    assert.deepEqual(await stored(db), { Soep: 'Gerecht', Bakken: 'Gerecht' });
+  });
+});
+
+describe('tag-management › Empty category on the selection', () => {
+  test('both tags have no category and the category is gone', async ({ db }) => {
+    await tag(db, 'Soep', 'Gerecht');
+    await tag(db, 'Bakken', 'Gerecht');
+    assert.deepEqual(await setCategory(db, ['Soep', 'Bakken'], ''), { ok: true, changed: 2 });
+    assert.deepEqual(await stored(db), { Soep: null, Bakken: null });
+    assert.deepEqual(await categories(db), []);
+  });
 });

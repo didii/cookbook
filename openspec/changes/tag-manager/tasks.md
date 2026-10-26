@@ -12,8 +12,8 @@ Change 2 of 2 (after `add-recipe-tags`). Reference: `docs/design/tag-manager.htm
 - [x] 2.1 Add `shared/tagManagement.server.ts` with `listManagedTags` (name, category, uses) and `listCategories` (alphabetical via `sortTags`); test "recipe-storage › Categories are listed alphabetically" and the list data behind "tag-management › Row shows tag, category and count", "Unused tag" in `tagManagement.server.test.ts`
 - [x] 2.2 Add `addTag` and the shared name rules (trim, collapse spaces, 1–100 characters, taken in any letter case); test "A tag is added", "A taken name is refused", "An empty name is refused", "A too long name is refused"
 - [x] 2.3 Add `saveTag` (rename and category in one batch, category resolved to the stored spelling or created, empty removes, unused categories removed, a taken name refuses everything); test "Name and category in one save", "Own name in another letter case", "A taken name refuses the whole save", "Empty or too long name", "A new category is created", "Stored spelling is used for a category", "Empty category removes it", "Unused category disappears" and "recipe-storage › Unused category is removed"
-- [ ] 2.4 Add `mergeTag` and `deleteTag`; test "Merge moves the recipes", "Merge keeps the chosen tag as it is", "Tag is deleted", and that deleting or merging frees an unused category
-- [ ] 2.5 Add `setCategory` for many tags; test "Setting a category on the selection" and "Empty category on the selection"
+- [x] 2.4 Add `mergeTag` and `deleteTag`; test "Merge moves the recipes", "Merge keeps the chosen tag as it is", "Tag is deleted", and that deleting or merging frees an unused category
+- [x] 2.5 Add `setCategory` for many tags; test "Setting a category on the selection" and "Empty category on the selection"
 
 ## 3. Shared pieces
 
