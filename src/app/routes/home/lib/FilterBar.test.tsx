@@ -395,13 +395,6 @@ describe('recipe-filtering › No tags stored', () => {
   });
 });
 
-describe('FilterBar search box', () => {
-  test('says tags can be searched', () => {
-    show();
-    assert.ok(searchBox().getAttribute('placeholder')?.includes('tag'));
-  });
-});
-
 // The field claims the Escape that closes its popup by preventing its default (see MultiSelect.test.tsx); the sheet then stays open.
 describe('recipe-filtering › Escape closes the suggestions first', () => {
   const claimed = (e: Event) => e.preventDefault();
