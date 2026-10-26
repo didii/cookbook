@@ -167,6 +167,22 @@ describe('recipe-form › Nothing stored before saving', () => {
   });
 });
 
+describe('the new recipe loader tag categories', () => {
+  test('only tags that have a category are in the map', async ({ db }) => {
+    await db.batch([
+      db.prepare("INSERT INTO categories (name) VALUES ('Gerecht')"),
+      db.prepare("INSERT INTO tags (name, category_id) VALUES ('Soep', (SELECT id FROM categories WHERE name = 'Gerecht'))"),
+      db.prepare("INSERT INTO tags (name) VALUES ('Winter')"),
+    ]);
+    const context = new RouterContextProvider();
+    context.set(envContext, fake<Env>({ DB: db }));
+    context.set(userEmailContext, 'oma@example.com');
+    const { tagCategories, tags } = await loader(fake<Route.LoaderArgs>({ context }));
+    assert.deepEqual(tagCategories, { Soep: 'Gerecht' });
+    assert.deepEqual(tags, ['Soep', 'Winter']);
+  });
+});
+
 describe('a new recipe', () => {
   test('stores its non-blank steps in order', async ({ db }) => {
     await submit(db, { title: 'Met stappen', author: 'Oma', steps: JSON.stringify([{ body: 'een' }, { body: '' }, { body: 'twee' }]) });

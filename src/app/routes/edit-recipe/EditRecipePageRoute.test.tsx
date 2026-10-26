@@ -62,6 +62,20 @@ describe('recipe-editing › Form shows the stored values', () => {
   });
 });
 
+describe('the edit loader tag categories', () => {
+  test('only tags that have a category are in the map', async ({ db, photos }) => {
+    await db.batch([
+      db.prepare("INSERT INTO recipes (slug, title, author) VALUES ('met-tags', 'Soep', 'Oma')"),
+      db.prepare("INSERT INTO categories (name) VALUES ('Gerecht')"),
+      db.prepare("INSERT INTO tags (name, category_id) VALUES ('Soep', (SELECT id FROM categories WHERE name = 'Gerecht'))"),
+      db.prepare("INSERT INTO tags (name) VALUES ('Winter')"),
+    ]);
+    const { tagCategories, tags } = await load(db, photos, 'met-tags');
+    assert.deepEqual(tagCategories, { Soep: 'Gerecht' });
+    assert.deepEqual(tags, ['Soep', 'Winter']);
+  });
+});
+
 describe('recipe-ingredient-editing › Stored ingredients come back as lines', () => {
   test.beforeEach(async ({ db }) => {
     await db.batch([

@@ -52,6 +52,8 @@ interface RecipeEditorProps extends ComponentProps<'main'> {
   authors: string[];
   /** Every stored tag, to suggest. */
   tags: string[];
+  /** The category of the stored tags that have one, shown next to their suggestion. */
+  tagCategories?: Record<string, string>;
   /** The starting values: what Reset restores and what unsaved changes are measured against. */
   initial: DraftSeed;
   /** What the editor shows when it opens: the starting values, or the values of a refused submit. */
@@ -86,6 +88,7 @@ export function RecipeEditor({
   heading,
   authors,
   tags,
+  tagCategories,
   initial,
   values,
   errors,
@@ -336,6 +339,7 @@ export function RecipeEditor({
             <TagInput
               id="tags"
               tags={tags}
+              tagCategories={tagCategories}
               value={current.tags}
               onValueChange={(next) => setCurrent((c) => ({ ...c, tags: next }))}
               invalid={!!errors.tags}
