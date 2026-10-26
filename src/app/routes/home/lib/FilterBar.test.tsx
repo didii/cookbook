@@ -6,13 +6,15 @@ import { FilterBar } from './FilterBar';
 import { noFilters, type Filters } from './filterRecipes';
 
 const authors = ['Mama', 'Oma', 'Papa'];
-const show = (filters: Filters = noFilters, detailed = true) =>
-  render(<FilterBar filters={filters} authors={authors} detailed={detailed} onFiltersChange={() => {}} />);
+const tags = ['Dessert', 'Soep'];
+const show = (filters: Filters = noFilters, detailed = true, stored = tags) =>
+  render(<FilterBar filters={filters} authors={authors} tags={stored} detailed={detailed} onFiltersChange={() => {}} />);
 
 const bar = () => screen.getByTestId('FilterBar-bar');
 const searchBox = () => screen.getByTestId('FilterBar-search');
 const filterButton = () => screen.getByTestId('FilterBar-toggle');
-const authorField = (root: HTMLElement = document.body) => within(root).getByTestId('MultiSelect-field');
+const authorField = (root: HTMLElement = document.body) => within(within(root).getByTestId('FilterBar-authors')).getByTestId('MultiSelect-field');
+const tagField = () => within(screen.getByTestId('FilterBar-tags')).getByTestId('MultiSelect-field');
 const pickedAuthors = () =>
   within(screen.getByTestId('FilterBar-authors'))
     .queryAllByTestId('MultiSelect-value')
@@ -148,6 +150,10 @@ describe('recipe-filtering › Active filter count', () => {
     assert.equal(count({ q: '', authors: ['Oma', 'Papa'], sort: 'az' }), '2');
   });
 
+  test('two authors, one tag and order are counted: 3', () => {
+    assert.equal(count({ q: '', authors: ['Oma', 'Papa'], tags: ['Soep'], sort: 'az' }), '3');
+  });
+
   test('author with the default order is counted: 1', () => {
     assert.equal(count({ q: '', authors: ['Oma'], sort: 'nieuwste' }), '1');
   });
@@ -161,6 +167,11 @@ describe('recipe-filtering › Active filter count', () => {
 describe('recipe-filtering › Wide screen', () => {
   beforeEach(() => {
     show();
+  });
+
+  test('both fields are in the sheet, which is always shown', () => {
+    assert.ok(authorField(sheet()));
+    assert.ok(within(sheet()).getByTestId('FilterBar-tags'));
   });
 
   // From 48rem the bar is in the flow with the search box above the filters, nothing is fixed, the sheet is always shown and the Filter button is gone.
@@ -317,6 +328,73 @@ describe('recipe-filtering › Closing the sheet', () => {
   });
 });
 
+describe('FilterBar tag field', () => {
+  const changesFor = (filters: Filters) => {
+    const changes: Filters[] = [];
+    render(<FilterBar filters={filters} authors={authors} tags={tags} detailed onFiltersChange={(f) => changes.push(f)} />);
+    return changes;
+  };
+
+  test('offers the tags it was given', async () => {
+    show();
+    openAutocomplete(tagField());
+    await screen.findAllByTestId('MultiSelect-option');
+    assert.deepEqual(
+      screen.getAllByTestId('MultiSelect-option').map((o) => o.textContent),
+      tags,
+    );
+    await act(async () => {});
+  });
+
+  test('shows the picked tags as chips', () => {
+    show({ ...noFilters, tags: ['Soep'] });
+    assert.deepEqual(
+      within(screen.getByTestId('FilterBar-tags'))
+        .getAllByTestId('MultiSelect-value')
+        .map((v) => v.textContent),
+      ['Soep'],
+    );
+  });
+
+  test('keeps a picked tag that no recipe has any more, so it can be removed', () => {
+    show({ ...noFilters, tags: ['Soep'] }, true, []);
+    assert.ok(within(screen.getByTestId('FilterBar-tags')).getByTestId('MultiSelect-remove'));
+  });
+
+  test('reports a picked tag together with the other filters', async () => {
+    const changes = changesFor({ ...noFilters, sort: 'az' });
+    openAutocomplete(tagField());
+    fireEvent.click((await screen.findAllByTestId('MultiSelect-option')).find((o) => o.textContent === 'Soep')!);
+    await act(async () => {});
+    assert.deepEqual(changes.at(-1), { ...noFilters, sort: 'az', tags: ['Soep'] });
+  });
+});
+
+describe('recipe-filtering › Removing a picked tag', () => {
+  test('pressing the remove button reports the tag gone', async () => {
+    const changes: Filters[] = [];
+    render(
+      <FilterBar
+        filters={{ ...noFilters, tags: ['Soep', 'Dessert'] }}
+        authors={authors}
+        tags={tags}
+        detailed
+        onFiltersChange={(f) => changes.push(f)}
+      />,
+    );
+    fireEvent.click(within(screen.getByTestId('FilterBar-tags')).getAllByTestId('MultiSelect-remove')[0]);
+    await act(async () => {});
+    assert.deepEqual(changes.at(-1)?.tags, ['Dessert']);
+  });
+});
+
+describe('recipe-filtering › No tags stored', () => {
+  test('the Tags field is not shown', () => {
+    show(noFilters, true, []);
+    assert.equal(screen.queryByTestId('FilterBar-tags'), null);
+  });
+});
+
 // The field claims the Escape that closes its popup by preventing its default (see MultiSelect.test.tsx); the sheet then stays open.
 describe('recipe-filtering › Escape closes the suggestions first', () => {
   const claimed = (e: Event) => e.preventDefault();
@@ -356,7 +434,15 @@ describe('FilterBar author field', () => {
 
   test('reports the authors left after removing one', async () => {
     const changes: Filters[] = [];
-    render(<FilterBar filters={{ ...noFilters, authors: ['Oma', 'Papa'] }} authors={authors} detailed onFiltersChange={(f) => changes.push(f)} />);
+    render(
+      <FilterBar
+        filters={{ ...noFilters, authors: ['Oma', 'Papa'] }}
+        authors={authors}
+        tags={tags}
+        detailed
+        onFiltersChange={(f) => changes.push(f)}
+      />,
+    );
     fireEvent.click(field().getAllByTestId('MultiSelect-remove')[0]);
     await act(async () => {});
     assert.deepEqual(changes.at(-1)?.authors, ['Papa']);
@@ -364,7 +450,7 @@ describe('FilterBar author field', () => {
 
   test('reports a picked author together with the other filters', async () => {
     const changes: Filters[] = [];
-    render(<FilterBar filters={{ ...noFilters, sort: 'az' }} authors={authors} detailed onFiltersChange={(f) => changes.push(f)} />);
+    render(<FilterBar filters={{ ...noFilters, sort: 'az' }} authors={authors} tags={tags} detailed onFiltersChange={(f) => changes.push(f)} />);
     openAutocomplete(authorField());
     fireEvent.click((await screen.findAllByTestId('MultiSelect-option')).find((o) => o.textContent === 'Oma')!);
     await act(async () => {});

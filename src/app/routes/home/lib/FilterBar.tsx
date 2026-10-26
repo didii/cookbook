@@ -10,6 +10,8 @@ import { useKeyboardOffset } from './useKeyboardOffset';
 interface FilterBarProps extends ComponentProps<'search'> {
   filters: Filters;
   authors: string[];
+  /** The tags to pick from; the field is left out when there are none. */
+  tags: string[];
   /** Whether the author field and the sort control are offered; the search box always is. */
   detailed: boolean;
   onFiltersChange: (filters: Filters) => void;
@@ -24,7 +26,7 @@ const control =
   'inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[0.625rem] border-3 border-ink px-4 text-base font-black text-ink';
 
 /** The search box and the detailed filters. Fixed to the bottom of the screen below 48rem, with the details in a sheet above the box; inline from 48rem. */
-export function FilterBar({ filters, authors, detailed, onFiltersChange, className, ...props }: FilterBarProps) {
+export function FilterBar({ filters, authors, tags, detailed, onFiltersChange, className, ...props }: FilterBarProps) {
   const sheetId = useId();
   const toggle = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
@@ -79,6 +81,20 @@ export function FilterBar({ filters, authors, detailed, onFiltersChange, classNa
               />
             </div>
           </fieldset>
+          {(tags.length > 0 || (filters.tags ?? []).length > 0) && (
+            <fieldset data-testid="FilterBar-tags" className="m-0 mb-4 min-w-0 border-0 p-0 md:mr-6 md:mb-3 md:inline-flex md:items-center md:gap-3">
+              <legend className="mb-2 p-0 font-black md:float-left md:mb-0">Tags</legend>
+              <div className="md:min-w-72">
+                <MultiSelect
+                  options={tags}
+                  value={filters.tags ?? []}
+                  onValueChange={(next) => onFiltersChange({ ...filters, tags: next })}
+                  placeholder="Alle tags"
+                  label="Tags"
+                />
+              </div>
+            </fieldset>
+          )}
           <fieldset className="m-0 mb-4 min-w-0 border-0 p-0 md:mr-6 md:mb-3 md:inline-flex md:items-center md:gap-3">
             <legend className="mb-2 p-0 font-black md:float-left md:mb-0">Volgorde</legend>
             <div className="inline-flex">
@@ -124,7 +140,7 @@ export function FilterBar({ filters, authors, detailed, onFiltersChange, classNa
             type="search"
             data-testid="FilterBar-search"
             value={text}
-            placeholder="Zoek op naam of kok"
+            placeholder="Zoek op naam, kok of tag"
             enterKeyHint="search"
             autoComplete="off"
             onChange={(e) => {

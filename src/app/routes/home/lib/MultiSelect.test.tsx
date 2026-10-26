@@ -85,6 +85,38 @@ describe('recipe-filtering › Removing a picked author', () => {
   });
 });
 
+describe('recipe-filtering › Finding a tag by typing', () => {
+  test('a tag that contains the text is suggested and another is not', async () => {
+    render(<Field options={['Soep', 'Dessert']} />);
+    type('soe');
+    await screen.findAllByTestId('MultiSelect-option');
+    assert.deepEqual(options(), ['Soep']);
+    await settle();
+  });
+});
+
+describe('recipe-filtering › Unknown text is not offered', () => {
+  test('no suggestion is shown', async () => {
+    render(<Field options={['Soep', 'Dessert']} />);
+    type('s');
+    await screen.findAllByTestId('MultiSelect-option');
+    fireEvent.change(input(), { target: { value: 'zzz' } });
+    await settle();
+    assert.deepEqual(options(), []);
+  });
+
+  test('nothing can be added with Enter', async () => {
+    render(<Field options={['Soep', 'Dessert']} />);
+    type('s');
+    await screen.findAllByTestId('MultiSelect-option');
+    fireEvent.change(input(), { target: { value: 'zzz' } });
+    await settle();
+    fireEvent.keyDown(input(), { key: 'Enter' });
+    await settle();
+    assert.deepEqual(picked(), []);
+  });
+});
+
 describe('MultiSelect', () => {
   test('picking a suggestion adds a chip', async () => {
     render(<Field />);

@@ -5,7 +5,7 @@ import { envContext, userEmailContext } from '~app/shared/context.server';
 import type { RecipeSummary } from '~app/shared/recipe';
 import { createRecipe } from '~app/shared/recipes.server';
 import { cssFor } from '~testing/css';
-import { act, fireEvent, precedes, render, screen } from '~testing/dom';
+import { act, fireEvent, precedes, render, screen, within } from '~testing/dom';
 import { fake } from '~testing/fake';
 import { test } from '~testing/test';
 import type { Route } from './+types/HomePageRoute';
@@ -26,7 +26,12 @@ const renderAt = (url: string, recipes: RecipeSummary[]) => {
 };
 /** The slugs of the cards on the page, in order. */
 const shownTitles = () => screen.queryAllByTestId('RecipeCard-link').map((a) => a.getAttribute('href')?.replace('/recepten/', ''));
-const pickedAuthors = () => screen.queryAllByTestId('MultiSelect-value').map((v) => v.textContent);
+const picked = (field: string) =>
+  within(screen.getByTestId(field))
+    .queryAllByTestId('MultiSelect-value')
+    .map((v) => v.textContent);
+const pickedAuthors = () => picked('FilterBar-authors');
+const pickedTags = () => picked('FilterBar-tags');
 const sortInput = (value: string) => screen.getAllByTestId<HTMLInputElement>('FilterBar-sort').find((i) => i.value === value)!;
 /** The "n recepten" line. */
 const count = () => screen.getByTestId('HomePage-count').textContent;
@@ -119,23 +124,23 @@ describe('recipe-browsing › Welcome above the recipes', () => {
 });
 
 // Filtering runs in the browser over the loaded list, so these render the page for a given list and address.
-const summary = (title: string, author: string): RecipeSummary => ({
+const summary = (title: string, author: string, tags: string[] = []): RecipeSummary => ({
   slug: title.toLowerCase(),
   title,
   author,
   time: null,
   image: null,
   seal: null,
-  tags: [],
+  tags,
   liked: false,
   hasNote: false,
 });
 const family = [
-  summary('Erwtensoep', 'Papa'),
-  summary('Appeltaart', 'Oma'),
+  summary('Erwtensoep', 'Papa', ['Soep']),
+  summary('Appeltaart', 'Oma', ['Dessert']),
   summary('Pannenkoeken', 'Tante An'),
-  summary('Stoofvlees', 'Papa'),
-  summary('Rijstpap', 'Mama'),
+  summary('Stoofvlees', 'Papa', ['Soep', 'Vegetarisch']),
+  summary('Rijstpap', 'Mama', ['Dessert', 'Vegetarisch']),
 ];
 const twelve = Array.from({ length: 12 }, (_, i) => summary(i < 3 ? `Soep ${i}` : `Gerecht ${i}`, 'Oma'));
 
@@ -149,12 +154,12 @@ describe('recipe-filtering › Few recipes', () => {
 
   test('the author field is offered once there are more recipes', () => {
     renderAt('/', family);
-    assert.ok(screen.getByTestId('MultiSelect-field'));
+    assert.ok(screen.getByTestId('FilterBar-authors'));
   });
 
   // An address that sets author or order is ignored when those controls are not offered, since they could not be undone.
   test('an address with author or order is ignored', () => {
-    renderAt('/?auteur=Papa&auteur=Oma&sort=az', family.slice(0, 3));
+    renderAt('/?auteur=Papa&auteur=Oma&tag=Soep&sort=az', family.slice(0, 3));
     assert.deepEqual(shownTitles(), ['erwtensoep', 'appeltaart', 'pannenkoeken']);
   });
 });
@@ -227,7 +232,7 @@ describe('recipe-filtering › Clearing all filters', () => {
   // Using the button from the nothing-found message gets there.
   describe('the clear button', () => {
     test.beforeEach(() => {
-      renderAt('/?q=zzz&auteur=Papa&auteur=Oma&sort=az', family);
+      renderAt('/?q=zzz&auteur=Papa&auteur=Oma&tag=Soep&sort=az', family);
       fireEvent.click(screen.getByTestId('HomePage-clear'));
     });
 
@@ -241,6 +246,10 @@ describe('recipe-filtering › Clearing all filters', () => {
 
     test('picks no author', () => {
       assert.deepEqual(pickedAuthors(), []);
+    });
+
+    test('picks no tag', () => {
+      assert.deepEqual(pickedTags(), []);
     });
   });
 });
@@ -277,6 +286,25 @@ describe('recipe-filtering › Opening an address with authors', () => {
   test('both authors are picked', () => {
     renderAt('/?auteur=Oma&auteur=Papa', family);
     assert.deepEqual(pickedAuthors(), ['Oma', 'Papa']);
+  });
+});
+
+describe('recipe-filtering › Opening an address with tags', () => {
+  test('only the recipes with one of the tags are shown, more matches first', () => {
+    renderAt('/?tag=Soep&tag=Vegetarisch', family);
+    assert.deepEqual(shownTitles(), ['stoofvlees', 'erwtensoep', 'rijstpap']);
+  });
+
+  test('both tags are picked', () => {
+    renderAt('/?tag=Soep&tag=Vegetarisch', family);
+    assert.deepEqual(pickedTags(), ['Soep', 'Vegetarisch']);
+  });
+});
+
+describe('recipe-filtering › Choosing a tag', () => {
+  test('only the recipes with the tag are shown', () => {
+    renderAt('/?tag=Dessert', family);
+    assert.deepEqual(shownTitles(), ['appeltaart', 'rijstpap']);
   });
 });
 
