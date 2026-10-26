@@ -1,7 +1,7 @@
 import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router';
 import type { Route } from './+types/root';
 import './app.css';
-import { SkipLink, ThemeColor } from './shared/components';
+import { ServiceWorker, SkipLink, ThemeColor } from './shared/components';
 import { envContext, userEmailContext } from './shared/context.server';
 import { getRules } from './shared/rules.server';
 import { getUser } from './shared/users.server';
@@ -57,6 +57,7 @@ export default function App() {
   return (
     <>
       <SkipLink />
+      <ServiceWorker />
       <Outlet />
     </>
   );

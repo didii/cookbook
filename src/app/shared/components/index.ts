@@ -7,6 +7,7 @@ export * from './Pill';
 export * from './Plaid';
 export * from './Seal';
 export * from './Segmented';
+export * from './ServiceWorker';
 export * from './SkipLink';
 export * from './ThemeColor';
 export * from './TileBand';
