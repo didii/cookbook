@@ -52,7 +52,7 @@ describe('recipe-storage › Chip quantity word that is not a loose unit', () =>
   });
 });
 
-describe('recipe-storage › A quantity can be a range', () => {
+describe('recipe-storage › Separators that make a range', () => {
   test.each([
     '2-3 el',
     '2 - 3 el',
@@ -68,16 +68,22 @@ describe('recipe-storage › A quantity can be a range', () => {
   ])('%s gives 2, 3 and el', (text) => {
     assert.deepEqual(parseQuantity(text, defaultRules), { quantityValue: 2, quantityValueMax: 3, quantityUnit: 'el' });
   });
+});
 
+describe('recipe-storage › Fractions on either side', () => {
   test('fractions on either side', () => {
     assert.deepEqual(parseQuantity('½-1 el', defaultRules), { quantityValue: 0.5, quantityValueMax: 1, quantityUnit: 'el' });
     assert.deepEqual(parseQuantity('1 1/2 - 2 el', defaultRules), { quantityValue: 1.5, quantityValueMax: 2, quantityUnit: 'el' });
   });
+});
 
+describe('recipe-storage › Comma, slash and tilde do not make a range', () => {
   test('comma, slash and tilde make no range', () => {
     for (const text of ['2, 3 el', '2/3 el', '2~3 el']) assert.equal(parseQuantity(text, defaultRules).quantityValueMax, undefined);
   });
+});
 
+describe('recipe-storage › Reversed range keeps its order', () => {
   test('a reversed range keeps its order', () => {
     assert.deepEqual(parseQuantity('3-2 el', defaultRules), { quantityValue: 3, quantityValueMax: 2, quantityUnit: 'el' });
   });

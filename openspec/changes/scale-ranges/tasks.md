@@ -17,11 +17,11 @@
 
 ## 4. Scaling
 
-- [ ] 4.1 Update `scaleIngredient` (`routes/recipe/lib/scale/scale.ts`) to show a range as `<min>-<max> <unit>` scaled with `formatNumber`, factor 1 unchanged. Verify with `scale.test.ts` (`recipe-scaling › Ingredient range scales`, `Ingredient range is shown with a dash`, `Chip range scales`, `Reversed range scales both numbers`, `Range numbers are short`, `Range at factor one`).
-- [ ] 4.2 Update `scaleText` to replace both number spans of a range amount in place, leaving the separator and words; skip the whole amount when either span is no longer a number or overlaps. Verify with `scale.test.ts` (`Range in step text keeps its words`) and a case for an edited half-range.
-- [ ] 4.3 Check the recipe page end to end: `RecipeView.test.tsx` shows a doubled range in the ingredient list, a chip and step text (`Ingredient range scales`, `Range in step text keeps its words`).
+- [x] 4.1 Update `scaleIngredient` (`routes/recipe/lib/scale/scale.ts`) to show a range as `<min>-<max> <unit>` scaled with `formatNumber`, factor 1 unchanged. Verify with `scale.test.ts` (`recipe-scaling › Ingredient range scales`, `Ingredient range is shown with a dash`, `Chip range scales`, `Reversed range scales both numbers`, `Range numbers are short`, `Range at factor one`).
+- [x] 4.2 Update `scaleText` to replace both number spans of a range amount in place, leaving the separator and words; skip the whole amount when either span is no longer a number or overlaps. Verify with `scale.test.ts` (`Range in step text keeps its words`) and a case for an edited half-range.
+- [x] 4.3 Check the recipe page end to end: `RecipeView.test.tsx` shows a doubled range in the ingredient list, a chip and step text (`Ingredient range scales`, `Range in step text keeps its words`).
 
 ## 5. Wrap up
 
-- [ ] 5.1 Add a range or two to `src/db/seed/dev.sql` (`src/db/seed/dev.test.ts` still passes) and mention the new syntaxes where the editor documents the quantity format, if it does.
-- [ ] 5.2 Run `pnpm format:fix`, `pnpm lint:fix`, `pnpm format:check`, `pnpm lint:check`, `pnpm test:ai` and `pnpm test:spec scale-ranges`; all clean, and every delta scenario has a `describe` named `<capability> › <Scenario title>`.
+- [x] 5.1 Add a range or two to `src/db/seed/dev.sql` (`src/db/seed/dev.test.ts` still passes) and mention the new syntaxes where the editor documents the quantity format, if it does.
+- [x] 5.2 Run `pnpm format:fix`, `pnpm lint:fix`, `pnpm format:check`, `pnpm lint:check`, `pnpm test:ai` and `pnpm test:spec scale-ranges`; all clean, and every delta scenario has a `describe` named `<capability> › <Scenario title>`.

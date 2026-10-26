@@ -188,7 +188,7 @@ describe('recipe-ingredient-editing › Removed loose unit is not recognised', (
   });
 });
 
-describe('recipe-storage › A range stores both numbers', () => {
+describe('recipe-storage › Numbers are stored as typed', () => {
   test('numbers are stored as typed', () => {
     const read = (line: string) => {
       const { quantityValue, quantityValueMax } = parseIngredient(line, defaultRules);
