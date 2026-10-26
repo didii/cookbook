@@ -6,7 +6,7 @@
 
 ## 2. Database and types
 
-- [ ] 2.1 Add `src/db/migrations/0015_quantity_ranges.sql`: `quantity_value_max` on `ingredients` and `step_ingredient_chips`; rebuild `step_quantities` with `quantity_value_max`, `max_start_index`, `max_end_index` and the all-or-none and ordering checks. Verify with scenarios in `src/db/migrations/migrations.test.ts` (`recipe-storage › Non-positive maximum refused`, `Maximum without a value refused`, `Non-positive chip maximum refused`, `Range needs all three fields`, `Second number must come after the first`, `Range amount with both places`, `Non-positive maximum in text refused`).
+- [x] 2.1 Add `src/db/migrations/0015_quantity_ranges.sql`: `quantity_value_max` on `ingredients` and `step_ingredient_chips`; rebuild `step_quantities` with `quantity_value_max`, `max_start_index`, `max_end_index` and the all-or-none and ordering checks. Verify with scenarios in `src/db/migrations/migrations.test.ts` (`recipe-storage › Non-positive maximum refused`, `Maximum without a value refused`, `Non-positive chip maximum refused`, `Range needs all three fields`, `Second number must come after the first`, `Range amount with both places`, `Non-positive maximum in text refused`).
 - [ ] 2.2 Add `quantityValueMax` to `RecipeIngredient`, `StepIngredient` and `StepQuantity` (with the second number's place) in `src/app/shared/recipe.ts`, and read and write it in `src/app/shared/recipes.server.ts`. Verify with `src/app/shared/recipes.server.test.ts` (`recipe-storage › Range is read with the recipe`, `Range amount with both places`).
 
 ## 3. Parsing on save
