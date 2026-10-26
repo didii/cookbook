@@ -1,11 +1,14 @@
 import { Combobox } from '@base-ui/react/combobox';
 import { useState } from 'react';
+import { Pill } from '~app/shared/components';
 import { sortTags } from '~app/shared/tags';
 import { maxTagLength } from './recipeValidation';
 
 type Props = {
   /** Every stored tag, to suggest. */
   tags: string[];
+  /** The category of the stored tags that have one (tag name to category), shown next to a suggestion. */
+  tagCategories?: Record<string, string>;
   /** The picked tags. */
   value: string[];
   onValueChange: (tags: string[]) => void;
@@ -18,7 +21,7 @@ type Props = {
 const sameTag = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
 
 /** Multi-select for tags: suggests the stored tags that contain the typed text, and offers text that matches none as a new tag. Picked tags are shown alphabetically, each with a button to remove it. */
-export function TagInput({ tags, value, onValueChange, id, invalid, describedBy }: Props) {
+export function TagInput({ tags, tagCategories = {}, value, onValueChange, id, invalid, describedBy }: Props) {
   // Ignores letter case and accents: "soep" finds "Soép".
   const { contains } = Combobox.useFilter({ sensitivity: 'base' });
   const [text, setText] = useState('');
@@ -85,9 +88,20 @@ export function TagInput({ tags, value, onValueChange, id, invalid, describedBy 
                   key={item}
                   value={item}
                   data-testid="TagInput-option"
-                  className="flex min-h-11 cursor-pointer items-center px-3 text-lg font-bold data-highlighted:bg-yel"
+                  className="flex min-h-11 cursor-pointer items-center justify-between gap-3 px-3 text-lg font-bold data-highlighted:bg-yel"
                 >
-                  {tags.includes(item) ? item : `Toevoegen: "${item}"`}
+                  {tags.includes(item) ? (
+                    <>
+                      <span data-testid="TagInput-name">{item}</span>
+                      {tagCategories[item] && (
+                        <Pill variant="category" data-testid="TagInput-category">
+                          {tagCategories[item]}
+                        </Pill>
+                      )}
+                    </>
+                  ) : (
+                    `Toevoegen: "${item}"`
+                  )}
                 </Combobox.Item>
               )}
             </Combobox.List>
