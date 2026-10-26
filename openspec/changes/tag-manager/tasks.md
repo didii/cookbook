@@ -18,7 +18,7 @@ Change 2 of 2 (after `add-recipe-tags`). Reference: `docs/design/tag-manager.htm
 ## 3. Shared pieces
 
 - [x] 3.1 Extract the card's pill into `shared/components/Pill.tsx` with a `category` variant (yellow); use it in `RecipeCard` (test ids unchanged); test "Category pill is yellow" with `cssFor` and "Recipe card uses the shared pill"
-- [ ] 3.2 Extract the joined radio control from `FilterBar` into `shared/components/Segmented.tsx` (legend, options, selected value, pass-through test ids); `FilterBar` uses it and its tests still pass untouched
+- [x] 3.2 Extract the joined radio control from `FilterBar` into `shared/components/Segmented.tsx` (legend, options, selected value, pass-through test ids); `FilterBar` uses it and its tests still pass untouched
 - [ ] 3.3 Add the "Tags" link after "Nieuw recept" in `SiteMenu`; update `SiteMenu.test.tsx` to the "site-menu" scenarios "Menu lists the links", "… for an admin", "… for a superadmin" and add "Tags link"
 
 ## 4. Route and arrangement

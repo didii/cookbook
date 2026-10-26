@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState, type ComponentProps } from 'react';
 import { cn } from '~app/shared/cn';
-import { Button } from '~app/shared/components';
+import { Button, Segmented } from '~app/shared/components';
+import { control } from '~app/shared/control';
 import { Search, Sliders } from '~app/shared/icons';
 import { press } from '~app/shared/press';
 import { activeFilterCount, noFilters, sameAuthor, type Filters, type Sort } from './filterRecipes';
@@ -19,8 +20,6 @@ const sorts: { value: Sort; label: string }[] = [
   { value: 'az', label: 'A–Z' },
 ];
 
-const control =
-  'inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[0.625rem] border-3 border-ink px-4 text-base font-black text-ink';
 
 /** The search box and the detailed filters. Fixed to the bottom of the screen below 48rem, with the details in a sheet above the box; inline from 48rem. */
 export function FilterBar({ filters, authors, detailed, onFiltersChange, className, ...props }: FilterBarProps) {
@@ -82,36 +81,15 @@ export function FilterBar({ filters, authors, detailed, onFiltersChange, classNa
               ))}
             </div>
           </fieldset>
-          <fieldset className="m-0 mb-4 min-w-0 border-0 p-0 md:mr-6 md:mb-3 md:inline-flex md:items-center md:gap-3">
-            <legend className="mb-2 p-0 font-black md:float-left md:mb-0">Volgorde</legend>
-            <div className="inline-flex">
-              {sorts.map(({ value, label }) => (
-                <span key={value} className="flex">
-                  <input
-                    type="radio"
-                    data-testid="FilterBar-sort"
-                    name="sort"
-                    id={`${sheetId}-${value}`}
-                    value={value}
-                    checked={(filters.sort ?? 'nieuwste') === value}
-                    onChange={() => onFiltersChange({ ...filters, sort: value })}
-                    className="peer sr-only"
-                  />
-                  <label
-                    data-testid="FilterBar-sortLabel"
-                    htmlFor={`${sheetId}-${value}`}
-                    className={cn(
-                      control,
-                      'relative bg-white peer-checked:bg-red peer-checked:text-white peer-focus-visible:outline-4 peer-focus-visible:outline-offset-3 peer-focus-visible:outline-blu',
-                      value === sorts[0].value ? 'rounded-r-none' : 'ml-[-3px] rounded-l-none',
-                    )}
-                  >
-                    {label}
-                  </label>
-                </span>
-              ))}
-            </div>
-          </fieldset>
+          <Segmented
+            legend="Volgorde"
+            options={sorts}
+            value={filters.sort ?? 'nieuwste'}
+            onChange={(sort) => onFiltersChange({ ...filters, sort })}
+            inputProps={{ 'data-testid': 'FilterBar-sort' }}
+            labelProps={{ 'data-testid': 'FilterBar-sortLabel' }}
+            className="mb-4 md:mr-6 md:mb-3 md:inline-flex md:items-center md:gap-3"
+          />
           <div className="flex gap-3 md:hidden">
             <Button type="button" data-testid="FilterBar-clear" className="min-h-11 text-base" onClick={() => onFiltersChange(noFilters)}>
               Wis filters

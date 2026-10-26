@@ -6,6 +6,7 @@ export * from './LikeButton';
 export * from './Pill';
 export * from './Plaid';
 export * from './Seal';
+export * from './Segmented';
 export * from './SkipLink';
 export * from './TileBand';
 export * from './WorkInProgress';
