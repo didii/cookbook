@@ -5,7 +5,7 @@ Verify each task with the type check and `pnpm test:ai`; `pnpm test:spec install
 ## 1. Manifest and icons
 
 - [x] 1.1 Draw `public/icons/icon.svg` (red square, cream seal 家 from `public/img/seal/jia.svg`, artwork inside the maskable safe zone) and render `icon-192.png`, `icon-512.png`, `icon-512-maskable.png` and `apple-touch-icon.png` (180) from it with a one-off command; do not add a dependency
-- [ ] 1.2 Add `public/manifest.webmanifest` (name and short name "Familiekookboek", `start_url` and `scope` `/`, `display` `standalone`, `lang` `nl`, `theme_color` `#9c2419`, `background_color` `#f4eee0`, the three icons); test "installable-app › Manifest names the app", "Manifest uses the site colours" (compare with `--color-red` and `--color-por` in `app.css`) and "Icons are listed" (each file exists)
+- [x] 1.2 Add `public/manifest.webmanifest` (name and short name "Familiekookboek", `start_url` and `scope` `/`, `display` `standalone`, `lang` `nl`, `theme_color` `#9c2419`, `background_color` `#f4eee0`, the three icons); test "installable-app › Manifest names the app", "Manifest uses the site colours" (compare with `--color-red` and `--color-por` in `app.css`) and "Icons are listed" (each file exists)
 
 ## 2. Pages
 
