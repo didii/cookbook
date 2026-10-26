@@ -4,7 +4,7 @@ Apply after `tag-manager` is merged. Verify with the type check and `pnpm test:a
 
 ## 1. Data to the editor
 
-- [ ] 1.1 In `EditRecipePageRoute.tsx` and `NewRecipePageRoute.tsx` loaders, read `listManagedTags(db)` and pass `tagCategories` (name → category, tags with a category only); update the loader tests
+- [x] 1.1 In `EditRecipePageRoute.tsx` and `NewRecipePageRoute.tsx` loaders, read `listManagedTags(db)` and pass `tagCategories` (name → category, tags with a category only); update the loader tests
 
 ## 2. The field
 

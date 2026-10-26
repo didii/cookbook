@@ -5,6 +5,8 @@ import { chooseSeal, createRecipe, listAuthors, listTags } from '~app/shared/rec
 import { defaultRules, type Rules } from '~app/shared/rules';
 import { getRules } from '~app/shared/rules.server';
 import { seals } from '~app/shared/seals';
+import { listManagedTags } from '~app/shared/tagManagement.server';
+import { categoriesOf } from '~app/shared/tags';
 import { tiles } from '~app/shared/tile';
 import { getUser } from '~app/shared/users.server';
 import type { Route } from './+types/NewRecipePageRoute';
@@ -22,6 +24,7 @@ export async function loader({ context }: Route.LoaderArgs) {
     callingName,
     authors: await listAuthors(db),
     tags: await listTags(db),
+    tagCategories: categoriesOf(await listManagedTags(db)),
     tile: Math.floor(Math.random() * tiles.length),
     seal: await chooseSeal(db),
   };
@@ -70,6 +73,7 @@ export default function NewRecipePage({ loaderData, actionData }: Route.Componen
       heading="Nieuw recept"
       authors={loaderData.authors}
       tags={loaderData.tags}
+      tagCategories={loaderData.tagCategories}
       tile={loaderData.tile}
       seal={loaderData.seal}
       initial={seed}
