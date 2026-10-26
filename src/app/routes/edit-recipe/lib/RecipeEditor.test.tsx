@@ -3,7 +3,7 @@ import type { ComponentProps } from 'react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { describe, test } from 'vitest';
 import { defaultRules } from '~app/shared/rules';
-import { act, fireEvent, precedes, render, screen } from '~testing/dom';
+import { act, fireEvent, openAutocomplete, precedes, render, screen } from '~testing/dom';
 import { emptyDraftSeed } from './draft';
 import { RecipeEditor } from './RecipeEditor';
 
@@ -186,6 +186,18 @@ describe('the tags field in the editor', () => {
     const stored = withTags('Soep', 'Winter');
     show({ initial: stored, values: stored });
     assert.equal(screen.getByTestId<HTMLInputElement>('RecipeEditor-tags').value, '["Soep","Winter"]');
+  });
+
+  // The pill itself is TagInput's to test; the editor only has to hand the categories on.
+  test('the categories of the tags reach the field', async () => {
+    show({ tagCategories: { Soep: 'Gerecht' } });
+    openAutocomplete(screen.getByTestId('TagInput-field'));
+    await screen.findAllByTestId('TagInput-option');
+    assert.deepEqual(
+      screen.getAllByTestId('TagInput-category').map((c) => c.textContent),
+      ['Gerecht'],
+    );
+    await act(async () => {});
   });
 
   test('an error is shown at the field', () => {

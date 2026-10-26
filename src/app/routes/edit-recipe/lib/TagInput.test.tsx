@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import { useState } from 'react';
 import { describe, test } from 'vitest';
-import { act, fireEvent, openAutocomplete, render, screen } from '~testing/dom';
+import { act, fireEvent, openAutocomplete, render, screen, within } from '~testing/dom';
 import { TagInput } from './TagInput';
 
 // The field is controlled, so the screen keeps the picked tags.
-function Field({ tags = ['Soep', 'Winter'], start = [] }: { tags?: string[]; start?: string[] }) {
+function Field({ tags = ['Soep', 'Winter'], start = [], categories }: { tags?: string[]; start?: string[]; categories?: Record<string, string> }) {
   const [value, setValue] = useState(start);
-  return <TagInput id="tags" tags={tags} value={value} onValueChange={setValue} />;
+  return <TagInput id="tags" tags={tags} tagCategories={categories} value={value} onValueChange={setValue} />;
 }
 
 const input = () => screen.getByTestId('TagInput-field');
@@ -15,12 +15,14 @@ const type = (text: string) => {
   openAutocomplete(input());
   fireEvent.change(input(), { target: { value: text } });
 };
-const options = () => screen.queryAllByTestId('TagInput-option').map((o) => o.textContent);
+// A stored tag is read through its name (its option may also hold a category pill); the offer for a new tag is plain text.
+const nameOf = (option: HTMLElement) => within(option).queryByTestId('TagInput-name')?.textContent ?? option.textContent;
+const options = () => screen.queryAllByTestId('TagInput-option').map(nameOf);
 const picked = () => screen.queryAllByTestId('TagInput-tag').map((t) => t.textContent);
 // Lets the popup finish its work before the test ends, or it runs after the DOM is gone.
 const settle = () => act(async () => {});
 const choose = async (label: string) => {
-  fireEvent.click((await screen.findAllByTestId('TagInput-option')).find((o) => o.textContent === label)!);
+  fireEvent.click((await screen.findAllByTestId('TagInput-option')).find((o) => nameOf(o) === label)!);
   await settle();
 };
 
@@ -57,6 +59,49 @@ describe('recipe-form › Suggestions ignore letter case and accents', () => {
     await screen.findAllByTestId('TagInput-option');
     assert.deepEqual(options(), ['soep']);
     await settle();
+  });
+});
+
+const optionOf = (name: string) => screen.getAllByTestId('TagInput-option').find((o) => nameOf(o) === name)!;
+const categories = { Soep: 'Gerecht' };
+
+describe('recipe-form › Suggestion with a category', () => {
+  test('the suggestion shows the category as a pill', async () => {
+    render(<Field categories={categories} />);
+    openAutocomplete(input());
+    await screen.findAllByTestId('TagInput-option');
+    assert.equal(within(optionOf('Soep')).getByTestId('TagInput-category').textContent, 'Gerecht');
+    await settle();
+  });
+});
+
+describe('recipe-form › Suggestion without a category', () => {
+  test('the suggestion shows no pill', async () => {
+    render(<Field categories={categories} />);
+    openAutocomplete(input());
+    await screen.findAllByTestId('TagInput-option');
+    assert.equal(within(optionOf('Winter')).queryByTestId('TagInput-category'), null);
+    await settle();
+  });
+});
+
+describe('recipe-form › Offer for a new tag has no pill', () => {
+  test('the offer shows no pill', async () => {
+    render(<Field categories={{ Soep: 'Gerecht', Nieuw: 'Gerecht' }} />);
+    type('Nieuw');
+    await screen.findAllByTestId('TagInput-option');
+    assert.equal(within(screen.getAllByTestId('TagInput-option')[0]!).queryByTestId('TagInput-category'), null);
+    await settle();
+  });
+});
+
+describe('recipe-form › Picked tag has no category pill', () => {
+  test('the picked tag in the field shows no pill', async () => {
+    render(<Field categories={categories} />);
+    openAutocomplete(input());
+    await choose('Soep');
+    assert.equal(picked().length, 1);
+    assert.equal(within(screen.getByTestId('TagInput-chip')).queryByTestId('TagInput-category'), null);
   });
 });
 
