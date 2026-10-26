@@ -32,7 +32,8 @@ describe('installable-app › Manifest uses the site colours', () => {
 });
 
 describe('installable-app › Icons are listed', () => {
-  const icon = (sizes: string, purpose?: string) => manifest.icons.find((i: { sizes: string; purpose?: string }) => i.sizes === sizes && i.purpose === purpose);
+  const icon = (sizes: string, purpose?: string) =>
+    manifest.icons.find((i: { sizes: string; purpose?: string }) => i.sizes === sizes && i.purpose === purpose);
   test('has a 192 px icon', () => {
     assert.ok(icon('192x192'));
   });
