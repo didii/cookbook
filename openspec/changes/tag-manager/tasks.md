@@ -23,7 +23,7 @@ Change 2 of 2 (after `add-recipe-tags`). Reference: `docs/design/tag-manager.htm
 
 ## 4. Route and arrangement
 
-- [ ] 4.1 Add `routes/tags/lib/arrangeTags.ts` (filters on name, unused and without category; order by name or by category with tags without a category last) and unit-test "Sorted by name", "Sorted by category", "Name filter", "Unused filter", "Without category filter", "Filters combine"
+- [x] 4.1 Add `routes/tags/lib/arrangeTags.ts` (filters on name, unused and without category; order by name or by category with tags without a category last) and unit-test "Sorted by name", "Sorted by category", "Name filter", "Unused filter", "Without category filter", "Filters combine"
 - [ ] 4.2 Add `TagsPageRoute.tsx` (loader, `meta`, one `action` with the intents `add`, `save`, `merge`, `delete`, `bulk` answering errors as 400 data), register `/tags` in `routes.ts`, and route-test the loader and each intent against the in-memory D1 ("A member opens the page", "A taken name is refused" through the action)
 
 ## 5. Page

@@ -1,6 +1,4 @@
-import { sortTags } from './tags';
-
-export type ManagedTag = { name: string; category: string | null; uses: number };
+import { sortTags, type ManagedTag } from './tags';
 
 /** Why a write was refused. Nothing is thrown for these, so the page can answer the form. */
 export type TagError = { error: 'empty' | 'tooLong' | 'taken' | 'notFound'; taken?: string };
