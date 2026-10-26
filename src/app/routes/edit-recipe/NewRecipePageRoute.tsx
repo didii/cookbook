@@ -1,12 +1,12 @@
 import { data, redirect, useRouteLoaderData } from 'react-router';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { acceptImage } from '~app/shared/photos.server';
-import { chooseSeal, createRecipe, listAuthors, listTags } from '~app/shared/recipes.server';
+import { chooseSeal, createRecipe, listAuthors } from '~app/shared/recipes.server';
 import { defaultRules, type Rules } from '~app/shared/rules';
 import { getRules } from '~app/shared/rules.server';
 import { seals } from '~app/shared/seals';
 import { listManagedTags } from '~app/shared/tagManagement.server';
-import { categoriesOf } from '~app/shared/tags';
+import { categoriesOf, sortTags } from '~app/shared/tags';
 import { tiles } from '~app/shared/tile';
 import { getUser } from '~app/shared/users.server';
 import type { Route } from './+types/NewRecipePageRoute';
@@ -18,13 +18,14 @@ import { readForm, readIngredients, readSteps, readTags, tagError, toRecipeField
 export async function loader({ context }: Route.LoaderArgs) {
   const db = context.get(envContext).DB;
   // The author field starts as the member's calling name; the welcome gate means there is a user (empty only when it is bypassed).
+  const managed = await listManagedTags(db);
   const callingName = (await getUser(db, context.get(userEmailContext)))?.callingName ?? '';
   // The tile is picked here rather than while rendering, so the server and the browser agree. The seal is posted back, so the recipe gets the one the editor showed.
   return {
     callingName,
     authors: await listAuthors(db),
-    tags: await listTags(db),
-    tagCategories: categoriesOf(await listManagedTags(db)),
+    tags: sortTags(managed.map((t) => t.name)),
+    tagCategories: categoriesOf(managed),
     tile: Math.floor(Math.random() * tiles.length),
     seal: await chooseSeal(db),
   };

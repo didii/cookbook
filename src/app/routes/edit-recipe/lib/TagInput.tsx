@@ -93,7 +93,7 @@ export function TagInput({ tags, tagCategories = {}, value, onValueChange, id, i
                   {tags.includes(item) ? (
                     <>
                       <span data-testid="TagInput-name">{item}</span>
-                      {tagCategories[item] && (
+                      {Object.hasOwn(tagCategories, item) && (
                         <Pill variant="category" data-testid="TagInput-category">
                           {tagCategories[item]}
                         </Pill>

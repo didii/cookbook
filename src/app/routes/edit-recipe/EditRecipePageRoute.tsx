@@ -1,11 +1,11 @@
 import { data, redirect, useRouteLoaderData } from 'react-router';
 import { envContext } from '~app/shared/context.server';
 import { acceptImage, deletePhoto } from '~app/shared/photos.server';
-import { getRecipe, listAuthors, listTags, updateRecipe } from '~app/shared/recipes.server';
+import { getRecipe, listAuthors, updateRecipe } from '~app/shared/recipes.server';
 import { defaultRules, type Rules } from '~app/shared/rules';
 import { getRules } from '~app/shared/rules.server';
 import { listManagedTags } from '~app/shared/tagManagement.server';
-import { categoriesOf } from '~app/shared/tags';
+import { categoriesOf, sortTags } from '~app/shared/tags';
 import { tileFor } from '~app/shared/tile';
 import type { Route } from './+types/EditRecipePageRoute';
 import { endDraftAfterSave } from './lib/endDraftAfterSave';
@@ -17,7 +17,7 @@ const notFound = () => data('Recept niet gevonden', { status: 404 });
 
 export async function loader({ params, context }: Route.LoaderArgs) {
   const db = context.get(envContext).DB;
-  const [recipe, authors, tags, managed] = await Promise.all([getRecipe(db, params.slug), listAuthors(db), listTags(db), listManagedTags(db)]);
+  const [recipe, authors, managed] = await Promise.all([getRecipe(db, params.slug), listAuthors(db), listManagedTags(db)]);
   if (!recipe) throw notFound();
   const values = {
     title: recipe.title,
@@ -35,7 +35,7 @@ export async function loader({ params, context }: Route.LoaderArgs) {
     slug: params.slug,
     title: recipe.title,
     authors,
-    tags,
+    tags: sortTags(managed.map((t) => t.name)),
     tagCategories: categoriesOf(managed),
     values,
     tile: tileFor(recipe.id),

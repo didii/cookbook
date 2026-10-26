@@ -75,6 +75,17 @@ describe('recipe-form › Suggestion with a category', () => {
   });
 });
 
+describe('TagInput categories', () => {
+  test('a tag named like an Object.prototype member shows no pill and does not break', async () => {
+    render(<Field tags={['constructor', 'toString']} categories={{}} />);
+    openAutocomplete(input());
+    await screen.findAllByTestId('TagInput-option');
+    assert.deepEqual(options(), ['constructor', 'toString']);
+    assert.equal(screen.queryAllByTestId('TagInput-category').length, 0);
+    await settle();
+  });
+});
+
 describe('recipe-form › Suggestion without a category', () => {
   test('the suggestion shows no pill', async () => {
     render(<Field categories={categories} />);
