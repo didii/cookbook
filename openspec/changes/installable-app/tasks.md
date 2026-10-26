@@ -13,7 +13,7 @@ Verify each task with the type check and `pnpm test:ai`; `pnpm test:spec install
 
 ## 3. Service worker
 
-- [ ] 3.1 Add `public/sw.js`: a `fetch` listener that neither responds nor caches; test "Requests are not answered by the service worker" by running the file against a stub `self` and checking `respondWith` is never called
+- [x] 3.1 Add `public/sw.js`: a `fetch` listener that neither responds nor caches; test "Requests are not answered by the service worker" by running the file against a stub `self` and checking `respondWith` is never called
 - [ ] 3.2 Add `shared/components/ServiceWorker.tsx` (registers `/sw.js` in an effect, only when `'serviceWorker' in navigator`, errors swallowed) and render it once in `App` in `root.tsx`; component-test "Service worker is registered" and "No service worker support" (stub `navigator.serviceWorker`, restore it in `afterEach`)
 
 ## 4. Wrap-up
