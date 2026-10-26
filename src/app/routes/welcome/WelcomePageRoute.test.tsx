@@ -113,7 +113,7 @@ describe('users › Blank calling name', () => {
 
   describe('the screen', () => {
     beforeEach(() => {
-      show({ loaderData: { returnUrl: '/recepten/soep' }, actionData: { error: 'Vul in hoe we je noemen.', name: '' } });
+      show({ loaderData: { returnUrl: '/recepten/soep', email: 'a@example.com' }, actionData: { error: 'Vul in hoe we je noemen.', name: '' } });
     });
 
     test('stays and announces the error', () => {
@@ -157,10 +157,15 @@ describe('users › Submitting twice', () => {
 });
 
 describe('welcome screen', () => {
-  const loaded = (db: D1Database) => open(db, 'new@example.com', '?returnUrl=%2Frecepten%2Fsoep') as Promise<{ returnUrl: string }>;
+  const loaded = (db: D1Database) => open(db, 'new@example.com', '?returnUrl=%2Frecepten%2Fsoep') as Promise<{ returnUrl: string; email: string }>;
 
   test('remembers the requested page', async ({ db }) => {
     assert.equal((await loaded(db)).returnUrl, '/recepten/soep');
+  });
+
+  test('shows the email of the member', async ({ db }) => {
+    show({ loaderData: await loaded(db) });
+    assert.equal(screen.getByTestId('WelcomePage-email').textContent, 'Voor new@example.com');
   });
 
   test('asks for the name with a label', async ({ db }) => {
@@ -188,14 +193,14 @@ describe('welcome screen', () => {
 // The emailed one-time code is Cloudflare Access, outside this code. What is ours: a new member is asked for nothing but a calling name.
 describe('family-access › First visit by a new family member', () => {
   test('the screen asks for the calling name only', () => {
-    const { container } = show({ loaderData: { returnUrl: '/' } });
+    const { container } = show({ loaderData: { returnUrl: '/', email: 'a@example.com' } });
     const fields = [...container.querySelectorAll('input:not([type=hidden])')];
     assert.equal(fields.length, 1);
     assert.equal(fields[0].getAttribute('name'), 'callingName');
   });
 
   test('the screen asks for no password or email', () => {
-    const { container } = show({ loaderData: { returnUrl: '/' } });
+    const { container } = show({ loaderData: { returnUrl: '/', email: 'a@example.com' } });
     assert.equal(container.querySelector('[type=password], [type=email]'), null);
   });
 
@@ -209,7 +214,7 @@ describe('family-access › First visit by a new family member', () => {
 
 describe('plaid-accent › Card has a plaid strip', () => {
   const card = () => {
-    show({ loaderData: { returnUrl: '/' } });
+    show({ loaderData: { returnUrl: '/', email: 'a@example.com' } });
     return screen.getByTestId('WelcomePage-card');
   };
 
@@ -234,7 +239,7 @@ describe('plaid-accent › Card has a plaid strip', () => {
 
 describe('plaid-accent › Card is rounded', () => {
   const style = async () => {
-    show({ loaderData: { returnUrl: '/' } });
+    show({ loaderData: { returnUrl: '/', email: 'a@example.com' } });
     return cssFor(screen.getByTestId('WelcomePage-card').className);
   };
 

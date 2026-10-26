@@ -10,8 +10,9 @@ const maxNameLength = 40;
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   const returnUrl = safeReturnUrl(new URL(request.url).searchParams.get('returnUrl'));
-  if (await getUser(context.get(envContext).DB, context.get(userEmailContext))) throw redirect(returnUrl);
-  return { returnUrl, tile: Math.floor(Math.random() * tiles.length) };
+  const email = context.get(userEmailContext);
+  if (await getUser(context.get(envContext).DB, email)) throw redirect(returnUrl);
+  return { returnUrl, email, tile: Math.floor(Math.random() * tiles.length) };
 }
 
 /** The calling name without surrounding spaces, or why it is refused. */
@@ -62,6 +63,9 @@ export default function WelcomePage({ loaderData, actionData }: Route.ComponentP
             aria-describedby={actionData?.error ? 'callingName-error' : undefined}
             className="mt-1 block min-h-13 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-lg text-ink hover:not-focus:bg-[color-mix(in_srgb,var(--color-ink)_5%,white)] focus:shadow-focus focus:outline-transparent aria-invalid:border-red"
           />
+          <p data-testid="WelcomePage-email" className="mt-1 text-muted text-sm">
+            Voor {loaderData.email}
+          </p>
           {actionData?.error && (
             <p id="callingName-error" data-testid="WelcomePage-error" role="alert" className="mt-1 font-bold text-red">
               {actionData.error}
