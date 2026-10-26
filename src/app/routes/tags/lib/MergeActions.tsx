@@ -12,8 +12,8 @@ interface MergeActionsProps {
   /** The typed text of the picker. */
   value: string;
   onValueChange: (value: string) => void;
-  /** The stored tag that was chosen. */
-  onConfirm: (into: string) => void;
+  /** The stored tag (other than this one) that the typed text names, if any. */
+  chosen: string | undefined;
   onCancel: () => void;
   pending: boolean;
 }
@@ -21,10 +21,8 @@ interface MergeActionsProps {
 const action = 'min-h-12 flex-none px-4 text-base';
 
 /** Takes the place of the actions: pick the tag that stays, see what happens, merge or cancel. */
-export function MergeActions({ tag, others, value, onValueChange, onConfirm, onCancel, pending }: MergeActionsProps) {
+export function MergeActions({ tag, others, value, onValueChange, chosen, onCancel, pending }: MergeActionsProps) {
   const id = useId();
-  // Only a stored tag other than this one counts, whatever the letter case of the text.
-  const chosen = others.find((name) => name.toLowerCase() === value.trim().toLowerCase());
   return (
     <div className="grid gap-3">
       <div>
@@ -44,14 +42,7 @@ export function MergeActions({ tag, others, value, onValueChange, onConfirm, onC
         )}
       </div>
       <div className="flex flex-wrap gap-2">
-        <Button
-          type="button"
-          main
-          data-testid="MergeActions-confirm"
-          disabled={!chosen || pending}
-          onClick={() => chosen && onConfirm(chosen)}
-          className={action}
-        >
+        <Button type="submit" main data-testid="MergeActions-confirm" disabled={!chosen || pending} className={action}>
           Samenvoegen
         </Button>
         <Button type="button" data-testid="MergeActions-cancel" onClick={onCancel} className={action}>

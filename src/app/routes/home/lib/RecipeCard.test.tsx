@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import type { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, test, vi } from 'vitest';
-import { Pill, type LikeButton, type Seal, type TileBand } from '~app/shared/components';
+import type { LikeButton, Pill, Seal, TileBand } from '~app/shared/components';
 import type { RecipeSummary } from '~app/shared/recipe';
 import { cssFor } from '~testing/css';
 import { precedes, render, screen, within } from '~testing/dom';
@@ -18,7 +18,13 @@ vi.mock('~app/shared/components', async (importOriginal) => {
       passed.set(name, props);
       return <Child {...props} />;
     };
-  return { ...real, LikeButton: record('LikeButton', real.LikeButton), Seal: record('Seal', real.Seal), TileBand: record('TileBand', real.TileBand) };
+  return {
+    ...real,
+    LikeButton: record('LikeButton', real.LikeButton),
+    Pill: record('Pill', real.Pill),
+    Seal: record('Seal', real.Seal),
+    TileBand: record('TileBand', real.TileBand),
+  };
 });
 afterEach(() => passed.clear());
 const propsOf = <C extends (props: never) => ReactNode>(name: string) => passed.get(name) as Parameters<C>[0] | undefined;
@@ -158,10 +164,9 @@ describe('recipe-browsing › Recipe with more tags', () => {
 });
 
 describe('tag-management › Recipe card uses the shared pill', () => {
-  test('a tag on the card looks like a Pill', () => {
+  test('a tag on the card is drawn by the shared Pill', () => {
     card({ tags: ['Soep'] });
-    render(<Pill data-testid="Reference-pill" />);
-    assert.equal(screen.getByTestId('RecipeCard-tag').className, screen.getByTestId('Reference-pill').className);
+    assert.equal(propsOf<typeof Pill>('Pill')?.children, 'Soep');
   });
 });
 

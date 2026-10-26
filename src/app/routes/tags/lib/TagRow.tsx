@@ -1,4 +1,4 @@
-import { useRef, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { cn } from '~app/shared/cn';
 import { Pill } from '~app/shared/components';
 import { Book, Check } from '~app/shared/icons';
@@ -14,27 +14,21 @@ interface TagRowProps {
   selecting: boolean;
   selected: boolean;
   onActivate: () => void;
-  /** Escape in the form: closes it, and the focus comes back to the row. */
-  onClose: () => void;
   /** The form, shown below the row while open. */
   children?: ReactNode;
 }
 
 /** One tag: its pill, category pill and number of recipes. Activating the row opens its form (or toggles it in select mode). */
-export function TagRow({ tag, showCategory, open, selecting, selected, onActivate, onClose, children }: TagRowProps) {
+export function TagRow({ tag, showCategory, open, selecting, selected, onActivate, children }: TagRowProps) {
   const row = useRef<HTMLButtonElement>(null);
+  const wasOpen = useRef(false);
+  // When the form closes (Escape, the backdrop, a second tap) and the focus fell to the page, it comes back to the row.
+  useEffect(() => {
+    if (wasOpen.current && !open && (!document.activeElement || document.activeElement === document.body)) row.current?.focus();
+    wasOpen.current = open;
+  }, [open]);
   return (
-    // oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- Escape inside the open form; the row button is the interactive element.
-    <li
-      data-testid="TagRow-item"
-      onKeyDown={(e) => {
-        // Escape in an open suggestion list only closes that list.
-        if (e.key !== 'Escape' || !open || (e.target as HTMLElement).getAttribute('aria-expanded') === 'true') return;
-        onClose();
-        row.current?.focus();
-      }}
-      className="border-t-2 border-ink/18 first:border-t-0"
-    >
+    <li data-testid="TagRow-item" className="border-t-2 border-ink/18 first:border-t-0">
       <button
         ref={row}
         type="button"

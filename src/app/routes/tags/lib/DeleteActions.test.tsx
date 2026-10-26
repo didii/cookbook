@@ -6,8 +6,8 @@ import { DeleteActions } from './DeleteActions';
 import { recipeCount } from './recipeCount';
 
 const show = (tag: ManagedTag, pending = false) => {
-  const calls = { confirmed: 0, cancelled: 0 };
-  render(<DeleteActions tag={tag} onConfirm={() => calls.confirmed++} onCancel={() => calls.cancelled++} pending={pending} />);
+  const calls = { cancelled: 0 };
+  render(<DeleteActions tag={tag} onCancel={() => calls.cancelled++} pending={pending} />);
   return calls;
 };
 const notice = () => screen.getByTestId('DeleteActions-notice').textContent ?? '';
@@ -45,16 +45,15 @@ describe('tag-management › Confirmation for an unused tag', () => {
 });
 
 describe('DeleteActions', () => {
-  test('"Verwijder tag" reports the confirmation', () => {
-    const calls = show({ name: 'Soep', category: null, uses: 3 });
-    fireEvent.click(screen.getByTestId('DeleteActions-confirm'));
-    assert.deepEqual([calls.confirmed, calls.cancelled], [1, 0]);
+  test('"Verwijder tag" is the submit button of the form around it', () => {
+    show({ name: 'Soep', category: null, uses: 3 });
+    assert.equal(screen.getByTestId<HTMLButtonElement>('DeleteActions-confirm').type, 'submit');
   });
 
   test('"Annuleer" reports the cancel', () => {
     const calls = show({ name: 'Soep', category: null, uses: 3 });
     fireEvent.click(screen.getByTestId('DeleteActions-cancel'));
-    assert.deepEqual([calls.confirmed, calls.cancelled], [0, 1]);
+    assert.equal(calls.cancelled, 1);
   });
 
   test('a pending request disables "Verwijder tag"', () => {

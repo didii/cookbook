@@ -33,9 +33,10 @@ const messages = {
   tooLong: () => 'Dit is te lang: maximaal 100 tekens.',
   taken: (taken?: string) => `De tag “${taken}” bestaat al.`,
   notFound: () => 'Deze tag bestaat niet meer. Laad de pagina opnieuw.',
+  same: () => 'Een tag kan niet met zichzelf worden samengevoegd.',
 };
-const refuse = (intent: string, { error, taken }: TagError) =>
-  data({ intent, error: messages[error](taken), code: error, taken } satisfies ActionResult, { status: 400 });
+const refuse = (intent: string, { error, taken, field }: TagError) =>
+  data({ intent, error: messages[error](taken), code: error, taken, field } satisfies ActionResult, { status: 400 });
 const plural = (n: number) => (n === 1 ? '1 tag' : `${n} tags`);
 
 /** One action for every form of the page; `intent` says which. Errors answer the form with a 400 instead of throwing, so what was typed stays. */

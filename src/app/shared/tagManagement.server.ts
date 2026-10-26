@@ -1,7 +1,7 @@
 import { sortTags, type ManagedTag } from './tags';
 
 /** Why a write was refused. Nothing is thrown for these, so the page can answer the form. */
-export type TagError = { error: 'empty' | 'tooLong' | 'taken' | 'notFound'; taken?: string };
+export type TagError = { error: 'empty' | 'tooLong' | 'taken' | 'notFound' | 'same'; taken?: string; field?: 'name' | 'category' };
 export type TagResult = { ok: true } | TagError;
 
 const maxLength = 100;
@@ -78,7 +78,7 @@ export async function saveTag(db: D1Database, current: string, input: { name: st
   const category = normalizeName(input.category);
   const invalid = checkName(name);
   if (invalid) return invalid;
-  if (category.length > maxLength) return { error: 'tooLong' };
+  if (category.length > maxLength) return { error: 'tooLong', field: 'category' };
   if (!(await exists(db, current))) return { error: 'notFound' };
   const taken = await findTaken(db, name, current);
   if (taken) return { error: 'taken', taken };
@@ -97,7 +97,10 @@ export async function saveTag(db: D1Database, current: string, input: { name: st
 
 /** Gives every recipe with `from` the tag `into` (once), removes `from` and keeps `into` as it is. */
 export async function mergeTag(db: D1Database, from: string, into: string): Promise<TagResult> {
-  if (!(await exists(db, from)) || !(await exists(db, into))) return { error: 'notFound' };
+  const ids = await Promise.all([from, into].map((name) => db.prepare('SELECT id FROM tags WHERE name = ?').bind(name).first<{ id: number }>()));
+  if (!ids[0] || !ids[1]) return { error: 'notFound' };
+  // Compared by id, so letter case decides as it does everywhere else; a merge into itself would drop every link and the tag.
+  if (ids[0].id === ids[1].id) return { error: 'same' };
   const id = 'SELECT id FROM tags WHERE name = ?';
   await db.batch([
     db.prepare(`UPDATE OR IGNORE recipe_tags SET tag_id = (${id}) WHERE tag_id = (${id})`).bind(into, from),
@@ -122,7 +125,7 @@ export async function deleteTag(db: D1Database, name: string): Promise<TagResult
 /** Gives all named tags one category (empty removes it). Returns how many tags changed. */
 export async function setCategory(db: D1Database, names: string[], raw: string): Promise<{ ok: true; changed: number } | TagError> {
   const category = normalizeName(raw);
-  if (category.length > maxLength) return { error: 'tooLong' };
+  if (category.length > maxLength) return { error: 'tooLong', field: 'category' };
   if (!names.length) return { ok: true, changed: 0 };
   const where = `name IN (${names.map(() => '?').join(', ')})`;
   const results = await db.batch([...assignCategory(db, where, names, category), pruneCategories(db)]);

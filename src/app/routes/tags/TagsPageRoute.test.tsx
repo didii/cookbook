@@ -114,6 +114,19 @@ describe('TagsPageRoute action', () => {
     assert.equal((await post(db, { intent: 'merge', from: 'Nope', into: 'Soep' })).code, 'notFound');
   });
 
+  test('merging a tag into itself answers 400 and keeps the tag', async ({ db }) => {
+    await seed(db);
+    const answer = await post(db, { intent: 'merge', from: 'Soep', into: 'soep' });
+    assert.deepEqual([answer.status, answer.code], [400, 'same']);
+    assert.equal((await listManagedTags(db)).length, 2);
+  });
+
+  test('a category that is too long answers 400 with the field "category"', async ({ db }) => {
+    await seed(db);
+    const answer = await post(db, { intent: 'save', current: 'Soep', name: 'Soep', category: 'a'.repeat(101) });
+    assert.deepEqual([answer.status, answer.code, answer.field], [400, 'tooLong', 'category']);
+  });
+
   test('delete removes the tag', async ({ db }) => {
     await seed(db);
     assert.equal((await post(db, { intent: 'delete', name: 'Soepen' })).status, 200);

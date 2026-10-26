@@ -67,7 +67,6 @@ export function TagList({
               selecting={selecting}
               selected={selection.has(tag.name)}
               onActivate={() => (selecting ? onToggle(tag.name) : onOpenChange(openName === tag.name ? null : tag.name))}
-              onClose={() => onOpenChange(null)}
             >
               <TagForm key={tag.name} tag={tag} names={names} categories={categories} onClose={() => onOpenChange(null)} onDone={onDone} />
             </TagRow>

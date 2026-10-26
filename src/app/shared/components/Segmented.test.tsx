@@ -28,9 +28,9 @@ describe('Segmented', () => {
     );
   });
 
-  test('the legend is shown', () => {
+  test('the legend names the group', () => {
     show('a');
-    assert.equal(screen.getByRole('group').querySelector('legend')?.textContent, 'Volgorde');
+    assert.ok(screen.getByRole('group', { name: 'Volgorde' }));
   });
 
   test('the selected value is checked', () => {

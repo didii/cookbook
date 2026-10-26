@@ -4,7 +4,9 @@ import { cssFor } from '~testing/css';
 import { render, screen } from '~testing/dom';
 import { Pill } from './Pill';
 
-const shape = (className: string) => className.split(/\s+/).filter((c) => /^(rounded|border-2|px-|text-|leading-|font-)/.test(c));
+// The resolved declarations that make up the shape of a pill, not the classes that write them.
+const shapeOf = async (className: string) =>
+  ((await cssFor(className)).match(/(?:border-radius|border-width|padding-inline|font-size|line-height|font-weight): [^;]+;/g) ?? []).sort();
 
 describe('tag-management › Category pill is yellow', () => {
   test('it has a yellow background', async () => {
@@ -12,14 +14,16 @@ describe('tag-management › Category pill is yellow', () => {
     assert.match(await cssFor(screen.getByTestId('pill').className), /background-color: var\(--color-yel\)/);
   });
 
-  test('it has the shape of a tag pill', () => {
+  test('it has the shape of a tag pill', async () => {
     render(
       <>
         <Pill data-testid="tag" />
         <Pill variant="category" data-testid="category" />
       </>,
     );
-    assert.deepEqual(shape(screen.getByTestId('category').className), shape(screen.getByTestId('tag').className));
+    const category = await shapeOf(screen.getByTestId('category').className);
+    assert.ok(category.length >= 5);
+    assert.deepEqual(category, await shapeOf(screen.getByTestId('tag').className));
   });
 });
 

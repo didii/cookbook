@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState, type SyntheticEvent } from 'react';
 import { useFetcher } from 'react-router';
 import { Button, Pill } from '~app/shared/components';
 import type { ManagedTag } from '~app/shared/tags';
@@ -13,7 +13,7 @@ interface TagFormProps {
   /** Every stored tag name (to merge with) and category (to suggest). */
   names: string[];
   categories: string[];
-  /** The backdrop of the sheet was tapped. */
+  /** Escape or the backdrop of the sheet: close the form. */
   onClose: () => void;
   /** Saved, merged or deleted: the answer's confirmation. Must keep its identity between renders. */
   onDone: (message: string) => void;
@@ -32,13 +32,18 @@ export function TagForm({ tag, names, categories, onClose, onDone }: TagFormProp
   const [category, setCategory] = useState(tag.category ?? '');
   const [mode, setMode] = useState<Mode>('main');
   const [into, setInto] = useState('');
-  // The name that was sent to save, so its message goes away as soon as the name changes.
-  const [sent, setSent] = useState<string | null>(null);
+  // The values that were sent to save, so a message goes away as soon as its field changes.
+  const [sent, setSent] = useState<{ name: string; category: string } | null>(null);
   const result = fetcher.data;
   const failure = errorOf(result);
-  const nameError = failure?.intent === 'save' && sent === name ? failure : undefined;
+  const saveFailure = failure?.intent === 'save' ? failure : undefined;
+  const categoryError = saveFailure?.field === 'category' && sent?.category === category ? saveFailure : undefined;
+  const nameError = saveFailure && saveFailure.field !== 'category' && sent?.name === name ? saveFailure : undefined;
   const actionError = failure && failure.intent !== 'save' ? failure.error : undefined;
   const pending = fetcher.state !== 'idle';
+  const others = names.filter((n) => n !== tag.name);
+  // Only a stored tag other than this one counts, whatever the letter case of the text.
+  const chosen = others.find((n) => n.toLowerCase() === into.trim().toLowerCase());
 
   useEffect(() => {
     nameField.current?.focus();
@@ -58,11 +63,15 @@ export function TagForm({ tag, names, categories, onClose, onDone }: TagFormProp
     };
   }, []);
 
-  // No <form>: the answer is read from the fetcher, and Enter in the name does what "Opslaan" does.
-  const send = (fields: Record<string, string>) => void fetcher.submit(fields, { method: 'post' });
-  const save = () => {
-    setSent(name);
-    send({ intent: 'save', current: tag.name, name, category });
+  // What Enter or the submit button of the actions part does depends on which part is shown.
+  const submit = (e: SyntheticEvent) => {
+    e.preventDefault();
+    if (pending) return;
+    if (mode === 'main') {
+      setSent({ name, category });
+      void fetcher.submit({ intent: 'save', current: tag.name, name, category }, { method: 'post' });
+    } else if (mode === 'merge' && chosen) void fetcher.submit({ intent: 'merge', from: tag.name, into: chosen }, { method: 'post' });
+    else if (mode === 'delete') void fetcher.submit({ intent: 'delete', name: tag.name }, { method: 'post' });
   };
 
   return (
@@ -75,9 +84,16 @@ export function TagForm({ tag, names, categories, onClose, onDone }: TagFormProp
         onClick={onClose}
         className="fixed inset-0 z-20 cursor-default bg-ink/45 md:hidden"
       />
-      <section
+      {/* oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- Escape inside the form's fields; the fields are the interactive elements. */}
+      <form
         data-testid="TagForm-form"
         aria-label="Tag bewerken"
+        noValidate
+        onSubmit={submit}
+        onKeyDown={(e) => {
+          // Escape in an open suggestion list only closes that list.
+          if (e.key === 'Escape' && (e.target as HTMLElement).getAttribute('aria-expanded') !== 'true') onClose();
+        }}
         className="grid gap-4 border-t-2 border-ink bg-por px-3 pt-4 pb-5 max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-21 max-md:max-h-[88dvh] max-md:animate-rise max-md:overflow-auto max-md:rounded-t-2xl max-md:border-t-3 max-md:px-[max(1rem,4vw)] motion-reduce:animate-none"
       >
         <div className="grid gap-4 md:grid-cols-2 md:gap-5">
@@ -91,7 +107,6 @@ export function TagForm({ tag, names, categories, onClose, onDone }: TagFormProp
               data-testid="TagForm-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && mode === 'main' && save()}
               autoComplete="off"
               aria-invalid={nameError ? true : undefined}
               aria-describedby={nameError ? `${id}-name-error` : undefined}
@@ -122,38 +137,44 @@ export function TagForm({ tag, names, categories, onClose, onDone }: TagFormProp
             <label htmlFor={`${id}-category`} className={label}>
               Categorie
             </label>
-            <SuggestInput id={`${id}-category`} items={categories} value={category} onValueChange={setCategory} placeholder="Geen categorie" />
+            <SuggestInput
+              id={`${id}-category`}
+              items={categories}
+              value={category}
+              onValueChange={setCategory}
+              placeholder="Geen categorie"
+              invalid={!!categoryError}
+              describedBy={categoryError ? `${id}-category-error` : undefined}
+            />
+            {categoryError && (
+              <p id={`${id}-category-error`} data-testid="TagForm-categoryError" role="alert" className="mt-1.5 font-extrabold text-red">
+                {categoryError.error}
+              </p>
+            )}
             <p className="mt-1.5 text-sm font-bold text-muted">Kies een bestaande of typ een nieuwe. Leeg laten haalt de categorie weg.</p>
           </div>
         </div>
         <div data-testid="TagForm-actions" className="grid gap-2 border-t-2 border-dashed border-ink/20 pt-4">
-          {mode === 'main' && <TagActions pending={pending} onSave={save} onMerge={() => setMode('merge')} onDelete={() => setMode('delete')} />}
+          {mode === 'main' && <TagActions pending={pending} onMerge={() => setMode('merge')} onDelete={() => setMode('delete')} />}
           {mode === 'merge' && (
             <MergeActions
               tag={tag}
-              others={names.filter((n) => n !== tag.name)}
+              others={others}
               value={into}
               onValueChange={setInto}
-              onConfirm={(target) => send({ intent: 'merge', from: tag.name, into: target })}
+              chosen={chosen}
               onCancel={() => setMode('main')}
               pending={pending}
             />
           )}
-          {mode === 'delete' && (
-            <DeleteActions
-              tag={tag}
-              onConfirm={() => send({ intent: 'delete', name: tag.name })}
-              onCancel={() => setMode('main')}
-              pending={pending}
-            />
-          )}
+          {mode === 'delete' && <DeleteActions tag={tag} onCancel={() => setMode('main')} pending={pending} />}
           {actionError && (
             <p data-testid="TagForm-actionError" role="alert" className="font-extrabold text-red">
               {actionError}
             </p>
           )}
         </div>
-      </section>
+      </form>
     </>
   );
 }
