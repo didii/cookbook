@@ -50,7 +50,7 @@ export function RecipeCard({ recipe: r, tile, eager, onSaved, className, ...prop
       {r.image && r.seal && <Seal sealId={r.seal} className="h-13" />}
       <div className="relative">
         <TileBand first={tile} responsive rows={r.image ? 1 : 3} />
-        <div className="pointer-events-none absolute inset-x-2 top-0 bottom-[3px] z-2 flex items-end justify-end gap-2 pb-[3px]">
+        <div className="pointer-events-none absolute size-full top-0 left-0 z-2 flex items-end justify-end gap-1 pr-0.75 pb-0.75">
           {r.hasNote && (
             <span
               data-testid="RecipeCard-note"
@@ -67,7 +67,7 @@ export function RecipeCard({ recipe: r, tile, eager, onSaved, className, ...prop
           </span>
         </div>
       </div>
-      <div className="px-4 pt-3 pb-4">
+      <div className="px-4 pt-3 pb-4 border-t-3 border-ink">
         <Link
           id={titleId}
           to={`/recepten/${r.slug}`}
