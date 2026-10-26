@@ -7,7 +7,7 @@ const options = [
   { value: 'a', label: 'Eerste' },
   { value: 'b', label: 'Tweede' },
 ];
-const show = (value: string, onChange = (_: string) => {}) =>
+const show = (value: string, onChange: (value: string) => void = () => {}) =>
   render(
     <Segmented
       legend="Volgorde"

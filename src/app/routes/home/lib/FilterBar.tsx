@@ -4,8 +4,8 @@ import { Button, Segmented } from '~app/shared/components';
 import { control } from '~app/shared/control';
 import { Search, Sliders } from '~app/shared/icons';
 import { press } from '~app/shared/press';
+import { useKeyboardOffset } from '~app/shared/useKeyboardOffset';
 import { activeFilterCount, noFilters, sameAuthor, type Filters, type Sort } from './filterRecipes';
-import { useKeyboardOffset } from './useKeyboardOffset';
 
 interface FilterBarProps extends ComponentProps<'search'> {
   filters: Filters;
@@ -19,7 +19,6 @@ const sorts: { value: Sort; label: string }[] = [
   { value: 'nieuwste', label: 'Nieuwste' },
   { value: 'az', label: 'A–Z' },
 ];
-
 
 /** The search box and the detailed filters. Fixed to the bottom of the screen below 48rem, with the details in a sheet above the box; inline from 48rem. */
 export function FilterBar({ filters, authors, detailed, onFiltersChange, className, ...props }: FilterBarProps) {

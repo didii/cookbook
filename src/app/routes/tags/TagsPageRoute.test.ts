@@ -23,7 +23,7 @@ const post = async (db: D1Database, fields: Record<string, string | string[]>) =
   const answer = (await action(
     fake<Route.ActionArgs>({ request: new Request('http://localhost/tags', { method: 'POST', body }), context: context(db) }),
   )) as unknown as { data: Record<string, unknown>; init: { status?: number } | null };
-  return { ...answer.data, status: answer.init?.status ?? 200 };
+  return { ...answer.data, status: answer.init?.status ?? 200 } as Record<string, unknown> & { status: number };
 };
 const seed = (db: D1Database) =>
   db.batch([
@@ -91,13 +91,10 @@ describe('TagsPageRoute action', () => {
     const answer = await post(db, { intent: 'save', current: 'Soepen', name: 'Bouillon', category: 'gerecht' });
     assert.equal(answer.status, 200);
     assert.ok(answer.done);
-    assert.deepEqual(
-      (await listManagedTags(db)).map((t) => [t.name, t.category]).sort(),
-      [
-        ['Bouillon', 'Gerecht'],
-        ['Soep', 'Gerecht'],
-      ],
-    );
+    assert.deepEqual((await listManagedTags(db)).map((t) => [t.name, t.category]).sort(), [
+      ['Bouillon', 'Gerecht'],
+      ['Soep', 'Gerecht'],
+    ]);
   });
 
   test('merge removes the first tag', async ({ db }) => {
