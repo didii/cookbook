@@ -6,13 +6,15 @@ import { FilterBar } from './FilterBar';
 import { noFilters, type Filters } from './filterRecipes';
 
 const authors = ['Mama', 'Oma', 'Papa'];
-const show = (filters: Filters = noFilters, detailed = true) =>
-  render(<FilterBar filters={filters} authors={authors} detailed={detailed} onFiltersChange={() => {}} />);
+const tags = ['Dessert', 'Soep'];
+const show = (filters: Filters = noFilters, detailed = true, stored = tags) =>
+  render(<FilterBar filters={filters} authors={authors} tags={stored} detailed={detailed} onFiltersChange={() => {}} />);
 
 const bar = () => screen.getByTestId('FilterBar-bar');
 const searchBox = () => screen.getByTestId('FilterBar-search');
 const filterButton = () => screen.getByTestId('FilterBar-toggle');
-const authorField = (root: HTMLElement = document.body) => within(root).getByTestId('MultiSelect-field');
+const authorField = (root: HTMLElement = document.body) => within(within(root).getByTestId('FilterBar-authors')).getByTestId('MultiSelect-field');
+const tagField = () => within(screen.getByTestId('FilterBar-tags')).getByTestId('MultiSelect-field');
 const pickedAuthors = () => screen.queryAllByTestId('MultiSelect-value').map((v) => v.textContent);
 const sortInput = (value: string, root: HTMLElement = document.body) =>
   within(root)
@@ -145,6 +147,10 @@ describe('recipe-filtering › Active filter count', () => {
     assert.equal(count({ q: '', authors: ['Oma', 'Papa'], sort: 'az' }), '2');
   });
 
+  test('two authors, one tag and order are counted: 3', () => {
+    assert.equal(count({ q: '', authors: ['Oma', 'Papa'], tags: ['Soep'], sort: 'az' }), '3');
+  });
+
   test('author with the default order is counted: 1', () => {
     assert.equal(count({ q: '', authors: ['Oma'], sort: 'nieuwste' }), '1');
   });
@@ -158,6 +164,11 @@ describe('recipe-filtering › Active filter count', () => {
 describe('recipe-filtering › Wide screen', () => {
   beforeEach(() => {
     show();
+  });
+
+  test('both fields are in the sheet, which is always shown', () => {
+    assert.ok(authorField(sheet()));
+    assert.ok(within(sheet()).getByTestId('FilterBar-tags'));
   });
 
   // From 48rem the bar is in the flow with the search box above the filters, nothing is fixed, the sheet is always shown and the Filter button is gone.
@@ -311,6 +322,62 @@ describe('recipe-filtering › Closing the sheet', () => {
     test('focus goes back to the Filter button', () => {
       assert.equal(document.activeElement, filterButton());
     });
+  });
+});
+
+describe('recipe-filtering › Finding a tag by typing', () => {
+  test('a tag that contains the text is suggested and another is not', async () => {
+    show();
+    openAutocomplete(tagField());
+    fireEvent.change(tagField(), { target: { value: 'soe' } });
+    await screen.findAllByTestId('MultiSelect-option');
+    assert.deepEqual(
+      screen.getAllByTestId('MultiSelect-option').map((o) => o.textContent),
+      ['Soep'],
+    );
+    await act(async () => {});
+  });
+});
+
+describe('recipe-filtering › Unknown text is not offered', () => {
+  test('no suggestion is shown', async () => {
+    show();
+    openAutocomplete(tagField());
+    fireEvent.change(tagField(), { target: { value: 'zzz' } });
+    await act(async () => {});
+    assert.equal(screen.queryAllByTestId('MultiSelect-option').length, 0);
+  });
+});
+
+describe('recipe-filtering › Removing a picked tag', () => {
+  test('pressing the remove button reports the tag gone', async () => {
+    const changes: Filters[] = [];
+    render(
+      <FilterBar
+        filters={{ ...noFilters, tags: ['Soep', 'Dessert'] }}
+        authors={authors}
+        tags={tags}
+        detailed
+        onFiltersChange={(f) => changes.push(f)}
+      />,
+    );
+    fireEvent.click(within(screen.getByTestId('FilterBar-tags')).getAllByTestId('MultiSelect-remove')[0]);
+    await act(async () => {});
+    assert.deepEqual(changes.at(-1)?.tags, ['Dessert']);
+  });
+});
+
+describe('recipe-filtering › No tags stored', () => {
+  test('the Tags field is not shown', () => {
+    show(noFilters, true, []);
+    assert.equal(screen.queryByTestId('FilterBar-tags'), null);
+  });
+});
+
+describe('FilterBar search box', () => {
+  test('says tags can be searched', () => {
+    show();
+    assert.ok(searchBox().getAttribute('placeholder')?.includes('tag'));
   });
 });
 

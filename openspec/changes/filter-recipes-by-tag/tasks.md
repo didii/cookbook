@@ -8,7 +8,7 @@ Apply after `author-multi-select`. Verify each task with the type check and `pnp
 
 ## 2. The bar
 
-- [ ] 2.1 In `FilterBar.tsx` add a "Tags" `MultiSelect` (new prop `tags`, hidden when empty) next to "Van wie"; change the search placeholder to "Zoek op naam, kok of tag"; update `FilterBar.test.tsx`: "Active filter count" (two authors, one tag, A–Z → 3), "Wide screen" (both fields visible), and the field scenarios "Finding a tag by typing", "Unknown text is not offered", "Removing a picked tag", "No tags stored"
+- [x] 2.1 In `FilterBar.tsx` add a "Tags" `MultiSelect` (new prop `tags`, hidden when empty) next to "Van wie"; change the search placeholder to "Zoek op naam, kok of tag"; update `FilterBar.test.tsx`: "Active filter count" (two authors, one tag, A–Z → 3), "Wide screen" (both fields visible), and the field scenarios "Finding a tag by typing", "Unknown text is not offered", "Removing a picked tag", "No tags stored"
 
 ## 3. The page
 
