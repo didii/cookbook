@@ -198,3 +198,39 @@ describe('recipe-storage › Numbers are stored as typed', () => {
     assert.deepEqual(read('3-2 el olie'), [3, 2]);
   });
 });
+
+describe('parseIngredient range separators', () => {
+  test.each([
+    '2-3 el',
+    '2 - 3 el',
+    '2–3 el',
+    '2—3 el',
+    '2 à 3 el',
+    '2 tot 3 el',
+    '2 tot en met 3 el',
+    '2 of 3 el',
+    'tussen 2 en 3 el',
+    '2 to 3 el',
+    '2 or 3 el',
+  ])('%s gives 2, 3 and el', (text) => {
+    const { quantityValue, quantityValueMax, quantityUnit } = parseIngredient(`${text} olie`, defaultRules);
+    assert.deepEqual([quantityValue, quantityValueMax, quantityUnit], [2, 3, 'el']);
+  });
+
+  test('comma, slash and tilde make no range', () => {
+    for (const text of ['2, 3 el olie', '2/3 el olie', '2~3 el olie']) assert.equal(parseIngredient(text, defaultRules).quantityValueMax, undefined);
+  });
+
+  test('fractions on either side', () => {
+    assert.deepEqual(
+      ['½-1 el olie', '1 1/2 - 2 el olie'].map((l) => [
+        parseIngredient(l, defaultRules).quantityValue,
+        parseIngredient(l, defaultRules).quantityValueMax,
+      ]),
+      [
+        [0.5, 1],
+        [1.5, 2],
+      ],
+    );
+  });
+});

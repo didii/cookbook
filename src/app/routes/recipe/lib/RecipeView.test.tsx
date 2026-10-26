@@ -354,15 +354,20 @@ describe('recipe-scaling › Control sits above the lists', () => {
 });
 
 describe('recipe-scaling › Ingredient range scales', () => {
-  test('the list and a chip show the doubled range', () => {
+  test('the list shows the doubled range', () => {
     const ingredients = [{ quantityText: '2-3 el', quantityValue: 2, quantityValueMax: 3, quantityUnit: 'el', name: 'olie' }];
-    const steps: Step[] = [
-      { body: 'bak', ingredients: [{ quantityText: '1 tot 2 el', quantityValue: 1, quantityValueMax: 2, quantityUnit: 'el', name: 'olie' }] },
-    ];
-    page({ recipe: { ...recipe, servings: 4, ingredients }, steps });
+    page({ recipe: { ...recipe, servings: 4, ingredients } });
     fireEvent.change(screen.getByTestId('ScaleControl-field'), { target: { value: '8' } });
     assert.equal(screen.getByTestId('IngredientList-quantity').textContent, scaleIngredient(ingredients[0], 2));
-    assert.equal(screen.getByTestId('StepChips-quantity').textContent, scaleIngredient(steps[0].ingredients[0], 2));
+  });
+});
+
+describe('recipe-scaling › Chip range scales', () => {
+  test('the chip shows the doubled range', () => {
+    const chip = { quantityText: '1 tot 2 el', quantityValue: 1, quantityValueMax: 2, quantityUnit: 'el', name: 'olie' };
+    page({ recipe: { ...recipe, servings: 4 }, steps: [{ body: 'bak', ingredients: [chip] }] });
+    fireEvent.change(screen.getByTestId('ScaleControl-field'), { target: { value: '8' } });
+    assert.equal(screen.getByTestId('StepChips-quantity').textContent, scaleIngredient(chip, 2));
   });
 });
 

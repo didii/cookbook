@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'vitest';
-import { numberValue, rangeValues } from './numbers';
+import { numberValue, rangePattern, tussen } from './numbers';
 
 describe('numberValue', () => {
   test('reads a decimal comma', () => {
@@ -36,24 +36,30 @@ describe('numberValue', () => {
   });
 });
 
-describe('rangeValues', () => {
+describe('rangePattern', () => {
+  const whole = new RegExp(String.raw`^${tussen}${rangePattern}$`, 'u');
+  const read = (text: string) => {
+    const m = whole.exec(text);
+    return m && [numberValue(m[1]), numberValue(m[2])];
+  };
+
   test.each(['2-3', '2 - 3', '2–3', '2—3', '2 à 3', '2 tot 3', '2 tot en met 3', '2 of 3', 'tussen 2 en 3', '2 to 3', '2 or 3'])(
     'reads %s',
     (text) => {
-      assert.deepEqual(rangeValues(text), [2, 3]);
+      assert.deepEqual(read(text), [2, 3]);
     },
   );
 
   test('reads fractions and glyphs on each side', () => {
-    assert.deepEqual(rangeValues('½-1'), [0.5, 1]);
-    assert.deepEqual(rangeValues('1 1/2 - 2'), [1.5, 2]);
+    assert.deepEqual(read('½-1'), [0.5, 1]);
+    assert.deepEqual(read('1 1/2 - 2'), [1.5, 2]);
   });
 
   test('keeps the typed order', () => {
-    assert.deepEqual(rangeValues('3-2'), [3, 2]);
+    assert.deepEqual(read('3-2'), [3, 2]);
   });
 
   test.each(['2, 3', '2/3', '2~3', '2 en 3', '2'])('refuses %s', (text) => {
-    assert.equal(rangeValues(text), undefined);
+    assert.equal(read(text), null);
   });
 });

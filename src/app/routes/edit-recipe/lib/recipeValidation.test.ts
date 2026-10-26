@@ -319,3 +319,10 @@ describe('tagError', () => {
     assert.equal(tagError(undefined), undefined);
   });
 });
+
+describe('chip range on save', () => {
+  test('the chip keeps its maximum value', () => {
+    const { steps } = postSteps([{ body: 'bak', ingredients: [{ quantityText: '2-3 el', name: 'olie' }] }]);
+    assert.deepEqual(steps?.[0].ingredients, [{ quantityText: '2-3 el', quantityValue: 2, quantityValueMax: 3, quantityUnit: 'el', name: 'olie' }]);
+  });
+});

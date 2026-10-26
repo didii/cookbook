@@ -406,12 +406,9 @@ describe('recipe-storage › Range is read with the recipe', () => {
       title: 'Soep',
       author: 'Oma',
       ingredients: JSON.stringify([{ text: '2-3 el olie' }]),
-      steps: JSON.stringify([{ body: 'Voeg 2 à 3 el olie toe' }]),
     });
-    const recipe = await getRecipe(db, 'bereik');
-    assert.deepEqual(recipe?.ingredients, [{ quantityText: '2-3 el', quantityValue: 2, quantityValueMax: 3, quantityUnit: 'el', name: 'olie' }]);
-    assert.deepEqual(recipe?.steps[0].quantities, [
-      { startIndex: 5, endIndex: 6, quantityValue: 2, quantityValueMax: 3, maxStartIndex: 9, maxEndIndex: 10, quantityUnit: 'el' },
+    assert.deepEqual((await getRecipe(db, 'bereik'))?.ingredients, [
+      { quantityText: '2-3 el', quantityValue: 2, quantityValueMax: 3, quantityUnit: 'el', name: 'olie' },
     ]);
   });
 });

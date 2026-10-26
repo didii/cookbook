@@ -116,3 +116,42 @@ describe('recipe-storage › Duration range is not stored', () => {
     assert.deepEqual(find('Bak 20-25 minuten'), []);
   });
 });
+
+describe('findQuantities range separators', () => {
+  test.each([
+    '2-3 el',
+    '2 - 3 el',
+    '2–3 el',
+    '2—3 el',
+    '2 à 3 el',
+    '2 tot 3 el',
+    '2 tot en met 3 el',
+    '2 of 3 el',
+    'tussen 2 en 3 el',
+    '2 to 3 el',
+    '2 or 3 el',
+  ])('%s olie gives 2, 3 and el', (text) => {
+    assert.deepEqual(
+      find(`Voeg ${text} olie toe`).map((q) => [q.quantityValue, q.quantityValueMax, q.quantityUnit]),
+      [[2, 3, 'el']],
+    );
+  });
+
+  test('comma, slash and tilde make no range', () => {
+    for (const text of ['2, 3 el', '2/3 el', '2~3 el']) assert.ok(find(`Voeg ${text} olie toe`).every((q) => q.quantityValueMax === undefined));
+  });
+
+  test('a reversed range keeps its order', () => {
+    assert.deepEqual(
+      find('Voeg 3-2 el olie toe').map((q) => [q.quantityValue, q.quantityValueMax]),
+      [[3, 2]],
+    );
+  });
+
+  test('a long range before an ingredient is found whole', () => {
+    assert.deepEqual(
+      find('Voeg 1 ½ tot en met 2 ½ eieren toe').map((q) => [q.quantityValue, q.quantityValueMax]),
+      [[1.5, 2.5]],
+    );
+  });
+});

@@ -1104,18 +1104,26 @@ describe('recipe-storage › Range amount with both places', () => {
     const slug = await createRecipe(db, { title: 'Olie', author: 'Oma', steps: [{ body: 'Voeg 2 à 3 el olie toe', quantities: [amount] }] });
     assert.deepEqual((await getRecipe(db, slug))?.steps[0]?.quantities, [amount]);
   });
+});
 
-  test('a range ingredient and chip keep their maximum', async ({ db }) => {
+describe('createRecipe › range maximum', () => {
+  test('an ingredient keeps its maximum', async ({ db }) => {
     const slug = await createRecipe(db, {
       title: 'Olie',
       author: 'Oma',
       ingredients: [{ name: 'olie', quantityText: '2-3 el', quantityValue: 2, quantityValueMax: 3, quantityUnit: 'el' }],
+    });
+    assert.equal((await getRecipe(db, slug))?.ingredients[0].quantityValueMax, 3);
+  });
+
+  test('a chip keeps its maximum', async ({ db }) => {
+    const slug = await createRecipe(db, {
+      title: 'Olie',
+      author: 'Oma',
       steps: [
         { body: 'Voeg toe', ingredients: [{ name: 'olie', quantityText: '1-2 el', quantityValue: 1, quantityValueMax: 2, quantityUnit: 'el' }] },
       ],
     });
-    const recipe = await getRecipe(db, slug);
-    assert.equal(recipe?.ingredients[0].quantityValueMax, 3);
-    assert.equal(recipe?.steps[0].ingredients[0].quantityValueMax, 2);
+    assert.equal((await getRecipe(db, slug))?.steps[0].ingredients[0].quantityValueMax, 2);
   });
 });
