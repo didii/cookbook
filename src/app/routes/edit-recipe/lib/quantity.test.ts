@@ -20,8 +20,8 @@ describe('parseQuantity', () => {
     assert.deepEqual(parseQuantity('1 klontje', defaultRules), { quantityValue: 1, quantityUnit: 'klontje' });
   });
 
-  test('a range has no value', () => {
-    assert.deepEqual(parseQuantity('2-3 el', defaultRules), {});
+  test('a range has both values', () => {
+    assert.deepEqual(parseQuantity('2-3 el', defaultRules), { quantityValue: 2, quantityValueMax: 3, quantityUnit: 'el' });
   });
 
   test('text without a leading number has no value', () => {
@@ -49,5 +49,48 @@ describe('parseQuantity › Loose unit matched ignoring case', () => {
 describe('recipe-storage › Chip quantity word that is not a loose unit', () => {
   test('has no value and no unit', () => {
     assert.deepEqual(parseQuantity('el', defaultRules), {});
+  });
+});
+
+describe('recipe-storage › Separators that make a range', () => {
+  test.each([
+    '2-3 el',
+    '2 - 3 el',
+    '2–3 el',
+    '2—3 el',
+    '2 à 3 el',
+    '2 tot 3 el',
+    '2 tot en met 3 el',
+    '2 of 3 el',
+    'tussen 2 en 3 el',
+    '2 to 3 el',
+    '2 or 3 el',
+  ])('%s gives 2, 3 and el', (text) => {
+    assert.deepEqual(parseQuantity(text, defaultRules), { quantityValue: 2, quantityValueMax: 3, quantityUnit: 'el' });
+  });
+});
+
+describe('recipe-storage › Fractions on either side', () => {
+  test('fractions on either side', () => {
+    assert.deepEqual(parseQuantity('½-1 el', defaultRules), { quantityValue: 0.5, quantityValueMax: 1, quantityUnit: 'el' });
+    assert.deepEqual(parseQuantity('1 1/2 - 2 el', defaultRules), { quantityValue: 1.5, quantityValueMax: 2, quantityUnit: 'el' });
+  });
+});
+
+describe('recipe-storage › Comma, slash and tilde do not make a range', () => {
+  test('comma, slash and tilde make no range', () => {
+    for (const text of ['2, 3 el', '2/3 el', '2~3 el']) assert.equal(parseQuantity(text, defaultRules).quantityValueMax, undefined);
+  });
+});
+
+describe('recipe-storage › Reversed range keeps its order', () => {
+  test('a reversed range keeps its order', () => {
+    assert.deepEqual(parseQuantity('3-2 el', defaultRules), { quantityValue: 3, quantityValueMax: 2, quantityUnit: 'el' });
+  });
+});
+
+describe('recipe-storage › Chip range is read from its text on save', () => {
+  test('the range gives value, maximum and unit', () => {
+    assert.deepEqual(parseQuantity('2-3 el', defaultRules), { quantityValue: 2, quantityValueMax: 3, quantityUnit: 'el' });
   });
 });

@@ -352,3 +352,31 @@ describe('recipe-scaling › Control sits above the lists', () => {
     });
   }
 });
+
+describe('recipe-scaling › Ingredient range scales', () => {
+  test('the list shows the doubled range', () => {
+    const ingredients = [{ quantityText: '2-3 el', quantityValue: 2, quantityValueMax: 3, quantityUnit: 'el', name: 'olie' }];
+    page({ recipe: { ...recipe, servings: 4, ingredients } });
+    fireEvent.change(screen.getByTestId('ScaleControl-field'), { target: { value: '8' } });
+    assert.equal(screen.getByTestId('IngredientList-quantity').textContent, scaleIngredient(ingredients[0], 2));
+  });
+});
+
+describe('recipe-scaling › Chip range scales', () => {
+  test('the chip shows the doubled range', () => {
+    const chip = { quantityText: '1 tot 2 el', quantityValue: 1, quantityValueMax: 2, quantityUnit: 'el', name: 'olie' };
+    page({ recipe: { ...recipe, servings: 4 }, steps: [{ body: 'bak', ingredients: [chip] }] });
+    fireEvent.change(screen.getByTestId('ScaleControl-field'), { target: { value: '8' } });
+    assert.equal(screen.getByTestId('StepChips-quantity').textContent, scaleIngredient(chip, 2));
+  });
+});
+
+describe('recipe-scaling › Range in step text keeps its words', () => {
+  test('both numbers of the range are replaced', () => {
+    const body = 'Voeg 2 à 3 el olie toe';
+    const quantities = [{ startIndex: 5, endIndex: 6, quantityValue: 2, quantityValueMax: 3, maxStartIndex: 9, maxEndIndex: 10, quantityUnit: 'el' }];
+    page({ recipe: { ...recipe, servings: 4 }, steps: [{ body, ingredients: [], quantities }] });
+    fireEvent.change(screen.getByTestId('ScaleControl-field'), { target: { value: '8' } });
+    assert.equal(screen.getByTestId('StepItem-body').textContent, scaleText(body, quantities, 2));
+  });
+});

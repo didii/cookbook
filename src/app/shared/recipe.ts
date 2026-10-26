@@ -3,14 +3,23 @@
 /** The quantity text and name of an ingredient: the base of a recipe's ingredient row (RecipeIngredient), and a chip of a step on its own. A step's chip never refers to a row. */
 export type Ingredient = { quantityText: string; name: string };
 
-/** An ingredient row of a recipe: the quantity text as typed, plus its numeric value and unit when it has them (null for none, such as a range). */
-export type RecipeIngredient = Ingredient & { quantityValue: number | null; quantityUnit: string | null };
+/** An ingredient row of a recipe: the quantity text as typed, plus its numeric value and unit when it has them (null for none), and for a range the second number as typed. */
+export type RecipeIngredient = Ingredient & { quantityValue: number | null; quantityValueMax?: number | null; quantityUnit: string | null };
 
 /** A chip of a step: the stored value and unit are there once derived on save (null for none); a chip the editor is still typing has neither. */
-export type StepIngredient = Ingredient & { quantityValue?: number | null; quantityUnit?: string | null };
+export type StepIngredient = Ingredient & { quantityValue?: number | null; quantityValueMax?: number | null; quantityUnit?: string | null };
 
 /** An amount in a step's text that scales with the servings: where its number sits in the body (UTF-16 indexes, end exclusive), its value, and the unit that followed it (null for none). */
-export type StepQuantity = { startIndex: number; endIndex: number; quantityValue: number; quantityUnit: string | null };
+export type StepQuantity = {
+  startIndex: number;
+  endIndex: number;
+  quantityValue: number;
+  /** A range: the second number as typed, and where it sits in the body; all three or none. */
+  quantityValueMax?: number | null;
+  maxStartIndex?: number | null;
+  maxEndIndex?: number | null;
+  quantityUnit: string | null;
+};
 
 /** A step and what belongs to it: the ingredients it uses, an oven temperature and a timer, all optional. */
 export type Step = {

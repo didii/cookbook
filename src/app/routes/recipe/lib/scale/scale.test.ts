@@ -195,3 +195,65 @@ describe('scaleText', () => {
     assert.equal(scaleText('Meng 1 el', [{ startIndex: 5, endIndex: 6, quantityValue: 1, quantityUnit: null }], 1 / 3), 'Meng 0,333 el');
   });
 });
+
+const range = (quantityText: string, quantityValue: number, quantityValueMax: number) => ({
+  quantityText,
+  quantityValue,
+  quantityValueMax,
+  quantityUnit: 'el',
+  name: 'olie',
+});
+
+describe('recipe-scaling › Ingredient range scales', () => {
+  test('both numbers are multiplied', () => {
+    assert.equal(scaleIngredient(range('2-3 el', 2, 3), 3), '6-9 el');
+  });
+});
+
+describe('recipe-scaling › Ingredient range is shown with a dash', () => {
+  test('a written separator becomes a dash', () => {
+    assert.equal(scaleIngredient(range('2 à 3 el', 2, 3), 2), '4-6 el');
+  });
+});
+
+describe('recipe-scaling › Chip range scales', () => {
+  test('the chip shows min-max and its unit', () => {
+    assert.equal(scaleIngredient(range('1 tot 2 el', 1, 2), 2), '2-4 el');
+  });
+});
+
+describe('recipe-scaling › Reversed range scales both numbers', () => {
+  test('the order is kept', () => {
+    assert.equal(scaleIngredient(range('3-2 el', 3, 2), 2), '6-4 el');
+  });
+});
+
+describe('recipe-scaling › Range numbers are short', () => {
+  test('both have at most 3 significant digits', () => {
+    assert.equal(scaleIngredient(range('1-2 el', 1, 2), 1 / 3), '0,333-0,667 el');
+  });
+});
+
+describe('recipe-scaling › Range at factor one', () => {
+  test('the stored text is shown', () => {
+    assert.equal(scaleIngredient(range('2 à 3 el', 2, 3), 1), '2 à 3 el');
+  });
+});
+
+describe('recipe-scaling › Range in step text keeps its words', () => {
+  const text = 'Voeg 2 à 3 el olie toe';
+  const amount = { startIndex: 5, endIndex: 6, quantityValue: 2, quantityValueMax: 3, maxStartIndex: 9, maxEndIndex: 10, quantityUnit: 'el' };
+
+  test('only the numbers are replaced', () => {
+    assert.equal(scaleText(text, [amount], 2), 'Voeg 4 à 6 el olie toe');
+  });
+
+  test('a half-edited range is left alone as a whole', () => {
+    assert.equal(scaleText('Voeg 2 à drie el olie toe', [amount], 2), 'Voeg 2 à drie el olie toe');
+  });
+
+  test('a range next to another amount scales both', () => {
+    const other = { startIndex: 22, endIndex: 23, quantityValue: 1, quantityUnit: null };
+    assert.equal(scaleText('Voeg 2 à 3 el olie en 1 ei toe', [other, amount], 2), 'Voeg 4 à 6 el olie en 2 ei toe');
+  });
+});

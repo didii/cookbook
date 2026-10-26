@@ -857,3 +857,97 @@ describe('recipe-storage › Amounts are removed with their step', () => {
     assert.equal(await count(db, 'SELECT start_index FROM step_quantities WHERE step_id = ?', step), 0);
   });
 });
+
+const addIngredientWithMax = (db: D1Database, recipe: number, position: number, value: number | null, max: number) =>
+  db
+    .prepare("INSERT INTO ingredients (recipe_id, position, name, quantity_value, quantity_value_max, quantity_unit) VALUES (?, ?, 'x', ?, ?, 'el')")
+    .bind(recipe, position, value, max)
+    .run();
+
+describe('recipe-storage › Non-positive maximum refused', () => {
+  test('zero is refused', async ({ db }) => {
+    await assert.rejects(addIngredientWithMax(db, await addRecipe(db, 'max-zero'), 1, 2, 0));
+  });
+
+  test('a negative maximum is refused', async ({ db }) => {
+    await assert.rejects(addIngredientWithMax(db, await addRecipe(db, 'max-negative'), 1, 2, -1));
+  });
+});
+
+describe('recipe-storage › Maximum without a value refused', () => {
+  test('the insert fails', async ({ db }) => {
+    await assert.rejects(addIngredientWithMax(db, await addRecipe(db, 'max-no-value'), 1, null, 3));
+  });
+});
+
+const addChipWithMax = (db: D1Database, step: number, value: number | null, max: number) =>
+  db
+    .prepare(
+      "INSERT INTO step_ingredient_chips (step_id, position, quantity_text, quantity_value, quantity_value_max, quantity_unit, name) VALUES (?, 1, '2-3 el', ?, ?, 'el', 'olie')",
+    )
+    .bind(step, value, max)
+    .run();
+
+describe('recipe-storage › Non-positive chip maximum refused', () => {
+  test('zero is refused', async ({ db }) => {
+    await assert.rejects(addChipWithMax(db, await addStep(db, await addRecipe(db, 'chip-max-zero'), 1), 2, 0));
+  });
+
+  test('a maximum without a value is refused', async ({ db }) => {
+    await assert.rejects(addChipWithMax(db, await addStep(db, await addRecipe(db, 'chip-max-no-value'), 1), null, 3));
+  });
+});
+
+const addRangeAmount = (db: D1Database, step: number, max: number | null, maxStart: number | null, maxEnd: number | null) =>
+  db
+    .prepare(
+      "INSERT INTO step_quantities (step_id, start_index, end_index, quantity_value, quantity_value_max, max_start_index, max_end_index, quantity_unit) VALUES (?, 5, 6, 2, ?, ?, ?, 'el')",
+    )
+    .bind(step, max, maxStart, maxEnd)
+    .run();
+
+describe('recipe-storage › Range amount with both places', () => {
+  test('both places, both values and the unit are returned as stored', async ({ db }) => {
+    const step = await addStep(db, await addRecipe(db, 'sq-range'), 1);
+    await addRangeAmount(db, step, 3, 9, 10);
+    assert.deepEqual(
+      await db
+        .prepare(
+          'SELECT start_index, end_index, quantity_value, quantity_value_max, max_start_index, max_end_index, quantity_unit FROM step_quantities WHERE step_id = ?',
+        )
+        .bind(step)
+        .first(),
+      { start_index: 5, end_index: 6, quantity_value: 2, quantity_value_max: 3, max_start_index: 9, max_end_index: 10, quantity_unit: 'el' },
+    );
+  });
+});
+
+describe('recipe-storage › Non-positive maximum in text refused', () => {
+  test('zero is refused', async ({ db }) => {
+    await assert.rejects(addRangeAmount(db, await addStep(db, await addRecipe(db, 'sq-max-zero'), 1), 0, 9, 10));
+  });
+});
+
+describe('recipe-storage › Range needs all three fields', () => {
+  test('a maximum without places is refused', async ({ db }) => {
+    await assert.rejects(addRangeAmount(db, await addStep(db, await addRecipe(db, 'sq-only-max'), 1), 3, null, null));
+  });
+
+  test('places without a maximum are refused', async ({ db }) => {
+    await assert.rejects(addRangeAmount(db, await addStep(db, await addRecipe(db, 'sq-only-places'), 1), null, 9, 10));
+  });
+
+  test('a start without an end is refused', async ({ db }) => {
+    await assert.rejects(addRangeAmount(db, await addStep(db, await addRecipe(db, 'sq-no-end'), 1), 3, 9, null));
+  });
+});
+
+describe('recipe-storage › Second number must come after the first', () => {
+  test('a second number starting before the first ends is refused', async ({ db }) => {
+    await assert.rejects(addRangeAmount(db, await addStep(db, await addRecipe(db, 'sq-overlap'), 1), 3, 5, 7));
+  });
+
+  test('a second number ending at its start is refused', async ({ db }) => {
+    await assert.rejects(addRangeAmount(db, await addStep(db, await addRecipe(db, 'sq-max-empty'), 1), 3, 9, 9));
+  });
+});

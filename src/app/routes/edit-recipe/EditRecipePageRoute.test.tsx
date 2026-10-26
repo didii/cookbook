@@ -249,8 +249,8 @@ describe('an edit posting ingredient lines', () => {
     await addRecipe(db, 'regels');
     await submit(db, photos, 'regels', { title: 'Soep', author: 'Oma', ingredients: ingredients('250 g bloem', '', '2 grote uien') });
     assert.deepEqual((await getRecipe(db, 'regels'))?.ingredients, [
-      { quantityText: '250 g', quantityValue: 250, quantityUnit: 'g', name: 'bloem' },
-      { quantityText: '2', quantityValue: 2, quantityUnit: null, name: 'grote uien' },
+      { quantityText: '250 g', quantityValue: 250, quantityValueMax: null, quantityUnit: 'g', name: 'bloem' },
+      { quantityText: '2', quantityValue: 2, quantityValueMax: null, quantityUnit: null, name: 'grote uien' },
     ]);
   });
 
@@ -276,7 +276,7 @@ describe('an edit posted without an ingredients field', () => {
     await submit(db, photos, 'zonder-regels', { title: 'Soep', author: 'Oma', ingredients: JSON.stringify([{ text: '2 uien' }]) });
     await submit(db, photos, 'zonder-regels', { title: 'Soep 2', author: 'Oma' });
     assert.deepEqual((await getRecipe(db, 'zonder-regels'))?.ingredients, [
-      { quantityText: '2', quantityValue: 2, quantityUnit: null, name: 'uien' },
+      { quantityText: '2', quantityValue: 2, quantityValueMax: null, quantityUnit: null, name: 'uien' },
     ]);
   });
 });
@@ -359,11 +359,13 @@ describe('a saved recipe with chips', () => {
     ...s,
     ingredients: s.ingredients.map((c) => ({ ...c, quantityValue: 250, quantityUnit: 'g' })),
   }));
+  // A stored chip without a range reads back with a null maximum.
+  const stored = expected.map((s) => ({ ...s, ingredients: s.ingredients.map((c) => ({ ...c, quantityValueMax: null })) }));
 
   test('comes back in the editor with equal chips', async ({ db, photos }) => {
     await addRecipe(db, 'chips-terug');
     await submit(db, photos, 'chips-terug', { title: 'Soep', author: 'Oma', steps: JSON.stringify(posted) });
-    assert.deepEqual(defined((await load(db, photos, 'chips-terug')).values.steps), expected);
+    assert.deepEqual(defined((await load(db, photos, 'chips-terug')).values.steps), stored);
   });
 
   test('a refusal shows the chips again', async ({ db, photos }) => {
@@ -394,5 +396,19 @@ describe('action tags', () => {
     await submit(db, photos, 'soep', { title: 'Soep', author: 'Oma', tags: JSON.stringify(['Winter']) });
     await submit(db, photos, 'soep', { title: 'Soep', author: 'Oma' });
     assert.deepEqual((await getRecipe(db, 'soep'))?.tags, ['Winter']);
+  });
+});
+
+describe('recipe-storage › Range is read with the recipe', () => {
+  test('a range ingredient saved from the editor keeps both numbers', async ({ db, photos }) => {
+    await addRecipe(db, 'bereik');
+    await submit(db, photos, 'bereik', {
+      title: 'Soep',
+      author: 'Oma',
+      ingredients: JSON.stringify([{ text: '2-3 el olie' }]),
+    });
+    assert.deepEqual((await getRecipe(db, 'bereik'))?.ingredients, [
+      { quantityText: '2-3 el', quantityValue: 2, quantityValueMax: 3, quantityUnit: 'el', name: 'olie' },
+    ]);
   });
 });

@@ -61,8 +61,8 @@ describe('getRecipe', () => {
 
     test('the ingredients are in position order', async ({ db }) => {
       assert.deepEqual((await getRecipe(db, slug))?.ingredients, [
-        { quantityText: '1', quantityValue: null, quantityUnit: null, name: 'ei' },
-        { quantityText: '', quantityValue: null, quantityUnit: null, name: 'zout' },
+        { quantityText: '1', quantityValue: null, quantityValueMax: null, quantityUnit: null, name: 'ei' },
+        { quantityText: '', quantityValue: null, quantityValueMax: null, quantityUnit: null, name: 'zout' },
       ]);
     });
   });
@@ -75,7 +75,9 @@ describe('recipe-storage › Quantity value and unit are read with the recipe', 
       author: 'Oma',
       ingredients: [{ quantityText: '250 g', quantityValue: 250, quantityUnit: 'g', name: 'bloem' }],
     });
-    assert.deepEqual((await getRecipe(db, slug))?.ingredients, [{ quantityText: '250 g', quantityValue: 250, quantityUnit: 'g', name: 'bloem' }]);
+    assert.deepEqual((await getRecipe(db, slug))?.ingredients, [
+      { quantityText: '250 g', quantityValue: 250, quantityValueMax: null, quantityUnit: 'g', name: 'bloem' },
+    ]);
   });
 });
 
@@ -178,8 +180,8 @@ describe('createRecipe', () => {
         image: '/alles.jpg',
         seal: 'fu',
         ingredients: [
-          { quantityText: '250 g', quantityValue: 250, quantityUnit: 'g', name: 'bloem' },
-          { quantityText: '', quantityValue: null, quantityUnit: null, name: 'zout' },
+          { quantityText: '250 g', quantityValue: 250, quantityValueMax: null, quantityUnit: 'g', name: 'bloem' },
+          { quantityText: '', quantityValue: null, quantityValueMax: null, quantityUnit: null, name: 'zout' },
         ],
         steps: loaded('mengen', 'bakken'),
         tags: [],
@@ -738,8 +740,8 @@ const withChips: StepInput[] = [
   {
     body: 'Kneed bloem en boter. Laat 30 minuten rusten.',
     ingredients: [
-      { quantityText: '250 g', quantityValue: 250, quantityUnit: 'g', name: 'bloem' },
-      { quantityText: '', quantityValue: null, quantityUnit: null, name: 'boter' },
+      { quantityText: '250 g', quantityValue: 250, quantityValueMax: null, quantityUnit: 'g', name: 'bloem' },
+      { quantityText: '', quantityValue: null, quantityValueMax: null, quantityUnit: null, name: 'boter' },
     ],
     timer: { minutes: 30, label: 'Deeg rust' },
     quantities: [],
@@ -750,7 +752,11 @@ const withChips: StepInput[] = [
 
 describe('recipe-step-chips › Chips are stored with their step', () => {
   const fewer: StepInput[] = [
-    { body: 'Kneed.', ingredients: [{ quantityText: '1', quantityValue: 1, quantityUnit: null, name: 'ei' }], quantities: [] },
+    {
+      body: 'Kneed.',
+      ingredients: [{ quantityText: '1', quantityValue: 1, quantityValueMax: null, quantityUnit: null, name: 'ei' }],
+      quantities: [],
+    },
   ];
   const saveFewer = async (db: D1Database) => {
     const slug = await createRecipe(db, { title: 'Met chips', author: 'Oma', steps: withChips });
@@ -1047,8 +1053,8 @@ describe('a like or note for an unknown recipe or member is refused', () => {
 
 describe('getRecipe › amounts in a step', () => {
   const quantities = [
-    { startIndex: 21, endIndex: 22, quantityValue: 2, quantityUnit: null },
-    { startIndex: 5, endIndex: 8, quantityValue: 200, quantityUnit: 'g' },
+    { startIndex: 21, endIndex: 22, quantityValue: 2, quantityValueMax: null, maxStartIndex: null, maxEndIndex: null, quantityUnit: null },
+    { startIndex: 5, endIndex: 8, quantityValue: 200, quantityValueMax: null, maxStartIndex: null, maxEndIndex: null, quantityUnit: 'g' },
   ];
 
   test('are returned in text order', async ({ db }) => {
@@ -1076,7 +1082,7 @@ describe('recipe-storage › Saving again replaces the amounts', () => {
       author: 'Oma',
       steps: [{ body: 'Meng 200 g bloem', quantities: [{ startIndex: 5, endIndex: 8, quantityValue: 200, quantityUnit: 'g' }] }],
     });
-    const next = { startIndex: 5, endIndex: 6, quantityValue: 3, quantityUnit: 'el' };
+    const next = { startIndex: 5, endIndex: 6, quantityValue: 3, quantityValueMax: null, maxStartIndex: null, maxEndIndex: null, quantityUnit: 'el' };
     await updateRecipe(db, slug, { title: 'Opnieuw', author: 'Oma', steps: [{ body: 'Meng 3 el bloem', quantities: [next] }] });
     assert.deepEqual((await getRecipe(db, slug))?.steps[0]?.quantities, [next]);
   });
@@ -1089,5 +1095,35 @@ describe('recipe-storage › Saving again replaces the amounts', () => {
     });
     await updateRecipe(db, slug, { title: 'Blijft', author: 'Oma' });
     assert.equal((await getRecipe(db, slug))?.steps[0]?.quantities?.length, 1);
+  });
+});
+
+describe('recipe-storage › Range amount with both places', () => {
+  test('both places, both values and the unit are read back', async ({ db }) => {
+    const amount = { startIndex: 5, endIndex: 6, quantityValue: 2, quantityValueMax: 3, maxStartIndex: 9, maxEndIndex: 10, quantityUnit: 'el' };
+    const slug = await createRecipe(db, { title: 'Olie', author: 'Oma', steps: [{ body: 'Voeg 2 à 3 el olie toe', quantities: [amount] }] });
+    assert.deepEqual((await getRecipe(db, slug))?.steps[0]?.quantities, [amount]);
+  });
+});
+
+describe('createRecipe › range maximum', () => {
+  test('an ingredient keeps its maximum', async ({ db }) => {
+    const slug = await createRecipe(db, {
+      title: 'Olie',
+      author: 'Oma',
+      ingredients: [{ name: 'olie', quantityText: '2-3 el', quantityValue: 2, quantityValueMax: 3, quantityUnit: 'el' }],
+    });
+    assert.equal((await getRecipe(db, slug))?.ingredients[0].quantityValueMax, 3);
+  });
+
+  test('a chip keeps its maximum', async ({ db }) => {
+    const slug = await createRecipe(db, {
+      title: 'Olie',
+      author: 'Oma',
+      steps: [
+        { body: 'Voeg toe', ingredients: [{ name: 'olie', quantityText: '1-2 el', quantityValue: 1, quantityValueMax: 2, quantityUnit: 'el' }] },
+      ],
+    });
+    assert.equal((await getRecipe(db, slug))?.steps[0].ingredients[0].quantityValueMax, 2);
   });
 });

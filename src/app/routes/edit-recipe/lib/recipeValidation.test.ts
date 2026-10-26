@@ -211,8 +211,8 @@ describe('recipe-storage › Chip quantity is read from its text on save', () =>
 
 describe('chip quantity without a number', () => {
   test('the text is kept and the value and unit are null', () => {
-    const { steps } = postSteps([{ body: 'bak', ingredients: [{ quantityText: '2-3 el', name: 'olie' }] }]);
-    assert.deepEqual(steps?.[0].ingredients, [{ quantityText: '2-3 el', quantityValue: null, quantityUnit: null, name: 'olie' }]);
+    const { steps } = postSteps([{ body: 'bak', ingredients: [{ quantityText: 'een beetje', name: 'olie' }] }]);
+    assert.deepEqual(steps?.[0].ingredients, [{ quantityText: 'een beetje', quantityValue: null, quantityUnit: null, name: 'olie' }]);
   });
 });
 
@@ -317,5 +317,12 @@ describe('tagError', () => {
 
   test('no tags given is fine', () => {
     assert.equal(tagError(undefined), undefined);
+  });
+});
+
+describe('chip range on save', () => {
+  test('the chip keeps its maximum value', () => {
+    const { steps } = postSteps([{ body: 'bak', ingredients: [{ quantityText: '2-3 el', name: 'olie' }] }]);
+    assert.deepEqual(steps?.[0].ingredients, [{ quantityText: '2-3 el', quantityValue: 2, quantityValueMax: 3, quantityUnit: 'el', name: 'olie' }]);
   });
 });

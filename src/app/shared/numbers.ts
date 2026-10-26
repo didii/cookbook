@@ -14,3 +14,8 @@ export function numberValue(text: string): number | undefined {
   }
   return /^\d+(?:[.,]\d+)?$/.test(text) ? Number(text.replace(',', '.')) : undefined;
 }
+
+// Two capture groups: the first and the second number. "en" only joins after "tussen" (see `tussen`), never alone. Longest words first.
+export const rangePattern = String.raw`(${numberPattern})(?:\s*[-–—]\s*|\s+(?:à|tot en met|tot|of|to|or)\s+|\s+(?<=tussen\s+${numberPattern}\s+)en\s+)(${numberPattern})`;
+/** The word that may start a range in a quantity text: "tussen 2 en 3". */
+export const tussen = String.raw`(?:tussen\s+)?`;

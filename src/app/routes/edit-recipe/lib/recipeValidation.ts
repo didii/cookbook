@@ -111,8 +111,14 @@ function cleanStep(posted: unknown, rules: Rules): Step {
     ingredients: chips
       .map((c) => {
         const quantityText = text(c.quantityText);
-        const { quantityValue, quantityUnit } = parseQuantity(quantityText, rules);
-        return { quantityText, quantityValue: quantityValue ?? null, quantityUnit: quantityUnit ?? null, name: text(c.name) };
+        const { quantityValue, quantityValueMax, quantityUnit } = parseQuantity(quantityText, rules);
+        return {
+          quantityText,
+          quantityValue: quantityValue ?? null,
+          ...(quantityValueMax && { quantityValueMax }),
+          quantityUnit: quantityUnit ?? null,
+          name: text(c.name),
+        };
       })
       .filter((c) => c.name),
     ...(oven && { ovenTemperature: oven }),

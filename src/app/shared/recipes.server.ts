@@ -27,7 +27,7 @@ export async function getRecipe(db: D1Database, slug: string): Promise<Recipe | 
     db.prepare('SELECT id, slug, title, author, time, servings, intro, image, seal, updated_at FROM recipes WHERE slug = ?').bind(slug),
     db
       .prepare(
-        'SELECT i.quantity_text AS quantityText, i.quantity_value AS quantityValue, i.quantity_unit AS quantityUnit, i.name FROM ingredients i JOIN recipes r ON r.id = i.recipe_id WHERE r.slug = ? ORDER BY i.position',
+        'SELECT i.quantity_text AS quantityText, i.quantity_value AS quantityValue, i.quantity_value_max AS quantityValueMax, i.quantity_unit AS quantityUnit, i.name FROM ingredients i JOIN recipes r ON r.id = i.recipe_id WHERE r.slug = ? ORDER BY i.position',
       )
       .bind(slug),
     db
@@ -37,12 +37,12 @@ export async function getRecipe(db: D1Database, slug: string): Promise<Recipe | 
       .bind(slug),
     db
       .prepare(
-        'SELECT c.step_id, c.quantity_text AS quantityText, c.quantity_value AS quantityValue, c.quantity_unit AS quantityUnit, c.name FROM step_ingredient_chips c JOIN steps s ON s.id = c.step_id JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ? ORDER BY s.position, c.position',
+        'SELECT c.step_id, c.quantity_text AS quantityText, c.quantity_value AS quantityValue, c.quantity_value_max AS quantityValueMax, c.quantity_unit AS quantityUnit, c.name FROM step_ingredient_chips c JOIN steps s ON s.id = c.step_id JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ? ORDER BY s.position, c.position',
       )
       .bind(slug),
     db
       .prepare(
-        'SELECT q.step_id, q.start_index AS startIndex, q.end_index AS endIndex, q.quantity_value AS quantityValue, q.quantity_unit AS quantityUnit FROM step_quantities q JOIN steps s ON s.id = q.step_id JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ? ORDER BY q.start_index',
+        'SELECT q.step_id, q.start_index AS startIndex, q.end_index AS endIndex, q.quantity_value AS quantityValue, q.quantity_value_max AS quantityValueMax, q.max_start_index AS maxStartIndex, q.max_end_index AS maxEndIndex, q.quantity_unit AS quantityUnit FROM step_quantities q JOIN steps s ON s.id = q.step_id JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ? ORDER BY q.start_index',
       )
       .bind(slug),
     db.prepare('SELECT t.name FROM recipe_tags rt JOIN tags t ON t.id = rt.tag_id JOIN recipes r ON r.id = rt.recipe_id WHERE r.slug = ?').bind(slug),
@@ -59,10 +59,24 @@ export async function getRecipe(db: D1Database, slug: string): Promise<Recipe | 
       body: s.body,
       ingredients: chipRows
         .filter((c) => c.step_id === s.id)
-        .map((c) => ({ quantityText: c.quantityText, quantityValue: c.quantityValue, quantityUnit: c.quantityUnit, name: c.name })),
+        .map((c) => ({
+          quantityText: c.quantityText,
+          quantityValue: c.quantityValue,
+          quantityValueMax: c.quantityValueMax,
+          quantityUnit: c.quantityUnit,
+          name: c.name,
+        })),
       quantities: quantityRows
         .filter((q) => q.step_id === s.id)
-        .map((q) => ({ startIndex: q.startIndex, endIndex: q.endIndex, quantityValue: q.quantityValue, quantityUnit: q.quantityUnit })),
+        .map((q) => ({
+          startIndex: q.startIndex,
+          endIndex: q.endIndex,
+          quantityValue: q.quantityValue,
+          quantityValueMax: q.quantityValueMax,
+          maxStartIndex: q.maxStartIndex,
+          maxEndIndex: q.maxEndIndex,
+          quantityUnit: q.quantityUnit,
+        })),
       ovenTemperature: s.oven_temperature ?? undefined,
       timer: s.timer_minutes === null ? undefined : { minutes: s.timer_minutes, label: s.timer_label ?? undefined },
     })),
@@ -78,7 +92,7 @@ export type RecipeInput = {
   image?: string;
   seal?: string;
   createdBy?: string;
-  ingredients?: { name: string; quantityText?: string; quantityValue?: number; quantityUnit?: string }[];
+  ingredients?: { name: string; quantityText?: string; quantityValue?: number; quantityValueMax?: number; quantityUnit?: string }[];
   steps?: StepInput[];
   /** Tag names; a name matching a stored tag (letter case ignored) uses that tag, any other is created. */
   tags?: string[];
@@ -126,16 +140,26 @@ function insertSteps(db: D1Database, slug: string, steps: StepInput[]) {
     ...(step.ingredients ?? []).map((chip, j) =>
       db
         .prepare(
-          'INSERT INTO step_ingredient_chips (step_id, position, quantity_text, quantity_value, quantity_unit, name) SELECT s.id, ?, ?, ?, ?, ? FROM steps s JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ? AND s.position = ?',
+          'INSERT INTO step_ingredient_chips (step_id, position, quantity_text, quantity_value, quantity_value_max, quantity_unit, name) SELECT s.id, ?, ?, ?, ?, ?, ? FROM steps s JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ? AND s.position = ?',
         )
-        .bind(j, chip.quantityText, chip.quantityValue ?? null, chip.quantityUnit ?? null, chip.name, slug, i),
+        .bind(j, chip.quantityText, chip.quantityValue ?? null, chip.quantityValueMax ?? null, chip.quantityUnit ?? null, chip.name, slug, i),
     ),
     ...(step.quantities ?? []).map((q) =>
       db
         .prepare(
-          'INSERT INTO step_quantities (step_id, start_index, end_index, quantity_value, quantity_unit) SELECT s.id, ?, ?, ?, ? FROM steps s JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ? AND s.position = ?',
+          'INSERT INTO step_quantities (step_id, start_index, end_index, quantity_value, quantity_value_max, max_start_index, max_end_index, quantity_unit) SELECT s.id, ?, ?, ?, ?, ?, ?, ? FROM steps s JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ? AND s.position = ?',
         )
-        .bind(q.startIndex, q.endIndex, q.quantityValue, q.quantityUnit, slug, i),
+        .bind(
+          q.startIndex,
+          q.endIndex,
+          q.quantityValue,
+          q.quantityValueMax ?? null,
+          q.maxStartIndex ?? null,
+          q.maxEndIndex ?? null,
+          q.quantityUnit,
+          slug,
+          i,
+        ),
     ),
   ]);
 }
@@ -177,8 +201,10 @@ export async function createRecipe(db: D1Database, recipe: RecipeInput): Promise
       ),
     ...(recipe.ingredients ?? []).map((ing, i) =>
       db
-        .prepare(`INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES (${idOf}, ?, ?, ?, ?, ?)`)
-        .bind(slug, i, ing.name, ing.quantityText ?? '', ing.quantityValue ?? null, ing.quantityUnit ?? null),
+        .prepare(
+          `INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_value_max, quantity_unit) VALUES (${idOf}, ?, ?, ?, ?, ?, ?)`,
+        )
+        .bind(slug, i, ing.name, ing.quantityText ?? '', ing.quantityValue ?? null, ing.quantityValueMax ?? null, ing.quantityUnit ?? null),
     ),
     ...insertSteps(db, slug, recipe.steps ?? []),
     ...insertTags(db, slug, recipe.tags ?? []),
@@ -263,9 +289,9 @@ export async function updateRecipe(
           ...recipe.ingredients.map((ing, i) =>
             db
               .prepare(
-                'INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) SELECT id, ?, ?, ?, ?, ? FROM recipes WHERE slug = ?',
+                'INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_value_max, quantity_unit) SELECT id, ?, ?, ?, ?, ?, ? FROM recipes WHERE slug = ?',
               )
-              .bind(i, ing.name, ing.quantityText ?? '', ing.quantityValue ?? null, ing.quantityUnit ?? null, slug),
+              .bind(i, ing.name, ing.quantityText ?? '', ing.quantityValue ?? null, ing.quantityValueMax ?? null, ing.quantityUnit ?? null, slug),
           ),
         ]
       : []),

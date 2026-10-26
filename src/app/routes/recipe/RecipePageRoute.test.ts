@@ -63,7 +63,7 @@ describe('RecipePageRoute loader', () => {
     const steps = [
       {
         body: 'Bak 30 minuten op 180 graden.',
-        ingredients: [{ quantityText: '', quantityValue: null, quantityUnit: null, name: 'boter' }],
+        ingredients: [{ quantityText: '', quantityValue: null, quantityValueMax: null, quantityUnit: null, name: 'boter' }],
         ovenTemperature: 180,
         timer: { minutes: 30 },
         quantities: [],
