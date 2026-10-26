@@ -9,9 +9,6 @@ export type Filters = { q?: string; authors?: string[]; tags?: string[]; sort?: 
 /** No search, everyone, newest first. */
 export const noFilters: Filters = { q: '', sort: 'nieuwste' };
 
-/** The author field and the sort control appear from this many recipes up. */
-export const minRecipesForFilters = 4;
-
 /** Lowercase without accents, so "Crème" matches "creme". */
 const fold = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
 

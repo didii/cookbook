@@ -21,7 +21,7 @@ The system SHALL show a search box on the home page. It SHALL show only the reci
 - **THEN** all recipes that match the other active filters are shown again
 
 ### Requirement: Recipes can be filtered on author
-The system SHALL show a chip per author (each author once, case variants counted as one) plus an "Iedereen" chip. Exactly one chip is selected, "Iedereen" by default, and selecting an author shows only that author's recipes. The chips SHALL appear only when at least 4 recipes are stored.
+The system SHALL show a chip per author (each author once, case variants counted as one) plus an "Iedereen" chip. Exactly one chip is selected, "Iedereen" by default, and selecting an author shows only that author's recipes. The chips SHALL appear whenever at least one recipe is stored.
 
 #### Scenario: Choosing an author
 - **WHEN** a family member selects the chip "Papa" and Papa has two of five stored recipes
@@ -30,10 +30,6 @@ The system SHALL show a chip per author (each author once, case variants counted
 #### Scenario: Search and author combine
 - **WHEN** an author chip is selected and text is typed in the search box
 - **THEN** only recipes that match both are shown
-
-#### Scenario: Few recipes
-- **WHEN** fewer than 4 recipes are stored
-- **THEN** no author chips and no sort control are shown, but the search box is
 
 ### Requirement: Recipes can be sorted
 The system SHALL offer the orders "Nieuwste" (most recently added first, the default) and "A–Z" (by title, alphabetical, ignoring case and accents), and apply the chosen order to the shown recipes.

@@ -144,23 +144,16 @@ const family = [
 ];
 const twelve = Array.from({ length: 12 }, (_, i) => summary(i < 3 ? `Soep ${i}` : `Gerecht ${i}`, 'Oma'));
 
-describe('recipe-filtering › Few recipes', () => {
-  test('only the search box is offered', () => {
-    renderAt('/', family.slice(0, 3));
-    assert.ok(searchBox());
-    assert.equal(screen.queryAllByTestId('MultiSelect-field').length, 0);
-    assert.equal(screen.queryAllByTestId('FilterBar-sort').length, 0);
-  });
-
-  test('the author field is offered once there are more recipes', () => {
-    renderAt('/', family);
+describe('HomePage filters', () => {
+  test('the filters are offered with a single recipe', () => {
+    renderAt('/', family.slice(0, 1));
     assert.ok(screen.getByTestId('FilterBar-authors'));
+    assert.ok(screen.getAllByTestId('FilterBar-sort').length > 0);
   });
 
-  // An address that sets author or order is ignored when those controls are not offered, since they could not be undone.
-  test('an address with author or order is ignored', () => {
-    renderAt('/?auteur=Papa&auteur=Oma&tag=Soep&sort=az', family.slice(0, 3));
-    assert.deepEqual(shownTitles(), ['erwtensoep', 'appeltaart', 'pannenkoeken']);
+  test('an address with author or order narrows a short list too', () => {
+    renderAt('/?auteur=Papa&sort=az', family.slice(0, 3));
+    assert.deepEqual(shownTitles(), ['erwtensoep']);
   });
 });
 

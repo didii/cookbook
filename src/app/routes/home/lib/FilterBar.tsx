@@ -15,8 +15,6 @@ interface FilterBarProps extends ComponentProps<'search'> {
   tags: string[];
   /** The category of the tags that have one, shown in the suggestions. */
   tagCategories?: Record<string, string>;
-  /** Whether the author field and the sort control are offered; the search box always is. */
-  detailed: boolean;
   onFiltersChange: (filters: Filters) => void;
 }
 
@@ -25,8 +23,8 @@ const sorts: { value: Sort; label: string }[] = [
   { value: 'az', label: 'A–Z' },
 ];
 
-/** The search box and the detailed filters. Fixed to the bottom of the screen below 48rem, with the details in a sheet above the box; inline from 48rem. */
-export function FilterBar({ filters, authors, tags, tagCategories, detailed, onFiltersChange, className, ...props }: FilterBarProps) {
+/** The search box and the filters. Fixed to the bottom of the screen below 48rem, with the details in a sheet above the box; inline from 48rem. */
+export function FilterBar({ filters, authors, tags, tagCategories, onFiltersChange, className, ...props }: FilterBarProps) {
   const sheetId = useId();
   const toggle = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
@@ -62,56 +60,54 @@ export function FilterBar({ filters, authors, tags, tagCategories, detailed, onF
         className,
       )}
     >
-      {detailed && (
-        <div
-          id={sheetId}
-          data-testid="FilterBar-sheet"
-          data-open={open || undefined}
-          className="hidden pb-3 data-open:block data-open:animate-rise max-md:mb-3 max-md:border-b-3 max-md:border-ink/15 motion-reduce:animate-none md:block md:animate-none md:p-0"
-        >
-          <fieldset data-testid="FilterBar-authors" className="m-0 mb-4 min-w-0 border-0 p-0 md:mr-6 md:mb-3 md:inline-flex md:items-center md:gap-3">
-            <legend className="mb-2 p-0 font-black md:float-left md:mb-0">Van wie</legend>
+      <div
+        id={sheetId}
+        data-testid="FilterBar-sheet"
+        data-open={open || undefined}
+        className="hidden pb-3 data-open:block data-open:animate-rise max-md:mb-3 max-md:border-b-3 max-md:border-ink/15 motion-reduce:animate-none md:block md:animate-none md:p-0"
+      >
+        <fieldset data-testid="FilterBar-authors" className="m-0 mb-4 min-w-0 border-0 p-0 md:mr-6 md:mb-3 md:inline-flex md:items-center md:gap-3">
+          <legend className="mb-2 p-0 font-black md:float-left md:mb-0">Van wie</legend>
+          <div className="md:min-w-72">
+            <MultiSelect
+              options={authors}
+              value={filters.authors ?? []}
+              onValueChange={(next) => onFiltersChange({ ...filters, authors: next })}
+              placeholder="Iedereen"
+              label="Van wie"
+            />
+          </div>
+        </fieldset>
+        {(tags.length > 0 || (filters.tags ?? []).length > 0) && (
+          <fieldset data-testid="FilterBar-tags" className="m-0 mb-4 min-w-0 border-0 p-0 md:mr-6 md:mb-3 md:inline-flex md:items-center md:gap-3">
+            <legend className="mb-2 p-0 font-black md:float-left md:mb-0">Tags</legend>
             <div className="md:min-w-72">
               <MultiSelect
-                options={authors}
-                value={filters.authors ?? []}
-                onValueChange={(next) => onFiltersChange({ ...filters, authors: next })}
-                placeholder="Iedereen"
-                label="Van wie"
+                options={tags}
+                categories={tagCategories}
+                value={filters.tags ?? []}
+                onValueChange={(next) => onFiltersChange({ ...filters, tags: next })}
+                placeholder="Alle tags"
+                label="Tags"
               />
             </div>
           </fieldset>
-          {(tags.length > 0 || (filters.tags ?? []).length > 0) && (
-            <fieldset data-testid="FilterBar-tags" className="m-0 mb-4 min-w-0 border-0 p-0 md:mr-6 md:mb-3 md:inline-flex md:items-center md:gap-3">
-              <legend className="mb-2 p-0 font-black md:float-left md:mb-0">Tags</legend>
-              <div className="md:min-w-72">
-                <MultiSelect
-                  options={tags}
-                  categories={tagCategories}
-                  value={filters.tags ?? []}
-                  onValueChange={(next) => onFiltersChange({ ...filters, tags: next })}
-                  placeholder="Alle tags"
-                  label="Tags"
-                />
-              </div>
-            </fieldset>
-          )}
-          <Segmented
-            legend="Volgorde"
-            options={sorts}
-            value={filters.sort ?? 'nieuwste'}
-            onChange={(sort) => onFiltersChange({ ...filters, sort })}
-            inputProps={{ 'data-testid': 'FilterBar-sort' }}
-            labelProps={{ 'data-testid': 'FilterBar-sortLabel' }}
-            className="mb-4 md:mr-6 md:mb-3 md:inline-flex md:items-center md:gap-3"
-          />
-          <div className="flex gap-3 md:mb-3 md:inline-flex">
-            <Button type="button" data-testid="FilterBar-clear" className="min-h-11 text-base" onClick={() => onFiltersChange(noFilters)}>
-              Wis filters
-            </Button>
-          </div>
+        )}
+        <Segmented
+          legend="Volgorde"
+          options={sorts}
+          value={filters.sort ?? 'nieuwste'}
+          onChange={(sort) => onFiltersChange({ ...filters, sort })}
+          inputProps={{ 'data-testid': 'FilterBar-sort' }}
+          labelProps={{ 'data-testid': 'FilterBar-sortLabel' }}
+          className="mb-4 md:mr-6 md:mb-3 md:inline-flex md:items-center md:gap-3"
+        />
+        <div className="flex gap-3 md:mb-3 md:inline-flex">
+          <Button type="button" data-testid="FilterBar-clear" className="min-h-11 text-base" onClick={() => onFiltersChange(noFilters)}>
+            Wis filters
+          </Button>
         </div>
-      )}
+      </div>
       <div className="flex items-center gap-3 md:max-w-lg">
         <label className="relative min-w-0 flex-1">
           <span className="sr-only">Zoek een recept</span>
@@ -131,26 +127,24 @@ export function FilterBar({ filters, authors, tags, tagCategories, detailed, onF
             className="min-h-12 w-full rounded-[0.625rem] border-3 border-ink bg-white pr-4 pl-11 text-base font-bold text-ink placeholder:font-medium placeholder:text-muted focus-visible:outline-offset-0"
           />
         </label>
-        {detailed && (
-          <button
-            ref={toggle}
-            data-testid="FilterBar-toggle"
-            type="button"
-            aria-expanded={open}
-            aria-controls={sheetId}
-            onClick={() => setOpen(!open)}
-            className={cn(control, press, 'relative min-h-12 min-w-12 gap-2 bg-yel px-3.5 aria-expanded:bg-red aria-expanded:text-white md:hidden')}
-          >
-            <Sliders />
-            <span>Filter</span>
-            {count > 0 && (
-              <span className="absolute -top-2 -right-2 grid h-5.5 min-w-5.5 place-items-center rounded-full border-2 border-ink bg-red px-1 text-[0.8125rem] font-black text-white">
-                <span data-testid="FilterBar-count">{count}</span>
-                <span className="sr-only"> actief</span>
-              </span>
-            )}
-          </button>
-        )}
+        <button
+          ref={toggle}
+          data-testid="FilterBar-toggle"
+          type="button"
+          aria-expanded={open}
+          aria-controls={sheetId}
+          onClick={() => setOpen(!open)}
+          className={cn(control, press, 'relative min-h-12 min-w-12 gap-2 bg-yel px-3.5 aria-expanded:bg-red aria-expanded:text-white md:hidden')}
+        >
+          <Sliders />
+          <span>Filter</span>
+          {count > 0 && (
+            <span className="absolute -top-2 -right-2 grid h-5.5 min-w-5.5 place-items-center rounded-full border-2 border-ink bg-red px-1 text-[0.8125rem] font-black text-white">
+              <span data-testid="FilterBar-count">{count}</span>
+              <span className="sr-only"> actief</span>
+            </span>
+          )}
+        </button>
       </div>
     </search>
   );
