@@ -1,7 +1,7 @@
 import { useId, type ComponentProps } from 'react';
 import { Link } from 'react-router';
 import { cn } from '~app/shared/cn';
-import { LikeButton, Seal, TileBand } from '~app/shared/components';
+import { LikeButton, Pill, Seal, TileBand } from '~app/shared/components';
 import { StickyNote } from '~app/shared/icons';
 import type { RecipeSummary } from '~app/shared/recipe';
 import { twoTileRows } from '~app/shared/tile';
@@ -84,21 +84,14 @@ export function RecipeCard({ recipe: r, tile, eager, onSaved, className, ...prop
         {r.tags.length > 0 && (
           <div data-testid="RecipeCard-tags" className="mt-1.5 flex flex-wrap gap-1.5">
             {r.tags.slice(0, maxTags).map((name) => (
-              <span
-                key={name}
-                data-testid="RecipeCard-tag"
-                className="rounded-full border-2 border-ink bg-por px-2.5 text-[0.8125rem] leading-[1.45] font-extrabold"
-              >
+              <Pill key={name} data-testid="RecipeCard-tag">
                 {name}
-              </span>
+              </Pill>
             ))}
             {more > 0 && (
-              <span
-                data-testid="RecipeCard-more"
-                className="rounded-full border-2 border-dashed border-ink px-2.5 text-[0.8125rem] leading-[1.45] font-extrabold"
-              >
+              <Pill variant="dashed" data-testid="RecipeCard-more">
                 +{more}
-              </span>
+              </Pill>
             )}
           </div>
         )}

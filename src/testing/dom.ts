@@ -22,7 +22,13 @@ const keep = [
 ] as const;
 const node = Object.fromEntries(keep.map((name) => [name, globalThis[name]]));
 GlobalRegistrator.register({ url: 'http://localhost/' });
+const domFormData = globalThis.FormData;
 Object.assign(globalThis, node);
+// React reads a submitted form with `new FormData(form)`, which Node's class refuses for a happy-dom form: that one case goes to happy-dom's class, everything else stays Node's.
+globalThis.FormData = new Proxy(node.FormData as typeof FormData, {
+  construct: (target, args, newTarget) =>
+    args[0] instanceof HTMLFormElement ? Reflect.construct(domFormData, args) : Reflect.construct(target, args, newTarget),
+});
 
 // Loaded after the registration, because Testing Library binds `screen` to `document.body` when it loads. Tests import these from here, so the order of their imports does not matter.
 // Annotated: inferred, the types name a path inside node_modules/.pnpm, which declaration output cannot refer to.

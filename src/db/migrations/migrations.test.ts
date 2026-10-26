@@ -688,6 +688,78 @@ describe('recipe-storage › Recipe with tags deleted', () => {
   });
 });
 
+const addCategory = async (db: D1Database, name: string) =>
+  (await db.prepare('INSERT INTO categories (name) VALUES (?) RETURNING id').bind(name).first<{ id: number }>())!.id;
+const tagCategory = async (db: D1Database, tag: string) =>
+  (
+    await db
+      .prepare('SELECT c.name FROM tags t LEFT JOIN categories c ON c.id = t.category_id WHERE t.name = ?')
+      .bind(tag)
+      .first<{ name: string | null }>()
+  )?.name;
+
+describe('recipe-storage › Tag with a category', () => {
+  test('reading the tag gives its category', async ({ db }) => {
+    const category = await addCategory(db, 'Gerecht');
+    await db.prepare('INSERT INTO tags (name, category_id) VALUES (?, ?)').bind('Soep', category).run();
+    assert.equal(await tagCategory(db, 'Soep'), 'Gerecht');
+  });
+});
+
+describe('recipe-storage › Tag without a category', () => {
+  test('its category is empty', async ({ db }) => {
+    await addTag(db, 'Zonder');
+    assert.equal(await tagCategory(db, 'Zonder'), null);
+  });
+});
+
+describe('recipe-storage › Category name is unique', () => {
+  test('the same name in another letter case is refused', async ({ db }) => {
+    await addCategory(db, 'Seizoen');
+    await assert.rejects(addCategory(db, 'SEIZOEN'));
+  });
+
+  test('an empty name is refused', async ({ db }) => {
+    await assert.rejects(addCategory(db, ''));
+  });
+});
+
+describe('recipe-storage › Category is shared', () => {
+  test('two tags have one stored category', async ({ db }) => {
+    const category = await addCategory(db, 'Dieet');
+    await db.prepare('INSERT INTO tags (name, category_id) VALUES (?, ?), (?, ?)').bind('Vegan', category, 'Glutenvrij', category).run();
+    assert.equal(await tagCategory(db, 'Vegan'), 'Dieet');
+    assert.equal(await tagCategory(db, 'Glutenvrij'), 'Dieet');
+    assert.equal(await count(db, 'SELECT id FROM categories'), 1);
+  });
+});
+
+describe('recipe-storage › Tag needs an existing category', () => {
+  test('an unknown category is refused', async ({ db }) => {
+    const tag = await addTag(db, 'Eenzaam');
+    await assert.rejects(db.prepare('UPDATE tags SET category_id = 999999 WHERE id = ?').bind(tag).run());
+  });
+});
+
+describe('migration 0014', () => {
+  test('tags written before the migration survive it with no category', async () => {
+    const mf = createMiniflare();
+    try {
+      const db: D1Database = await mf.getD1Database('DB');
+      const dir = import.meta.dirname;
+      const files = readdirSync(dir)
+        .filter((f) => f.endsWith('.sql'))
+        .sort();
+      for (const f of files.filter((f) => f < '0014')) await applySql(db, join(dir, f));
+      await db.prepare("INSERT INTO tags (name) VALUES ('Soep')").run();
+      for (const f of files.filter((f) => f >= '0014')) await applySql(db, join(dir, f));
+      assert.equal(await tagCategory(db, 'Soep'), null);
+    } finally {
+      await mf.dispose();
+    }
+  });
+});
+
 const addChipWithValue = (db: D1Database, step: number, value: number) =>
   db
     .prepare('INSERT INTO step_ingredient_chips (step_id, position, quantity_text, quantity_value, quantity_unit, name) VALUES (?, 1, ?, ?, ?, ?)')

@@ -6,6 +6,7 @@ import type { Role } from '~app/shared/role';
 
 const links = [
   { to: '/recepten/nieuw', label: 'Nieuw recept' },
+  { to: '/tags', label: 'Tags' },
   { to: '/instellingen', label: 'Instellingen' },
   { to: '/over', label: 'Over' },
   { to: '/beheer/herkenning', label: 'Herkenning', admin: true },
