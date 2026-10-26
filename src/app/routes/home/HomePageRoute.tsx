@@ -2,6 +2,8 @@ import { Link, useRevalidator, useSearchParams, type ShouldRevalidateFunctionArg
 import { Button } from '~app/shared/components';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { listRecipes } from '~app/shared/recipes.server';
+import { listManagedTags } from '~app/shared/tagManagement.server';
+import { categoriesOf } from '~app/shared/tags';
 import { tileFor } from '~app/shared/tile';
 import type { Route } from './+types/HomePageRoute';
 import { FilterBar } from './lib/FilterBar';
@@ -19,7 +21,8 @@ import {
 import { RecipeCard } from './lib/RecipeCard';
 
 export async function loader({ context }: Route.LoaderArgs) {
-  return { recipes: await listRecipes(context.get(envContext).DB, context.get(userEmailContext), new Date()) };
+  const db = context.get(envContext).DB;
+  return { recipes: await listRecipes(db, context.get(userEmailContext), new Date()), tagCategories: categoriesOf(await listManagedTags(db)) };
 }
 
 /** Typing in the search box only changes the address; the whole list is already here, so nothing is fetched again. */
@@ -34,7 +37,7 @@ export function meta() {
 }
 
 export default function HomePage({ loaderData }: Route.ComponentProps) {
-  const { recipes } = loaderData;
+  const { recipes, tagCategories } = loaderData;
   const [params, setParams] = useSearchParams();
   const { revalidate } = useRevalidator();
   const detailed = recipes.length >= minRecipesForFilters;
@@ -64,7 +67,14 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
           <p data-testid="HomePage-intro" className="mt-2 text-lg text-pretty text-muted">
             {intro}
           </p>
-          <FilterBar filters={filters} authors={authorsOf(recipes)} tags={tagsOf(recipes)} detailed={detailed} onFiltersChange={change} />
+          <FilterBar
+            filters={filters}
+            authors={authorsOf(recipes)}
+            tags={tagsOf(recipes)}
+            tagCategories={tagCategories}
+            detailed={detailed}
+            onFiltersChange={change}
+          />
           <output data-testid="HomePage-count" className="mt-6 mb-4 block font-extrabold text-muted">
             {isFiltered(filters) ? `${shown.length} van ${recipes.length}` : shown.length} {recipes.length === 1 ? 'recept' : 'recepten'}
           </output>

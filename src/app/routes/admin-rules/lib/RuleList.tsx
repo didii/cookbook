@@ -12,7 +12,7 @@ interface RuleListProps<T extends RuleItem> extends Omit<ComponentProps<'ul'>, '
   noun: string;
   /** A new empty row, with an id no other row has. */
   blank: () => T;
-  /** Words to suggest in the fields. */
+  /** Words to suggest in the fields, except those another row already has. */
   suggestions?: string[];
   /** Messages by row id. */
   errors?: Record<string, string>;
@@ -106,7 +106,7 @@ export function RuleList<T extends RuleItem>({
               canUp={!free && i > 0}
               canDown={i < rows.length - 2}
               error={errors[row.id]}
-              suggestions={suggestions}
+              suggestions={suggestions?.filter((w) => !rows.some((r) => r.id !== row.id && r.text.trim().toLowerCase() === w.toLowerCase()))}
               onType={(text) => change(row.id, { text } as Partial<T>)}
               onRemove={() => remove(row.id, 'next')}
               onMove={(direction) => reorder.move(row.id, direction)}
