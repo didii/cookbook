@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import type { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, test, vi } from 'vitest';
-import type { LikeButton, Seal, TileBand } from '~app/shared/components';
+import { Pill, type LikeButton, type Seal, type TileBand } from '~app/shared/components';
 import type { RecipeSummary } from '~app/shared/recipe';
 import { cssFor } from '~testing/css';
 import { precedes, render, screen, within } from '~testing/dom';
@@ -154,6 +154,14 @@ describe('recipe-browsing › Recipe with more tags', () => {
   test('a pill says how many are left', () => {
     card({ tags: ['Hoofdgerecht', 'Vlees', 'Winter'] });
     assert.equal(screen.getByTestId('RecipeCard-more').textContent, '+1');
+  });
+});
+
+describe('tag-management › Recipe card uses the shared pill', () => {
+  test('a tag on the card looks like a Pill', () => {
+    card({ tags: ['Soep'] });
+    render(<Pill data-testid="Reference-pill" />);
+    assert.equal(screen.getByTestId('RecipeCard-tag').className, screen.getByTestId('Reference-pill').className);
   });
 });
 
