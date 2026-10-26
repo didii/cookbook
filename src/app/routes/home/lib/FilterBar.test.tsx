@@ -7,8 +7,8 @@ import { noFilters, type Filters } from './filterRecipes';
 
 const authors = ['Mama', 'Oma', 'Papa'];
 const tags = ['Dessert', 'Soep'];
-const show = (filters: Filters = noFilters, detailed = true, stored = tags) =>
-  render(<FilterBar filters={filters} authors={authors} tags={stored} detailed={detailed} onFiltersChange={() => {}} />);
+const show = (filters: Filters = noFilters, stored = tags) =>
+  render(<FilterBar filters={filters} authors={authors} tags={stored} onFiltersChange={() => {}} />);
 
 const bar = () => screen.getByTestId('FilterBar-bar');
 const searchBox = () => screen.getByTestId('FilterBar-search');
@@ -23,7 +23,7 @@ const sortInput = (value: string, root: HTMLElement = document.body) =>
   within(root)
     .getAllByTestId<HTMLInputElement>('FilterBar-sort')
     .find((i) => i.value === value)!;
-/** The detailed filters: what the Filter button controls. */
+/** The filters: what the Filter button controls. */
 const sheet = () => {
   const el = screen.getByTestId('FilterBar-sheet');
   assert.equal(filterButton().getAttribute('aria-controls'), el.id);
@@ -210,22 +210,6 @@ describe('FilterBar sheet', () => {
   });
 });
 
-describe('FilterBar with few recipes', () => {
-  beforeEach(() => {
-    show(noFilters, false);
-  });
-
-  test('the search box is offered', () => {
-    assert.ok(searchBox());
-  });
-
-  test('nothing else is offered', () => {
-    for (const id of ['MultiSelect-field', 'FilterBar-sort', 'FilterBar-toggle', 'FilterBar-clear']) {
-      assert.equal(screen.queryByTestId(id), null, id);
-    }
-  });
-});
-
 describe('FilterBar chosen order', () => {
   beforeEach(() => {
     show({ ...noFilters, sort: 'az' });
@@ -331,7 +315,7 @@ describe('recipe-filtering › Closing the sheet', () => {
 describe('FilterBar tag field', () => {
   const changesFor = (filters: Filters) => {
     const changes: Filters[] = [];
-    render(<FilterBar filters={filters} authors={authors} tags={tags} detailed onFiltersChange={(f) => changes.push(f)} />);
+    render(<FilterBar filters={filters} authors={authors} tags={tags} onFiltersChange={(f) => changes.push(f)} />);
     return changes;
   };
 
@@ -357,7 +341,7 @@ describe('FilterBar tag field', () => {
   });
 
   test('keeps a picked tag that no recipe has any more, so it can be removed', () => {
-    show({ ...noFilters, tags: ['Soep'] }, true, []);
+    show({ ...noFilters, tags: ['Soep'] }, []);
     assert.ok(within(screen.getByTestId('FilterBar-tags')).getByTestId('MultiSelect-remove'));
   });
 
@@ -374,13 +358,7 @@ describe('recipe-filtering › Removing a picked tag', () => {
   test('pressing the remove button reports the tag gone', async () => {
     const changes: Filters[] = [];
     render(
-      <FilterBar
-        filters={{ ...noFilters, tags: ['Soep', 'Dessert'] }}
-        authors={authors}
-        tags={tags}
-        detailed
-        onFiltersChange={(f) => changes.push(f)}
-      />,
+      <FilterBar filters={{ ...noFilters, tags: ['Soep', 'Dessert'] }} authors={authors} tags={tags} onFiltersChange={(f) => changes.push(f)} />,
     );
     fireEvent.click(within(screen.getByTestId('FilterBar-tags')).getAllByTestId('MultiSelect-remove')[0]);
     await act(async () => {});
@@ -390,7 +368,7 @@ describe('recipe-filtering › Removing a picked tag', () => {
 
 describe('recipe-filtering › No tags stored', () => {
   test('the Tags field is not shown', () => {
-    show(noFilters, true, []);
+    show(noFilters, []);
     assert.equal(screen.queryByTestId('FilterBar-tags'), null);
   });
 });
@@ -434,15 +412,7 @@ describe('FilterBar author field', () => {
 
   test('reports the authors left after removing one', async () => {
     const changes: Filters[] = [];
-    render(
-      <FilterBar
-        filters={{ ...noFilters, authors: ['Oma', 'Papa'] }}
-        authors={authors}
-        tags={tags}
-        detailed
-        onFiltersChange={(f) => changes.push(f)}
-      />,
-    );
+    render(<FilterBar filters={{ ...noFilters, authors: ['Oma', 'Papa'] }} authors={authors} tags={tags} onFiltersChange={(f) => changes.push(f)} />);
     fireEvent.click(field().getAllByTestId('MultiSelect-remove')[0]);
     await act(async () => {});
     assert.deepEqual(changes.at(-1)?.authors, ['Papa']);
@@ -450,7 +420,7 @@ describe('FilterBar author field', () => {
 
   test('reports a picked author together with the other filters', async () => {
     const changes: Filters[] = [];
-    render(<FilterBar filters={{ ...noFilters, sort: 'az' }} authors={authors} tags={tags} detailed onFiltersChange={(f) => changes.push(f)} />);
+    render(<FilterBar filters={{ ...noFilters, sort: 'az' }} authors={authors} tags={tags} onFiltersChange={(f) => changes.push(f)} />);
     openAutocomplete(authorField());
     fireEvent.click((await screen.findAllByTestId('MultiSelect-option')).find((o) => o.textContent === 'Oma')!);
     await act(async () => {});
