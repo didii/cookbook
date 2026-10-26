@@ -51,10 +51,21 @@ describe('site-menu › Menu lists the links', () => {
     openMenu();
     assert.deepEqual(links(dialog), [
       ['Nieuw recept', '/recepten/nieuw'],
+      ['Tags', '/tags'],
       ['Instellingen', '/instellingen'],
       ['Over', '/over'],
       ['Uitloggen', '/cdn-cgi/access/logout'],
     ]);
+  });
+});
+
+describe('site-menu › Tags link', () => {
+  test.each(['user', 'admin', 'superadmin'] as const)('the %s sees a link to the tag manager', (role) => {
+    labels(role);
+    assert.deepEqual(
+      links(screen.getByTestId('SiteMenu-dialog')).find(([label]) => label === 'Tags'),
+      ['Tags', '/tags'],
+    );
   });
 });
 
@@ -90,7 +101,7 @@ describe('parsing-rules › User does not see the link', () => {
 
 describe('site-menu › Menu lists the links for a superadmin', () => {
   test('the menu lists all links', () => {
-    assert.deepEqual(labels('superadmin'), ['Nieuw recept', 'Instellingen', 'Over', 'Herkenning', 'Gebruikers', 'Uitloggen']);
+    assert.deepEqual(labels('superadmin'), ['Nieuw recept', 'Tags', 'Instellingen', 'Over', 'Herkenning', 'Gebruikers', 'Uitloggen']);
   });
 
   test('Gebruikers points to the users page', () => {
@@ -104,7 +115,7 @@ describe('site-menu › Menu lists the links for a superadmin', () => {
 
 describe('site-menu › Menu lists the links for an admin', () => {
   test('the menu lists the links without the users page', () => {
-    assert.deepEqual(labels('admin'), ['Nieuw recept', 'Instellingen', 'Over', 'Herkenning', 'Uitloggen']);
+    assert.deepEqual(labels('admin'), ['Nieuw recept', 'Tags', 'Instellingen', 'Over', 'Herkenning', 'Uitloggen']);
   });
 });
 
@@ -161,7 +172,7 @@ describe('site-menu › Following a link closes the menu', () => {
   const follow = async () => {
     const { dialog } = show();
     openMenu();
-    fireEvent.click(screen.getAllByTestId('SiteMenu-link')[2]!);
+    fireEvent.click(screen.getAllByTestId('SiteMenu-link')[3]!);
     await screen.findByTestId('about');
     return dialog;
   };
