@@ -1,7 +1,7 @@
 import { useState, type ComponentProps } from 'react';
 import { cn } from '../cn';
 import { MapleLeaf } from '../icons';
-import { press } from '../press';
+import { pressCss } from '../press';
 
 interface LikeButtonProps extends ComponentProps<'button'> {
   slug: string;
@@ -41,13 +41,13 @@ export function LikeButton({ slug, initialLiked, onSaved, className, ...props }:
       aria-disabled={pending}
       onClick={() => void toggle()}
       className={cn(
-        'grid size-11 cursor-pointer place-items-center rounded-[10px] border-3 border-ink',
-        press,
+        'group grid size-11 cursor-pointer place-items-center rounded-[10px] border-3 border-ink',
+        pressCss('xs'),
         liked ? 'bg-red text-white hover:bg-[color-mix(in_srgb,var(--color-red),var(--color-ink)_25%)]' : 'bg-white text-ink hover:bg-yel',
         className,
       )}
     >
-      <MapleLeaf className={cn('size-7', liked && 'fill-current')} />
+      <MapleLeaf className={cn('size-7', liked ? 'fill-current stroke-none' : 'group-hover:fill-white group-hover:stroke-none')} />
     </button>
   );
 }
