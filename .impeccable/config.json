@@ -11,6 +11,42 @@
         ],
         "createdAt": "2026-10-19T13:39:26.891Z",
         "reason": "model triage, not user confirmed: border-l-2 is a thin divider between arrow and delete buttons in a toolbar (design's divider), not a card accent border"
+      },
+      {
+        "rule": "tight-leading",
+        "value": "*",
+        "files": [
+          "docs/design/parsing-rules.html"
+        ],
+        "createdAt": "2026-10-26T09:43:23.401Z",
+        "reason": "agent: 1.05 only on the display h1, same as the app's headings (AdminRulesPageRoute); body text is 1.45"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "docs/design/parsing-rules.html"
+        ],
+        "createdAt": "2026-10-26T09:43:23.721Z",
+        "reason": "agent: --por #f4eee0 is the app's existing @theme token, shared with every mockup in docs/design; the mockup must match the app"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "docs/design/tag-manager.html"
+        ],
+        "createdAt": "2026-10-26T10:10:57.969Z",
+        "reason": "project palette: --color-por in app.css is the established cookbook ground"
+      },
+      {
+        "rule": "tight-leading",
+        "value": "*",
+        "files": [
+          "docs/design/tag-manager.html"
+        ],
+        "createdAt": "2026-10-26T10:23:52.401Z",
+        "reason": "user confirmed: suppress; element not traceable, mockup only"
       }
     ]
   }
