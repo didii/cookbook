@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { createMemoryRouter, data, RouterProvider } from 'react-router';
 import { afterEach, describe, test } from 'vitest';
 import type { ManagedTag } from '~app/shared/tags';
-import { fireEvent, render, screen, setViewport, within } from '~testing/dom';
+import { act, fireEvent, openAutocomplete, render, screen, setViewport, within } from '~testing/dom';
 import type { ActionResult } from './actionResult';
 import { TagForm } from './TagForm';
 
@@ -92,9 +92,9 @@ describe('tag-management › Name and category in one save', () => {
     assert.deepEqual(sent, [{ intent: 'save', current: 'Soepen', name: 'Bouillon', category: 'Gerecht' }]);
   });
 
-  test('Enter in the name saves too', async () => {
+  test('Enter in a field submits the form, which saves', async () => {
     const { sent } = show();
-    fireEvent.keyDown(nameField(), { key: 'Enter' });
+    fireEvent.submit(screen.getByTestId('TagForm-form'));
     await new Promise((r) => setTimeout(r, 20));
     assert.equal(sent.length, 1);
   });
@@ -137,6 +137,32 @@ describe('tag-management › A taken name refuses the whole save', () => {
     await screen.findByTestId('TagForm-error');
     type(nameField(), 'Soepje');
     assert.equal(screen.queryByTestId('TagForm-error'), null);
+  });
+});
+
+describe('TagForm category error', () => {
+  test('its message is at the category and not at the name', async () => {
+    show({ intent: 'save', code: 'tooLong', field: 'category', error: 'Dit is te lang: maximaal 100 tekens.' });
+    click('TagActions-save');
+    assert.equal((await screen.findByTestId('TagForm-categoryError')).textContent, 'Dit is te lang: maximaal 100 tekens.');
+    assert.equal(screen.queryByTestId('TagForm-error'), null);
+    assert.equal(nameField().getAttribute('aria-invalid'), null);
+  });
+});
+
+describe('tag-management › Escape closes the form', () => {
+  test('Escape in a field closes the form', () => {
+    const { closed } = show();
+    fireEvent.keyDown(nameField(), { key: 'Escape' });
+    assert.equal(closed.count, 1);
+  });
+
+  test('Escape in an open suggestion list leaves the form open', () => {
+    const { closed } = show();
+    const field = categoryField();
+    field.setAttribute('aria-expanded', 'true');
+    fireEvent.keyDown(field, { key: 'Escape' });
+    assert.equal(closed.count, 0);
   });
 });
 
@@ -218,7 +244,47 @@ describe('tag-management › Delete is cancelled', () => {
   });
 });
 
+describe('tag-management › Own tag is not offered', () => {
+  test('the name of this tag is not suggested', async () => {
+    show();
+    click('TagActions-merge');
+    const picker = actions().getByTestId('SuggestInput-field');
+    openAutocomplete(picker);
+    fireEvent.change(picker, { target: { value: 'soep' } });
+    await screen.findAllByTestId('SuggestInput-option');
+    assert.deepEqual(
+      screen.getAllByTestId('SuggestInput-option').map((o) => o.textContent),
+      ['Soep'],
+    );
+    await act(async () => {});
+  });
+
+  test('typing the name of this tag leaves "Samenvoegen" disabled', () => {
+    show();
+    click('TagActions-merge');
+    type(actions().getByTestId('SuggestInput-field'), 'soepen');
+    assert.equal(actions().getByTestId<HTMLButtonElement>('MergeActions-confirm').disabled, true);
+  });
+});
+
 describe('TagForm', () => {
+  test('a second submit while a request runs sends nothing', async () => {
+    const { sent } = show();
+    const form = screen.getByTestId('TagForm-form');
+    fireEvent.submit(form);
+    fireEvent.submit(form);
+    await new Promise((r) => setTimeout(r, 20));
+    assert.equal(sent.length, 1);
+  });
+
+  test('Enter in the merge part without a chosen tag sends nothing', async () => {
+    const { sent } = show();
+    click('TagActions-merge');
+    fireEvent.submit(screen.getByTestId('TagForm-form'));
+    await new Promise((r) => setTimeout(r, 20));
+    assert.deepEqual(sent, []);
+  });
+
   test('merging posts the tag and the chosen stored tag', async () => {
     const { sent, done } = show({ done: 'Samengevoegd met “Soep”.' });
     click('TagActions-merge');
@@ -227,13 +293,6 @@ describe('TagForm', () => {
     await new Promise((r) => setTimeout(r, 20));
     assert.deepEqual(sent, [{ intent: 'merge', from: 'Soepen', into: 'Soep' }]);
     assert.deepEqual(done, ['Samengevoegd met “Soep”.']);
-  });
-
-  test('the merge picker does not offer this tag itself', () => {
-    show();
-    click('TagActions-merge');
-    type(actions().getByTestId('SuggestInput-field'), 'soepen');
-    assert.equal(actions().getByTestId<HTMLButtonElement>('MergeActions-confirm').disabled, true);
   });
 
   test('deleting posts the tag name', async () => {

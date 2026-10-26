@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useState, type FormEvent } from 'react';
 import { useFetcher } from 'react-router';
 import { Button } from '~app/shared/components';
 import { useKeyboardOffset } from '~app/shared/useKeyboardOffset';
@@ -38,7 +38,9 @@ export function SelectionBar({ selected, categories, onSelectAll, onSelectNone, 
     if (result && 'done' in result) onDone(result.done);
   }, [result, onDone]);
 
-  const apply = () => {
+  const apply = (e: FormEvent) => {
+    e.preventDefault();
+    if (selected.length === 0 || fetcher.state !== 'idle') return;
     const form = new FormData();
     form.set('intent', 'bulk');
     form.set('category', category);
@@ -65,7 +67,7 @@ export function SelectionBar({ selected, categories, onSelectAll, onSelectNone, 
             </button>
           </span>
         </div>
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
+        <form onSubmit={apply} noValidate className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
           <div>
             <label htmlFor={id} className="sr-only">
               Categorie voor de selectie
@@ -73,16 +75,15 @@ export function SelectionBar({ selected, categories, onSelectAll, onSelectNone, 
             <SuggestInput id={id} items={categories} value={category} onValueChange={setCategory} placeholder="Categorie voor de selectie" />
           </div>
           <Button
-            type="button"
+            type="submit"
             main
             data-testid="SelectionBar-apply"
             disabled={selected.length === 0 || fetcher.state !== 'idle'}
-            onClick={apply}
             className="min-h-12 flex-none px-4 text-base"
           >
             Instellen
           </Button>
-        </div>
+        </form>
         {error && (
           <p data-testid="SelectionBar-error" role="alert" className="font-extrabold text-red">
             {error}

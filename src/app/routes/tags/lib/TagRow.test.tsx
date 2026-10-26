@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { useState } from 'react';
 import { describe, test } from 'vitest';
 import type { ManagedTag } from '~app/shared/tags';
 import { cssFor } from '~testing/css';
@@ -7,19 +8,10 @@ import { TagRow } from './TagRow';
 
 const soep: ManagedTag = { name: 'Soep', category: 'Gerecht', uses: 7 };
 const show = (props: Partial<Parameters<typeof TagRow>[0]> = {}) => {
-  const calls = { activate: 0, close: 0 };
+  const calls = { activate: 0 };
   render(
     <ul>
-      <TagRow
-        tag={soep}
-        showCategory
-        open={false}
-        selecting={false}
-        selected={false}
-        onActivate={() => calls.activate++}
-        onClose={() => calls.close++}
-        {...props}
-      >
+      <TagRow tag={soep} showCategory open={false} selecting={false} selected={false} onActivate={() => calls.activate++} {...props}>
         <input data-testid="Form-field" />
       </TagRow>
     </ul>,
@@ -91,25 +83,26 @@ describe('TagRow', () => {
     assert.equal(row().getAttribute('aria-expanded'), 'true');
   });
 
-  test('Escape in the form closes it and focuses the row', () => {
-    const calls = show({ open: true });
-    fireEvent.keyDown(screen.getByTestId('Form-field'), { key: 'Escape' });
-    assert.equal(calls.close, 1);
+  test('when the form closes and the focus fell to the page, the row gets it back', () => {
+    function Harness() {
+      const [open, setOpen] = useState(true);
+      return (
+        <ul>
+          <TagRow tag={soep} showCategory open={open} selecting={false} selected={false} onActivate={() => {}}>
+            <button type="button" data-testid="Form-close" aria-label="Sluit" onClick={() => setOpen(false)} />
+          </TagRow>
+        </ul>
+      );
+    }
+    render(<Harness />);
+    screen.getByTestId('Form-close').focus();
+    fireEvent.click(screen.getByTestId('Form-close'));
     assert.equal(document.activeElement, row());
   });
 
-  test('Escape on a closed row does nothing', () => {
-    const calls = show();
-    fireEvent.keyDown(row(), { key: 'Escape' });
-    assert.equal(calls.close, 0);
-  });
-
-  test('Escape in an open suggestion list leaves the form open', () => {
-    const calls = show({ open: true });
-    const field = screen.getByTestId('Form-field');
-    field.setAttribute('aria-expanded', 'true');
-    fireEvent.keyDown(field, { key: 'Escape' });
-    assert.equal(calls.close, 0);
+  test('a row that was never open does not take the focus', () => {
+    show();
+    assert.notEqual(document.activeElement, row());
   });
 
   test('in select mode the row is a checkbox that says whether it is selected', () => {

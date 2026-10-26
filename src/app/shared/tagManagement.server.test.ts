@@ -147,6 +147,14 @@ describe('tag-management › Empty or too long name', () => {
   });
 });
 
+describe('saveTag category length', () => {
+  test('the error names the category field and nothing is saved', async ({ db }) => {
+    await tag(db, 'Soep');
+    assert.deepEqual(await saveTag(db, 'Soep', { name: 'Soep', category: 'a'.repeat(101) }), { error: 'tooLong', field: 'category' });
+    assert.deepEqual(await stored(db), { Soep: null });
+  });
+});
+
 describe('tag-management › A new category is created', () => {
   test('the category is stored and the tag has it', async ({ db }) => {
     await tag(db, 'Kerst');
@@ -232,6 +240,13 @@ describe('tag-management › Merge moves the recipes', () => {
     await tag(db, 'Soep');
     assert.deepEqual(await mergeTag(db, 'Nope', 'Soep'), { error: 'notFound' });
     assert.deepEqual(await mergeTag(db, 'Soep', 'Nope'), { error: 'notFound' });
+  });
+
+  test('a tag merged into itself, in any letter case, is refused and keeps its recipes', async ({ db }) => {
+    await tag(db, 'Soep');
+    await recipe(db, 'a', 'Soep');
+    assert.deepEqual(await mergeTag(db, 'Soep', 'soep'), { error: 'same' });
+    assert.deepEqual(await recipesOf(db, 'Soep'), ['a']);
   });
 });
 

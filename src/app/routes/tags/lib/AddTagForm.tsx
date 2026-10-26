@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useState, type FormEvent } from 'react';
 import { useFetcher } from 'react-router';
 import { Button } from '~app/shared/components';
 import { Plus } from '~app/shared/icons';
@@ -30,14 +30,15 @@ export function AddTagForm({ onDone }: AddTagFormProps) {
     if (result && 'done' in result) onDone(result.done);
   }, [result, onDone]);
 
-  const submit = () => {
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    if (fetcher.state !== 'idle') return;
     setSent(name);
     void fetcher.submit({ intent: 'add', name }, { method: 'post' });
   };
 
-  // No <form>: the answer is read from the fetcher, and Enter in the field does what the button does.
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-2">
+    <form onSubmit={submit} noValidate className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-2">
       <label htmlFor={id} className="col-span-2 mb-1 block text-[0.9375rem] font-black">
         Nieuwe tag
       </label>
@@ -50,7 +51,6 @@ export function AddTagForm({ onDone }: AddTagFormProps) {
           placeholder="bv. Kerst"
           autoComplete="off"
           onChange={(e) => setName(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && submit()}
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? `${id}-error` : undefined}
           className="block min-h-12 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-base font-bold text-ink placeholder:font-medium placeholder:text-muted focus:shadow-focus focus:outline-transparent aria-invalid:border-red"
@@ -62,8 +62,7 @@ export function AddTagForm({ onDone }: AddTagFormProps) {
         )}
       </div>
       <Button
-        type="button"
-        onClick={submit}
+        type="submit"
         main
         data-testid="AddTagForm-submit"
         disabled={fetcher.state !== 'idle'}
@@ -72,6 +71,6 @@ export function AddTagForm({ onDone }: AddTagFormProps) {
         <Plus />
         Toevoegen
       </Button>
-    </div>
+    </form>
   );
 }
