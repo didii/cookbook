@@ -106,3 +106,105 @@ describe('tag-management › A too long name is refused', () => {
     assert.deepEqual(await addTag(db, 'a'.repeat(100)), { ok: true });
   });
 });
+
+describe('tag-management › Name and category in one save', () => {
+  test('both change', async ({ db }) => {
+    await tag(db, 'Soepen');
+    assert.deepEqual(await saveTag(db, 'Soepen', { name: 'Bouillon', category: 'Gerecht' }), { ok: true });
+    assert.deepEqual(await stored(db), { Bouillon: 'Gerecht' });
+  });
+});
+
+describe('tag-management › Own name in another letter case', () => {
+  test('the tag is renamed', async ({ db }) => {
+    await tag(db, 'soep');
+    assert.deepEqual(await saveTag(db, 'soep', { name: 'Soep', category: '' }), { ok: true });
+    assert.deepEqual(await stored(db), { Soep: null });
+  });
+});
+
+describe('tag-management › A taken name refuses the whole save', () => {
+  test('name and category stay as they were', async ({ db }) => {
+    await tag(db, 'Soep');
+    await tag(db, 'Soepen', 'Seizoen');
+    assert.deepEqual(await saveTag(db, 'Soepen', { name: 'soep', category: 'Gerecht' }), { error: 'taken', taken: 'Soep' });
+    assert.deepEqual(await stored(db), { Soep: null, Soepen: 'Seizoen' });
+    assert.deepEqual(await categories(db), ['Seizoen']);
+  });
+});
+
+describe('tag-management › Empty or too long name', () => {
+  test('an empty name saves nothing', async ({ db }) => {
+    await tag(db, 'Soep');
+    assert.deepEqual(await saveTag(db, 'Soep', { name: ' ', category: 'Gerecht' }), { error: 'empty' });
+    assert.deepEqual(await stored(db), { Soep: null });
+  });
+
+  test('101 characters save nothing', async ({ db }) => {
+    await tag(db, 'Soep');
+    assert.deepEqual(await saveTag(db, 'Soep', { name: 'a'.repeat(101), category: '' }), { error: 'tooLong' });
+    assert.deepEqual(await stored(db), { Soep: null });
+  });
+});
+
+describe('tag-management › A new category is created', () => {
+  test('the category is stored and the tag has it', async ({ db }) => {
+    await tag(db, 'Kerst');
+    await saveTag(db, 'Kerst', { name: 'Kerst', category: 'Gelegenheid' });
+    assert.deepEqual(await stored(db), { Kerst: 'Gelegenheid' });
+    assert.deepEqual(await categories(db), ['Gelegenheid']);
+  });
+});
+
+describe('tag-management › Stored spelling is used for a category', () => {
+  test('no second category is stored', async ({ db }) => {
+    await tag(db, 'Soep');
+    await tag(db, 'Bakken', 'Gerecht');
+    await saveTag(db, 'Soep', { name: 'Soep', category: 'gerecht' });
+    assert.deepEqual(await stored(db), { Soep: 'Gerecht', Bakken: 'Gerecht' });
+    assert.deepEqual(await categories(db), ['Gerecht']);
+  });
+});
+
+describe('tag-management › Empty category removes it', () => {
+  test('the tag has no category', async ({ db }) => {
+    await tag(db, 'Soep', 'Gerecht');
+    await saveTag(db, 'Soep', { name: 'Soep', category: '' });
+    assert.deepEqual(await stored(db), { Soep: null });
+  });
+});
+
+describe('tag-management › Unused category disappears', () => {
+  test('the old category is no longer listed', async ({ db }) => {
+    await tag(db, 'Winter', 'Seizoen');
+    await saveTag(db, 'Winter', { name: 'Winter', category: 'Gerecht' });
+    assert.deepEqual(await listCategories(db), ['Gerecht']);
+  });
+});
+
+describe('recipe-storage › Unused category is removed', () => {
+  test('when its only tag gets another category', async ({ db }) => {
+    await tag(db, 'Winter', 'Seizoen');
+    await saveTag(db, 'Winter', { name: 'Winter', category: 'Gerecht' });
+    assert.deepEqual(await categories(db), ['Gerecht']);
+  });
+
+  test('when its only tag gets none', async ({ db }) => {
+    await tag(db, 'Winter', 'Seizoen');
+    await saveTag(db, 'Winter', { name: 'Winter', category: '' });
+    assert.deepEqual(await categories(db), []);
+  });
+
+  test('when its only tag is deleted', async ({ db }) => {
+    await tag(db, 'Winter', 'Seizoen');
+    await deleteTag(db, 'Winter');
+    assert.deepEqual(await categories(db), []);
+  });
+
+  test('a category another tag has is kept', async ({ db }) => {
+    await tag(db, 'Winter', 'Seizoen');
+    await tag(db, 'Zomer', 'Seizoen');
+    await deleteTag(db, 'Winter');
+    assert.deepEqual(await categories(db), ['Seizoen']);
+  });
+});
