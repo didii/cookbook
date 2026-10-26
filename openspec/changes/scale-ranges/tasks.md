@@ -11,9 +11,9 @@
 
 ## 3. Parsing on save
 
-- [ ] 3.1 Make `parseIngredient` (`lib/shared/ingredients.ts`) and `parseQuantity` (`lib/quantity.ts`) return value and maximum for a range via `rangePattern`. Verify with `ingredients.test.ts` and `quantity.test.ts` (`recipe-storage › A quantity can be a range`, `A range stores both numbers`, `Chip range is read from its text on save`).
-- [ ] 3.2 Make `findQuantities` (`lib/quantities.ts`) return a range as one amount with both spans, only when the unit or ingredient name follows the second number; drop the "ranges are excluded" filter; `2 el - 3 el` yields two single amounts; duration ranges stay out. Verify with `quantities.test.ts` (`Unit on both sides is no range`, `Range before a unit and before an ingredient`, `Duration range is not stored`), replacing the old "finds no range" tests.
-- [ ] 3.3 Pass the maximum and second place through `recipeValidation.ts` and the save path. Verify with `recipeValidation.test.ts` and a save-then-read test of `Range is read with the recipe` in `src/app/routes/edit-recipe`.
+- [x] 3.1 Make `parseIngredient` (`lib/shared/ingredients.ts`) and `parseQuantity` (`lib/quantity.ts`) return value and maximum for a range via `rangePattern`. Verify with `ingredients.test.ts` and `quantity.test.ts` (`recipe-storage › A quantity can be a range`, `A range stores both numbers`, `Chip range is read from its text on save`).
+- [x] 3.2 Make `findQuantities` (`lib/quantities.ts`) return a range as one amount with both spans, only when the unit or ingredient name follows the second number; drop the "ranges are excluded" filter; `2 el - 3 el` yields two single amounts; duration ranges stay out. Verify with `quantities.test.ts` (`Unit on both sides is no range`, `Range before a unit and before an ingredient`, `Duration range is not stored`), replacing the old "finds no range" tests.
+- [x] 3.3 Pass the maximum and second place through `recipeValidation.ts` and the save path. Verify with `recipeValidation.test.ts` and a save-then-read test of `Range is read with the recipe` in `src/app/routes/edit-recipe`.
 
 ## 4. Scaling
 

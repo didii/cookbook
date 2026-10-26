@@ -98,10 +98,10 @@ function mentions(row: Row, words: Token[], text: string): Range[] {
   return [...whole, ...words.filter((w) => sameWord(head, w.word))];
 }
 
-/** The amount written right before the name ("100 g", "2"), as a range, when the text before the name ends in one. */
+/** The amount written right before the name ("100 g", "2", "2 tot en met 3"), as a range, when the text before the name ends in one. */
 function writtenQuantity(text: string, name: Range, rules: Rules): Range | undefined {
   const before = [...text.slice(0, name.start).matchAll(/\S+/g)];
-  for (const take of [2, 1]) {
+  for (const take of [6, 5, 4, 3, 2, 1]) {
     const from = before.at(-take);
     if (!from) continue;
     const phrase = text.slice(from.index, name.start).trim();

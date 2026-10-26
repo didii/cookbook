@@ -1,9 +1,9 @@
-import { numberPattern, numberValue } from '~app/shared/numbers';
+import { numberPattern, numberValue, rangePattern, tussen } from '~app/shared/numbers';
 import type { Rules } from '~app/shared/rules';
 
-export type ParsedIngredient = { quantityText: string; quantityValue?: number; quantityUnit?: string; name: string };
+export type ParsedIngredient = { quantityText: string; quantityValue?: number; quantityValueMax?: number; quantityUnit?: string; name: string };
 
-const leading = new RegExp(String.raw`^\s*(${numberPattern})(?:\s*[-–]\s*(${numberPattern}))?`, 'u');
+const leading = new RegExp(String.raw`^\s*${tussen}(?:${rangePattern}|(${numberPattern}))`, 'u');
 const word = /^\s*(\p{L}+)(\.?)/u;
 
 /** Splits one typed line into the quantity as typed, its value and unit (one of `rules.units`), and the name. A line with no leading number is all name, unless it starts with a loose unit (`rules.looseUnits`): that word is the quantity, with value 1. */
@@ -17,7 +17,11 @@ export function parseIngredient(text: string, rules: Rules): ParsedIngredient {
     }
     return { quantityText: '', name: text.trim() };
   }
-  const [number, from, to] = match;
+  const [number, from, to, single] = match;
+  const first = numberValue(from ?? single);
+  const second = to === undefined ? undefined : numberValue(to);
+  // A range needs two numbers; one that fails to parse has neither.
+  const isRange = to !== undefined && Boolean(first) && Boolean(second);
   let end = number.length;
   let unit: string | undefined;
   const next = word.exec(text.slice(end));
@@ -27,8 +31,8 @@ export function parseIngredient(text: string, rules: Rules): ParsedIngredient {
   }
   return {
     quantityText: text.slice(0, end).trim(),
-    // A range can't be scaled, so it has no value.
-    quantityValue: to === undefined ? numberValue(from) : undefined,
+    quantityValue: to === undefined || isRange ? first : undefined,
+    ...(isRange && { quantityValueMax: second }),
     quantityUnit: unit,
     name: text.slice(end).trim(),
   };

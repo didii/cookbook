@@ -56,13 +56,28 @@ describe('recipe-ingredient-editing › No quantity', () => {
 });
 
 describe('parseIngredient', () => {
-  test('a range has no amount', () => {
+  test('a range has both values', () => {
     assert.deepEqual(parseIngredient('2-3 el olie', defaultRules), {
       quantityText: '2-3 el',
-      quantityValue: undefined,
+      quantityValue: 2,
+      quantityValueMax: 3,
       quantityUnit: 'el',
       name: 'olie',
     });
+  });
+
+  test('tussen … en … is a range and part of the quantity text', () => {
+    assert.deepEqual(parseIngredient('tussen 2 en 3 eieren', defaultRules), {
+      quantityText: 'tussen 2 en 3',
+      quantityValue: 2,
+      quantityValueMax: 3,
+      quantityUnit: undefined,
+      name: 'eieren',
+    });
+  });
+
+  test('2 en 3 alone is no range', () => {
+    assert.equal(parseIngredient('2 en 3 eieren', defaultRules).quantityValueMax, undefined);
   });
 
   describe('a whole number with a fraction', () => {
@@ -170,5 +185,16 @@ describe('recipe-ingredient-editing › Removed loose unit is not recognised', (
   test('the line is all name', () => {
     const rules = { ...defaultRules, looseUnits: defaultRules.looseUnits.filter((u) => u !== 'scheutje') };
     assert.deepEqual(parseIngredient('scheutje rode wijn', rules), { quantityText: '', name: 'scheutje rode wijn' });
+  });
+});
+
+describe('recipe-storage › A range stores both numbers', () => {
+  test('numbers are stored as typed', () => {
+    const read = (line: string) => {
+      const { quantityValue, quantityValueMax } = parseIngredient(line, defaultRules);
+      return [quantityValue, quantityValueMax];
+    };
+    assert.deepEqual(read('2-3 el olie'), [2, 3]);
+    assert.deepEqual(read('3-2 el olie'), [3, 2]);
   });
 });
