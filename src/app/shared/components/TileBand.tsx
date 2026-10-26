@@ -1,29 +1,29 @@
-import { useId, type ComponentProps } from 'react';
+import type { ComponentProps } from 'react';
 import { cn } from '../cn';
 import { tiles, tileSteps } from '../tile';
 
-interface TileBandProps extends ComponentProps<'svg'> {
+interface TileBandProps extends ComponentProps<'div'> {
   first: number;
   responsive?: boolean;
   rows?: number;
 }
 
-interface PatternProps extends ComponentProps<'svg'> {
+interface PatternProps extends ComponentProps<'div'> {
   file: string;
   cols: number;
   rows: number;
 }
 
-/** The viewBox is `cols` x `rows` tiles, so the height follows the width and the tiles scale to fit exactly, without seams. */
-function Pattern({ file, cols, rows, className, ...props }: PatternProps) {
-  const id = useId();
+/** The box is `cols` x `rows` tiles, so the height follows the width and the tiles scale to fit exactly, without seams. A CSS background, because an SVG `<pattern>` rendered as a white bar in Firefox on mobile. */
+function Pattern({ file, cols, rows, className, style, ...props }: PatternProps) {
   return (
-    <svg {...props} data-testid="TileBand-band" viewBox={`0 0 ${cols} ${rows}`} className={cn('w-full', className)} aria-hidden="true">
-      <pattern id={id} width="1" height="1" patternUnits="userSpaceOnUse">
-        <image href={file} width="1" height="1" />
-      </pattern>
-      <rect width={cols} height={rows} fill={`url(#${id})`} />
-    </svg>
+    <div
+      {...props}
+      data-testid="TileBand-band"
+      className={cn('w-full', className)}
+      style={{ ...style, aspectRatio: `${cols} / ${rows}`, backgroundImage: `url(${file})`, backgroundSize: `${100 / cols}% auto` }}
+      aria-hidden="true"
+    />
   );
 }
 
