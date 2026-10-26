@@ -3,7 +3,7 @@ import { RouterContextProvider } from 'react-router';
 import { describe } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { defaultRules } from '~app/shared/rules';
-import { getRules } from '~app/shared/rules.server';
+import { getRules, toRows, type RulesRows } from '~app/shared/rules.server';
 import { createUser } from '~app/shared/users.server';
 import { fake } from '~testing/fake';
 import { test } from '~testing/test';
@@ -25,6 +25,7 @@ const contextFor = (db: D1Database, email: string) => {
 };
 const open = (db: D1Database, email: string) =>
   loader(fake<Route.LoaderArgs>({ request: new Request('http://localhost/beheer/herkenning'), context: contextFor(db, email) }));
+const rowsField = (change: Partial<RulesRows> = {}) => JSON.stringify({ ...toRows(defaultRules), ...change });
 const post = (db: D1Database, email: string, fields: Record<string, string>) =>
   action(
     fake<Route.ActionArgs>({
@@ -53,7 +54,7 @@ describe('parsing-rules › User opens the page', () => {
 });
 
 describe('parsing-rules › User posts a change', () => {
-  const fields = { intent: 'save', units: 'kopje', minuteWords: 'min', hourWords: 'u', degreeWords: 'graden', spoken: '' };
+  const fields = { intent: 'save', rules: rowsField({ units: ['kopje'] }) };
 
   test('is refused with 403', async ({ db }) => {
     assert.equal(await refused(post(db, 'user@example.com', fields)), 403);
@@ -84,19 +85,8 @@ describe('parsing-rules › Non-admin cannot restore defaults', () => {
 });
 
 const showsRules = (role: string) => {
-  const values = (db: D1Database) => open(db, `${role}@example.com`).then((r) => r.values);
-
-  test('the units are the defaults', async ({ db }) => {
-    assert.deepEqual((await values(db)).units.split('\n'), defaultRules.units);
-  });
-
-  test('the minute words are listed', async ({ db }) => {
-    assert.equal((await values(db)).minuteWords, defaultRules.minuteWords.join('\n'));
-  });
-
-  test('the spoken amounts start with the first default', async ({ db }) => {
-    const [phrase, minutes] = Object.entries(defaultRules.spoken)[0];
-    assert.equal((await values(db)).spoken.split('\n')[0], `${phrase} = ${minutes}`);
+  test('the rows are the stored rules', async ({ db }) => {
+    assert.deepEqual((await open(db, `${role}@example.com`)).rows, toRows(defaultRules));
   });
 };
 
@@ -109,7 +99,7 @@ describe('parsing-rules › Superadmin opens the page', () => {
 });
 
 describe('action', () => {
-  const ok = { intent: 'save', units: 'g\nkopje', minuteWords: 'min', hourWords: 'u', degreeWords: 'graden', spoken: 'een kwartier = 15' };
+  const ok = { intent: 'save', rules: rowsField({ units: ['g', 'kopje'] }) };
 
   describe('an admin saves', () => {
     test('answers saved', async ({ db }) => {
@@ -121,18 +111,16 @@ describe('action', () => {
       assert.deepEqual((await getRules(db)).units, ['g', 'kopje']);
     });
 
-    test('invalid input answers errors and keeps the stored rules', async ({ db }) => {
-      await post(db, 'admin@example.com', ok);
-      const bad = await post(db, 'admin@example.com', { ...ok, units: '' });
-      assert.equal((bad.data as { errors: object }).errors !== undefined, true);
-      assert.deepEqual((await getRules(db)).units, ['g', 'kopje']);
-    });
-
     test('reset restores the defaults', async ({ db }) => {
       await post(db, 'admin@example.com', ok);
       await post(db, 'admin@example.com', { intent: 'reset' });
       assert.deepEqual(await getRules(db), defaultRules);
     });
+
+    for (const rules of ['not json', '{"units":"g"}', 'null', ''])
+      test(`rules ${JSON.stringify(rules)} is refused with 400`, async ({ db }) => {
+        assert.equal(await refused(post(db, 'admin@example.com', { intent: 'save', rules })), 400);
+      });
   });
 
   describe('an unknown intent', () => {
@@ -152,16 +140,34 @@ describe('action', () => {
 // The revalidation after an action is router behaviour.
 test.todo('parsing-rules › Saved change applies at once');
 
-describe('parsing-rules › Add a loose unit', () => {
-  const ok = { intent: 'save', units: 'g', looseUnits: 'snufje\ndruppel', minuteWords: 'min', hourWords: 'u', degreeWords: 'graden', spoken: '' };
+describe('parsing-rules › Restore defaults', () => {
+  test('the page shows the defaults again', async ({ db }) => {
+    await post(db, 'admin@example.com', { intent: 'save', rules: rowsField({ units: ['kopje'] }) });
+    await post(db, 'admin@example.com', { intent: 'reset' });
+    assert.deepEqual((await open(db, 'admin@example.com')).rows, toRows(defaultRules));
+  });
+});
 
-  test('the page shows the saved loose units', async ({ db }) => {
-    await post(db, 'admin@example.com', ok);
-    assert.equal((await open(db, 'admin@example.com')).values.looseUnits, 'snufje\ndruppel');
+describe('parsing-rules › Refused save keeps the rows', () => {
+  const sent = { ...toRows(defaultRules), units: ['kopje', 'a+', ''] };
+  const refusedSave = async (db: D1Database) => {
+    const result = await post(db, 'admin@example.com', { intent: 'save', rules: JSON.stringify(sent) });
+    return {
+      init: result.init,
+      ...(result.data as { rows: RulesRows; errors: Partial<Record<keyof RulesRows, { rows?: Record<number, string> }>> }),
+    };
+  };
+
+  test('the rows come back as they were sent', async ({ db }) => {
+    assert.deepEqual((await refusedSave(db)).rows, sent);
   });
 
-  test('saving stores the new loose unit', async ({ db }) => {
-    assert.deepEqual((await post(db, 'admin@example.com', ok)).data, { saved: true });
-    assert.deepEqual((await getRules(db)).looseUnits, ['snufje', 'druppel']);
+  test('the message is on the faulty row', async ({ db }) => {
+    assert.deepEqual(Object.keys((await refusedSave(db)).errors.units?.rows ?? {}), ['1']);
+  });
+
+  test('the answer is 400 and nothing is stored', async ({ db }) => {
+    assert.equal((await refusedSave(db)).init?.status, 400);
+    assert.deepEqual(await getRules(db), defaultRules);
   });
 });
