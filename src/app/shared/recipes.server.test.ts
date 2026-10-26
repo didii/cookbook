@@ -1091,13 +1091,3 @@ describe('recipe-storage › Saving again replaces the amounts', () => {
     assert.equal((await getRecipe(db, slug))?.steps[0]?.quantities?.length, 1);
   });
 });
-
-// Scenarios that add-recipe-tags removes: the main spec keeps them until the change is archived. Delete these then.
-test.todo('recipe-storage › Recipe with categories');
-test.todo('recipe-storage › Recipe without categories');
-test.todo('recipe-storage › Category name is unique');
-test.todo('recipe-storage › Category is shared');
-test.todo('recipe-storage › Category linked twice is refused');
-test.todo('recipe-storage › Link needs a recipe and a category');
-test.todo('recipe-storage › Recipe with categories deleted');
-test.todo('recipe-storage › Listing returns categories in order');
