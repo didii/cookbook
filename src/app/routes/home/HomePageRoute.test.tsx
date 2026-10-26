@@ -26,7 +26,7 @@ const renderAt = (url: string, recipes: RecipeSummary[]) => {
 };
 /** The slugs of the cards on the page, in order. */
 const shownTitles = () => screen.queryAllByTestId('RecipeCard-link').map((a) => a.getAttribute('href')?.replace('/recepten/', ''));
-const chip = (name: string) => screen.getAllByTestId('FilterBar-chip').find((c) => c.textContent === name)!;
+const pickedAuthors = () => screen.queryAllByTestId('MultiSelect-value').map((v) => v.textContent);
 const sortInput = (value: string) => screen.getAllByTestId<HTMLInputElement>('FilterBar-sort').find((i) => i.value === value)!;
 /** The "n recepten" line. */
 const count = () => screen.getByTestId('HomePage-count').textContent;
@@ -143,18 +143,18 @@ describe('recipe-filtering › Few recipes', () => {
   test('only the search box is offered', () => {
     renderAt('/', family.slice(0, 3));
     assert.ok(searchBox());
-    assert.equal(screen.queryAllByTestId('FilterBar-chip').length, 0);
+    assert.equal(screen.queryAllByTestId('MultiSelect-field').length, 0);
     assert.equal(screen.queryAllByTestId('FilterBar-sort').length, 0);
   });
 
-  test('the chips are offered once there are more recipes', () => {
+  test('the author field is offered once there are more recipes', () => {
     renderAt('/', family);
-    assert.ok(screen.getAllByTestId('FilterBar-chip').length > 0);
+    assert.ok(screen.getByTestId('MultiSelect-field'));
   });
 
   // An address that sets author or order is ignored when those controls are not offered, since they could not be undone.
   test('an address with author or order is ignored', () => {
-    renderAt('/?auteur=Papa&sort=az', family.slice(0, 3));
+    renderAt('/?auteur=Papa&auteur=Oma&sort=az', family.slice(0, 3));
     assert.deepEqual(shownTitles(), ['erwtensoep', 'appeltaart', 'pannenkoeken']);
   });
 });
@@ -211,8 +211,8 @@ describe('recipe-filtering › Clearing all filters', () => {
       assert.equal(shownTitles().length, family.length);
     });
 
-    test('chooses Iedereen', () => {
-      assert.equal(chip('Iedereen').getAttribute('aria-pressed'), 'true');
+    test('picks no author', () => {
+      assert.deepEqual(pickedAuthors(), []);
     });
 
     test('chooses the newest order', () => {
@@ -227,7 +227,7 @@ describe('recipe-filtering › Clearing all filters', () => {
   // Using the button from the nothing-found message gets there.
   describe('the clear button', () => {
     test.beforeEach(() => {
-      renderAt('/?q=zzz&auteur=Papa&sort=az', family);
+      renderAt('/?q=zzz&auteur=Papa&auteur=Oma&sort=az', family);
       fireEvent.click(screen.getByTestId('HomePage-clear'));
     });
 
@@ -239,8 +239,8 @@ describe('recipe-filtering › Clearing all filters', () => {
       assert.equal(searchBox().value, '');
     });
 
-    test('chooses Iedereen', () => {
-      assert.equal(chip('Iedereen').getAttribute('aria-pressed'), 'true');
+    test('picks no author', () => {
+      assert.deepEqual(pickedAuthors(), []);
     });
   });
 });
@@ -262,9 +262,28 @@ describe('recipe-filtering › Opening a filtered address', () => {
     assert.deepEqual(shownTitles(), ['erwtensoep', 'stoofvlees']);
   });
 
-  test('the author chip is pressed', () => {
+  test('the author chip is shown', () => {
     renderAt('/?auteur=Papa&sort=az', family);
-    assert.equal(chip('Papa').getAttribute('aria-pressed'), 'true');
+    assert.deepEqual(pickedAuthors(), ['Papa']);
+  });
+});
+
+describe('recipe-filtering › Opening an address with authors', () => {
+  test('the recipes of all the authors are shown', () => {
+    renderAt('/?auteur=Oma&auteur=Papa', family);
+    assert.deepEqual(shownTitles(), ['erwtensoep', 'appeltaart', 'stoofvlees']);
+  });
+
+  test('both authors are picked', () => {
+    renderAt('/?auteur=Oma&auteur=Papa', family);
+    assert.deepEqual(pickedAuthors(), ['Oma', 'Papa']);
+  });
+});
+
+describe('recipe-filtering › Choosing an author', () => {
+  test('only the recipes of the author are shown', () => {
+    renderAt('/?auteur=Papa', family);
+    assert.deepEqual(shownTitles(), ['erwtensoep', 'stoofvlees']);
   });
 });
 

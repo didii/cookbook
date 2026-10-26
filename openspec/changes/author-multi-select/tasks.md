@@ -17,8 +17,8 @@ Verify each task with the type check and `pnpm test:ai`; `pnpm test:spec author-
 
 ## 4. The page
 
-- [ ] 4.1 In `HomePageRoute.tsx` ignore `authors` from the address when not detailed and make "Wis filters" clear authors; update `HomePageRoute.test.tsx`: "Choosing an author" through the address, "Clearing all filters", "Opening an address with authors", "Few recipes"
+- [x] 4.1 In `HomePageRoute.tsx` ignore `authors` from the address when not detailed and make "Wis filters" clear authors; update `HomePageRoute.test.tsx`: "Choosing an author" through the address, "Clearing all filters", "Opening an address with authors", "Few recipes"
 
 ## 5. Wrap-up
 
-- [ ] 5.1 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check`, `pnpm test:ai` and `pnpm test:spec author-multi-select`; all clean
+- [x] 5.1 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check`, `pnpm test:ai` and `pnpm test:spec author-multi-select`; all clean
