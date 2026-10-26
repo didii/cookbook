@@ -13,4 +13,4 @@ Apply after `tag-manager` is merged. Verify with the type check and `pnpm test:a
 
 ## 3. Wrap-up
 
-- [ ] 3.1 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check`, `pnpm test:ai` and `pnpm test:spec tag-category-in-editor-suggestions`; all clean
+- [x] 3.1 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check`, `pnpm test:ai` and `pnpm test:spec tag-category-in-editor-suggestions`; all clean
