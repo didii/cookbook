@@ -1,6 +1,7 @@
 -- Dev-only sample data. Run: wrangler d1 execute DB --local --file src/db/seed/dev.sql (never against remote).
 DELETE FROM recipes;
 DELETE FROM tags;
+DELETE FROM categories;
 
 INSERT INTO recipes (slug, title, author, time, servings, intro, image, seal) VALUES ('appeltaart', 'Appeltaart', 'Oma', '1u 20', 8, 'Met een dikke laag zure appels en een rooster van deeg bovenop.', '/img/appeltaart.jpg', 'jia-wei');
 INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 0, 'zelfrijzende bloem', '250 g', 250, 'g');
@@ -91,6 +92,9 @@ INSERT INTO steps (recipe_id, position, body, oven_temperature, timer_minutes, t
 INSERT INTO steps (recipe_id, position, body, oven_temperature, timer_minutes, timer_label) VALUES ((SELECT id FROM recipes WHERE slug = 'frikandellen'), 2, 'Snijd de frikandellen open en leg ze op een bord met saus en ui.', NULL, NULL, NULL);
 
 INSERT INTO tags (name) VALUES ('Hoofdgerecht'), ('Nagerecht'), ('Soep'), ('Winter'), ('Bakken'), ('Snel');
+INSERT INTO categories (name) VALUES ('Gerecht'), ('Seizoen');
+UPDATE tags SET category_id = (SELECT id FROM categories WHERE name = 'Gerecht') WHERE name IN ('Hoofdgerecht', 'Nagerecht', 'Soep');
+UPDATE tags SET category_id = (SELECT id FROM categories WHERE name = 'Seizoen') WHERE name = 'Winter';
 INSERT INTO recipe_tags (recipe_id, tag_id) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), (SELECT id FROM tags WHERE name = 'Nagerecht'));
 INSERT INTO recipe_tags (recipe_id, tag_id) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), (SELECT id FROM tags WHERE name = 'Bakken'));
 INSERT INTO recipe_tags (recipe_id, tag_id) VALUES ((SELECT id FROM recipes WHERE slug = 'stoofvlees'), (SELECT id FROM tags WHERE name = 'Hoofdgerecht'));

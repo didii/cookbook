@@ -5,7 +5,7 @@ Change 2 of 2 (after `add-recipe-tags`). Reference: `docs/design/tag-manager.htm
 ## 1. Database
 
 - [x] 1.1 Add migration `0014_tag_categories.sql` (`categories` with a unique NOCASE non-empty name, nullable `tags.category_id` referencing it); test in `migrations.test.ts` the "recipe-storage › Tag with a category", "Tag without a category", "Category name is unique", "Category is shared" and "Tag needs an existing category" scenarios, and that tags written before the migration survive it with no category
-- [ ] 1.2 Add categories to `src/db/seed/dev.sql` (some tags with one, some without); verify `seed/dev.test.ts` passes
+- [x] 1.2 Add categories to `src/db/seed/dev.sql` (some tags with one, some without); verify `seed/dev.test.ts` passes
 
 ## 2. Server
 
