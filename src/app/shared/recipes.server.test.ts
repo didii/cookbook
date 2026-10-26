@@ -9,6 +9,7 @@ import {
   getRecipe,
   listAuthors,
   listRecipes,
+  listTags,
   setLike,
   setNote,
   slugify,
@@ -181,6 +182,7 @@ describe('createRecipe', () => {
           { quantityText: '', quantityValue: null, quantityUnit: null, name: 'zout' },
         ],
         steps: loaded('mengen', 'bakken'),
+        tags: [],
       });
     });
 
@@ -220,7 +222,7 @@ describe('listRecipes', () => {
         time: null,
         image: null,
         seal: 'fu',
-        categories: [],
+        tags: [],
         liked: false,
         hasNote: false,
         isNew: true,
@@ -232,7 +234,7 @@ describe('listRecipes', () => {
         time: '30 min',
         image: '/a.jpg',
         seal: 'fu',
-        categories: [],
+        tags: [],
         liked: false,
         hasNote: false,
         isNew: true,
@@ -302,44 +304,84 @@ describe("recipe-note › Another member's note on a card", () => {
   });
 });
 
-const categorize = async (db: D1Database, slug: string, ...names: string[]) => {
-  for (const [position, name] of names.entries()) {
-    await db.prepare('INSERT OR IGNORE INTO categories (name) VALUES (?)').bind(name).run();
+const tagRecipe = async (db: D1Database, slug: string, ...names: string[]) => {
+  for (const name of names) {
+    await db.prepare('INSERT OR IGNORE INTO tags (name) VALUES (?)').bind(name).run();
     await db
-      .prepare(
-        'INSERT INTO recipe_categories (recipe_id, category_id, position) VALUES ((SELECT id FROM recipes WHERE slug = ?), (SELECT id FROM categories WHERE name = ?), ?)',
-      )
-      .bind(slug, name, position)
+      .prepare('INSERT INTO recipe_tags (recipe_id, tag_id) VALUES ((SELECT id FROM recipes WHERE slug = ?), (SELECT id FROM tags WHERE name = ?))')
+      .bind(slug, name)
       .run();
   }
 };
+const listedTags = async (db: D1Database, slug: string) => (await listRecipes(db, 'x@example.com', new Date())).find((r) => r.slug === slug)?.tags;
+const storedTags = async (db: D1Database) =>
+  (await db.prepare('SELECT name FROM tags ORDER BY name').all<{ name: string }>()).results.map((r) => r.name);
 
-describe('recipe-storage › Recipe without categories', () => {
+describe('recipe-storage › Recipe with tags', () => {
+  test('reading a recipe gives its tags alphabetically', async ({ db }) => {
+    const slug = await createRecipe(db, { title: 'Erwtensoep', author: 'Oma', seal: 'fu' });
+    await tagRecipe(db, slug, 'Winter', 'Soep');
+    assert.deepEqual((await getRecipe(db, slug))?.tags, ['Soep', 'Winter']);
+  });
+});
+
+describe('recipe-storage › Recipe without tags', () => {
   test('its entry has an empty list', async ({ db }) => {
     const slug = await createRecipe(db, { title: 'Kaal', author: 'Oma', seal: 'fu' });
-    assert.deepEqual((await listRecipes(db, 'x@example.com', new Date())).find((r) => r.slug === slug)?.categories, []);
+    assert.deepEqual(await listedTags(db, slug), []);
   });
 });
 
-describe('recipe-storage › Listing returns categories in order', () => {
-  test('the entry has its categories in stored order', async ({ db }) => {
-    const slug = await createRecipe(db, { title: 'Erwtensoep', author: 'Oma', seal: 'fu' });
-    await categorize(db, slug, 'Soep', 'Winter');
-    assert.deepEqual((await listRecipes(db, 'x@example.com', new Date())).find((r) => r.slug === slug)?.categories, ['Soep', 'Winter']);
-  });
-});
-
-describe('recipe-storage › Category is shared', () => {
-  test('both recipes are listed with the category', async ({ db }) => {
+describe('recipe-storage › Tag is shared', () => {
+  test('both recipes are listed with the tag', async ({ db }) => {
     const a = await createRecipe(db, { title: 'A', author: 'Oma', seal: 'fu' });
     const b = await createRecipe(db, { title: 'B', author: 'Oma', seal: 'fu' });
-    await categorize(db, a, 'Snel');
-    await categorize(db, b, 'Snel');
+    await tagRecipe(db, a, 'Snel');
+    await tagRecipe(db, b, 'Snel');
     const listed = await listRecipes(db, 'x@example.com', new Date());
     assert.deepEqual(
-      listed.map((r) => r.categories),
+      listed.map((r) => r.tags),
       [['Snel'], ['Snel']],
     );
+  });
+
+  test('only one tag is stored', async ({ db }) => {
+    await tagRecipe(db, await createRecipe(db, { title: 'A', author: 'Oma', seal: 'fu' }), 'Snel');
+    await tagRecipe(db, await createRecipe(db, { title: 'B', author: 'Oma', seal: 'fu' }), 'Snel');
+    assert.deepEqual(await storedTags(db), ['Snel']);
+  });
+});
+
+describe('recipe-storage › Listing returns the most used tags first', () => {
+  test('the entry has the most used tag first', async ({ db }) => {
+    const slug = await createRecipe(db, { title: 'Hoofd', author: 'Oma', seal: 'fu' });
+    await tagRecipe(db, slug, 'Soep', 'Bakken', 'winter');
+    for (const title of ['B', 'C']) await tagRecipe(db, await createRecipe(db, { title, author: 'Oma', seal: 'fu' }), 'winter');
+    await tagRecipe(db, await createRecipe(db, { title: 'D', author: 'Oma', seal: 'fu' }), 'Soep');
+    assert.deepEqual(await listedTags(db, slug), ['winter', 'Soep', 'Bakken']);
+  });
+});
+
+describe('recipe-storage › Equally used tags are alphabetical', () => {
+  test('equal counts are in alphabetical order', async ({ db }) => {
+    const slug = await createRecipe(db, { title: 'Gelijk', author: 'Oma', seal: 'fu' });
+    await tagRecipe(db, slug, 'winter', 'Soep');
+    assert.deepEqual(await listedTags(db, slug), ['Soep', 'winter']);
+  });
+});
+
+describe('recipe-storage › Reading a recipe returns tags alphabetically', () => {
+  test('the recipe has its tags in alphabetical order', async ({ db }) => {
+    const slug = await createRecipe(db, { title: 'Alfabet', author: 'Oma', seal: 'fu' });
+    await tagRecipe(db, slug, 'winter', 'Soep');
+    assert.deepEqual((await getRecipe(db, slug))?.tags, ['Soep', 'winter']);
+  });
+});
+
+describe('recipe-storage › Tags are listed alphabetically', () => {
+  test('the tags come back alphabetically', async ({ db }) => {
+    await db.batch(['winter', 'Soep', 'Bakken'].map((name) => db.prepare('INSERT INTO tags (name) VALUES (?)').bind(name)));
+    assert.deepEqual(await listTags(db), ['Bakken', 'Soep', 'winter']);
   });
 });
 
@@ -347,6 +389,82 @@ describe('recipe-creation › New author is accepted', () => {
   test('the author is stored as typed', async ({ db }) => {
     const slug = await createRecipe(db, { title: 'Nieuwe auteur', author: 'tante Mieke', servings: 2 });
     assert.equal((await getRecipe(db, slug))?.author, 'tante Mieke');
+  });
+});
+
+const base = { title: 'Soepje', author: 'Oma', seal: 'fu' };
+const readTags = async (db: D1Database, slug: string) => (await getRecipe(db, slug))?.tags;
+
+describe('recipe-storage › Recipe is created with tags', () => {
+  test('the recipe has the tags', async ({ db }) => {
+    assert.deepEqual(await readTags(db, await createRecipe(db, { ...base, tags: ['Soep', 'Winter'] })), ['Soep', 'Winter']);
+  });
+
+  test('both tags exist', async ({ db }) => {
+    await createRecipe(db, { ...base, tags: ['Soep', 'Winter'] });
+    assert.deepEqual(await storedTags(db), ['Soep', 'Winter']);
+  });
+});
+
+describe('recipe-storage › Recipe tags are replaced', () => {
+  test('only the new tags remain', async ({ db }) => {
+    const slug = await createRecipe(db, { ...base, tags: ['Soep', 'Winter'] });
+    await updateRecipe(db, slug, { ...base, tags: ['Snel'] });
+    assert.deepEqual(await readTags(db, slug), ['Snel']);
+  });
+});
+
+describe('recipe-storage › Update without tags keeps them', () => {
+  test('the tags remain', async ({ db }) => {
+    const slug = await createRecipe(db, { ...base, tags: ['Soep'] });
+    await updateRecipe(db, slug, base);
+    assert.deepEqual(await readTags(db, slug), ['Soep']);
+  });
+});
+
+describe('recipe-storage › Update with an empty list clears them', () => {
+  test('the recipe has no tags', async ({ db }) => {
+    const slug = await createRecipe(db, { ...base, tags: ['Soep'] });
+    await updateRecipe(db, slug, { ...base, tags: [] });
+    assert.deepEqual(await readTags(db, slug), []);
+  });
+});
+
+describe('recipe-storage › Existing spelling is reused', () => {
+  test('the recipe gets the stored spelling', async ({ db }) => {
+    await createRecipe(db, { ...base, title: 'Eerste', tags: ['Soep'] });
+    assert.deepEqual(await readTags(db, await createRecipe(db, { ...base, title: 'Tweede', tags: ['soep'] })), ['Soep']);
+  });
+
+  test('no second tag is created', async ({ db }) => {
+    await createRecipe(db, { ...base, title: 'Eerste', tags: ['Soep'] });
+    await createRecipe(db, { ...base, title: 'Tweede', tags: ['soep'] });
+    assert.deepEqual(await storedTags(db), ['Soep']);
+  });
+});
+
+describe('recipe-storage › Duplicate and blank tags are dropped', () => {
+  test('the recipe has each tag once', async ({ db }) => {
+    assert.deepEqual(await readTags(db, await createRecipe(db, { ...base, tags: ['Soep', ' ', 'soep', 'Winter'] })), ['Soep', 'Winter']);
+  });
+});
+
+describe('recipe-storage › Unknown tag is created', () => {
+  test('the tag is stored', async ({ db }) => {
+    await createRecipe(db, { ...base, tags: ['Kerst'] });
+    assert.deepEqual(await storedTags(db), ['Kerst']);
+  });
+
+  test('the recipe has it', async ({ db }) => {
+    assert.deepEqual(await readTags(db, await createRecipe(db, { ...base, tags: ['Kerst'] })), ['Kerst']);
+  });
+});
+
+describe('recipe-storage › Unused tag remains', () => {
+  test('the tag is still stored and listed', async ({ db }) => {
+    const slug = await createRecipe(db, { ...base, tags: ['Soep'] });
+    await updateRecipe(db, slug, { ...base, tags: [] });
+    assert.deepEqual(await listTags(db), ['Soep']);
   });
 });
 
@@ -973,3 +1091,13 @@ describe('recipe-storage › Saving again replaces the amounts', () => {
     assert.equal((await getRecipe(db, slug))?.steps[0]?.quantities?.length, 1);
   });
 });
+
+// Scenarios that add-recipe-tags removes: the main spec keeps them until the change is archived. Delete these then.
+test.todo('recipe-storage › Recipe with categories');
+test.todo('recipe-storage › Recipe without categories');
+test.todo('recipe-storage › Category name is unique');
+test.todo('recipe-storage › Category is shared');
+test.todo('recipe-storage › Category linked twice is refused');
+test.todo('recipe-storage › Link needs a recipe and a category');
+test.todo('recipe-storage › Recipe with categories deleted');
+test.todo('recipe-storage › Listing returns categories in order');

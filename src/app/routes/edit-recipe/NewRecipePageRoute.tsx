@@ -1,7 +1,7 @@
 import { data, redirect, useRouteLoaderData } from 'react-router';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { acceptImage } from '~app/shared/photos.server';
-import { chooseSeal, createRecipe, listAuthors } from '~app/shared/recipes.server';
+import { chooseSeal, createRecipe, listAuthors, listTags } from '~app/shared/recipes.server';
 import { defaultRules, type Rules } from '~app/shared/rules';
 import { getRules } from '~app/shared/rules.server';
 import { seals } from '~app/shared/seals';
@@ -11,14 +11,20 @@ import type { Route } from './+types/NewRecipePageRoute';
 import { emptyDraftSeed } from './lib/draft';
 import { endDraftAfterSave } from './lib/endDraftAfterSave';
 import { RecipeEditor } from './lib/RecipeEditor';
-import { readForm, readIngredients, readSteps, toRecipeFields, validate, type RecipeFormErrors } from './lib/recipeValidation';
+import { readForm, readIngredients, readSteps, readTags, tagError, toRecipeFields, validate, type RecipeFormErrors } from './lib/recipeValidation';
 
 export async function loader({ context }: Route.LoaderArgs) {
   const db = context.get(envContext).DB;
   // The author field starts as the member's calling name; the welcome gate means there is a user (empty only when it is bypassed).
   const callingName = (await getUser(db, context.get(userEmailContext)))?.callingName ?? '';
   // The tile is picked here rather than while rendering, so the server and the browser agree. The seal is posted back, so the recipe gets the one the editor showed.
-  return { callingName, authors: await listAuthors(db), tile: Math.floor(Math.random() * tiles.length), seal: await chooseSeal(db) };
+  return {
+    callingName,
+    authors: await listAuthors(db),
+    tags: await listTags(db),
+    tile: Math.floor(Math.random() * tiles.length),
+    seal: await chooseSeal(db),
+  };
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
@@ -28,15 +34,20 @@ export async function action({ request, context }: Route.ActionArgs) {
   const { lines, ingredients, errors: ingredientErrors } = readIngredients(form, rules);
   const { lines: stepLines, steps } = readSteps(form, ingredients ?? [], rules);
 
+  const tags = readTags(form);
   const errors: RecipeFormErrors = validate(values);
+  const tooLong = tagError(tags);
+  if (tooLong) errors.tags = tooLong;
   if (Object.keys(ingredientErrors).length) errors.ingredients = ingredientErrors;
-  if (Object.keys(errors).length) return data({ errors, values: { ...values, ingredients: lines, steps: stepLines } }, { status: 400 });
+  if (Object.keys(errors).length)
+    return data({ errors, values: { ...values, ingredients: lines, steps: stepLines, tags: tags ?? [] } }, { status: 400 });
 
   const fields = toRecipeFields(values);
   const slug = await createRecipe(context.get(envContext).DB, {
     ...fields,
     ingredients,
     steps,
+    tags,
     image: acceptImage(fields.image, null),
     seal: seals.find((s) => s === form.get('seal')),
     createdBy: context.get(userEmailContext),
@@ -58,6 +69,7 @@ export default function NewRecipePage({ loaderData, actionData }: Route.Componen
       rules={useRouteLoaderData<{ rules?: Rules }>('root')?.rules ?? defaultRules}
       heading="Nieuw recept"
       authors={loaderData.authors}
+      tags={loaderData.tags}
       tile={loaderData.tile}
       seal={loaderData.seal}
       initial={seed}

@@ -11,9 +11,9 @@ describe('dev seed', () => {
     assert.ok(((await db.prepare('SELECT COUNT(*) AS n FROM recipes').first<{ n: number }>())?.n ?? 0) > 0);
   });
 
-  test('some recipe has categories', async ({ db }) => {
+  test('some recipe has tags', async ({ db }) => {
     await applySql(db, join(import.meta.dirname, 'dev.sql'));
-    assert.ok(((await db.prepare('SELECT COUNT(*) AS n FROM recipe_categories').first<{ n: number }>())?.n ?? 0) > 0);
+    assert.ok(((await db.prepare('SELECT COUNT(*) AS n FROM recipe_tags').first<{ n: number }>())?.n ?? 0) > 0);
   });
 
   test('each step amount sits on a number equal to its value', async ({ db }) => {

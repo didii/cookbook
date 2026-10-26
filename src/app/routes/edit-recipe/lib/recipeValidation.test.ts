@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'vitest';
 import type { Step } from '~app/shared/recipe';
 import { defaultRules } from '~app/shared/rules';
-import { readIngredients, readSteps, validate } from './recipeValidation';
+import { readIngredients, readSteps, readTags, tagError, validate } from './recipeValidation';
 
 const ok = { title: 'Soep', author: 'Oma', servings: '4', time: '', intro: '', image: '' };
 
@@ -275,5 +275,47 @@ describe('recipe-storage › Chip quantity word that is not a loose unit', () =>
       steps?.[0].ingredients.map((c) => [c.quantityValue, c.quantityUnit]),
       [[null, null]],
     );
+  });
+});
+
+const tagsForm = (value?: string) => {
+  const form = new FormData();
+  if (value !== undefined) form.set('tags', value);
+  return form;
+};
+
+describe('readTags', () => {
+  test('a posted list is read, trimmed, without blanks', () => {
+    assert.deepEqual(readTags(tagsForm(JSON.stringify([' Soep ', '', '  ', 'Winter']))), ['Soep', 'Winter']);
+  });
+
+  test('an empty list is none', () => {
+    assert.deepEqual(readTags(tagsForm('[]')), []);
+  });
+
+  test('a missing field is not given', () => {
+    assert.equal(readTags(tagsForm()), undefined);
+  });
+
+  test('invalid JSON is not given', () => {
+    assert.equal(readTags(tagsForm('{')), undefined);
+  });
+
+  test('not an array is not given', () => {
+    assert.equal(readTags(tagsForm('"soep"')), undefined);
+  });
+});
+
+describe('tagError', () => {
+  test('a tag of 100 characters is fine', () => {
+    assert.equal(tagError(['a'.repeat(100)]), undefined);
+  });
+
+  test('a tag of 101 characters is refused', () => {
+    assert.ok(tagError(['a'.repeat(101)]));
+  });
+
+  test('no tags given is fine', () => {
+    assert.equal(tagError(undefined), undefined);
   });
 });

@@ -42,6 +42,7 @@ import { SaveBar } from './SaveBar';
 import { proposals, usedIn } from './steps/chips';
 import { OpenProposals } from './steps/OpenProposals';
 import { StepList } from './steps/StepList';
+import { TagInput } from './TagInput';
 import { useDraftPersistence } from './useDraftPersistence';
 import { useLeaveGuard } from './useLeaveGuard';
 
@@ -49,6 +50,8 @@ interface RecipeEditorProps extends ComponentProps<'main'> {
   /** Visually hidden page heading. */
   heading: string;
   authors: string[];
+  /** Every stored tag, to suggest. */
+  tags: string[];
   /** The starting values: what Reset restores and what unsaved changes are measured against. */
   initial: DraftSeed;
   /** What the editor shows when it opens: the starting values, or the values of a refused submit. */
@@ -82,6 +85,7 @@ export function RecipeEditor({
   rules: rulesNow,
   heading,
   authors,
+  tags,
   initial,
   values,
   errors,
@@ -166,7 +170,7 @@ export function RecipeEditor({
     'aria-invalid': errors[name] ? (true as const) : undefined,
     'aria-describedby': errors[name] ? `${name}-error` : undefined,
   });
-  const error = (name: RecipeFormField) =>
+  const error = (name: RecipeFormField | 'tags') =>
     errors[name] && (
       <p id={`${name}-error`} className="mt-1 font-bold text-red">
         {errors[name]}
@@ -175,7 +179,7 @@ export function RecipeEditor({
 
   // After a refused submit, put focus on the first field in error so its label and message are read.
   useEffect(() => {
-    const first = (['title', 'author', 'servings'] as const).find((name) => errors[name]);
+    const first = (['title', 'author', 'servings', 'tags'] as const).find((name) => errors[name]);
     if (first) document.getElementById(first)?.focus();
   }, [errors]);
 
@@ -301,6 +305,7 @@ export function RecipeEditor({
               Van wie is het recept?{asterisk}
             </label>
             <AuthorInput
+              id="author"
               authors={authors}
               value={current.author}
               onValueChange={set('author')}
@@ -321,7 +326,22 @@ export function RecipeEditor({
             <label htmlFor="time" className={labelClass}>
               Bereidingstijd
             </label>
-            <input {...text('time')} type="text" autoComplete="off" placeholder="1u30" className={inputClass} />
+            <input {...text('time')} data-testid="RecipeEditor-time" type="text" autoComplete="off" placeholder="1u30" className={inputClass} />
+          </div>
+          <div>
+            <label htmlFor="tags" className={labelClass}>
+              Tags
+            </label>
+            <input type="hidden" name="tags" data-testid="RecipeEditor-tags" value={JSON.stringify(current.tags)} />
+            <TagInput
+              id="tags"
+              tags={tags}
+              value={current.tags}
+              onValueChange={(next) => setCurrent((c) => ({ ...c, tags: next }))}
+              invalid={!!errors.tags}
+              describedBy={errors.tags ? 'tags-error' : undefined}
+            />
+            {error('tags')}
           </div>
           <PhotoField key={resets} value={current.image} onPhotoChange={set('image')} onStateChange={setPhoto} tile={tile} seal={seal} />
           {seal && <input type="hidden" name="seal" value={seal} />}

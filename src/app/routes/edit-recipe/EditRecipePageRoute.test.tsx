@@ -57,6 +57,7 @@ describe('recipe-editing › Form shows the stored values', () => {
       image: '/soep.jpg',
       ingredients: [],
       steps: [],
+      tags: [],
     });
   });
 });
@@ -205,9 +206,9 @@ describe('image links on save', () => {
 });
 
 describe('the edit page', () => {
-  const values = { title: 'Soep', author: 'Oma', servings: '4', time: '1u', intro: 'Warm', image: '', ingredients: [], steps: [] };
+  const values = { title: 'Soep', author: 'Oma', servings: '4', time: '1u', intro: 'Warm', image: '', ingredients: [], steps: [], tags: [] };
   const props = fake<Route.ComponentProps>({
-    loaderData: { slug: 'soep', updatedAt: '2026-01-01T00:00:00Z', authors: ['Oma'], tile: 0, seal: undefined, values },
+    loaderData: { slug: 'soep', updatedAt: '2026-01-01T00:00:00Z', authors: ['Oma'], tags: [], tile: 0, seal: undefined, values },
   });
   const show = () => render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <EditRecipePage {...props} /> }])} />);
 
@@ -364,5 +365,20 @@ describe('the edit loader', () => {
   test('returns when the recipe was last saved, for flagging a draft that started from an older version', async ({ db, photos }) => {
     await addRecipe(db, 'versie');
     assert.match((await load(db, photos, 'versie')).updatedAt, /^\d{4}-\d\d-\d\dT/);
+  });
+});
+
+describe('action tags', () => {
+  test('the posted tags replace the stored ones', async ({ db, photos }) => {
+    await addRecipe(db, 'soep');
+    await submit(db, photos, 'soep', { title: 'Soep', author: 'Oma', tags: JSON.stringify(['Winter']) });
+    assert.deepEqual((await getRecipe(db, 'soep'))?.tags, ['Winter']);
+  });
+
+  test('a form without tags keeps them', async ({ db, photos }) => {
+    await addRecipe(db, 'soep');
+    await submit(db, photos, 'soep', { title: 'Soep', author: 'Oma', tags: JSON.stringify(['Winter']) });
+    await submit(db, photos, 'soep', { title: 'Soep', author: 'Oma' });
+    assert.deepEqual((await getRecipe(db, 'soep'))?.tags, ['Winter']);
   });
 });

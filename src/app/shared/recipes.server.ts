@@ -1,5 +1,6 @@
 import type { Recipe, RecipeIngredient, RecipeSummary, Step, StepQuantity } from './recipe';
 import { pickSeal } from './seals';
+import { compareTags, sortTags } from './tags';
 
 export type RecipeRow = {
   id: number;
@@ -22,7 +23,7 @@ type StepRow = { id: number; body: string; oven_temperature: number | null; time
 
 /** One round trip (a single batch): the recipe plus its ingredients and steps (with their chips) in stored order. */
 export async function getRecipe(db: D1Database, slug: string): Promise<Recipe | undefined> {
-  const [recipe, ingredients, steps, chips, quantities] = await db.batch([
+  const [recipe, ingredients, steps, chips, quantities, tags] = await db.batch([
     db.prepare('SELECT id, slug, title, author, time, servings, intro, image, seal, updated_at FROM recipes WHERE slug = ?').bind(slug),
     db
       .prepare(
@@ -44,6 +45,7 @@ export async function getRecipe(db: D1Database, slug: string): Promise<Recipe | 
         'SELECT q.step_id, q.start_index AS startIndex, q.end_index AS endIndex, q.quantity_value AS quantityValue, q.quantity_unit AS quantityUnit FROM step_quantities q JOIN steps s ON s.id = q.step_id JOIN recipes r ON r.id = s.recipe_id WHERE r.slug = ? ORDER BY q.start_index',
       )
       .bind(slug),
+    db.prepare('SELECT t.name FROM recipe_tags rt JOIN tags t ON t.id = rt.tag_id JOIN recipes r ON r.id = rt.recipe_id WHERE r.slug = ?').bind(slug),
   ]);
   const row = (recipe.results as RecipeRow[])[0];
   if (!row) return undefined;
@@ -51,6 +53,7 @@ export async function getRecipe(db: D1Database, slug: string): Promise<Recipe | 
   const quantityRows = quantities.results as (StepQuantity & { step_id: number })[];
   return {
     ...row,
+    tags: sortTags((tags.results as { name: string }[]).map((t) => t.name)),
     ingredients: ingredients.results as RecipeIngredient[],
     steps: (steps.results as StepRow[]).map((s) => ({
       body: s.body,
@@ -77,6 +80,8 @@ export type RecipeInput = {
   createdBy?: string;
   ingredients?: { name: string; quantityText?: string; quantityValue?: number; quantityUnit?: string }[];
   steps?: StepInput[];
+  /** Tag names; a name matching a stored tag (letter case ignored) uses that tag, any other is created. */
+  tags?: string[];
 };
 
 /** Addresses that are routes of their own and so can't be a recipe slug. */
@@ -135,6 +140,18 @@ function insertSteps(db: D1Database, slug: string, steps: StepInput[]) {
   ]);
 }
 
+/** Statements that link the recipe with this slug to the given tags, creating unknown ones. Blanks and case-insensitive duplicates are dropped; a stored tag keeps its spelling. */
+function insertTags(db: D1Database, slug: string, tags: string[]) {
+  const names = new Map<string, string>();
+  for (const t of tags.map((t) => t.trim())) if (t && !names.has(t.toLowerCase())) names.set(t.toLowerCase(), t);
+  return [...names.values()].flatMap((name) => [
+    db.prepare('INSERT OR IGNORE INTO tags (name) VALUES (?)').bind(name),
+    db
+      .prepare('INSERT OR IGNORE INTO recipe_tags (recipe_id, tag_id) SELECT r.id, t.id FROM recipes r, tags t WHERE r.slug = ? AND t.name = ?')
+      .bind(slug, name),
+  ]);
+}
+
 /** Stores a recipe with its ingredients and steps in one batch and returns its slug. */
 export async function createRecipe(db: D1Database, recipe: RecipeInput): Promise<string> {
   const slug = await freeSlug(db, recipe.title);
@@ -164,6 +181,7 @@ export async function createRecipe(db: D1Database, recipe: RecipeInput): Promise
         .bind(slug, i, ing.name, ing.quantityText ?? '', ing.quantityValue ?? null, ing.quantityUnit ?? null),
     ),
     ...insertSteps(db, slug, recipe.steps ?? []),
+    ...insertTags(db, slug, recipe.tags ?? []),
   ]);
   return slug;
 }
@@ -171,7 +189,7 @@ export async function createRecipe(db: D1Database, recipe: RecipeInput): Promise
 /** A recipe is "new" to a member for this many months after it was added. */
 export const newForMonths = 1;
 
-/** Every recipe, the most recently added first, with its categories in order, each flagged `isNew` for this member: added less than `newForMonths` before `now`, not opened by them and not added by them. */
+/** Every recipe, the most recently added first, with its tags (most used first), each flagged `isNew` for this member: added less than `newForMonths` before `now`, not opened by them and not added by them. */
 export async function listRecipes(db: D1Database, email: string, now: Date): Promise<RecipeSummary[]> {
   const cutoff = new Date(now);
   cutoff.setUTCMonth(cutoff.getUTCMonth() - newForMonths);
@@ -181,21 +199,27 @@ export async function listRecipes(db: D1Database, email: string, now: Date): Pro
         EXISTS (SELECT 1 FROM recipe_likes l WHERE l.recipe_id = r.id AND l.user_id = u.id) AS liked,
         EXISTS (SELECT 1 FROM recipe_notes n WHERE n.recipe_id = r.id AND n.user_id = u.id) AS hasNote,
         (r.created_at > ?1 AND v.recipe_id IS NULL AND COALESCE(r.created_by <> ?2 COLLATE NOCASE, 1)) AS isNew,
-        (SELECT json_group_array(name) FROM (SELECT c.name FROM recipe_categories rc JOIN categories c ON c.id = rc.category_id WHERE rc.recipe_id = r.id ORDER BY rc.position)) AS categories
+        (SELECT json_group_array(json_object('name', t.name, 'uses', (SELECT COUNT(*) FROM recipe_tags x WHERE x.tag_id = t.id))) FROM recipe_tags rt JOIN tags t ON t.id = rt.tag_id WHERE rt.recipe_id = r.id) AS tags
       FROM recipes r
       LEFT JOIN users u ON u.email = ?2
       LEFT JOIN recipe_views v ON v.recipe_id = r.id AND v.user_id = u.id
       ORDER BY r.id DESC`,
     )
     .bind(cutoff.toISOString().replace(/\.\d+Z$/, 'Z'), email)
-    .all<Omit<RecipeSummary, 'isNew' | 'categories' | 'liked' | 'hasNote'> & { isNew: 0 | 1; liked: 0 | 1; hasNote: 0 | 1; categories: string }>();
+    .all<Omit<RecipeSummary, 'isNew' | 'tags' | 'liked' | 'hasNote'> & { isNew: 0 | 1; liked: 0 | 1; hasNote: 0 | 1; tags: string }>();
   return results.map((r) => ({
     ...r,
     isNew: r.isNew === 1,
     liked: r.liked === 1,
     hasNote: r.hasNote === 1,
-    categories: JSON.parse(r.categories) as string[],
+    tags: (JSON.parse(r.tags) as { name: string; uses: number }[]).sort((a, b) => b.uses - a.uses || compareTags(a.name, b.name)).map((t) => t.name),
   }));
+}
+
+/** Every stored tag, alphabetical, for suggestions. */
+export async function listTags(db: D1Database): Promise<string[]> {
+  const { results } = await db.prepare('SELECT name FROM tags').all<{ name: string }>();
+  return sortTags(results.map((r) => r.name));
 }
 
 /** Every author once(case variants count as one), for suggestions. */
@@ -206,11 +230,11 @@ export async function listAuthors(db: D1Database): Promise<string[]> {
   return results.map((r) => r.author);
 }
 
-/** Replaces the base information of a recipe; an omitted optional field is cleared, but an omitted seal is kept. When ingredients or steps are given they replace the stored ones in the same batch (so atomically); when omitted the stored ones stay. Returns the image the recipe had before, or undefined when the recipe doesn't exist. */
+/** Replaces the base information of a recipe; an omitted optional field is cleared, but an omitted seal is kept. When ingredients, steps or tags are given they replace the stored ones in the same batch (so atomically); when omitted the stored ones stay. Returns the image the recipe had before, or undefined when the recipe doesn't exist. */
 export async function updateRecipe(
   db: D1Database,
   slug: string,
-  recipe: Pick<RecipeInput, 'title' | 'author' | 'servings' | 'time' | 'intro' | 'image' | 'seal' | 'ingredients' | 'steps'>,
+  recipe: Pick<RecipeInput, 'title' | 'author' | 'servings' | 'time' | 'intro' | 'image' | 'seal' | 'ingredients' | 'steps' | 'tags'>,
 ): Promise<{ previousImage: string | null } | undefined> {
   const [before, result] = await db.batch([
     db.prepare('SELECT image FROM recipes WHERE slug = ?').bind(slug),
@@ -247,6 +271,12 @@ export async function updateRecipe(
       : []),
     ...(recipe.steps
       ? [db.prepare('DELETE FROM steps WHERE recipe_id = (SELECT id FROM recipes WHERE slug = ?)').bind(slug), ...insertSteps(db, slug, recipe.steps)]
+      : []),
+    ...(recipe.tags
+      ? [
+          db.prepare('DELETE FROM recipe_tags WHERE recipe_id = (SELECT id FROM recipes WHERE slug = ?)').bind(slug),
+          ...insertTags(db, slug, recipe.tags),
+        ]
       : []),
   ]);
   return result.meta.changes > 0 ? { previousImage: (before.results[0] as { image: string | null }).image } : undefined;

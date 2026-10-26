@@ -7,7 +7,7 @@ import { AuthorInput } from './AuthorInput';
 // The field is controlled, so the screen keeps the typed value.
 function Field() {
   const [value, setValue] = useState('');
-  return <AuthorInput authors={['Oma', 'Mama']} value={value} onValueChange={setValue} />;
+  return <AuthorInput id="author" authors={['Oma', 'Mama']} value={value} onValueChange={setValue} />;
 }
 
 describe('recipe-creation › Suggestions ignore letter case', () => {

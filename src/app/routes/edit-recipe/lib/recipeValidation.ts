@@ -38,7 +38,24 @@ export function toRecipeFields(values: RecipeForm) {
 }
 
 /** Field errors, plus one message per ingredient row (keyed by the row's place in the posted list). */
-export type RecipeFormErrors = Partial<Record<RecipeFormField, string>> & { ingredients?: Record<number, string> };
+export type RecipeFormErrors = Partial<Record<RecipeFormField | 'tags', string>> & { ingredients?: Record<number, string> };
+
+/** The longest a tag may be. */
+export const maxTagLength = 100;
+
+/** The posted tag names, trimmed with blanks dropped. The form carries them as a JSON list of names; a missing or malformed field gives undefined (keep the stored tags), which is not the same as an empty list (clear them). Duplicates and spelling are settled when the tags are stored. */
+export function readTags(form: FormData): string[] | undefined {
+  try {
+    const list: unknown = JSON.parse(String(form.get('tags')));
+    return Array.isArray(list) ? list.map((t) => (typeof t === 'string' ? t.trim() : '')).filter(Boolean) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** A message when a tag is too long. */
+export const tagError = (tags: string[] | undefined) =>
+  tags?.some((t) => t.length > maxTagLength) ? `Een tag mag hoogstens ${maxTagLength} tekens hebben.` : undefined;
 
 /** The posted ingredient lines, as typed. The form carries them as a JSON list of `{ text }`; a missing or malformed field gives undefined, which is not the same as an empty list. */
 function readLines(form: FormData): string[] | undefined {

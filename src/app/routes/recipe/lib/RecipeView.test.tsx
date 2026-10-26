@@ -24,6 +24,7 @@ const recipe: Omit<Recipe, 'steps'> = {
   intro: 'Zoet',
   image: null,
   seal: null,
+  tags: [],
   ingredients: [
     { quantityText: '4', quantityValue: null, quantityUnit: null, name: 'appels' },
     { quantityText: '100 g', quantityValue: null, quantityUnit: null, name: 'suiker' },

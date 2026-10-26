@@ -3,7 +3,7 @@ import type { ComponentProps } from 'react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { describe, test } from 'vitest';
 import { defaultRules } from '~app/shared/rules';
-import { precedes, render, screen } from '~testing/dom';
+import { act, fireEvent, precedes, render, screen } from '~testing/dom';
 import { emptyDraftSeed } from './draft';
 import { RecipeEditor } from './RecipeEditor';
 
@@ -26,6 +26,7 @@ const editorProps: ComponentProps<typeof RecipeEditor> = {
   rules: defaultRules,
   heading: 'Nieuw recept',
   authors: ['Oma', 'Mama'],
+  tags: ['Soep', 'Winter'],
   initial: emptyDraftSeed,
   values: emptyDraftSeed,
   errors: {},
@@ -142,5 +143,53 @@ describe('recipe-editing › Same form for new and existing recipes', () => {
   test('the title field has a title label', () => {
     show();
     assert.match(screen.getByTestId<HTMLInputElement>('RecipeEditor-title').labels?.[0]?.textContent ?? '', /Titel/);
+  });
+});
+
+const withTags = (...tags: string[]) => ({ ...emptyDraftSeed, title: 'Soep', author: 'Oma', tags });
+const pickedTags = () => screen.queryAllByTestId('TagInput-tag').map((t) => t.textContent);
+
+describe('recipe-form › Tags field in the side column', () => {
+  test('the field has a Tags label', () => {
+    show();
+    assert.equal(screen.getByTestId<HTMLInputElement>('TagInput-field').labels?.[0]?.textContent, 'Tags');
+  });
+
+  test('the field comes below the preparation time', () => {
+    show();
+    assert.ok(precedes(screen.getByTestId('RecipeEditor-time'), screen.getByTestId('TagInput-field')));
+  });
+});
+
+describe('recipe-form › Stored tags are shown when editing', () => {
+  test('both tags are shown, alphabetically', () => {
+    const stored = withTags('Winter', 'Soep');
+    show({ initial: stored, values: stored, slug: 'soep', updatedAt: '2026-01-01T00:00:00Z' });
+    assert.deepEqual(pickedTags(), ['Soep', 'Winter']);
+  });
+});
+
+describe('recipe-form › Reset puts the tags back', () => {
+  test('the starting tags are picked again', async () => {
+    const stored = withTags('Soep', 'Winter');
+    show({ initial: stored, values: stored, slug: 'soep', updatedAt: '2026-01-01T00:00:00Z' });
+    fireEvent.click(screen.getAllByTestId('TagInput-remove')[0]);
+    await act(async () => {});
+    fireEvent.click(screen.getByTestId('SaveBar-reset'));
+    fireEvent.click(screen.getByTestId('SaveBar-confirm'));
+    assert.deepEqual(pickedTags(), ['Soep', 'Winter']);
+  });
+});
+
+describe('the tags field in the editor', () => {
+  test('the picked tags are posted as a JSON list', () => {
+    const stored = withTags('Soep', 'Winter');
+    show({ initial: stored, values: stored });
+    assert.equal(screen.getByTestId<HTMLInputElement>('RecipeEditor-tags').value, '["Soep","Winter"]');
+  });
+
+  test('an error is shown at the field', () => {
+    show({ errors: { tags: 'Te lang.' } });
+    assert.equal(document.getElementById(screen.getByTestId('TagInput-field').getAttribute('aria-describedby')!)?.textContent, 'Te lang.');
   });
 });

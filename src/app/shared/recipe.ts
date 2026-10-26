@@ -37,6 +37,8 @@ export type Recipe = {
   updated_at: string;
   ingredients: RecipeIngredient[];
   steps: Step[];
+  /** Tag names, alphabetical (letter case and accents ignored). */
+  tags: string[];
 };
 
 /** What a recipe card shows. */
@@ -47,8 +49,8 @@ export type RecipeSummary = {
   time: string | null;
   image: string | null;
   seal: string | null;
-  /** Category names in their stored order. */
-  categories: string[];
+  /** Tag names, the most used tag first (equal counts alphabetical). */
+  tags: string[];
   /** The signed-in member has liked the recipe. */
   liked: boolean;
   /** The signed-in member has a note for the recipe. */

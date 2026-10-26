@@ -126,7 +126,7 @@ const summary = (title: string, author: string): RecipeSummary => ({
   time: null,
   image: null,
   seal: null,
-  categories: [],
+  tags: [],
   liked: false,
   hasNote: false,
 });

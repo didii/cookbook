@@ -49,7 +49,7 @@ export function SaveBar({ cancelTo, busy, saveBlocked, dirty, kept, onFormReset,
         {/* On a phone the status gets a row of its own above the buttons. */}
         <div className="flex flex-wrap items-center gap-x-3 text-sm font-extrabold empty:hidden max-sm:basis-full sm:text-base">
           {dirty && (
-            <span className="flex items-center gap-2">
+            <span data-testid="SaveBar-status" className="flex items-center gap-2">
               <span aria-hidden="true" className="size-2.5 rounded-full border-2 border-ink bg-yel" />
               Niet opgeslagen{kept && ' · Concept bewaard'}
             </span>
@@ -63,6 +63,7 @@ export function SaveBar({ cancelTo, busy, saveBlocked, dirty, kept, onFormReset,
               <legend className="float-left mr-2 font-extrabold">Alles terugzetten?</legend>
               <button
                 type="button"
+                data-testid="SaveBar-confirm"
                 onClick={() => {
                   setAsking(false);
                   onFormReset();
@@ -79,6 +80,7 @@ export function SaveBar({ cancelTo, busy, saveBlocked, dirty, kept, onFormReset,
             dirty && (
               <button
                 ref={herstel}
+                data-testid="SaveBar-reset"
                 type="button"
                 onClick={() => setAsking(true)}
                 className="min-h-11 cursor-pointer px-2 font-black text-muted underline"
