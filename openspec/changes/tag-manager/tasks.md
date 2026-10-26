@@ -36,4 +36,4 @@ Change 2 of 2 (after `add-recipe-tags`). Reference: `docs/design/tag-manager.htm
 
 ## 6. Wrap-up
 
-- [ ] 6.1 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check`, `pnpm test:ai` and `pnpm test:spec tag-manager`; all clean
+- [x] 6.1 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check`, `pnpm test:ai` and `pnpm test:spec tag-manager`; all clean
