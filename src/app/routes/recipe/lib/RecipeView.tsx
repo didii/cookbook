@@ -172,7 +172,7 @@ export function RecipeView({ recipe: r, tile, steps, liked = false, note: savedN
             />
           )}
           {r.image && r.seal && <Seal sealId={r.seal} className="h-16" />}
-          <TileBand first={tile} responsive className="border-b-0" />
+          <TileBand first={tile} rows={r.image ? 1 : 3} responsive className="border-b-0" />
         </div>
 
         <ClockSetting />

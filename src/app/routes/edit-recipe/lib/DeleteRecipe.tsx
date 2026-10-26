@@ -12,7 +12,7 @@ interface DeleteRecipeProps extends ComponentProps<'div'> {
 export function DeleteRecipe({ headingText, slug, className, ...props }: DeleteRecipeProps) {
   const dialog = useRef<HTMLDialogElement>(null);
   return (
-    <div {...props} className={cn('mt-10 flex justify-center', className)}>
+    <div {...props} className={cn('mt-10 flex', className)}>
       <button
         type="button"
         data-testid="DeleteRecipe-open"
