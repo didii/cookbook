@@ -31,7 +31,7 @@ describe('recipe-scaling › Control starts at the stored servings', () => {
   test('the label sits above the buttons and names the field', () => {
     setup(4, true);
     const label = screen.getByTestId('ScaleControl-label');
-    assert.equal(label.textContent, 'Personen');
+    assert.equal(label.textContent, 'Porties');
     assert.equal(label.getAttribute('for'), field().id);
     assert.ok(label.compareDocumentPosition(screen.getByTestId('ScaleControl-less')) & Node.DOCUMENT_POSITION_FOLLOWING);
   });

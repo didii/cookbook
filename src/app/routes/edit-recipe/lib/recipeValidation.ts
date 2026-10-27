@@ -15,7 +15,7 @@ export function validate(values: RecipeForm): Partial<Record<RecipeFormField, st
   if (!values.title) errors.title = 'Geef het recept een titel.';
   if (!values.author) errors.author = 'Vul in van wie het recept is.';
   if (values.servings && (!/^\d+$/.test(values.servings) || Number(values.servings) < 1))
-    errors.servings = 'Vul een heel aantal personen in, minstens 1.';
+    errors.servings = 'Vul een heel aantal porties in, minstens 1.';
   return errors;
 }
 

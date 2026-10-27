@@ -35,7 +35,7 @@ export function ScaleControl({ value, onScaleChange, servings, className, ...pro
   return (
     <div {...props} className={cn('inline-flex flex-col gap-1', className)}>
       <label data-testid="ScaleControl-label" htmlFor={fieldId} className="font-extrabold">
-        {servings ? 'Personen' : 'Vermenigvuldiger'}
+        {servings ? 'Porties' : 'Vermenigvuldiger'}
       </label>
       <span className="inline-flex items-center gap-2">
         <button data-testid="ScaleControl-less" type="button" aria-label="Minder" onClick={() => step(-1)} className={button}>

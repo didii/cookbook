@@ -320,7 +320,7 @@ export function RecipeEditor({
           </div>
           <div>
             <label htmlFor="servings" className={labelClass}>
-              Aantal personen
+              Aantal porties
             </label>
             <input {...text('servings')} type="text" inputMode="numeric" autoComplete="off" className={inputClass} />
             {error('servings')}

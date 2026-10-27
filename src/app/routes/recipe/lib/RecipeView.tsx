@@ -156,7 +156,7 @@ export function RecipeView({ recipe: r, tile, steps, liked = false, note: savedN
             van {r.author}
           </span>
           {r.time && <span data-testid="RecipeView-time">{r.time}</span>}
-          {r.servings && <span data-testid="RecipeView-servings">{r.servings} personen</span>}
+          {r.servings && <span data-testid="RecipeView-servings">{r.servings} porties</span>}
         </p>
         <p className="mt-2 max-w-[60ch] text-lg text-muted">{r.intro}</p>
 
