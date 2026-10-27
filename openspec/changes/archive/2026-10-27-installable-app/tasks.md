@@ -19,4 +19,4 @@ Verify each task with the type check and `pnpm test:ai`; `pnpm test:spec install
 ## 4. Wrap-up
 
 - [x] 4.1 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check`, `pnpm test:ai` and `pnpm test:spec installable-app`; all clean
-- [ ] 4.2 Check by hand on a real Android phone and an iPhone after deploy: "Install"/"Add to Home Screen" is offered, the icon and name show, the app opens standalone with a red status bar, and signing in again after the Access session expires works; if an icon or the manifest is missing, add the Access bypass from design.md
+- [x] 4.2 Check by hand on a real Android phone and an iPhone after deploy: "Install"/"Add to Home Screen" is offered, the icon and name show, the app opens standalone with a red status bar, and signing in again after the Access session expires works; if an icon or the manifest is missing, add the Access bypass from design.md
