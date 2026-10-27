@@ -1,7 +1,7 @@
 # installable-app Specification
 
 ## Purpose
-TBD - created by archiving change installable-app. Update Purpose after archive.
+Give every family member easy access to the app by installing it on their phone's home screen like a regular app. Offline access may follow later.
 
 ## Requirements
 
