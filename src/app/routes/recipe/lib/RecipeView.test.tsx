@@ -151,7 +151,7 @@ describe('recipe-viewing › Optional fields are empty', () => {
   test('with them, the time and servings are shown', () => {
     page({ recipe: { ...recipe, time: '1 uur', servings: 6, image: '/taart.jpg' } });
     assert.equal(screen.getByTestId('RecipeView-time').textContent, '1 uur');
-    assert.equal(screen.getByTestId('RecipeView-servings').textContent, '6 personen');
+    assert.equal(screen.getByTestId('RecipeView-servings').textContent, '6 porties');
   });
 
   test('with them, the image is shown', () => {

@@ -6,11 +6,11 @@ Lets a family member cook a recipe for more or fewer people by scaling every qua
 ## Requirements
 
 ### Requirement: Servings can be changed on the recipe page
-The system SHALL show on a recipe page that has servings a control with a minus button, a plus button and a number field holding the servings, starting at the recipe's own servings, with a label "Personen" above the buttons and the field. The control SHALL be placed directly above the ingredients and the steps, so a change is visible next to the amounts. The buttons SHALL be at least 44 px high and wide. Minus steps down by one serving, plus up by one, and the amount never goes below 1. A typed number SHALL be taken over when it is a whole number of 1 or more; anything else SHALL restore the last valid amount.
+The system SHALL show on a recipe page that has servings a control with a minus button, a plus button and a number field holding the servings, starting at the recipe's own servings, with a label "Porties" above the buttons and the field. The control SHALL be placed directly above the ingredients and the steps, so a change is visible next to the amounts. The buttons SHALL be at least 44 px high and wide. Minus steps down by one serving, plus up by one, and the amount never goes below 1. A typed number SHALL be taken over when it is a whole number of 1 or more; anything else SHALL restore the last valid amount.
 
 #### Scenario: Control starts at the stored servings
 - **WHEN** a family member opens a recipe with 4 servings
-- **THEN** the control shows 4 and the details line under the title shows "4 personen", the recipe's own servings
+- **THEN** the control shows 4 and the details line under the title shows "4 porties", the recipe's own servings
 
 #### Scenario: Control sits above the lists
 - **WHEN** a family member opens a recipe
