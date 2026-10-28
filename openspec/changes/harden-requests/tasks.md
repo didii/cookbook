@@ -11,7 +11,7 @@ Verify each task with the type check and `pnpm test:ai`; `pnpm test:spec harden-
 
 - [x] 2.1 Add `src/app/entry.server.tsx` (from the default Web entry): random nonce per request, `nonce` on `ServerRouter`, `Content-Security-Policy` with the directives of the spec on `responseHeaders`; unit-test the policy builder for "Page has the policy", "Nonce differs per response", "No unsafe script sources", "The app cannot be framed"
 - [x] 2.2 Render a page through the entry and test "Inline scripts carry the nonce"; pass the nonce to `Scripts` and `ScrollRestoration` in `root.tsx` if the router does not
-- [ ] 2.3 `test.todo` "The page still works under the policy" (needs a browser), then check it by hand with `pnpm dev`: recipe page, editor with photo preview, cook mode, installed app; no CSP violations in the console
+- [ ] 2.3 `test.todo` "The page still works under the policy" (needs a browser), then check it by hand with `pnpm dev`: recipe page, editor with photo preview, cook mode, installed app; also submit a form with an expired Access session and confirm the Access login page is reached; no CSP violations in the console
 
 ## 3. Same-origin requests
 
