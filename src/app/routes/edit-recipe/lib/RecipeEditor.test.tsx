@@ -1,11 +1,42 @@
 import assert from 'node:assert/strict';
 import type { ComponentProps } from 'react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
-import { describe, test } from 'vitest';
+import { beforeEach, describe, test, vi } from 'vitest';
 import { defaultRules } from '~app/shared/rules';
-import { act, fireEvent, openAutocomplete, precedes, render, screen } from '~testing/dom';
+import { act, cleanup, fireEvent, openAutocomplete, precedes, render, screen } from '~testing/dom';
 import { emptyDraftSeed } from './draft';
+import type { ImportedRecipe } from './import/readRecipe';
 import { RecipeEditor } from './RecipeEditor';
+import { limits } from './recipeValidation';
+import { formatTime, servingsFrom } from './toDraftSeed';
+
+// The import box, the image fetch and the photo field have their own tests. Here they are stand-ins, so these tests cover only how the editor wires them.
+const mocks = vi.hoisted(() => ({
+  imported: undefined as import('./import/readRecipe').ImportedRecipe | undefined,
+  address: '',
+  fetchImage: vi.fn<(url: string) => Promise<Blob | undefined>>(),
+  incoming: undefined as { blob: Blob } | undefined,
+}));
+vi.mock('./import/ImportBox', () => ({
+  ImportBox: ({ onImported }: { onImported: (imported: unknown, address: string) => void }) => (
+    <button type="button" aria-label="import" data-testid="ImportBox-import" onClick={() => onImported(mocks.imported, mocks.address)} />
+  ),
+}));
+vi.mock('./import/fetchImage', () => ({ fetchImage: mocks.fetchImage }));
+vi.mock('./photo/PhotoField', () => ({
+  PhotoField: ({ incoming, onStateChange }: { incoming?: { blob: Blob }; onStateChange: (state: string) => void }) => {
+    mocks.incoming = incoming;
+    return (
+      <button
+        type="button"
+        aria-label="pick"
+        data-testid="PhotoField-pick"
+        data-incoming={String(!!incoming)}
+        onClick={() => onStateChange('uploading')}
+      />
+    );
+  },
+}));
 
 // Needs a browser: the layout at a wide width.
 test.todo('recipe-form › Wide screen layout');
@@ -203,5 +234,269 @@ describe('the tags field in the editor', () => {
   test('an error is shown at the field', () => {
     show({ errors: { tags: 'Te lang.' } });
     assert.equal(document.getElementById(screen.getByTestId('TagInput-field').getAttribute('aria-describedby')!)?.textContent, 'Te lang.');
+  });
+});
+
+describe('recipe-limits › Typing stops at the limit', () => {
+  const fields: [string, () => HTMLElement, number][] = [
+    ['title', () => screen.getByTestId('RecipeEditor-title'), limits.title],
+    ['intro', () => screen.getByTestId('RecipeEditor-intro'), limits.intro],
+    ['time', () => screen.getByTestId('RecipeEditor-time'), limits.time],
+    ['source', () => screen.getByTestId('RecipeEditor-source'), limits.source],
+    ['author', () => screen.getByTestId('AuthorInput-field'), limits.author],
+    ['ingredient', () => screen.getByTestId('IngredientItem-field'), limits.ingredientLine],
+    ['step', () => screen.getByTestId('StepText-field'), limits.step],
+  ];
+  for (const [name, find, max] of fields)
+    test(`the ${name} field takes at most ${max} characters`, () => {
+      show();
+      assert.equal((find() as HTMLInputElement).maxLength, max);
+    });
+});
+
+describe('RecipeEditor error wiring', () => {
+  const stepValues = {
+    ...emptyDraftSeed,
+    steps: [
+      { body: 'a', ingredients: [] },
+      { body: 'b', ingredients: [] },
+    ],
+  };
+  const withSteps = (errors: object) => show({ values: stepValues, initial: stepValues, errors });
+
+  test('a step error reaches the step it is keyed to', () => {
+    withSteps({ steps: { 1: 'Fout' } });
+    assert.equal(screen.getAllByTestId('StepEditor-error').length, 1);
+  });
+
+  test('focus goes to the title before a step', () => {
+    withSteps({ title: 'Fout', steps: { 1: 'Fout' } });
+    assert.ok(document.activeElement === screen.getByTestId('RecipeEditor-title'));
+  });
+
+  test('focus goes to an ingredient row before a step', () => {
+    withSteps({ ingredients: { 0: 'Fout' }, steps: { 1: 'Fout' } });
+    assert.ok(document.activeElement === screen.getAllByTestId('IngredientItem-field')[0]);
+  });
+
+  test('focus goes to a step before the author', () => {
+    withSteps({ author: 'Fout', steps: { 1: 'Fout' } });
+    assert.ok(document.activeElement === screen.getAllByTestId('StepText-field')[1]);
+  });
+
+  for (const name of ['intro', 'time', 'source'] as const)
+    test(`${name} gets its error`, () => {
+      show({ errors: { [name]: 'Te lang.' } });
+      assert.ok(screen.getByTestId(`RecipeEditor-${name}`).getAttribute('aria-describedby'));
+    });
+});
+
+describe('recipe-source › Field in the side column', () => {
+  test('the field follows the author field', () => {
+    show();
+    assert.ok(precedes(screen.getByTestId('AuthorInput-field'), screen.getByTestId('RecipeEditor-source')));
+  });
+
+  test('the field is not required', () => {
+    show();
+    assert.equal((screen.getByTestId('RecipeEditor-source') as HTMLInputElement).required, false);
+  });
+
+  test('the field has a hint', () => {
+    show();
+    assert.ok(screen.getByTestId('RecipeEditor-source').getAttribute('placeholder'));
+  });
+});
+
+describe('recipe-source › Edit form shows the stored source', () => {
+  test('the field contains it', () => {
+    const stored = { ...emptyDraftSeed, title: 'Soep', author: 'Oma', source: 'Libelle' };
+    show({ initial: stored, values: stored });
+    assert.equal((screen.getByTestId('RecipeEditor-source') as HTMLInputElement).value, 'Libelle');
+  });
+});
+
+describe('RecipeEditor import', () => {
+  const imported: ImportedRecipe = {
+    title: 'Tomatensoep',
+    intro: 'Een klassieker.',
+    servingsText: '4 porties',
+    minutes: 80,
+    ingredients: ['500 g tomaten', '1 ui'],
+    steps: ['Snijd de ui.', 'Kook 20 minuten.'],
+    image: 'https://example.com/soep.jpg',
+  };
+  const address = 'https://example.com/soep';
+  const image = new Blob(['image']);
+  const field = (id: string) => screen.getByTestId<HTMLInputElement>(id);
+  const importNow = async (recipe: Partial<ImportedRecipe> = {}) => {
+    mocks.imported = { ...imported, ...recipe };
+    mocks.address = address;
+    await act(async () => void fireEvent.click(screen.getByTestId('ImportBox-import')));
+  };
+  const reset = () => {
+    fireEvent.click(screen.getByTestId('SaveBar-reset'));
+    fireEvent.click(screen.getByTestId('SaveBar-confirm'));
+  };
+
+  beforeEach(() => {
+    mocks.fetchImage.mockReset().mockResolvedValue(image);
+    mocks.incoming = undefined;
+  });
+
+  describe('recipe-import › Form is prefilled', () => {
+    test('the title and intro are filled in', async () => {
+      show({ canImport: true });
+      await importNow();
+      assert.equal(field('RecipeEditor-title').value, imported.title);
+      assert.equal(field('RecipeEditor-intro').value, imported.intro);
+    });
+
+    test('the servings and time are filled in', async () => {
+      show({ canImport: true });
+      await importNow();
+      assert.equal(field('RecipeEditor-servings').value, servingsFrom(imported.servingsText));
+      assert.equal(field('RecipeEditor-time').value, formatTime(imported.minutes));
+    });
+
+    test('the ingredients are filled in, followed by the free row', async () => {
+      show({ canImport: true });
+      await importNow();
+      assert.deepEqual(
+        screen.getAllByTestId<HTMLInputElement>('IngredientItem-field').map((i) => i.value),
+        [...imported.ingredients, ''],
+      );
+    });
+
+    test('the steps are filled in, followed by the free step', async () => {
+      show({ canImport: true });
+      await importNow();
+      assert.deepEqual(
+        screen.getAllByTestId<HTMLTextAreaElement>('StepText-field').map((i) => i.value),
+        [...imported.steps, ''],
+      );
+    });
+  });
+
+  describe('recipe-import › Source is the imported address', () => {
+    test('the source field holds the address', async () => {
+      show({ canImport: true });
+      await importNow();
+      assert.equal(field('RecipeEditor-source').value, address);
+    });
+  });
+
+  describe('recipe-import › Author is not imported', () => {
+    test('the author field keeps its value', async () => {
+      const initial = { ...emptyDraftSeed, author: 'Mam' };
+      show({ canImport: true, initial, values: initial });
+      await importNow();
+      assert.equal(field('AuthorInput-field').value, 'Mam');
+    });
+  });
+
+  describe('recipe-import › Page without an image', () => {
+    test('the form is filled and no image is fetched or handed over', async () => {
+      show({ canImport: true });
+      await importNow({ image: undefined });
+      assert.equal(field('RecipeEditor-title').value, imported.title);
+      assert.equal(mocks.fetchImage.mock.calls.length, 0);
+      assert.equal(mocks.incoming, undefined);
+    });
+  });
+
+  describe('recipe-import › Photo is imported', () => {
+    test('the image address is fetched', async () => {
+      show({ canImport: true });
+      await importNow();
+      assert.deepEqual(mocks.fetchImage.mock.calls, [[imported.image]]);
+    });
+
+    test('the fetched image is handed to the photo field', async () => {
+      show({ canImport: true });
+      await importNow();
+      assert.equal(mocks.incoming?.blob, image);
+    });
+  });
+
+  describe('recipe-import › Image that cannot be used', () => {
+    test('the form is still filled, nothing is handed over and a message says the photo was skipped', async () => {
+      mocks.fetchImage.mockResolvedValue(undefined);
+      show({ canImport: true });
+      await importNow();
+      assert.equal(field('RecipeEditor-title').value, imported.title);
+      assert.equal(mocks.incoming, undefined);
+      assert.ok(screen.getByTestId('RecipeEditor-photoSkipped'));
+    });
+
+    test('the message goes when the form is reset', async () => {
+      mocks.fetchImage.mockResolvedValue(undefined);
+      show({ canImport: true });
+      await importNow();
+      reset();
+      assert.equal(screen.queryByTestId('RecipeEditor-photoSkipped'), null);
+    });
+
+    test('the message goes with the next photo action', async () => {
+      mocks.fetchImage.mockResolvedValue(undefined);
+      show({ canImport: true });
+      await importNow();
+      fireEvent.click(screen.getByTestId('PhotoField-pick'));
+      assert.equal(screen.queryByTestId('RecipeEditor-photoSkipped'), null);
+    });
+  });
+
+  describe('recipe-import › Import is offered only on an untouched form', () => {
+    test('the import box is offered on an untouched form', () => {
+      show({ canImport: true });
+      assert.ok(screen.getByTestId('ImportBox-import'));
+    });
+
+    test('it is gone once the member typed something', () => {
+      show({ canImport: true });
+      fireEvent.change(field('RecipeEditor-title'), { target: { value: 'Eigen recept' } });
+      assert.equal(screen.queryByTestId('ImportBox-import'), null);
+    });
+
+    test('it is gone after an import', async () => {
+      show({ canImport: true });
+      await importNow();
+      assert.equal(screen.queryByTestId('ImportBox-import'), null);
+    });
+
+    test('it returns when the form is reset, and the form is empty again', async () => {
+      show({ canImport: true });
+      await importNow();
+      reset();
+      assert.ok(screen.getByTestId('ImportBox-import'));
+      assert.equal(field('RecipeEditor-title').value, '');
+    });
+
+    test('a reset drops an image that arrives afterwards', async () => {
+      let arrive: (blob: Blob) => void = () => undefined;
+      mocks.fetchImage.mockReturnValue(new Promise((resolve) => (arrive = resolve)));
+      show({ canImport: true });
+      await importNow();
+      reset();
+      await act(async () => arrive(image));
+      assert.equal(mocks.incoming, undefined);
+    });
+  });
+
+  describe('RecipeEditor without the import option', () => {
+    test('the import box is not offered', () => {
+      show();
+      assert.equal(screen.queryByTestId('ImportBox-import'), null);
+    });
+  });
+
+  describe('recipe-import › Imported content is kept as a draft', () => {
+    test('the imported content is back after the page is opened again', async () => {
+      show({ canImport: true });
+      await importNow();
+      cleanup();
+      show({ canImport: true });
+      assert.equal(field('RecipeEditor-title').value, imported.title);
+    });
   });
 });

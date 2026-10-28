@@ -10,6 +10,7 @@ import {
   changeChips,
   editedStep,
   editStep,
+  importedDraft,
   isDirty,
   moveIngredient,
   moveStep,
@@ -35,14 +36,18 @@ import {
   purgeDrafts,
   resolveStart,
 } from './draftStore';
+import { fetchImage } from './import/fetchImage';
+import { ImportBox } from './import/ImportBox';
+import type { ImportedRecipe } from './import/readRecipe';
 import { IngredientList } from './ingredients/IngredientList';
 import { PhotoField, type PhotoState } from './photo/PhotoField';
-import type { RecipeFormErrors, RecipeFormField } from './recipeValidation';
+import { limits, type RecipeFormErrors, type RecipeFormField } from './recipeValidation';
 import { SaveBar } from './SaveBar';
 import { proposals, usedIn } from './steps/chips';
 import { OpenProposals } from './steps/OpenProposals';
 import { StepList } from './steps/StepList';
 import { TagInput } from './TagInput';
+import { toDraftSeed } from './toDraftSeed';
 import { useDraftPersistence } from './useDraftPersistence';
 import { useLeaveGuard } from './useLeaveGuard';
 
@@ -71,6 +76,8 @@ interface RecipeEditorProps extends ComponentProps<'main'> {
   slug?: string;
   /** When the stored recipe was last saved (none for a new recipe): a draft started from another version is flagged. */
   updatedAt?: string;
+  /** Offer to fill the form from a web address while it is untouched. Only the import page sets it. */
+  canImport?: boolean;
 }
 
 const inputClass =
@@ -97,6 +104,7 @@ export function RecipeEditor({
   cancelTo,
   slug,
   updatedAt,
+  canImport,
   className,
   ...props
 }: RecipeEditorProps) {
@@ -104,6 +112,11 @@ export function RecipeEditor({
   const [rules] = useState(rulesNow);
   const [current, setCurrent] = useState(() => startingDraft(rules, values));
   const [photo, setPhoto] = useState<PhotoState>('ready');
+  // The imported photo, handed to the photo field; and whether fetching it failed.
+  const [incoming, setIncoming] = useState<{ blob: Blob }>();
+  const [photoSkipped, setPhotoSkipped] = useState(false);
+  // Counts imports and resets, so an image that arrives after a reset is dropped.
+  const imports = useRef(0);
   // Bumped by Herstel so the photo field starts over: it drops a running upload and its preview.
   const [resets, setResets] = useState(0);
   const busy = useNavigation().formMethod != null;
@@ -161,8 +174,26 @@ export function RecipeEditor({
   const reset = () => {
     clearDraft(browserStorage(), key);
     setCurrent(startingDraft(rules, initial));
+    imports.current++;
+    setIncoming(undefined);
+    setPhotoSkipped(false);
     setPhoto('ready');
     setResets((n) => n + 1);
+  };
+  // Fills the form from the imported recipe, then fetches its photo and hands it to the photo field; a photo that fails never undoes the import.
+  const importRecipe = async (imported: ImportedRecipe, address: string) => {
+    const { seed, imageUrl } = toDraftSeed(imported, address, initial);
+    const run = ++imports.current;
+    setCurrent(importedDraft(rules, seed));
+    setIncoming(undefined);
+    setPhotoSkipped(false);
+    // The step texts keep their own text while mounted, so they start over on what was imported.
+    setResets((n) => n + 1);
+    if (!imageUrl) return;
+    const blob = await fetchImage(imageUrl);
+    if (run !== imports.current) return;
+    if (blob) setIncoming({ blob });
+    else setPhotoSkipped(true);
   };
   const set = (name: RecipeFormField) => (value: string) => setCurrent((c) => ({ ...c, [name]: value }));
   const text = (name: RecipeFormField) => ({
@@ -180,10 +211,14 @@ export function RecipeEditor({
       </p>
     );
 
-  // After a refused submit, put focus on the first field in error so its label and message are read.
+  // After a refused submit, focus goes to the first thing in error, in page order, so its label and message are read. A list focuses its own row when it is the first.
+  const firstInError = (['title', 'intro', 'ingredients', 'steps', 'author', 'source', 'servings', 'time', 'tags'] as const).find(
+    (name) => errors[name],
+  );
   useEffect(() => {
-    const first = (['title', 'author', 'servings', 'tags'] as const).find((name) => errors[name]);
-    if (first) document.getElementById(first)?.focus();
+    if (firstInError && firstInError !== 'ingredients' && firstInError !== 'steps') document.getElementById(firstInError)?.focus();
+    // Only when the errors change, not on every keystroke.
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [errors]);
 
   return (
@@ -229,6 +264,7 @@ export function RecipeEditor({
           </div>
         </output>
       )}
+      {canImport && !dirty && <ImportBox onImported={importRecipe} className="mt-4" />}
       <Form
         method="post"
         data-testid="RecipeEditor-form"
@@ -251,6 +287,7 @@ export function RecipeEditor({
             <input
               {...text('title')}
               data-testid="RecipeEditor-title"
+              maxLength={limits.title}
               type="text"
               autoComplete="off"
               required
@@ -263,7 +300,8 @@ export function RecipeEditor({
             <label htmlFor="intro" className={labelClass}>
               Inleiding
             </label>
-            <textarea {...text('intro')} rows={4} className={cn(inputClass, 'py-2')} />
+            <textarea {...text('intro')} data-testid="RecipeEditor-intro" maxLength={limits.intro} rows={4} className={cn(inputClass, 'py-2')} />
+            {error('intro')}
           </div>
           <section aria-labelledby="ingredients-heading">
             <h2 id="ingredients-heading" className="text-2xl font-black">
@@ -275,6 +313,8 @@ export function RecipeEditor({
               rules={rules}
               usedIn={(id) => usedIn(current.steps, id)}
               errors={errors.ingredients}
+              focusErrors={firstInError === 'ingredients'}
+              maxLength={limits.ingredientLine}
               onType={(id, value) => setCurrent((c) => typeIngredient(c, id, value, rules))}
               onRemove={(id) => setCurrent((c) => removeIngredient(c, id, rules))}
               onMove={(id, to) => setCurrent((c) => moveIngredient(c, id, to, rules))}
@@ -291,6 +331,9 @@ export function RecipeEditor({
             <StepList
               key={resets}
               steps={current.steps}
+              errors={errors.steps}
+              focusErrors={firstInError === 'steps'}
+              maxLength={limits.step}
               contexts={contexts}
               onChips={(id, change) => setCurrent((c) => changeChips(c, id, change, rules))}
               onType={(id, body) => setCurrent((c) => editStep(c, id, body))}
@@ -312,6 +355,7 @@ export function RecipeEditor({
               authors={authors}
               value={current.author}
               onValueChange={set('author')}
+              maxLength={limits.author}
               invalid={!!errors.author}
               describedBy={errors.author ? 'author-error' : undefined}
               className={inputClass}
@@ -319,17 +363,48 @@ export function RecipeEditor({
             {error('author')}
           </div>
           <div>
+            <label htmlFor="source" className={labelClass}>
+              Bron
+            </label>
+            <input
+              {...text('source')}
+              data-testid="RecipeEditor-source"
+              maxLength={limits.source}
+              type="text"
+              autoComplete="off"
+              placeholder="Een naam of een link"
+              className={inputClass}
+            />
+            {error('source')}
+          </div>
+          <div>
             <label htmlFor="servings" className={labelClass}>
               Aantal porties
             </label>
-            <input {...text('servings')} type="text" inputMode="numeric" autoComplete="off" className={inputClass} />
+            <input
+              {...text('servings')}
+              data-testid="RecipeEditor-servings"
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
+              className={inputClass}
+            />
             {error('servings')}
           </div>
           <div>
             <label htmlFor="time" className={labelClass}>
               Bereidingstijd
             </label>
-            <input {...text('time')} data-testid="RecipeEditor-time" type="text" autoComplete="off" placeholder="1u30" className={inputClass} />
+            <input
+              {...text('time')}
+              data-testid="RecipeEditor-time"
+              maxLength={limits.time}
+              type="text"
+              autoComplete="off"
+              placeholder="1u30"
+              className={inputClass}
+            />
+            {error('time')}
           </div>
           <div>
             <label htmlFor="tags" className={labelClass}>
@@ -347,7 +422,20 @@ export function RecipeEditor({
             />
             {error('tags')}
           </div>
-          <PhotoField key={resets} value={current.image} onPhotoChange={set('image')} onStateChange={setPhoto} tile={tile} seal={seal} />
+          <PhotoField
+            key={resets}
+            value={current.image}
+            incoming={incoming}
+            onPhotoChange={(path) => (setPhotoSkipped(false), set('image')(path))}
+            onStateChange={(state) => (state === 'uploading' && setPhotoSkipped(false), setPhoto(state))}
+            tile={tile}
+            seal={seal}
+          />
+          {photoSkipped && (
+            <p data-testid="RecipeEditor-photoSkipped" className="-mt-3 font-bold text-red">
+              De foto is overgeslagen.
+            </p>
+          )}
           {seal && <input type="hidden" name="seal" value={seal} />}
         </div>
         <SaveBar cancelTo={cancelTo} busy={busy} saveBlocked={photo !== 'ready'} dirty={dirty} kept={kept} onFormReset={reset}>

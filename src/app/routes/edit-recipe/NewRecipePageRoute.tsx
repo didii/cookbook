@@ -1,8 +1,7 @@
-import { data, redirect, useRouteLoaderData } from 'react-router';
+import { data, redirect } from 'react-router';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { acceptImage } from '~app/shared/photos.server';
 import { chooseSeal, createRecipe, listAuthors } from '~app/shared/recipes.server';
-import { defaultRules, type Rules } from '~app/shared/rules';
 import { getRules } from '~app/shared/rules.server';
 import { seals } from '~app/shared/seals';
 import { listManagedTags } from '~app/shared/tagManagement.server';
@@ -10,9 +9,8 @@ import { categoriesOf, sortTags } from '~app/shared/tags';
 import { tiles } from '~app/shared/tile';
 import { getUser } from '~app/shared/users.server';
 import type { Route } from './+types/NewRecipePageRoute';
-import { emptyDraftSeed } from './lib/draft';
 import { endDraftAfterSave } from './lib/endDraftAfterSave';
-import { RecipeEditor } from './lib/RecipeEditor';
+import { NewRecipeForm } from './lib/NewRecipeForm';
 import { readForm, readIngredients, readSteps, readTags, tagError, toRecipeFields, validate, type RecipeFormErrors } from './lib/recipeValidation';
 
 export async function loader({ context }: Route.LoaderArgs) {
@@ -36,13 +34,14 @@ export async function action({ request, context }: Route.ActionArgs) {
   const values = readForm(form);
   const rules = await getRules(context.get(envContext).DB);
   const { lines, ingredients, errors: ingredientErrors } = readIngredients(form, rules);
-  const { lines: stepLines, steps } = readSteps(form, ingredients ?? [], rules);
+  const { lines: stepLines, steps, errors: stepErrors } = readSteps(form, ingredients ?? [], rules);
 
   const tags = readTags(form);
   const errors: RecipeFormErrors = validate(values);
   const tooLong = tagError(tags);
   if (tooLong) errors.tags = tooLong;
   if (Object.keys(ingredientErrors).length) errors.ingredients = ingredientErrors;
+  if (Object.keys(stepErrors).length) errors.steps = stepErrors;
   if (Object.keys(errors).length)
     return data({ errors, values: { ...values, ingredients: lines, steps: stepLines, tags: tags ?? [] } }, { status: 400 });
 
@@ -67,20 +66,5 @@ export function meta() {
 }
 
 export default function NewRecipePage({ loaderData, actionData }: Route.ComponentProps) {
-  const seed = { ...emptyDraftSeed, author: loaderData.callingName };
-  return (
-    <RecipeEditor
-      rules={useRouteLoaderData<{ rules?: Rules }>('root')?.rules ?? defaultRules}
-      heading="Nieuw recept"
-      authors={loaderData.authors}
-      tags={loaderData.tags}
-      tagCategories={loaderData.tagCategories}
-      tile={loaderData.tile}
-      seal={loaderData.seal}
-      initial={seed}
-      values={actionData?.values ?? seed}
-      errors={actionData?.errors ?? {}}
-      cancelTo="/"
-    />
-  );
+  return <NewRecipeForm loaderData={loaderData} actionData={actionData} heading="Nieuw recept" />;
 }

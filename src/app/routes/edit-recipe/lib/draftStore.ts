@@ -112,6 +112,7 @@ function isStoredDraft(d: unknown): d is StoredDraft {
     Array.isArray(s.steps) &&
     s.steps.length > 0 &&
     s.steps.every(isStep) &&
+    optional(s.source, isString) &&
     optional(s.tags, (t) => Array.isArray(t) && t.every(isString))
   );
 }
@@ -119,8 +120,10 @@ function isStoredDraft(d: unknown): d is StoredDraft {
 function parse(text: string | null): StoredDraft | undefined {
   try {
     const parsed: unknown = JSON.parse(text ?? '');
-    // A draft kept before tags existed has none.
-    return isStoredDraft(parsed) ? { ...parsed, state: { ...parsed.state, tags: parsed.state.tags ?? [] } } : undefined;
+    // A draft kept before tags or the source existed has none.
+    return isStoredDraft(parsed)
+      ? { ...parsed, state: { ...parsed.state, tags: parsed.state.tags ?? [], source: parsed.state.source ?? '' } }
+      : undefined;
   } catch {
     return undefined;
   }

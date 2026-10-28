@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { generateKeyPair, SignJWT } from 'jose';
 import type { RouterContextProvider } from 'react-router';
 import { describe } from 'vitest';
-import { envContext, userEmailContext } from '~app/shared/context.server';
+import { envContext, importAllowContext, userEmailContext } from '~app/shared/context.server';
 import { createUser } from '~app/shared/users.server';
 import { fake } from '~testing/fake';
 import { test } from '~testing/test';
@@ -81,6 +81,15 @@ describe('createFetch', () => {
       assert.equal(calls[0].get(userEmailContext), 'mum@example.com');
     });
 
+    test('puts the import rate limit in the context', async () => {
+      const { calls, fetch } = setup(false);
+      const keys: string[] = [];
+      const limiter = { limit: async ({ key }: { key: string }) => (keys.push(key), { success: false }) };
+      await fetch(get(await token()), { ...env, IMPORT_LIMITER: limiter });
+      assert.equal(await calls[0].get(importAllowContext)('mum@example.com'), false);
+      assert.deepEqual(keys, ['mum@example.com']);
+    });
+
     test('puts the env in the context', async () => {
       const { calls, fetch } = setup(false);
       await fetch(get(await token()), env);
@@ -143,6 +152,17 @@ describe('users › Forged identity', () => {
     await forge(db);
     assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM users').first<{ n: number }>())?.n, 0);
   });
+});
+
+describe('recipe-import › Not a family member', () => {
+  for (const path of ['/importeren/pagina', '/importeren/foto']) {
+    test(`${path} is refused with 403 and never reaches the app`, async () => {
+      const { calls, fetch } = setup(false);
+      const res = await fetch(new Request(`https://cookbook.example.com${path}`, { method: 'POST', body: '{"url":"https://example.com/"}' }), env);
+      assert.equal(res.status, 403);
+      assert.equal(calls.length, 0);
+    });
+  }
 });
 
 // Not automated: sign-in happens at Cloudflare Access, outside this code.

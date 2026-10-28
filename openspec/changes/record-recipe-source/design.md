@@ -25,6 +25,6 @@ The in-flight `limit-field-sizes` change adds `0016_size_limits.sql`, which rebu
 
 ## Risks / Trade-offs
 
-- [Both this change and `limit-field-sizes` use migration number 0016, and its rebuild of `recipes` copies a fixed column list] → Whichever is applied second renumbers its migration; if that is `limit-field-sizes`, it adds `source` (with the same `CHECK`) to its rebuilt table and copy list and to its length table. Say so in the PR of the second one. Not done here, because that change is not merged.
+- [`limit-field-sizes` rebuilds `recipes` in `0016_size_limits.sql` with a fixed column list] → This change is stacked on it and its migration is `0017_recipe_source.sql`, which adds the column to the rebuilt table with `ALTER TABLE`. The limit is also added to the `limits` table in `recipeValidation.ts`.
 - [A pasted link with tracking parameters or a trailing space] → The value is trimmed; the address is stored as typed.
 - [Free text such as "zie https://…" is not a link] → Accepted; the user can paste the bare address.

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
-import { describe } from 'vitest';
+import { describe, vi } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { getRecipe } from '~app/shared/recipes.server';
 import { createUser } from '~app/shared/users.server';
@@ -10,6 +10,18 @@ import { test } from '~testing/test';
 import type { Route } from './+types/NewRecipePageRoute';
 import { emptyDraftSeed } from './lib/draft';
 import NewRecipePage, { action, loader } from './NewRecipePageRoute';
+
+// Passes through to the real form and records the props the route gave it.
+const spy = vi.hoisted(() => ({ props: undefined as { heading: string; canImport?: boolean } | undefined }));
+vi.mock('./lib/NewRecipeForm', async (importOriginal) => {
+  const original = await importOriginal<typeof import('./lib/NewRecipeForm')>();
+  return {
+    NewRecipeForm: (props: Parameters<typeof original.NewRecipeForm>[0]) => {
+      spy.props = props;
+      return original.NewRecipeForm(props);
+    },
+  };
+});
 
 const submit = (db: D1Database, fields: Record<string, string>) => {
   const context = new RouterContextProvider();
@@ -233,5 +245,30 @@ describe('recipe-creation › Prefill alone is not a draft', () => {
     await openFormAs(db, 'jos3@example.com');
     cleanup();
     assert.equal(window.localStorage.length, 0);
+  });
+});
+
+describe('the new recipe source', () => {
+  test('a trimmed source is stored', async ({ db }) => {
+    await submit(db, { title: 'Met bron', author: 'Oma', source: ' Libelle ' });
+    assert.equal((await getRecipe(db, 'met-bron'))?.source, 'Libelle');
+  });
+
+  test('a source of 500 characters is accepted', async ({ db }) => {
+    await submit(db, { title: 'Grens', author: 'Oma', source: 'a'.repeat(500) });
+    assert.equal((await getRecipe(db, 'grens'))?.source?.length, 500);
+  });
+
+  test('a source of 501 characters is refused and nothing is stored', async ({ db }) => {
+    const res = (await submit(db, { title: 'Te lang', author: 'Oma', source: 'a'.repeat(501) })) as unknown as { init?: { status?: number } };
+    assert.equal(res.init?.status, 400);
+    assert.equal(await getRecipe(db, 'te-lang'), undefined);
+  });
+});
+
+describe('recipe-import › Import is not offered elsewhere', () => {
+  test('the plain new recipe form is not given the import option', () => {
+    form();
+    assert.ok(!spy.props?.canImport);
   });
 });

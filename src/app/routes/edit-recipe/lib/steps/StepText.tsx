@@ -14,6 +14,10 @@ interface StepTextProps extends ComponentProps<'div'> {
   value: string;
   marks?: Mark[];
   placeholder?: string;
+  /** The most characters the field takes. */
+  maxLength?: number;
+  /** Marks the field invalid and names the element that says why. */
+  errorId?: string;
   onTextChange: (value: string) => void;
   /** What each change replaced, with the new text (see `useTextEdit`). */
   onEdit?: (edit: TextEdit, value: string) => void;
@@ -77,6 +81,8 @@ export function StepText({
   value,
   marks = [],
   placeholder,
+  maxLength,
+  errorId,
   onTextChange,
   onEdit,
   onCaret,
@@ -114,10 +120,14 @@ export function StepText({
       </div>
       <textarea
         ref={textarea}
+        data-testid="StepText-field"
         rows={1}
         value={value}
         placeholder={placeholder}
+        maxLength={maxLength}
         aria-label={label}
+        aria-invalid={errorId ? true : undefined}
+        aria-describedby={errorId}
         autoComplete="off"
         enterKeyHint="next"
         onKeyDown={keyDown}

@@ -1,6 +1,6 @@
 import { createRemoteJWKSet, type JWTVerifyGetKey } from 'jose';
 import { RouterContextProvider } from 'react-router';
-import { envContext, userEmailContext } from '~app/shared/context.server';
+import { envContext, importAllowContext, userEmailContext } from '~app/shared/context.server';
 import { identify } from './identity';
 
 type Options = {
@@ -30,6 +30,7 @@ export function createFetch({ requestHandler, dev, getKey }: Options) {
     const context = new RouterContextProvider();
     context.set(userEmailContext, email);
     context.set(envContext, env);
+    context.set(importAllowContext, async (key) => (await env.IMPORT_LIMITER.limit({ key })).success);
     return requestHandler(request, context);
   };
 }
