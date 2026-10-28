@@ -15,8 +15,8 @@ Verify each task with the type check and `pnpm test:ai`; `pnpm test:spec limit-f
 
 ## 3. Editor
 
-- [ ] 3.1 Put `maxLength` from the exported limits on the title, author, time and intro inputs and on the ingredient and step inputs (pasted text is cut at the limit); component test "Typing stops at the limit" through test ids
-- [ ] 3.2 Show `errors.steps` on the step rows (`StepList.tsx`) the way `errors.ingredients` shows on ingredient rows, and let the "first field in error" focus include a step; component tests in the `StepList` and `RecipeEditor` tests
+- [x] 3.1 Put `maxLength` from the exported limits on the title, author, time and intro inputs and on the ingredient and step inputs (pasted text is cut at the limit); component test "Typing stops at the limit" through test ids
+- [x] 3.2 Show `errors.steps` on the step rows (`StepList.tsx`) the way `errors.ingredients` shows on ingredient rows, and let the "first field in error" focus include a step; component tests in the `StepList` and `RecipeEditor` tests
 
 ## 4. Database
 

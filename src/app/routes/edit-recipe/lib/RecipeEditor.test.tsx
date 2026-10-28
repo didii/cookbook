@@ -6,6 +6,7 @@ import { defaultRules } from '~app/shared/rules';
 import { act, fireEvent, openAutocomplete, precedes, render, screen } from '~testing/dom';
 import { emptyDraftSeed } from './draft';
 import { RecipeEditor } from './RecipeEditor';
+import { limits } from './recipeValidation';
 
 // Needs a browser: the layout at a wide width.
 test.todo('recipe-form › Wide screen layout');
@@ -204,4 +205,53 @@ describe('the tags field in the editor', () => {
     show({ errors: { tags: 'Te lang.' } });
     assert.equal(document.getElementById(screen.getByTestId('TagInput-field').getAttribute('aria-describedby')!)?.textContent, 'Te lang.');
   });
+});
+
+describe('recipe-limits › Typing stops at the limit', () => {
+  const fields: [string, () => HTMLElement, number][] = [
+    ['title', () => screen.getByTestId('RecipeEditor-title'), limits.title],
+    ['intro', () => screen.getByTestId('RecipeEditor-intro'), limits.intro],
+    ['time', () => screen.getByTestId('RecipeEditor-time'), limits.time],
+    ['author', () => screen.getByTestId('AuthorInput-field'), limits.author],
+    ['ingredient', () => screen.getByTestId('IngredientItem-field'), limits.ingredientLine],
+    ['step', () => screen.getByTestId('StepText-field'), limits.step],
+  ];
+  for (const [name, find, max] of fields)
+    test(`the ${name} field takes at most ${max} characters`, () => {
+      show();
+      assert.equal((find() as HTMLInputElement).maxLength, max);
+    });
+});
+
+describe('recipe-limits › A step over the limit is refused on its row', () => {
+  const stepValues = {
+    ...emptyDraftSeed,
+    steps: [
+      { body: 'a', ingredients: [] },
+      { body: 'b', ingredients: [] },
+    ],
+  };
+
+  test('the message shows on that step only', () => {
+    show({ values: stepValues, initial: stepValues, errors: { steps: { 1: 'Hoogstens 2000 tekens.' } } });
+    const messages = screen.getAllByTestId('StepEditor-error');
+    assert.equal(messages.length, 1);
+    assert.equal(messages[0].textContent, 'Hoogstens 2000 tekens.');
+  });
+
+  test('the step is marked invalid and focused', () => {
+    show({ values: stepValues, initial: stepValues, errors: { steps: { 1: 'Hoogstens 2000 tekens.' } } });
+    const field = screen.getAllByTestId('StepText-field')[1];
+    assert.equal(field.getAttribute('aria-invalid'), 'true');
+    assert.ok(document.activeElement === field);
+  });
+});
+
+describe('recipe-limits › Other fields show their message', () => {
+  for (const name of ['intro', 'time'] as const)
+    test(`${name} is described by its error`, () => {
+      show({ errors: { [name]: 'Te lang.' } });
+      const field = document.getElementById(name)!;
+      assert.equal(document.getElementById(field.getAttribute('aria-describedby')!)?.textContent, 'Te lang.');
+    });
 });
