@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
-import { describe } from 'vitest';
+import { describe, vi } from 'vitest';
 import { envContext } from '~app/shared/context.server';
 import { getPhoto, storePhoto } from '~app/shared/photos.server';
 import { getRecipe } from '~app/shared/recipes.server';
@@ -11,6 +11,18 @@ import { test } from '~testing/test';
 import type { Route } from './+types/EditRecipePageRoute';
 import EditRecipePage, { action, loader } from './EditRecipePageRoute';
 import { limits } from './lib/recipeValidation';
+
+// Passes through to the real editor and records the props the route gave it.
+const spy = vi.hoisted(() => ({ props: undefined as { canImport?: boolean } | undefined }));
+vi.mock('./lib/RecipeEditor', async (importOriginal) => {
+  const original = await importOriginal<typeof import('./lib/RecipeEditor')>();
+  return {
+    RecipeEditor: (props: Parameters<typeof original.RecipeEditor>[0]) => {
+      spy.props = props;
+      return original.RecipeEditor(props);
+    },
+  };
+});
 
 const addRecipe = (db: D1Database, slug: string, image: string | null = null) =>
   db.prepare("INSERT INTO recipes (slug, title, author, image) VALUES (?, 'Soep', 'Oma', ?)").bind(slug, image).run();
@@ -487,5 +499,16 @@ describe('recipe-source › Source over the limit is refused', () => {
 
   test('the stored source is unchanged', async ({ db }) => {
     assert.equal((await getRecipe(db, 'soep'))?.source, 'Libelle');
+  });
+});
+
+describe('recipe-import › Import is not offered elsewhere', () => {
+  test('the editor of a stored recipe is not given the import option', () => {
+    const values = { title: 'Soep', author: 'Oma', servings: '4', time: '1u', intro: 'Warm', image: '', ingredients: [], steps: [], tags: [] };
+    const props = fake<Route.ComponentProps>({
+      loaderData: { slug: 'soep', updatedAt: '2026-01-01T00:00:00Z', authors: ['Oma'], tags: [], tile: 0, seal: undefined, values },
+    });
+    render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <EditRecipePage {...props} /> }])} />);
+    assert.ok(!spy.props?.canImport);
   });
 });

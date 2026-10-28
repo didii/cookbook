@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
-import { describe } from 'vitest';
+import { describe, vi } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { getRecipe } from '~app/shared/recipes.server';
 import { createUser } from '~app/shared/users.server';
@@ -10,6 +10,18 @@ import { test } from '~testing/test';
 import type { Route } from './+types/NewRecipePageRoute';
 import { emptyDraftSeed } from './lib/draft';
 import NewRecipePage, { action, loader } from './NewRecipePageRoute';
+
+// Passes through to the real form and records the props the route gave it.
+const spy = vi.hoisted(() => ({ props: undefined as { heading: string; canImport?: boolean } | undefined }));
+vi.mock('./lib/NewRecipeForm', async (importOriginal) => {
+  const original = await importOriginal<typeof import('./lib/NewRecipeForm')>();
+  return {
+    NewRecipeForm: (props: Parameters<typeof original.NewRecipeForm>[0]) => {
+      spy.props = props;
+      return original.NewRecipeForm(props);
+    },
+  };
+});
 
 const submit = (db: D1Database, fields: Record<string, string>) => {
   const context = new RouterContextProvider();
@@ -255,8 +267,8 @@ describe('the new recipe source', () => {
 });
 
 describe('recipe-import › Import is not offered elsewhere', () => {
-  test('the plain new recipe form has no import field', () => {
+  test('the plain new recipe form is not given the import option', () => {
     form();
-    assert.equal(screen.queryByTestId('ImportBox-address'), null);
+    assert.ok(!spy.props?.canImport);
   });
 });
