@@ -192,7 +192,7 @@ describe('site-menu › Following a link closes the menu', () => {
   const follow = async () => {
     const { dialog } = show();
     openMenu();
-    fireEvent.click(screen.getAllByTestId('SiteMenu-link')[3]!);
+    fireEvent.click(screen.getAllByTestId('SiteMenu-link').find((link) => link.textContent === 'Over')!);
     await screen.findByTestId('about');
     return dialog;
   };
