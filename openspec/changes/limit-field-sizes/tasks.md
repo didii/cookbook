@@ -20,8 +20,8 @@ Verify each task with the type check and `pnpm test:ai`; `pnpm test:spec limit-f
 
 ## 4. Database
 
-- [ ] 4.1 Add `0016_size_limits.sql`: copy `ingredients`, `steps`, `step_ingredients`, `step_ingredient_chips`, `step_quantities`, `recipe_views`, `recipe_likes`, `recipe_notes` and `recipe_tags` into temporary tables; drop and recreate `recipes`, `ingredients`, `steps` and `step_ingredient_chips` with `CHECK (length(col) <= N)` (servings `BETWEEN 1 AND 999`) and their indexes; copy all rows back with the same ids, parents first; drop the temporary tables. Comment each limit. If `PRAGMA legacy_alter_table = ON` works in Miniflare and D1, renaming the old table first is allowed as a shorter variant (see design)
-- [ ] 4.2 In `migrations.test.ts` fill every affected table, apply `0016`, and test that all rows, ids and links survive; test "Recipe columns are limited", "Recipe update is limited", "Other recipe text columns are limited", "Ingredient columns are limited", "Step and chip columns are limited"; check `src/db/seed` still loads
+- [x] 4.1 Add `0016_size_limits.sql`: copy `ingredients`, `steps`, `step_ingredients`, `step_ingredient_chips`, `step_quantities`, `recipe_views`, `recipe_likes`, `recipe_notes` and `recipe_tags` into temporary tables; drop and recreate `recipes`, `ingredients`, `steps` and `step_ingredient_chips` with `CHECK (length(col) <= N)` (servings `BETWEEN 1 AND 999`) and their indexes; copy all rows back with the same ids, parents first; drop the temporary tables. Comment each limit. If `PRAGMA legacy_alter_table = ON` works in Miniflare and D1, renaming the old table first is allowed as a shorter variant (see design)
+- [x] 4.2 In `migrations.test.ts` fill every affected table, apply `0016`, and test that all rows, ids and links survive; test "Recipe columns are limited", "Recipe update is limited", "Other recipe text columns are limited", "Ingredient columns are limited", "Step and chip columns are limited"; check `src/db/seed` still loads
 - [ ] 4.3 Before running the migration in production, take a D1 export or note the time-travel bookmark
 
 ## 5. Wrap-up
