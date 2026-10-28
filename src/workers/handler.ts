@@ -25,6 +25,14 @@ function withSecurityHeaders(res: Response) {
   return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
 }
 
+/** True for a data-changing request that a browser says comes from another origin. */
+function isCrossOrigin(request: Request) {
+  if (['GET', 'HEAD', 'OPTIONS'].includes(request.method)) return false;
+  const origin = request.headers.get('Origin');
+  if (origin !== null) return origin !== new URL(request.url).origin;
+  return request.headers.get('Sec-Fetch-Site') === 'cross-site';
+}
+
 /** The Worker's fetch: verify who is asking, then hand the request to the app with who and what bindings. */
 export function createFetch({ requestHandler, dev, getKey }: Options) {
   let jwks: JWTVerifyGetKey | undefined;
@@ -40,6 +48,8 @@ export function createFetch({ requestHandler, dev, getKey }: Options) {
       devEmail: dev ? (env as { DEV_USER_EMAIL?: string }).DEV_USER_EMAIL : undefined,
     });
     if (!email) return new Response('Forbidden', { status: 403 });
+
+    if (isCrossOrigin(request)) return new Response('Forbidden', { status: 403 });
 
     const context = new RouterContextProvider();
     context.set(userEmailContext, email);

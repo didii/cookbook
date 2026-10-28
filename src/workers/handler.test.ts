@@ -214,6 +214,91 @@ describe('security-headers › A photo has the headers', () => {
   });
 });
 
+const post = async (url: string, headers: Record<string, string>, method = 'POST') =>
+  new Request(url, { method, headers: { [accessJwtHeader]: await token(), ...headers } });
+const page = 'https://cookbook.example.com/recepten/nieuw';
+
+/** Sends the request and tells whether it was refused with 403 without reaching the app. */
+async function refused(request: Request) {
+  const { calls, fetch } = setup(false);
+  const res = await fetch(request, env);
+  return res.status === 403 && calls.length === 0;
+}
+
+describe('same-origin-requests › Same-origin post is accepted', () => {
+  test('the app handles it', async () => {
+    const { calls, fetch } = setup(false);
+    await fetch(await post(page, { Origin: 'https://cookbook.example.com' }), env);
+    assert.equal(calls.length, 1);
+  });
+});
+
+describe('same-origin-requests › Other origin is refused', () => {
+  test('is refused with 403 and the app is not reached', async () => {
+    assert.equal(await refused(await post(page, { Origin: 'https://evil.example.org' })), true);
+  });
+});
+
+describe('same-origin-requests › Origin that differs only in scheme or port is refused', () => {
+  test('another scheme is refused', async () => {
+    assert.equal(await refused(await post('https://cookbook.example.com/x', { Origin: 'http://cookbook.example.com' })), true);
+  });
+
+  test('another port is refused', async () => {
+    assert.equal(await refused(await post('https://cookbook.example.com/x', { Origin: 'https://cookbook.example.com:8443' })), true);
+  });
+});
+
+describe('same-origin-requests › Null origin is refused', () => {
+  test('is refused with 403', async () => {
+    assert.equal(await refused(await post(page, { Origin: 'null' })), true);
+  });
+});
+
+describe('same-origin-requests › Cross-site post without an origin is refused', () => {
+  test('is refused with 403', async () => {
+    assert.equal(await refused(await post(page, { 'Sec-Fetch-Site': 'cross-site' })), true);
+  });
+});
+
+describe('same-origin-requests › Every data-changing method is covered', () => {
+  for (const method of ['PUT', 'PATCH', 'DELETE']) {
+    test(`${method} is refused with 403`, async () => {
+      assert.equal(await refused(await post(page, { Origin: 'https://evil.example.org' }, method)), true);
+    });
+  }
+});
+
+describe('same-origin-requests › Post without browser headers is accepted', () => {
+  test('the app handles it', async () => {
+    const { calls, fetch } = setup(false);
+    await fetch(await post(page, {}), env);
+    assert.equal(calls.length, 1);
+  });
+});
+
+describe('same-origin-requests › Reading is not restricted', () => {
+  test('a GET with a foreign origin is handled', async () => {
+    const { calls, fetch } = setup(false);
+    await fetch(await post(page, { Origin: 'https://evil.example.org' }, 'GET'), env);
+    assert.equal(calls.length, 1);
+  });
+
+  test('a HEAD with Sec-Fetch-Site cross-site is handled', async () => {
+    const { calls, fetch } = setup(false);
+    await fetch(await post(page, { 'Sec-Fetch-Site': 'cross-site' }, 'HEAD'), env);
+    assert.equal(calls.length, 1);
+  });
+});
+
+describe('same-origin-requests › The refusal has the security headers', () => {
+  test('has the four headers', async () => {
+    const res = await setup(false).fetch(await post(page, { Origin: 'https://evil.example.org' }), env);
+    assert.equal(res.status, 403);
+    assertHeaders(res);
+  });
+});
+
 // Not automated: sign-in happens at Cloudflare Access, outside this code.
 test.todo('family-access › Allowlisted member signs in');
 test.todo('family-access › Unknown email is refused');

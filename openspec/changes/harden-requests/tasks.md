@@ -15,7 +15,7 @@ Verify each task with the type check and `pnpm test:ai`; `pnpm test:spec harden-
 
 ## 3. Same-origin requests
 
-- [ ] 3.1 In `handler.ts` refuse unsafe-method requests with a foreign `Origin`, `Origin: null`, or no `Origin` and `Sec-Fetch-Site: cross-site`, with 403 and without calling the request handler; tests for every scenario of `same-origin-requests` in `handler.test.ts`
+- [x] 3.1 In `handler.ts` refuse unsafe-method requests with a foreign `Origin`, `Origin: null`, or no `Origin` and `Sec-Fetch-Site: cross-site`, with 403 and without calling the request handler; tests for every scenario of `same-origin-requests` in `handler.test.ts`
 
 ## 4. Wrap-up
 
