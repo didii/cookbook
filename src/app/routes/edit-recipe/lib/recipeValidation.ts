@@ -9,7 +9,7 @@ export type RecipeFormField = 'title' | 'author' | 'servings' | 'time' | 'intro'
 /** The trimmed form values; servings stays text because it can be empty. Time, intro, image and source are free text, so they have no validation. */
 export type RecipeForm = Record<RecipeFormField, string>;
 
-/** The size limits of a recipe. The migration `0016_size_limits.sql` repeats the column ones in SQL. */
+/** The size limits of a recipe. The migrations `0016_size_limits.sql` and `0017_recipe_source.sql` (the source) repeat the column ones in SQL. */
 export const limits = {
   title: 200,
   author: 100,
