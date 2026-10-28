@@ -3,7 +3,7 @@ DELETE FROM recipes;
 DELETE FROM tags;
 DELETE FROM categories;
 
-INSERT INTO recipes (slug, title, author, time, servings, intro, image, seal) VALUES ('appeltaart', 'Appeltaart', 'Oma', '1u 20', 8, 'Met een dikke laag zure appels en een rooster van deeg bovenop.', '/img/appeltaart.jpg', 'jia-wei');
+INSERT INTO recipes (slug, title, author, time, servings, intro, image, source, seal) VALUES ('appeltaart', 'Appeltaart', 'Oma', '1u 20', 8, 'Met een dikke laag zure appels en een rooster van deeg bovenop.', '/img/appeltaart.jpg', 'Kookschrift van Oma', 'jia-wei');
 INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 0, 'zelfrijzende bloem', '250 g', 250, 'g');
 INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 1, 'koude boter', '150 g', 150, 'g');
 INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'appeltaart'), 2, 'basterdsuiker', '100 g', 100, 'g');
@@ -51,7 +51,7 @@ INSERT INTO steps (recipe_id, position, body, oven_temperature, timer_minutes, t
 INSERT INTO steps (recipe_id, position, body, oven_temperature, timer_minutes, timer_label) VALUES ((SELECT id FROM recipes WHERE slug = 'stoofvlees'), 3, 'Smeer de mosterd op het brood en leg het bovenop het vlees.', NULL, NULL, NULL);
 INSERT INTO steps (recipe_id, position, body, oven_temperature, timer_minutes, timer_label) VALUES ((SELECT id FROM recipes WHERE slug = 'stoofvlees'), 4, 'Laat 2,5 uur zachtjes sudderen met het deksel half op de pan.', NULL, NULL, NULL);
 
-INSERT INTO recipes (slug, title, author, time, servings, intro, image, seal) VALUES ('pannenkoeken', 'Pannenkoeken', 'Tante An', '30 min', 4, 'Dun en groot, met stroop of spek.', '/img/pannenkoeken.jpg', 'kai-fan');
+INSERT INTO recipes (slug, title, author, time, servings, intro, image, source, seal) VALUES ('pannenkoeken', 'Pannenkoeken', 'Tante An', '30 min', 4, 'Dun en groot, met stroop of spek.', '/img/pannenkoeken.jpg', 'https://www.smulweb.nl/recepten/pannenkoeken', 'kai-fan');
 INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'pannenkoeken'), 0, 'bloem', '250 g', 250, 'g');
 INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'pannenkoeken'), 1, 'eieren', '2', 2, NULL);
 INSERT INTO ingredients (recipe_id, position, name, quantity_text, quantity_value, quantity_unit) VALUES ((SELECT id FROM recipes WHERE slug = 'pannenkoeken'), 2, 'melk', '5 dl', 5, 'dl');

@@ -21,10 +21,10 @@ None. The existing specs list their fields in prose without a requirement that t
 
 ## Impact
 
-- New migration `src/db/migrations/0016_recipe_source.sql`: `ALTER TABLE recipes ADD COLUMN source TEXT` with a length `CHECK`.
+- New migration `src/db/migrations/0017_recipe_source.sql`: `ALTER TABLE recipes ADD COLUMN source TEXT` with a length `CHECK`.
 - `recipes.server.ts`, `shared/recipe.ts`: read, create and update the field.
 - `recipeValidation.ts`, `draft.ts`, `draftStore.ts`, `RecipeEditor.tsx`, the edit and new routes: the field, its limit and its error.
 - `RecipeView.tsx`: shows the source.
 - Seed data (`src/db/seed/dev.sql`): a source on two recipes, so the dev app shows both a text and a link.
-- Overlaps with the in-flight `limit-field-sizes` change, which also adds a `0016` migration and rebuilds `recipes`: see design.md.
+- Overlaps with the in-flight `limit-field-sizes` change, which also adds `0016_size_limits.sql` and rebuilds `recipes` (this change is stacked on it): see design.md.
 - Out of scope: the source on recipe cards, filtering or suggesting sources, fetching or checking links, importing a recipe from a link.
