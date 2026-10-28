@@ -212,6 +212,7 @@ describe('recipe-limits › Typing stops at the limit', () => {
     ['title', () => screen.getByTestId('RecipeEditor-title'), limits.title],
     ['intro', () => screen.getByTestId('RecipeEditor-intro'), limits.intro],
     ['time', () => screen.getByTestId('RecipeEditor-time'), limits.time],
+    ['source', () => screen.getByTestId('RecipeEditor-source'), limits.source],
     ['author', () => screen.getByTestId('AuthorInput-field'), limits.author],
     ['ingredient', () => screen.getByTestId('IngredientItem-field'), limits.ingredientLine],
     ['step', () => screen.getByTestId('StepText-field'), limits.step],
@@ -253,9 +254,34 @@ describe('RecipeEditor error wiring', () => {
     assert.ok(document.activeElement === screen.getAllByTestId('StepText-field')[1]);
   });
 
-  for (const name of ['intro', 'time'] as const)
+  for (const name of ['intro', 'time', 'source'] as const)
     test(`${name} gets its error`, () => {
       show({ errors: { [name]: 'Te lang.' } });
       assert.ok(screen.getByTestId(`RecipeEditor-${name}`).getAttribute('aria-describedby'));
     });
+});
+
+describe('recipe-source › Field in the side column', () => {
+  test('the field follows the author field', () => {
+    show();
+    assert.ok(precedes(screen.getByTestId('AuthorInput-field'), screen.getByTestId('RecipeEditor-source')));
+  });
+
+  test('the field is not required', () => {
+    show();
+    assert.equal((screen.getByTestId('RecipeEditor-source') as HTMLInputElement).required, false);
+  });
+
+  test('the field has a hint', () => {
+    show();
+    assert.ok(screen.getByTestId('RecipeEditor-source').getAttribute('placeholder'));
+  });
+});
+
+describe('recipe-source › Edit form shows the stored source', () => {
+  test('the field contains it', () => {
+    const stored = { ...emptyDraftSeed, title: 'Soep', author: 'Oma', source: 'Libelle' };
+    show({ initial: stored, values: stored });
+    assert.equal((screen.getByTestId('RecipeEditor-source') as HTMLInputElement).value, 'Libelle');
+  });
 });
