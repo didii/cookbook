@@ -118,8 +118,12 @@ export function readIngredients(form: FormData, rules: Rules) {
   let count = 0;
   lines.forEach((line, i) => {
     if (!line) return;
-    if (++count > limits.ingredients) errors[i] = `Hoogstens ${limits.ingredients} ingrediënten.`;
-    else if (line.length > limits.ingredientLine) errors[i] = tooLong(limits.ingredientLine);
+    // Only the first row over the limit gets the message.
+    if (++count > limits.ingredients) {
+      if (count === limits.ingredients + 1) errors[i] = `Hoogstens ${limits.ingredients} ingrediënten.`;
+      return;
+    }
+    if (line.length > limits.ingredientLine) errors[i] = tooLong(limits.ingredientLine);
     if (errors[i]) return;
     const parsed = parseIngredient(line, rules);
     if (parsed.name) ingredients?.push(parsed);
@@ -183,7 +187,7 @@ export function readSteps(form: FormData, ingredients: Ingredient[], rules: Rule
     const chipTooLong = s.ingredients.find((c) => c.quantityText.length > limits.chipQuantity || c.name.length > limits.chipName);
     const message =
       s.body && ++count > limits.steps
-        ? `Hoogstens ${limits.steps} stappen.`
+        ? count === limits.steps + 1 && `Hoogstens ${limits.steps} stappen.`
         : s.body.length > limits.step
           ? tooLong(limits.step)
           : (s.timer?.label?.length ?? 0) > limits.timerName
