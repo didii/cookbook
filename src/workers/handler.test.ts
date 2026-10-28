@@ -145,6 +145,50 @@ describe('users › Forged identity', () => {
   });
 });
 
+const staticHeaders = {
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'Referrer-Policy': 'same-origin',
+  'Permissions-Policy': 'geolocation=(), microphone=(), payment=(), usb=()',
+};
+
+const assertHeaders = (res: Response) => {
+  for (const [name, value] of Object.entries(staticHeaders)) assert.equal(res.headers.get(name), value, name);
+};
+
+describe('security-headers › A page has the headers', () => {
+  test('has the four headers', async () => {
+    assertHeaders(await setup(false).fetch(get(await token()), env));
+  });
+});
+
+describe('security-headers › A refusal has the headers', () => {
+  test('has the four headers', async () => {
+    const res = await setup(false).fetch(get(), env);
+    assert.equal(res.status, 403);
+    assertHeaders(res);
+  });
+});
+
+describe('security-headers › A header the response already has is kept', () => {
+  const answering = (headers: Record<string, string>) =>
+    createFetch({ requestHandler: () => new Response('app', { headers }), dev: false, getKey: async () => publicKey });
+
+  test('keeps both headers once each', async () => {
+    const res = await answering({ 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'private, max-age=31536000, immutable' })(
+      get(await token()),
+      env,
+    );
+    assert.equal(res.headers.get('X-Content-Type-Options'), 'nosniff');
+    assert.equal(res.headers.get('Cache-Control'), 'private, max-age=31536000, immutable');
+  });
+
+  test('keeps a value that differs from the default', async () => {
+    const res = await answering({ 'X-Frame-Options': 'SAMEORIGIN' })(get(await token()), env);
+    assert.equal(res.headers.get('X-Frame-Options'), 'SAMEORIGIN');
+  });
+});
+
 // Not automated: sign-in happens at Cloudflare Access, outside this code.
 test.todo('family-access › Allowlisted member signs in');
 test.todo('family-access › Unknown email is refused');
