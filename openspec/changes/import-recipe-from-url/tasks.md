@@ -34,4 +34,4 @@ Needs `record-recipe-source` merged first (the `source` field in the form and `D
 
 - [ ] 6.1 By hand with `pnpm dev`, three real recipe sites: prefill, photo, source, save, and the recipe page. Once `harden-requests` is in, repeat once and check the console for CSP violations
 - [ ] 6.2 Add a line to `docs/security.md` for the fetch endpoints (guard, caps, rate limit and the DNS ceiling)
-- [ ] 6.3 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check`, `pnpm test:ai` and `pnpm test:spec import-recipe-from-url`; all clean
+- [x] 6.3 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check`, `pnpm test:ai` and `pnpm test:spec import-recipe-from-url`; all clean
