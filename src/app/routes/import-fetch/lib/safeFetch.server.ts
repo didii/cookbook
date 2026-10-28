@@ -102,7 +102,10 @@ async function readCapped(response: Response, maxBytes: number) {
   }
   const body = new Uint8Array(size);
   let at = 0;
-  for (const chunk of chunks) (body.set(chunk, at), (at += chunk.byteLength));
+  for (const chunk of chunks) {
+    body.set(chunk, at);
+    at += chunk.byteLength;
+  }
   return body;
 }
 

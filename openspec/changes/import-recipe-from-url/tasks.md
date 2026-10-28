@@ -14,7 +14,7 @@ Needs `record-recipe-source` merged first (the `source` field in the form and `D
 
 ## 3. Reading and mapping in the browser
 
-- [ ] 3.1 `edit-recipe/lib/import/readRecipe.ts`: hand-written JSON-LD reader with `DOMParser` as in design.md: `@graph`, arrays, `@type` arrays, `HowToSection`, single step string, tags in texts, yield and image forms; returns the shape of design.md or undefined. Unit test with saved HTML fixtures: "Page without a recipe", "Partly filled recipe"
+- [x] 3.1 `edit-recipe/lib/import/readRecipe.ts`: hand-written JSON-LD reader with `DOMParser` as in design.md: `@graph`, arrays, `@type` arrays, `HowToSection`, single step string, tags in texts, yield and image forms; returns the shape of design.md or undefined. Unit test with saved HTML fixtures: "Page without a recipe", "Partly filled recipe"
 - [ ] 3.2 `edit-recipe/lib/import/toDraftSeed.ts`: pure mapping to `DraftSeed` plus image address. Check how `RecipeView` and the seed data write a time and use the same format. Tests: "Source is the imported address", "Author is not imported", "Servings are read from text", "Partly filled recipe"
 - [ ] 3.3 Test "Ingredients and steps are recognised" by feeding the mapped seed through `startingDraft` and checking the draft (quantity, unit, suggestions)
 
