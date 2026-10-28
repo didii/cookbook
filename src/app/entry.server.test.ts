@@ -4,6 +4,7 @@ import { describe, test } from 'vitest';
 import '~testing/dom';
 import * as entry from './entry.server';
 import { contentSecurityPolicy, createNonce } from './entry.server';
+import * as root from './root';
 
 const directives = (policy: string) => Object.fromEntries(policy.split('; ').map((d) => [d.split(' ')[0], d.split(' ').slice(1)]));
 
@@ -40,7 +41,10 @@ describe('security-headers › No unsafe script sources', () => {
   const policy = directives(contentSecurityPolicy('abc'));
 
   test('script-src has neither unsafe-inline nor unsafe-eval', () => {
-    assert.deepEqual(policy['script-src'].filter((s) => s === `'unsafe-inline'` || s === `'unsafe-eval'`), []);
+    assert.deepEqual(
+      policy['script-src'].filter((s) => s === `'unsafe-inline'` || s === `'unsafe-eval'`),
+      [],
+    );
   });
 
   test('no directive has unsafe-eval', () => {
@@ -54,12 +58,27 @@ describe('security-headers › The app cannot be framed', () => {
   });
 });
 
-import * as root from './root';
-
 const build = {
   entry: { module: entry },
   routes: { root: { id: 'root', path: '', module: { default: () => null, Layout: root.Layout } } },
-  assets: { entry: { imports: [], module: '/entry.js' }, routes: { root: { id: 'root', module: '/root.js', imports: [], hasAction: false, hasLoader: false, hasClientAction: false, hasClientLoader: false, hasClientMiddleware: false, hasErrorBoundary: false } }, url: '/manifest.js', version: '1' },
+  assets: {
+    entry: { imports: [], module: '/entry.js' },
+    routes: {
+      root: {
+        id: 'root',
+        module: '/root.js',
+        imports: [],
+        hasAction: false,
+        hasLoader: false,
+        hasClientAction: false,
+        hasClientLoader: false,
+        hasClientMiddleware: false,
+        hasErrorBoundary: false,
+      },
+    },
+    url: '/manifest.js',
+    version: '1',
+  },
   basename: '/',
   publicPath: '/',
   assetsBuildDirectory: 'build/client',
@@ -83,7 +102,10 @@ describe('security-headers › Inline scripts carry the nonce', () => {
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const inline = [...doc.scripts].filter((s) => !s.src);
     assert.ok(inline.length > 0);
-    assert.deepEqual(inline.filter((s) => s.getAttribute('nonce') !== nonce), []);
+    assert.deepEqual(
+      inline.filter((s) => s.getAttribute('nonce') !== nonce),
+      [],
+    );
   });
 });
 

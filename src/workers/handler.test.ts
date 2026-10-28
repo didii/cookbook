@@ -3,7 +3,6 @@ import { generateKeyPair, SignJWT } from 'jose';
 import type { RouterContextProvider } from 'react-router';
 import { describe } from 'vitest';
 import { loader as fetchPhoto } from '~app/routes/photo/PhotoFetchRoute';
-import type { Route as PhotoRoute } from '~app/routes/photo/+types/PhotoFetchRoute';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { storePhoto } from '~app/shared/photos.server';
 import { createUser } from '~app/shared/users.server';
@@ -198,7 +197,7 @@ describe('security-headers › A photo has the headers', () => {
     assert.ok('path' in stored);
     const fetch = createFetch({
       requestHandler: (_request, context) =>
-        fetchPhoto(fake<PhotoRoute.LoaderArgs>({ params: { file: stored.path.slice('/foto/'.length) }, context })) as Promise<Response>,
+        fetchPhoto(fake<Parameters<typeof fetchPhoto>[0]>({ params: { file: stored.path.slice('/foto/'.length) }, context })) as Promise<Response>,
       dev: false,
       getKey: async () => publicKey,
     });
