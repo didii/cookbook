@@ -182,7 +182,7 @@ export function RecipeEditor({
 
   // After a refused submit, put focus on the first field in error so its label and message are read.
   useEffect(() => {
-    const first = (['title', 'intro', 'author', 'servings', 'time', 'tags'] as const).find((name) => errors[name]);
+    const first = (['title', 'intro', 'author', 'source', 'servings', 'time', 'tags'] as const).find((name) => errors[name]);
     if (first) document.getElementById(first)?.focus();
   }, [errors]);
 
@@ -323,6 +323,21 @@ export function RecipeEditor({
               className={inputClass}
             />
             {error('author')}
+          </div>
+          <div>
+            <label htmlFor="source" className={labelClass}>
+              Bron
+            </label>
+            <input
+              {...text('source')}
+              data-testid="RecipeEditor-source"
+              maxLength={limits.source}
+              type="text"
+              autoComplete="off"
+              placeholder="Een naam of een link"
+              className={inputClass}
+            />
+            {error('source')}
           </div>
           <div>
             <label htmlFor="servings" className={labelClass}>

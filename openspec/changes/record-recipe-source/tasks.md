@@ -10,7 +10,7 @@
 - [x] 2.1 Add `source` to `RecipeFormField`, `readForm`, `toRecipeFields`, and a `maxSourceLength` (500) check with message in `recipeValidation.ts`; `recipeValidation.test.ts` covers trimming, the limit and the message
 - [x] 2.2 Use the check in `NewRecipePageRoute.tsx` and `EditRecipePageRoute.tsx` and pass the stored source to the edit form; the route tests cover save, clear, at-limit and over-limit
 - [x] 2.3 Add `source` to the draft state (`draft.ts`) and accept drafts without it in `draftStore.ts`; `draft.test.ts` and `draftStore.test.ts` cover the draft, reset and an old draft
-- [ ] 2.4 Add the "Bron" field (hint, `maxLength`, error) under the author in `RecipeEditor.tsx`; `RecipeEditor.test.tsx` covers its place, optional, stored value and error
+- [x] 2.4 Add the "Bron" field (hint, `maxLength`, error) under the author in `RecipeEditor.tsx`; `RecipeEditor.test.tsx` covers its place, optional, stored value and error
 
 ## 3. View and seed
 
