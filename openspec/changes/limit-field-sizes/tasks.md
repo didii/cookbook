@@ -11,7 +11,7 @@ Verify each task with the type check and `pnpm test:ai`; `pnpm test:spec limit-f
 
 ## 2. Routes
 
-- [ ] 2.1 In `NewRecipePageRoute.tsx` and `EditRecipePageRoute.tsx` put the new errors in `errors` and return 400 with the entered values, storing nothing; route test "Editing is limited the same way"
+- [x] 2.1 In `NewRecipePageRoute.tsx` and `EditRecipePageRoute.tsx` put the new errors in `errors` and return 400 with the entered values, storing nothing; route test "Editing is limited the same way"
 
 ## 3. Editor
 
