@@ -4,7 +4,7 @@ Needs `record-recipe-source` merged first (the `source` field in the form and `D
 
 ## 1. Check the rate limit binding
 
-- [ ] 1.1 Check that the Workers Rate Limiting binding can be declared in `wrangler.jsonc` and runs under `pnpm dev`; if not, plan the fake only for tests
+- [x] 1.1 Check that the Workers Rate Limiting binding can be declared in `wrangler.jsonc` and runs under `pnpm dev`; if not, plan the fake only for tests
 
 ## 2. Fetching on the Worker
 
