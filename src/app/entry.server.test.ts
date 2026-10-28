@@ -86,3 +86,6 @@ describe('security-headers › Inline scripts carry the nonce', () => {
     assert.deepEqual(inline.filter((s) => s.getAttribute('nonce') !== nonce), []);
   });
 });
+
+// Not automated: needs a real browser.
+test.todo('security-headers › The page still works under the policy');
