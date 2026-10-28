@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { afterEach, describe, test, vi } from 'vitest';
 import { act, fireEvent, render, screen } from '~testing/dom';
 import { ImportBox } from './ImportBox';
-import { emptyDraftSeed } from '../draft';
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -21,7 +20,7 @@ function setup(fetch: () => Promise<Response>) {
   const stub = vi.fn(fetch);
   vi.stubGlobal('fetch', stub);
   const onImported = vi.fn();
-  render(<ImportBox base={{ ...emptyDraftSeed, author: 'Mam' }} onImported={onImported} />);
+  render(<ImportBox onImported={onImported} />);
   return { stub, onImported };
 }
 
@@ -61,6 +60,17 @@ describe('recipe-import › Page that cannot be fetched', () => {
     setup(async () => new Response(null, { status: 429 }));
     await importAddress('https://example.com/soep');
     assert.ok(message());
+  });
+});
+
+describe('ImportBox reading the page', () => {
+  test('a connection that drops while the body is read gives a message', async () => {
+    const broken = { ok: true, status: 200, text: () => Promise.reject(new TypeError('connection lost')) } as unknown as Response;
+    const { onImported } = setup(async () => broken);
+    await importAddress('https://example.com/soep');
+    assert.ok(message());
+    assert.equal(onImported.mock.calls.length, 0);
+    assert.equal(screen.getByTestId<HTMLButtonElement>('ImportBox-button').disabled, false);
   });
 });
 
@@ -114,13 +124,12 @@ describe('ImportBox', () => {
     assert.deepEqual(JSON.parse(init.body as string), { url: 'https://example.com/soep' });
   });
 
-  test('hands over the seed and the image address', async () => {
+  test('hands over the recipe that was read and the address', async () => {
     const { onImported } = setup(async () => html(recipePage));
     await importAddress('https://example.com/soep');
-    const [seed, imageUrl] = onImported.mock.calls[0];
-    assert.equal(seed.title, 'Tomatensoep');
-    assert.equal(seed.source, 'https://example.com/soep');
-    assert.equal(seed.author, 'Mam');
-    assert.equal(imageUrl, 'https://example.com/soep.jpg');
+    const [imported, address] = onImported.mock.calls[0];
+    assert.equal(imported.title, 'Tomatensoep');
+    assert.equal(imported.image, 'https://example.com/soep.jpg');
+    assert.equal(address, 'https://example.com/soep');
   });
 });

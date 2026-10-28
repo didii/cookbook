@@ -1,6 +1,6 @@
-import type { ImportedRecipe } from './readRecipe';
-import type { DraftSeed } from '../draft';
-import { limits } from '../recipeValidation';
+import type { DraftSeed } from './draft';
+import type { ImportedRecipe } from './import/readRecipe';
+import { limits } from './recipeValidation';
 
 /** Time the way the app writes it: "30 min" under an hour, otherwise "1u 20" (hours, then minutes with two digits). */
 export function formatTime(minutes: number | undefined) {

@@ -18,10 +18,10 @@ import {
   typeIngredient,
   type RecipeDraft,
 } from './draft';
-import { toDraftSeed } from './import/toDraftSeed';
 import { parseIngredient } from './shared/ingredients';
 import type { Chip } from './steps/chips';
 import { computeEdit } from './steps/textEdit';
+import { toDraftSeed } from './toDraftSeed';
 
 const emptyDraft = startingDraft(defaultRules);
 const content = { ...emptyDraftSeed, title: 'Soep', author: 'Oma' };

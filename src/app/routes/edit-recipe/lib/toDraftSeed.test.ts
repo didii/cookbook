@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'vitest';
-import type { ImportedRecipe } from './readRecipe';
+import { emptyDraftSeed } from './draft';
+import type { ImportedRecipe } from './import/readRecipe';
 import { formatTime, servingsFrom, toDraftSeed } from './toDraftSeed';
-import { emptyDraftSeed } from '../draft';
 
 const address = 'https://example.com/soep';
 const base = { ...emptyDraftSeed, author: 'Mam', tags: ['Soep'] };

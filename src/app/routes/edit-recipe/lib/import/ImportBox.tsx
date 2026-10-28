@@ -1,15 +1,11 @@
 import { useId, useState, type ComponentProps, type SubmitEvent } from 'react';
 import { cn } from '~app/shared/cn';
 import { Button } from '~app/shared/components';
-import { readRecipe } from './readRecipe';
-import { toDraftSeed } from './toDraftSeed';
-import type { DraftSeed } from '../draft';
+import { readRecipe, type ImportedRecipe } from './readRecipe';
 
 interface ImportBoxProps extends Omit<ComponentProps<'form'>, 'onSubmit'> {
-  /** The starting seed: the imported recipe is laid over it, so the author and tags stay as they were. */
-  base: DraftSeed;
-  /** The recipe that was found, and the address of its image if it has one. */
-  onImported: (seed: DraftSeed, imageUrl: string | undefined) => void;
+  /** The recipe that was found on the page, and the address it was imported from. */
+  onImported: (imported: ImportedRecipe, address: string) => void;
 }
 
 const messages = {
@@ -30,7 +26,7 @@ function webAddress(text: string) {
 }
 
 /** A field for a web address: fetches that page through the Worker, reads its recipe in the browser and hands it over. Shows a message when that fails and can then be tried again. */
-export function ImportBox({ base, onImported, className, ...props }: ImportBoxProps) {
+export function ImportBox({ onImported, className, ...props }: ImportBoxProps) {
   const [address, setAddress] = useState('');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
@@ -42,17 +38,19 @@ export function ImportBox({ base, onImported, className, ...props }: ImportBoxPr
     setMessage('');
     setBusy(true);
     try {
+      // The body can fail while it is read, as well as the request itself.
       const response = await fetch('/importeren/pagina', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url }),
       }).catch(() => undefined);
       if (!response?.ok) return setMessage(response?.status === 429 ? messages.tooMany : messages.notFetched);
-      const imported = readRecipe(await response.text(), url);
+      const text = await response.text().catch(() => undefined);
+      if (text === undefined) return setMessage(messages.notFetched);
+      const imported = readRecipe(text, url);
       if (!imported) return setMessage(messages.noRecipe);
-      const { seed, imageUrl } = toDraftSeed(imported, url, base);
       setBusy(false);
-      onImported(seed, imageUrl);
+      onImported(imported, url);
     } finally {
       setBusy(false);
     }

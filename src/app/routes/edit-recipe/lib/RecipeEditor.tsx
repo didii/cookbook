@@ -38,6 +38,7 @@ import {
 } from './draftStore';
 import { fetchImage } from './import/fetchImage';
 import { ImportBox } from './import/ImportBox';
+import type { ImportedRecipe } from './import/readRecipe';
 import { IngredientList } from './ingredients/IngredientList';
 import { PhotoField, type PhotoState } from './photo/PhotoField';
 import { limits, type RecipeFormErrors, type RecipeFormField } from './recipeValidation';
@@ -46,6 +47,7 @@ import { proposals, usedIn } from './steps/chips';
 import { OpenProposals } from './steps/OpenProposals';
 import { StepList } from './steps/StepList';
 import { TagInput } from './TagInput';
+import { toDraftSeed } from './toDraftSeed';
 import { useDraftPersistence } from './useDraftPersistence';
 import { useLeaveGuard } from './useLeaveGuard';
 
@@ -179,7 +181,8 @@ export function RecipeEditor({
     setResets((n) => n + 1);
   };
   // Fills the form from the imported recipe, then fetches its photo and hands it to the photo field; a photo that fails never undoes the import.
-  const importRecipe = async (seed: DraftSeed, imageUrl: string | undefined) => {
+  const importRecipe = async (imported: ImportedRecipe, address: string) => {
+    const { seed, imageUrl } = toDraftSeed(imported, address, initial);
     const run = ++imports.current;
     setCurrent(importedDraft(rules, seed));
     setIncoming(undefined);
@@ -261,7 +264,7 @@ export function RecipeEditor({
           </div>
         </output>
       )}
-      {canImport && !dirty && <ImportBox base={initial} onImported={importRecipe} className="mt-4" />}
+      {canImport && !dirty && <ImportBox onImported={importRecipe} className="mt-4" />}
       <Form
         method="post"
         data-testid="RecipeEditor-form"
