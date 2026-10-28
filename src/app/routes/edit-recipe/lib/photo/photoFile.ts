@@ -6,7 +6,7 @@ const quality = 0.85;
 const encode = (canvas: HTMLCanvasElement, type: string) => new Promise<Blob | null>((done) => canvas.toBlob(done, type, quality));
 
 /** Shrinks a chosen photo for upload: orientation applied, longest side at most 1600 px, never enlarged, WebP (JPEG where the browser can't make WebP). Rejects when the file can't be read as an image. */
-export async function resizePhoto(file: File): Promise<Blob> {
+export async function resizePhoto(file: Blob): Promise<Blob> {
   const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
   try {
     const { width, height } = fitWithin(bitmap.width, bitmap.height, maxSide);

@@ -20,7 +20,7 @@ Needs `record-recipe-source` merged first (the `source` field in the form and `D
 
 ## 4. Photo field
 
-- [ ] 4.1 `PhotoField`: split the body of `choose` after reading the file into `take(blob)`, add the `incoming` prop (blob plus counter) handled by an effect. Component tests in `recipe-photo`: "Handed image is shown and uploaded", "Handed image replaces the current photo", "Handed image can be removed", "Handed image that is unreadable"
+- [x] 4.1 `PhotoField`: split the body of `choose` after reading the file into `take(blob)`, add the `incoming` prop (blob plus counter) handled by an effect. Component tests in `recipe-photo`: "Handed image is shown and uploaded", "Handed image replaces the current photo", "Handed image can be removed", "Handed image that is unreadable"
 
 ## 5. Import box
 
