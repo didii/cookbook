@@ -14,7 +14,11 @@ const asked = (url: string) => {
   context.set(importAllowContext, async () => true);
   return action(
     fake<Route.ActionArgs>({
-      request: new Request('http://localhost/importeren/pagina', { method: 'POST', body: JSON.stringify({ url }) }),
+      request: new Request('http://localhost/importeren/pagina', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      }),
       context,
     }),
   ) as Promise<Response>;

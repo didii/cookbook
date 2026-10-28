@@ -13,7 +13,14 @@ const asked = (url: string) => {
   context.set(userEmailContext, 'mum@example.com');
   context.set(importAllowContext, async () => true);
   return action(
-    fake<Route.ActionArgs>({ request: new Request('http://localhost/importeren/foto', { method: 'POST', body: JSON.stringify({ url }) }), context }),
+    fake<Route.ActionArgs>({
+      request: new Request('http://localhost/importeren/foto', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      }),
+      context,
+    }),
   ) as Promise<Response>;
 };
 

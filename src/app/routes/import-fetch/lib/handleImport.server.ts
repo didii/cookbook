@@ -18,6 +18,8 @@ async function readAddress(request: Request) {
 export async function handleImport(request: Request, context: Readonly<RouterContextProvider>, { maxBytes, accept }: Options) {
   if (!(await context.get(importAllowContext)(context.get(userEmailContext))))
     return new Response(null, { status: 429, headers: { 'Retry-After': '60' } });
+  // A cross-site form can post text/plain without a preflight; only a script of this site sets JSON, which other sites may not.
+  if (!request.headers.get('Content-Type')?.toLowerCase().startsWith('application/json')) return new Response(null, { status: 415 });
   const address = await readAddress(request);
   if (!address) return new Response(null, { status: 400 });
   const fetched = await safeFetch(address, { maxBytes, accept });

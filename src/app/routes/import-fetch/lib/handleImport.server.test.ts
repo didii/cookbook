@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { RouterContextProvider } from 'react-router';
 import { afterEach, describe, test, vi } from 'vitest';
 import { importAllowContext, userEmailContext } from '~app/shared/context.server';
-import { fakeRateLimit } from '~testing/rateLimit';
 import { handleImport, maxAddressLength } from './handleImport.server';
 import { isHtml, pageBytes } from './safeFetch.server';
 
@@ -14,7 +13,7 @@ const stubFetch = () => {
   return fetch;
 };
 
-const contextFor = (email: string, allow = fakeRateLimit().allow) => {
+const contextFor = (email: string, allow: (key: string) => Promise<boolean> = async () => true) => {
   const context = new RouterContextProvider();
   context.set(userEmailContext, email);
   context.set(importAllowContext, allow);
@@ -23,7 +22,11 @@ const contextFor = (email: string, allow = fakeRateLimit().allow) => {
 
 const post = (body: unknown, context = contextFor('mum@example.com')) =>
   handleImport(
-    new Request('http://localhost/importeren/pagina', { method: 'POST', body: typeof body === 'string' ? body : JSON.stringify(body) }),
+    new Request('http://localhost/importeren/pagina', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: typeof body === 'string' ? body : JSON.stringify(body),
+    }),
     context,
     {
       maxBytes: pageBytes,
@@ -58,44 +61,100 @@ describe('recipe-import › Request body is checked', () => {
   });
 });
 
-describe('recipe-import › Limit reached', () => {
-  test('the 31st fetch in the window is refused with 429 and a wait hint', async () => {
+// The limit itself (30 per 60 s) is the binding in wrangler.jsonc, not code of ours. What this unit owns: it asks per member and refuses when told no.
+describe('handleImport content type', () => {
+  const asText = (contentType?: string) =>
+    handleImport(
+      new Request('http://localhost/importeren/pagina', {
+        method: 'POST',
+        headers: contentType ? { 'Content-Type': contentType } : {},
+        body: '{"url":"https://example.com/"}',
+      }),
+      contextFor('mum@example.com'),
+      { maxBytes: pageBytes, accept: isHtml },
+    );
+
+  // A form on another site can post text/plain without a preflight, with a body that parses as JSON.
+  test('a text/plain body is refused with 415 and fetches nothing', async () => {
+    const fetch = stubFetch();
+    assert.equal((await asText('text/plain;charset=UTF-8')).status, 415);
+    assert.equal(fetch.mock.calls.length, 0);
+  });
+
+  test('a form-encoded body is refused with 415', async () => {
     stubFetch();
-    const context = contextFor('mum@example.com');
-    for (let i = 0; i < 30; i++) assert.equal((await post({ url: 'https://example.com/' }, context)).status, 200);
-    const refused = await post({ url: 'https://example.com/' }, context);
+    assert.equal((await asText('application/x-www-form-urlencoded')).status, 415);
+  });
+
+  test('a body without a content type is refused with 415', async () => {
+    stubFetch();
+    assert.equal((await asText()).status, 415);
+  });
+
+  test('application/json with a charset is accepted', async () => {
+    stubFetch();
+    assert.equal((await asText('application/json; charset=utf-8')).status, 200);
+  });
+});
+
+describe('recipe-import › Limit reached', () => {
+  test('a refused request answers 429 with a wait hint', async () => {
+    stubFetch();
+    const refused = await post(
+      { url: 'https://example.com/' },
+      contextFor('mum@example.com', async () => false),
+    );
     assert.equal(refused.status, 429);
     assert.equal(refused.headers.get('Retry-After'), '60');
   });
 
   test('a refused request fetches nothing', async () => {
     const fetch = stubFetch();
-    const response = await post(
+    await post(
       { url: 'https://example.com/' },
       contextFor('mum@example.com', async () => false),
     );
-    assert.equal(response.status, 429);
     assert.equal(fetch.mock.calls.length, 0);
   });
 
-  test('requests are served again after the window', async () => {
+  test('an allowed request is served', async () => {
     stubFetch();
-    const limit = fakeRateLimit(1);
-    const context = contextFor('mum@example.com', limit.allow);
-    await post({ url: 'https://example.com/' }, context);
-    assert.equal((await post({ url: 'https://example.com/' }, context)).status, 429);
-    limit.reset();
-    assert.equal((await post({ url: 'https://example.com/' }, context)).status, 200);
+    assert.equal(
+      (
+        await post(
+          { url: 'https://example.com/' },
+          contextFor('mum@example.com', async () => true),
+        )
+      ).status,
+      200,
+    );
+  });
+
+  test('every request counts, also one with a bad body', async () => {
+    const asked: string[] = [];
+    await post(
+      {},
+      contextFor('mum@example.com', async (key) => (asked.push(key), true)),
+    );
+    assert.deepEqual(asked, ['mum@example.com']);
   });
 });
 
 describe('recipe-import › Limits are per family member', () => {
-  test('another member is still served when one has reached the limit', async () => {
+  test('the limit is asked for the email of the member who asks', async () => {
     stubFetch();
-    const limit = fakeRateLimit(1);
-    await post({ url: 'https://example.com/' }, contextFor('mum@example.com', limit.allow));
-    assert.equal((await post({ url: 'https://example.com/' }, contextFor('mum@example.com', limit.allow))).status, 429);
-    assert.equal((await post({ url: 'https://example.com/' }, contextFor('dad@example.com', limit.allow))).status, 200);
+    const asked: string[] = [];
+    const allow = async (key: string) => (asked.push(key), true);
+    await post({ url: 'https://example.com/' }, contextFor('mum@example.com', allow));
+    await post({ url: 'https://example.com/' }, contextFor('dad@example.com', allow));
+    assert.deepEqual(asked, ['mum@example.com', 'dad@example.com']);
+  });
+
+  test('a member who is refused does not stop another member', async () => {
+    stubFetch();
+    const allow = async (key: string) => key !== 'mum@example.com';
+    assert.equal((await post({ url: 'https://example.com/' }, contextFor('mum@example.com', allow))).status, 429);
+    assert.equal((await post({ url: 'https://example.com/' }, contextFor('dad@example.com', allow))).status, 200);
   });
 });
 
