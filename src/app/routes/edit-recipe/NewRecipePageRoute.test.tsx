@@ -235,3 +235,21 @@ describe('recipe-creation › Prefill alone is not a draft', () => {
     assert.equal(window.localStorage.length, 0);
   });
 });
+
+describe('the new recipe source', () => {
+  test('a trimmed source is stored', async ({ db }) => {
+    await submit(db, { title: 'Met bron', author: 'Oma', source: ' Libelle ' });
+    assert.equal((await getRecipe(db, 'met-bron'))?.source, 'Libelle');
+  });
+
+  test('a source of 500 characters is accepted', async ({ db }) => {
+    await submit(db, { title: 'Grens', author: 'Oma', source: 'a'.repeat(500) });
+    assert.equal((await getRecipe(db, 'grens'))?.source?.length, 500);
+  });
+
+  test('a source of 501 characters is refused and nothing is stored', async ({ db }) => {
+    const res = (await submit(db, { title: 'Te lang', author: 'Oma', source: 'a'.repeat(501) })) as unknown as { init?: { status?: number } };
+    assert.equal(res.init?.status, 400);
+    assert.equal(await getRecipe(db, 'te-lang'), undefined);
+  });
+});
