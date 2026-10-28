@@ -28,8 +28,12 @@ describe('security-headers › Page has the policy', () => {
 });
 
 describe('security-headers › Nonce differs per response', () => {
-  test('two nonces differ', () => {
-    assert.notEqual(createNonce(), createNonce());
+  test('two responses have different nonces', async () => {
+    const handler = createRequestHandler(build, 'test');
+    const policies = await Promise.all(
+      [1, 2].map(async () => (await handler(new Request('https://cookbook.example.com/'))).headers.get('Content-Security-Policy')),
+    );
+    assert.notEqual(policies[0], policies[1]);
   });
 
   test('a nonce is base64 of at least 128 bits', () => {
