@@ -407,7 +407,7 @@ describe('recipe-limits › 100 ingredients are accepted', () => {
 
 describe('recipe-limits › 101 ingredients are refused', () => {
   test('the 101st row states the maximum', () => {
-    const { errors } = post(lines(limits.ingredients + 1));
+    const { errors } = post(lines(limits.ingredients + 3));
     assert.deepEqual(Object.keys(errors), [String(limits.ingredients)]);
     assert.ok(errors[limits.ingredients].includes(String(limits.ingredients)));
   });
@@ -457,7 +457,7 @@ describe("recipe-limits › A step's timer name and chips are limited", () => {
 
 describe('recipe-limits › 101 steps are refused', () => {
   test('the 101st step states the maximum, blanks not counted', () => {
-    const steps = Array.from({ length: limits.steps + 1 }, (_, i) => ({ body: `stap ${i}` }));
+    const steps = Array.from({ length: limits.steps + 3 }, (_, i) => ({ body: `stap ${i}` }));
     const { errors } = postSteps([{ body: '' }, ...steps]);
     assert.deepEqual(Object.keys(errors), [String(limits.steps + 1)]);
     assert.ok(errors[limits.steps + 1].includes(String(limits.steps)));

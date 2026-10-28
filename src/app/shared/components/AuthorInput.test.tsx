@@ -25,3 +25,10 @@ describe('recipe-creation › Suggestions ignore letter case', () => {
     await act(async () => {});
   });
 });
+
+describe('AuthorInput maxLength', () => {
+  test('the field takes at most maxLength characters', () => {
+    render(<AuthorInput id="author" authors={[]} value="" onValueChange={() => {}} maxLength={42} />);
+    assert.equal(screen.getByTestId<HTMLInputElement>('AuthorInput-field').maxLength, 42);
+  });
+});

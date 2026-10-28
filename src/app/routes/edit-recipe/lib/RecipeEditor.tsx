@@ -180,10 +180,12 @@ export function RecipeEditor({
       </p>
     );
 
-  // After a refused submit, put focus on the first field in error so its label and message are read.
+  // After a refused submit, focus goes to the first thing in error, in page order, so its label and message are read. A list focuses its own row when it is the first.
+  const firstInError = (['title', 'intro', 'ingredients', 'steps', 'author', 'servings', 'time', 'tags'] as const).find((name) => errors[name]);
   useEffect(() => {
-    const first = (['title', 'intro', 'author', 'servings', 'time', 'tags'] as const).find((name) => errors[name]);
-    if (first) document.getElementById(first)?.focus();
+    if (firstInError && firstInError !== 'ingredients' && firstInError !== 'steps') document.getElementById(firstInError)?.focus();
+    // Only when the errors change, not on every keystroke.
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [errors]);
 
   return (
@@ -277,6 +279,7 @@ export function RecipeEditor({
               rules={rules}
               usedIn={(id) => usedIn(current.steps, id)}
               errors={errors.ingredients}
+              focusErrors={firstInError === 'ingredients'}
               maxLength={limits.ingredientLine}
               onType={(id, value) => setCurrent((c) => typeIngredient(c, id, value, rules))}
               onRemove={(id) => setCurrent((c) => removeIngredient(c, id, rules))}
@@ -295,6 +298,7 @@ export function RecipeEditor({
               key={resets}
               steps={current.steps}
               errors={errors.steps}
+              focusErrors={firstInError === 'steps'}
               maxLength={limits.step}
               contexts={contexts}
               onChips={(id, change) => setCurrent((c) => changeChips(c, id, change, rules))}

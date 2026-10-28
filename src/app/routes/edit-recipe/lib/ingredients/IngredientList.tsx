@@ -15,6 +15,8 @@ interface IngredientListProps extends ComponentProps<'div'> {
   rules: Rules;
   /** Messages by row index. */
   errors?: Record<number, string>;
+  /** Focus the first row in error when the errors change; set by the parent when this list holds the first error on the page. */
+  focusErrors?: boolean;
   /** The most characters a row takes. */
   maxLength?: number;
   /** Step numbers that use a row; filled in by the chips change. */
@@ -40,6 +42,7 @@ export function IngredientList({
   rows,
   rules,
   errors = noErrors,
+  focusErrors = false,
   maxLength,
   usedIn = () => none,
   onType,
@@ -66,7 +69,7 @@ export function IngredientList({
   // After a refused submit, put focus on the first row in error so its message is read.
   useEffect(() => {
     const first = rows.findIndex((_, i) => errors[i]);
-    if (first >= 0) items.current.get(rows[first].id)?.focusField('end');
+    if (focusErrors && first >= 0) items.current.get(rows[first].id)?.focusField('end');
     // Only when the errors change, not on every keystroke.
     // oxlint-disable-next-line react/exhaustive-deps
   }, [errors]);

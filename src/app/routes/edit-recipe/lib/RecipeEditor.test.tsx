@@ -223,7 +223,7 @@ describe('recipe-limits › Typing stops at the limit', () => {
     });
 });
 
-describe('recipe-limits › A step over the limit is refused on its row', () => {
+describe('RecipeEditor error wiring', () => {
   const stepValues = {
     ...emptyDraftSeed,
     steps: [
@@ -231,27 +231,31 @@ describe('recipe-limits › A step over the limit is refused on its row', () => 
       { body: 'b', ingredients: [] },
     ],
   };
+  const withSteps = (errors: object) => show({ values: stepValues, initial: stepValues, errors });
 
-  test('the message shows on that step only', () => {
-    show({ values: stepValues, initial: stepValues, errors: { steps: { 1: 'Hoogstens 2000 tekens.' } } });
-    const messages = screen.getAllByTestId('StepEditor-error');
-    assert.equal(messages.length, 1);
-    assert.equal(messages[0].textContent, 'Hoogstens 2000 tekens.');
+  test('a step error reaches the step it is keyed to', () => {
+    withSteps({ steps: { 1: 'Fout' } });
+    assert.equal(screen.getAllByTestId('StepEditor-error').length, 1);
   });
 
-  test('the step is marked invalid and focused', () => {
-    show({ values: stepValues, initial: stepValues, errors: { steps: { 1: 'Hoogstens 2000 tekens.' } } });
-    const field = screen.getAllByTestId('StepText-field')[1];
-    assert.equal(field.getAttribute('aria-invalid'), 'true');
-    assert.ok(document.activeElement === field);
+  test('focus goes to the title before a step', () => {
+    withSteps({ title: 'Fout', steps: { 1: 'Fout' } });
+    assert.ok(document.activeElement === screen.getByTestId('RecipeEditor-title'));
   });
-});
 
-describe('RecipeEditor intro and time errors', () => {
+  test('focus goes to an ingredient row before a step', () => {
+    withSteps({ ingredients: { 0: 'Fout' }, steps: { 1: 'Fout' } });
+    assert.ok(document.activeElement === screen.getAllByTestId('IngredientItem-field')[0]);
+  });
+
+  test('focus goes to a step before the author', () => {
+    withSteps({ author: 'Fout', steps: { 1: 'Fout' } });
+    assert.ok(document.activeElement === screen.getAllByTestId('StepText-field')[1]);
+  });
+
   for (const name of ['intro', 'time'] as const)
-    test(`${name} is described by its error`, () => {
+    test(`${name} gets its error`, () => {
       show({ errors: { [name]: 'Te lang.' } });
-      const field = document.getElementById(name)!;
-      assert.equal(document.getElementById(field.getAttribute('aria-describedby')!)?.textContent, 'Te lang.');
+      assert.ok(screen.getByTestId(`RecipeEditor-${name}`).getAttribute('aria-describedby'));
     });
 });

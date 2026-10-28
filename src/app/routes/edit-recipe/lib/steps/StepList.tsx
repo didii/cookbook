@@ -11,6 +11,8 @@ interface StepListProps extends ComponentProps<'div'> {
   steps: StepDraft[];
   /** Messages by step index. */
   errors?: Record<number, string>;
+  /** Focus the first step in error when the errors change; set by the parent when this list holds the first error on the page. */
+  focusErrors?: boolean;
   /** The most characters a step's text takes. */
   maxLength?: number;
   /** What each step's chips are read against, one per step. */
@@ -41,6 +43,7 @@ type Removed = { step: StepDraft; at: number };
 export function StepList({
   steps,
   errors = noErrors,
+  focusErrors = false,
   maxLength,
   contexts,
   onChips,
@@ -80,7 +83,7 @@ export function StepList({
   // After a refused submit, put focus on the first step in error so its message is read.
   useEffect(() => {
     const first = steps.findIndex((_, i) => errors[i]);
-    if (first >= 0) items.current.get(steps[first].id)?.focusField('end');
+    if (focusErrors && first >= 0) items.current.get(steps[first].id)?.focusField('end');
     // Only when the errors change, not on every keystroke.
     // oxlint-disable-next-line react/exhaustive-deps
   }, [errors]);
