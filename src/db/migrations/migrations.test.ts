@@ -57,6 +57,7 @@ describe('recipe-storage › Recipe is saved', () => {
         servings: 8,
         intro: 'intro',
         image: '/a.jpg',
+        source: null,
         seal: 'fu',
         created_by: 'mum@example.com',
         created_at: '',
@@ -999,7 +1000,7 @@ describe('migration 0016', () => {
       const read = () => Promise.all(tables.map(async (t) => (await db.prepare(`SELECT * FROM ${t}`).all()).results));
       const before = await read();
       for (const t of before) assert.equal(t.length, 1);
-      for (const f of files.filter((f) => f >= '0016')) await applySql(db, join(dir, f));
+      for (const f of files.filter((f) => f >= '0016' && f < '0017')) await applySql(db, join(dir, f));
       assert.deepEqual(await read(), before);
       assert.equal(await db.prepare("SELECT 1 FROM sqlite_master WHERE name LIKE 'copy_%'").first(), null);
       assert.ok(await db.prepare("SELECT 1 FROM sqlite_master WHERE name = 'recipes_seal'").first());
@@ -1106,5 +1107,21 @@ describe('recipe-limits › Step and chip columns are limited', () => {
     await insertStep(db, recipe, text(2000), text(100));
     const step = (await db.prepare('SELECT id FROM steps WHERE recipe_id = ?').bind(recipe).first<{ id: number }>())!.id;
     await insertChip(db, step, text(50), text(200));
+  });
+});
+
+describe('recipe-source › Source over the limit is refused by the database', () => {
+  test('a source of 501 characters is refused', async ({ db }) => {
+    await assert.rejects(insertRecipe(db, 'src-501', 'source', text(501)));
+  });
+
+  test('a source of 500 characters is stored', async ({ db }) => {
+    await insertRecipe(db, 'src-500', 'source', text(500));
+    assert.equal(await count(db, 'SELECT id FROM recipes WHERE slug = ?', 'src-500'), 1);
+  });
+
+  test('a recipe without a source reads back as null', async ({ db }) => {
+    const recipe = await addRecipe(db, 'src-none');
+    assert.equal((await db.prepare('SELECT source FROM recipes WHERE id = ?').bind(recipe).first<{ source: null }>())?.source, null);
   });
 });
