@@ -13,6 +13,7 @@ import { NoteSheet } from './notes/NoteSheet';
 import { useNote } from './notes/useNote';
 import { scaleIngredient, scaleText } from './scale/scale';
 import { ScaleControl } from './scale/ScaleControl';
+import { sourceLink } from './sourceLink';
 import { StepList } from './StepList';
 import { TabBar } from './tabs/TabBar';
 import { arrive, tabFromHash, type Positions, type TabId } from './tabs/tabs';
@@ -157,6 +158,7 @@ export function RecipeView({ recipe: r, tile, steps, liked = false, note: savedN
           </span>
           {r.time && <span data-testid="RecipeView-time">{r.time}</span>}
           {r.servings && <span data-testid="RecipeView-servings">{r.servings} porties</span>}
+          {r.source && <Source source={r.source} />}
         </p>
         <p className="mt-2 max-w-[60ch] text-lg text-muted">{r.intro}</p>
 
@@ -212,5 +214,19 @@ export function RecipeView({ recipe: r, tile, steps, liked = false, note: savedN
         <NoteSheet note={note} />
       </main>
     </TimersContext>
+  );
+}
+
+type SourceProps = { source: string };
+
+/** Where the recipe came from: a link to the address when the source is a web address, otherwise the text. */
+function Source({ source }: SourceProps) {
+  const link = sourceLink(source);
+  return link ? (
+    <a data-testid="RecipeView-source" href={link.href} target="_blank" rel="noopener noreferrer" className="underline">
+      {link.text}
+    </a>
+  ) : (
+    <span data-testid="RecipeView-source">{source}</span>
   );
 }
