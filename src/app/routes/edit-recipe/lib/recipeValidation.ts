@@ -4,9 +4,9 @@ import { findQuantities } from './quantities';
 import { parseQuantity } from './quantity';
 import { parseIngredient, type ParsedIngredient } from './shared/ingredients';
 
-export type RecipeFormField = 'title' | 'author' | 'servings' | 'time' | 'intro' | 'image';
+export type RecipeFormField = 'title' | 'author' | 'servings' | 'time' | 'intro' | 'image' | 'source';
 
-/** The trimmed form values; servings stays text because it can be empty. Time, intro and image are free text, so they have no validation. */
+/** The trimmed form values; servings stays text because it can be empty. Time, intro, image and source are free text, so they have no validation. */
 export type RecipeForm = Record<RecipeFormField, string>;
 
 /** The size limits of a recipe. The migration `0016_size_limits.sql` repeats the column ones in SQL. */
@@ -14,6 +14,7 @@ export const limits = {
   title: 200,
   author: 100,
   time: 100,
+  source: 500,
   intro: 5000,
   ingredientLine: 200,
   step: 2000,
@@ -37,6 +38,7 @@ export function validate(values: RecipeForm): Partial<Record<RecipeFormField, st
   if (!values.author) errors.author = 'Vul in van wie het recept is.';
   else if (values.author.length > limits.author) errors.author = tooLong(limits.author);
   if (values.time.length > limits.time) errors.time = tooLong(limits.time);
+  if (values.source.length > limits.source) errors.source = tooLong(limits.source);
   if (values.intro.length > limits.intro) errors.intro = tooLong(limits.intro);
   if (values.servings && (!/^\d+$/.test(values.servings) || Number(values.servings) < 1 || Number(values.servings) > limits.servings))
     errors.servings = `Vul een heel aantal porties in, van 1 tot ${limits.servings}.`;
@@ -46,7 +48,7 @@ export function validate(values: RecipeForm): Partial<Record<RecipeFormField, st
 /** The trimmed values of a submitted form. */
 export function readForm(form: FormData): RecipeForm {
   const text = (name: RecipeFormField) => String(form.get(name) ?? '').trim();
-  return { title: text('title'), author: text('author'), servings: text('servings'), time: text('time'), intro: text('intro'), image: text('image') };
+  return { title: text('title'), author: text('author'), servings: text('servings'), time: text('time'), intro: text('intro'), image: text('image'), source: text('source') };
 }
 
 /** Valid form values as recipe fields: empty optional ones become undefined. */
@@ -58,6 +60,7 @@ export function toRecipeFields(values: RecipeForm) {
     time: values.time || undefined,
     intro: values.intro,
     image: values.image || undefined,
+    source: values.source || undefined,
   };
 }
 

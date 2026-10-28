@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'vitest';
 import type { Step } from '~app/shared/recipe';
 import { defaultRules } from '~app/shared/rules';
-import { limits, readForm, readIngredients, readSteps, readTags, tagError, validate } from './recipeValidation';
+import { limits, readForm, readIngredients, readSteps, readTags, tagError, toRecipeFields, validate } from './recipeValidation';
 
-const ok = { title: 'Soep', author: 'Oma', servings: '4', time: '', intro: '', image: '' };
+const ok = { title: 'Soep', author: 'Oma', servings: '4', time: '', intro: '', image: '', source: '' };
 
 describe('recipe-creation › Missing title', () => {
   test('only the title is reported', () => {
@@ -491,5 +491,31 @@ describe('recipe-limits › 50 tags are accepted', () => {
 describe('recipe-limits › 51 tags are refused', () => {
   test('the message states the maximum', () => {
     assert.ok(tagError(Array.from({ length: limits.tags + 1 }, (_, i) => `t${i}`))?.includes(String(limits.tags)));
+  });
+});
+
+describe('source', () => {
+  const form = (source: string) => {
+    const data = new FormData();
+    data.set('source', source);
+    return data;
+  };
+
+  test('readForm trims it', () => {
+    assert.equal(readForm(form('  Libelle  ')).source, 'Libelle');
+  });
+
+  test('a blank source becomes undefined', () => {
+    assert.equal(toRecipeFields({ ...ok, source: '' }).source, undefined);
+  });
+
+  test('500 characters are accepted', () => {
+    assert.deepEqual(validate({ ...ok, source: 'a'.repeat(500) }), {});
+  });
+
+  test('501 characters are reported on the source with the limit in the message', () => {
+    const errors = validate({ ...ok, source: 'a'.repeat(501) });
+    assert.deepEqual(Object.keys(errors), ['source']);
+    assert.ok(errors.source?.includes('500'));
   });
 });
