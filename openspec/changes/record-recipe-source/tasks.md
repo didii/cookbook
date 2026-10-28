@@ -20,4 +20,4 @@
 
 ## 4. Finish
 
-- [ ] 4.1 `pnpm test:spec record-recipe-source` shows no scenario without a test; run `pnpm format:fix` and `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check` and `pnpm test:ai` all pass
+- [x] 4.1 `pnpm test:spec record-recipe-source` shows no scenario without a test; run `pnpm format:fix` and `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check` and `pnpm test:ai` all pass

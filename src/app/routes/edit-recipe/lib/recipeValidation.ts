@@ -49,7 +49,15 @@ export function validate(values: RecipeForm): Partial<Record<RecipeFormField, st
 /** The trimmed values of a submitted form. */
 export function readForm(form: FormData): RecipeForm {
   const text = (name: RecipeFormField) => String(form.get(name) ?? '').trim();
-  return { title: text('title'), author: text('author'), servings: text('servings'), time: text('time'), intro: text('intro'), image: text('image'), source: text('source') };
+  return {
+    title: text('title'),
+    author: text('author'),
+    servings: text('servings'),
+    time: text('time'),
+    intro: text('intro'),
+    image: text('image'),
+    source: text('source'),
+  };
 }
 
 /** Valid form values as recipe fields: empty optional ones become undefined. */

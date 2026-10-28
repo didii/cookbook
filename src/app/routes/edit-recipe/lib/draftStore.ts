@@ -121,7 +121,9 @@ function parse(text: string | null): StoredDraft | undefined {
   try {
     const parsed: unknown = JSON.parse(text ?? '');
     // A draft kept before tags or the source existed has none.
-    return isStoredDraft(parsed) ? { ...parsed, state: { ...parsed.state, tags: parsed.state.tags ?? [], source: parsed.state.source ?? '' } } : undefined;
+    return isStoredDraft(parsed)
+      ? { ...parsed, state: { ...parsed.state, tags: parsed.state.tags ?? [], source: parsed.state.source ?? '' } }
+      : undefined;
   } catch {
     return undefined;
   }
