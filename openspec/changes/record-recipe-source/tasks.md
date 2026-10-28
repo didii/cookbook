@@ -3,7 +3,7 @@
 ## 1. Storage
 
 - [x] 1.1 Add `src/db/migrations/0017_recipe_source.sql` (nullable `source` with the 500 `CHECK`); `pnpm test:ai` passes the "recipe-source › Source over the limit is refused by the database" test in `migrations.test.ts`, and existing rows still read back
-- [ ] 1.2 Add `source` to `Recipe` (`shared/recipe.ts`) and to `getRecipe`, `createRecipe`, `updateRecipe` and `RecipeInput` in `recipes.server.ts`, storing blank as null; `recipes.server.test.ts` covers the "Source is saved" and "No source" scenarios
+- [x] 1.2 Add `source` to `Recipe` (`shared/recipe.ts`) and to `getRecipe`, `createRecipe`, `updateRecipe` and `RecipeInput` in `recipes.server.ts`, storing blank as null; `recipes.server.test.ts` covers the "Source is saved" and "No source" scenarios
 
 ## 2. Form
 
