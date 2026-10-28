@@ -58,6 +58,22 @@ It works on made-up tags and categories; nothing is saved. Below 48rem a tapped 
 
 Colours, fonts and spacing follow the tokens in `app/app.css`; if those change, update the mockup or treat the app as the truth.
 
+## `orphaned-photos.html`
+
+Static mockup of the orphaned photos page ("Foto's"), the design reference for the `remove-orphaned-photos` OpenSpec change. Open it in a browser; it needs no build. Fonts load from Google Fonts, the thumbnails from `public/img`.
+
+It works on made-up photos; nothing is deleted. Check it at 390px and at desktop width.
+
+- Top: title, a lead that explains the 24-hour rule, the result message after a delete, the total count and size, and the 100-entry note when more remain.
+- Photos are square tiles, oldest first: 2 columns on a phone, 3 from 30rem, 4 from 40rem. The whole tile is the checkbox (blue when ticked); the date and size sit under the photo.
+- A bar fixed to the bottom, like the tag manager's selection bar: the count and size of the selection, "Alles selecteren" / "Niets", "Verwijder selectie" and "Verwijder alle N" ("Verwijder deze 100" when capped).
+- The first press turns the bar red and asks "Weet je het zeker? Verwijderde foto's komen niet terug.", with the count, the size and the draft warning; the photos that go turn grey with a red frame. The same spot then holds "Ja, verwijder N foto's" and "Annuleer". Changing the selection or `Esc` cancels.
+- After a delete, a green message at the top says how many were deleted and how many kept. The photo of 14 mrt acts as one a recipe started to use, so it is kept.
+- With nothing to remove: "Niets om op te ruimen" and no bar.
+- The dark bar at the top switches between states (mockup only). Append `#select`, `#confirm`, `#confirm-all`, `#result`, `#cap` or `#empty` to start in that state.
+
+Colours, fonts and spacing follow the tokens in `app/app.css`; if those change, update the mockup or treat the app as the truth.
+
 ## `recipe-like-note-narrow.html` and `recipe-like-note-wide.html`
 
 Static mockups of the recipe page with the heart (like) and the personal note, the design reference for the `like-and-note-recipe` OpenSpec change. Open them in a browser; they need no build. Fonts load from Google Fonts, the tile band from `public/img`. They have no behaviour: every state is drawn side by side.
