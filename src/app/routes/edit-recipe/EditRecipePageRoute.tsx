@@ -52,13 +52,14 @@ export async function action({ request, params, context }: Route.ActionArgs) {
   const stored = await getRecipe(DB, params.slug);
   const { lines, ingredients, errors: ingredientErrors } = readIngredients(form, rules);
   // A form without an ingredient list keeps the stored ingredients, so the amounts in the steps are found against those.
-  const { lines: stepLines, steps } = readSteps(form, ingredients ?? stored?.ingredients ?? [], rules);
+  const { lines: stepLines, steps, errors: stepErrors } = readSteps(form, ingredients ?? stored?.ingredients ?? [], rules);
 
   const tags = readTags(form);
   const errors: RecipeFormErrors = validate(values);
   const tooLong = tagError(tags);
   if (tooLong) errors.tags = tooLong;
   if (Object.keys(ingredientErrors).length) errors.ingredients = ingredientErrors;
+  if (Object.keys(stepErrors).length) errors.steps = stepErrors;
   if (Object.keys(errors).length)
     return data({ errors, values: { ...values, ingredients: lines, steps: stepLines, tags: tags ?? [] } }, { status: 400 });
 

@@ -36,13 +36,14 @@ export async function action({ request, context }: Route.ActionArgs) {
   const values = readForm(form);
   const rules = await getRules(context.get(envContext).DB);
   const { lines, ingredients, errors: ingredientErrors } = readIngredients(form, rules);
-  const { lines: stepLines, steps } = readSteps(form, ingredients ?? [], rules);
+  const { lines: stepLines, steps, errors: stepErrors } = readSteps(form, ingredients ?? [], rules);
 
   const tags = readTags(form);
   const errors: RecipeFormErrors = validate(values);
   const tooLong = tagError(tags);
   if (tooLong) errors.tags = tooLong;
   if (Object.keys(ingredientErrors).length) errors.ingredients = ingredientErrors;
+  if (Object.keys(stepErrors).length) errors.steps = stepErrors;
   if (Object.keys(errors).length)
     return data({ errors, values: { ...values, ingredients: lines, steps: stepLines, tags: tags ?? [] } }, { status: 400 });
 
