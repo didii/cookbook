@@ -159,6 +159,7 @@ describe('createRecipe', () => {
         time: '1u',
         intro: 'Intro',
         image: '/alles.jpg',
+        source: 'Libelle, maart 2024',
         seal: 'fu',
         createdBy: 'iemand@example.com',
         ingredients: [{ name: 'bloem', quantityText: '250 g', quantityValue: 250, quantityUnit: 'g' }, { name: 'zout' }],
@@ -178,6 +179,7 @@ describe('createRecipe', () => {
         servings: 6,
         intro: 'Intro',
         image: '/alles.jpg',
+        source: 'Libelle, maart 2024',
         seal: 'fu',
         ingredients: [
           { quantityText: '250 g', quantityValue: 250, quantityValueMax: null, quantityUnit: 'g', name: 'bloem' },
@@ -1125,5 +1127,36 @@ describe('createRecipe › range maximum', () => {
       ],
     });
     assert.equal((await getRecipe(db, slug))?.steps[0].ingredients[0].quantityValueMax, 2);
+  });
+});
+
+describe('recipe-source › Source is saved', () => {
+  test('a created recipe reads back its source', async ({ db }) => {
+    const slug = await createRecipe(db, { title: 'Met bron', author: 'Oma', source: 'Libelle, maart 2024' });
+    assert.equal((await getRecipe(db, slug))?.source, 'Libelle, maart 2024');
+  });
+
+  test('an updated recipe reads back its new source', async ({ db }) => {
+    const slug = await createRecipe(db, { title: 'Met bron', author: 'Oma', source: 'oud' });
+    await updateRecipe(db, slug, { title: 'Met bron', author: 'Oma', source: 'Libelle, maart 2024' });
+    assert.equal((await getRecipe(db, slug))?.source, 'Libelle, maart 2024');
+  });
+});
+
+describe('recipe-source › No source', () => {
+  test('a recipe created without a source has none', async ({ db }) => {
+    const slug = await createRecipe(db, { title: 'Zonder', author: 'Oma' });
+    assert.equal((await getRecipe(db, slug))?.source, null);
+  });
+
+  test('a blank source is stored as none', async ({ db }) => {
+    const slug = await createRecipe(db, { title: 'Leeg', author: 'Oma', source: '  ' });
+    assert.equal((await getRecipe(db, slug))?.source, null);
+  });
+
+  test('updating without a source clears it', async ({ db }) => {
+    const slug = await createRecipe(db, { title: 'Wissen', author: 'Oma', source: 'Libelle' });
+    await updateRecipe(db, slug, { title: 'Wissen', author: 'Oma' });
+    assert.equal((await getRecipe(db, slug))?.source, null);
   });
 });
