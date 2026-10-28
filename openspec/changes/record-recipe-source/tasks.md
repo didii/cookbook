@@ -16,7 +16,7 @@
 
 - [x] 3.1 Add the pure function that tells a link source from text, beside `RecipeView`; its unit test covers http, https, `javascript:`, `ftp:`, whitespace and a non-URL
 - [x] 3.2 Show the source in `RecipeView.tsx` (link with host text, `target="_blank"`, `rel="noopener noreferrer"`, or plain text, nothing without one); `RecipeView.test.tsx` covers the "The recipe page shows the source" scenarios
-- [ ] 3.3 Give one seed recipe a text source and another a link in `src/db/seed/dev.sql`; `src/db/seed/dev.test.ts` passes
+- [x] 3.3 Give one seed recipe a text source and another a link in `src/db/seed/dev.sql`; `src/db/seed/dev.test.ts` passes
 
 ## 4. Finish
 
