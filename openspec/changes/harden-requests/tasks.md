@@ -5,7 +5,7 @@ Verify each task with the type check and `pnpm test:ai`; `pnpm test:spec harden-
 ## 1. Static headers
 
 - [x] 1.1 In `handler.ts` add the four headers to every response `createFetch` returns, the 403s included, only when the response lacks them; test "A page has the headers", "A refusal has the headers" and "A header the response already has is kept" in `handler.test.ts`
-- [ ] 1.2 Test "A photo has the headers" against the real photo route with in-memory R2 (the `Content-Type` stays)
+- [x] 1.2 Test "A photo has the headers" against the real photo route with in-memory R2 (the `Content-Type` stays)
 
 ## 2. Content-Security-Policy
 

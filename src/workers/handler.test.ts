@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import { generateKeyPair, SignJWT } from 'jose';
 import type { RouterContextProvider } from 'react-router';
 import { describe } from 'vitest';
+import { loader as fetchPhoto } from '~app/routes/photo/PhotoFetchRoute';
+import type { Route as PhotoRoute } from '~app/routes/photo/+types/PhotoFetchRoute';
 import { envContext, userEmailContext } from '~app/shared/context.server';
+import { storePhoto } from '~app/shared/photos.server';
 import { createUser } from '~app/shared/users.server';
 import { fake } from '~testing/fake';
 import { test } from '~testing/test';
@@ -186,6 +189,28 @@ describe('security-headers › A header the response already has is kept', () =>
   test('keeps a value that differs from the default', async () => {
     const res = await answering({ 'X-Frame-Options': 'SAMEORIGIN' })(get(await token()), env);
     assert.equal(res.headers.get('X-Frame-Options'), 'SAMEORIGIN');
+  });
+});
+
+describe('security-headers › A photo has the headers', () => {
+  const served = async (photos: R2Bucket) => {
+    const stored = await storePhoto(photos, new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1]).buffer);
+    assert.ok('path' in stored);
+    const fetch = createFetch({
+      requestHandler: (_request, context) =>
+        fetchPhoto(fake<PhotoRoute.LoaderArgs>({ params: { file: stored.path.slice('/foto/'.length) }, context })) as Promise<Response>,
+      dev: false,
+      getKey: async () => publicKey,
+    });
+    return fetch(get(await token()), { ...env, PHOTOS: photos });
+  };
+
+  test('has the four headers', async ({ photos }) => {
+    assertHeaders(await served(photos));
+  });
+
+  test('keeps its Content-Type', async ({ photos }) => {
+    assert.equal((await served(photos)).headers.get('Content-Type'), 'image/jpeg');
   });
 });
 
