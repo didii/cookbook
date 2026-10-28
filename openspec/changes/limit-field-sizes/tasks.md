@@ -26,4 +26,4 @@ Verify each task with the type check and `pnpm test:ai`; `pnpm test:spec limit-f
 
 ## 5. Wrap-up
 
-- [ ] 5.1 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check`, `pnpm test:ai` and `pnpm test:spec limit-field-sizes`; all clean
+- [x] 5.1 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check`, `pnpm test:ai` and `pnpm test:spec limit-field-sizes`; all clean

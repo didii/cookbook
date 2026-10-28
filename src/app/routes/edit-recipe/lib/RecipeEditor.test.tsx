@@ -247,7 +247,7 @@ describe('recipe-limits › A step over the limit is refused on its row', () => 
   });
 });
 
-describe('recipe-limits › Other fields show their message', () => {
+describe('RecipeEditor intro and time errors', () => {
   for (const name of ['intro', 'time'] as const)
     test(`${name} is described by its error`, () => {
       show({ errors: { [name]: 'Te lang.' } });
