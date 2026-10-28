@@ -6,6 +6,7 @@ import {
   editedStep,
   editStep,
   emptyDraftSeed,
+  importedDraft,
   isDirty,
   moveIngredient,
   moveStep,
@@ -17,6 +18,8 @@ import {
   typeIngredient,
   type RecipeDraft,
 } from './draft';
+import { toDraftSeed } from './import/toDraftSeed';
+import { parseIngredient } from './shared/ingredients';
 import type { Chip } from './steps/chips';
 import { computeEdit } from './steps/textEdit';
 
@@ -455,5 +458,49 @@ describe('recipe-source › Reset restores the source', () => {
 
   test('starting again gives the starting source', () => {
     assert.equal(startingDraft(defaultRules, withSource).source, 'Libelle');
+  });
+});
+
+describe('recipe-import › Ingredients and steps are recognised', () => {
+  const imported = {
+    title: 'Tomaten uit de oven',
+    intro: '',
+    servingsText: '',
+    minutes: undefined,
+    ingredients: ['500 g tomaten', '2 el olijfolie'],
+    steps: ['Bak de tomaten 20 minuten op 180 graden met olijfolie.', 'Serveer.'],
+    image: undefined,
+  };
+  const draft = importedDraft(defaultRules, toDraftSeed(imported, 'https://example.com/', emptyDraftSeed).seed);
+
+  test('ingredient lines are kept as typed text, ready to be split into quantity, unit and name', () => {
+    assert.deepEqual(lines(draft).slice(0, 2), ['500 g tomaten', '2 el olijfolie']);
+    assert.deepEqual(parseIngredient(draft.ingredients[0].text, defaultRules), {
+      quantityText: '500 g',
+      quantityValue: 500,
+      quantityUnit: 'g',
+      name: 'tomaten',
+    });
+  });
+
+  test('a step gets an oven temperature', () => {
+    assert.deepEqual(draft.steps[0].chips.find((c) => c.kind === 'oven')?.values, { degrees: 180 });
+  });
+
+  test('a step gets a timer', () => {
+    assert.deepEqual(draft.steps[0].chips.find((c) => c.kind === 'timer')?.values, { minutes: 20 });
+  });
+
+  test('a step gets the ingredients it mentions', () => {
+    assert.equal(draft.steps[0].chips.filter((c) => c.kind === 'ingredient').length, 2);
+  });
+
+  test('a step with nothing to recognise gets no chips', () => {
+    assert.deepEqual(draft.steps[1].chips, []);
+  });
+
+  test('the draft ends with the free row and the free step of the editor', () => {
+    assert.equal(draft.ingredients.at(-1)?.text, '');
+    assert.equal(draft.steps.at(-1)?.body, '');
   });
 });

@@ -70,6 +70,13 @@ export function startingDraft(rules: Rules, stored: DraftSeed = emptyDraftSeed):
   return { ...stored, ingredients, steps: withFreeStep(steps) };
 }
 
+/** The draft of an imported recipe. Unlike `startingDraft`, whose steps are stored ones (words that say something without a chip got a ghost, so they stay without), the steps are plain text here and get the chips a typed step would get. */
+export function importedDraft(rules: Rules, imported: DraftSeed): RecipeDraft {
+  const draft = startingDraft(rules, { ...imported, steps: [] });
+  const steps = withFreeStep(imported.steps.map((step, i) => ({ ...newStep(`s${i}`), body: step.body })));
+  return reconcileSteps({ ...draft, steps }, rules);
+}
+
 /** Sets the text of a row; typing in the empty last row adds the next one. */
 export const typeIngredient = (draft: RecipeDraft, id: string, text: string, rules: Rules): RecipeDraft =>
   setRows(
