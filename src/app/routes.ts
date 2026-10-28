@@ -4,6 +4,8 @@ export default [
   route('welkom', 'routes/welcome/WelcomePageRoute.tsx'),
   route('foto', 'routes/photo/PhotoUploadRoute.ts'),
   route('foto/:file', 'routes/photo/PhotoFetchRoute.ts'),
+  route('importeren/pagina', 'routes/import-fetch/ImportPageFetchRoute.ts'),
+  route('importeren/foto', 'routes/import-fetch/ImportImageFetchRoute.ts'),
   route('recepten/:slug/favoriet', 'routes/recipe/LikeUpdateRoute.ts'),
   route('recepten/:slug/notitie', 'routes/recipe/NoteUpdateRoute.ts'),
   route('recepten/:slug/verwijderen', 'routes/recipe/RecipeDeleteRoute.ts'),

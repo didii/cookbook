@@ -154,6 +154,17 @@ describe('users › Forged identity', () => {
   });
 });
 
+describe('recipe-import › Not a family member', () => {
+  for (const path of ['/importeren/pagina', '/importeren/foto']) {
+    test(`${path} is refused with 403 and never reaches the app`, async () => {
+      const { calls, fetch } = setup(false);
+      const res = await fetch(new Request(`https://cookbook.example.com${path}`, { method: 'POST', body: '{"url":"https://example.com/"}' }), env);
+      assert.equal(res.status, 403);
+      assert.equal(calls.length, 0);
+    });
+  }
+});
+
 // Not automated: sign-in happens at Cloudflare Access, outside this code.
 test.todo('family-access › Allowlisted member signs in');
 test.todo('family-access › Unknown email is refused');

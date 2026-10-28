@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'vitest';
 import { imageBytes, isHtml, isImage, maxRedirects, pageBytes, refusedAddress, safeFetch } from './safeFetch.server';
 
-const html = (body = '<p>hi</p>', init: ResponseInit = {}) => new Response(body, { headers: { 'Content-Type': 'text/html; charset=utf-8' }, ...init });
+const html = (body = '<p>hi</p>', init: ResponseInit = {}) =>
+  new Response(body, { headers: { 'Content-Type': 'text/html; charset=utf-8' }, ...init });
 const redirect = (to: string, status = 302) => new Response(null, { status, headers: { Location: to } });
 
 /** A fetch that answers from a list in order and records the addresses it was asked for. */
