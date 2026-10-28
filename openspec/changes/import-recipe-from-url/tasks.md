@@ -2,11 +2,9 @@
 
 Needs `record-recipe-source` merged first (the `source` field in the form and `DraftSeed`). Verify each task with the type check and `pnpm test:ai`; `pnpm test:spec import-recipe-from-url` lists the delta scenarios still without a test.
 
-## 1. Check the package
+## 1. Check the rate limit binding
 
-- [ ] 1.1 Install `recipe-scrapers-ts`. In a throwaway script or test, feed it saved HTML of three real recipe pages (one with `@graph`, one with steps as `HowToSection`, one as a single string) in schema.org mode and write down what comes back for title, intro, yield, time, ingredients, steps and image
-- [ ] 1.2 Check it builds in the browser bundle with no Node-only imports (`pnpm build`), loads in a dynamic `import()` chunk, and note the chunk size. If any of this fails, stop and ask the user: the fallback is a hand-written JSON-LD reader in `readRecipe` (design.md)
-- [ ] 1.3 Check that the Workers Rate Limiting binding can be declared in `wrangler.jsonc` and runs under `pnpm dev`; if not, plan the fake only for tests
+- [ ] 1.1 Check that the Workers Rate Limiting binding can be declared in `wrangler.jsonc` and runs under `pnpm dev`; if not, plan the fake only for tests
 
 ## 2. Fetching on the Worker
 
@@ -16,7 +14,7 @@ Needs `record-recipe-source` merged first (the `source` field in the form and `D
 
 ## 3. Reading and mapping in the browser
 
-- [ ] 3.1 `edit-recipe/lib/import/readRecipe.ts`: lazy `import()` of the package, returns the shape of design.md or undefined; flattens sections, splits a single step string, strips tags. Unit test with saved HTML fixtures: "Page without a recipe", "Partly filled recipe"
+- [ ] 3.1 `edit-recipe/lib/import/readRecipe.ts`: hand-written JSON-LD reader with `DOMParser` as in design.md: `@graph`, arrays, `@type` arrays, `HowToSection`, single step string, tags in texts, yield and image forms; returns the shape of design.md or undefined. Unit test with saved HTML fixtures: "Page without a recipe", "Partly filled recipe"
 - [ ] 3.2 `edit-recipe/lib/import/toDraftSeed.ts`: pure mapping to `DraftSeed` plus image address. Check how `RecipeView` and the seed data write a time and use the same format. Tests: "Source is the imported address", "Author is not imported", "Servings are read from text", "Partly filled recipe"
 - [ ] 3.3 Test "Ingredients and steps are recognised" by feeding the mapped seed through `startingDraft` and checking the draft (quantity, unit, suggestions)
 
