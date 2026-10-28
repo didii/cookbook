@@ -10,6 +10,7 @@ import {
   changeChips,
   editedStep,
   editStep,
+  importedDraft,
   isDirty,
   moveIngredient,
   moveStep,
@@ -35,6 +36,8 @@ import {
   purgeDrafts,
   resolveStart,
 } from './draftStore';
+import { fetchImage } from './import/fetchImage';
+import { ImportBox } from './import/ImportBox';
 import { IngredientList } from './ingredients/IngredientList';
 import { PhotoField, type PhotoState } from './photo/PhotoField';
 import { limits, type RecipeFormErrors, type RecipeFormField } from './recipeValidation';
@@ -71,6 +74,8 @@ interface RecipeEditorProps extends ComponentProps<'main'> {
   slug?: string;
   /** When the stored recipe was last saved (none for a new recipe): a draft started from another version is flagged. */
   updatedAt?: string;
+  /** Offer to fill the form from a web address while it is untouched. Only the import page sets it. */
+  canImport?: boolean;
 }
 
 const inputClass =
@@ -97,6 +102,7 @@ export function RecipeEditor({
   cancelTo,
   slug,
   updatedAt,
+  canImport,
   className,
   ...props
 }: RecipeEditorProps) {
@@ -104,6 +110,11 @@ export function RecipeEditor({
   const [rules] = useState(rulesNow);
   const [current, setCurrent] = useState(() => startingDraft(rules, values));
   const [photo, setPhoto] = useState<PhotoState>('ready');
+  // The imported photo, handed to the photo field; and whether fetching it failed.
+  const [incoming, setIncoming] = useState<{ blob: Blob }>();
+  const [photoSkipped, setPhotoSkipped] = useState(false);
+  // Counts imports and resets, so an image that arrives after a reset is dropped.
+  const imports = useRef(0);
   // Bumped by Herstel so the photo field starts over: it drops a running upload and its preview.
   const [resets, setResets] = useState(0);
   const busy = useNavigation().formMethod != null;
@@ -161,8 +172,25 @@ export function RecipeEditor({
   const reset = () => {
     clearDraft(browserStorage(), key);
     setCurrent(startingDraft(rules, initial));
+    imports.current++;
+    setIncoming(undefined);
+    setPhotoSkipped(false);
     setPhoto('ready');
     setResets((n) => n + 1);
+  };
+  // Fills the form from the imported recipe, then fetches its photo and hands it to the photo field; a photo that fails never undoes the import.
+  const importRecipe = async (seed: DraftSeed, imageUrl: string | undefined) => {
+    const run = ++imports.current;
+    setCurrent(importedDraft(rules, seed));
+    setIncoming(undefined);
+    setPhotoSkipped(false);
+    // The step texts keep their own text while mounted, so they start over on what was imported.
+    setResets((n) => n + 1);
+    if (!imageUrl) return;
+    const blob = await fetchImage(imageUrl);
+    if (run !== imports.current) return;
+    if (blob) setIncoming({ blob });
+    else setPhotoSkipped(true);
   };
   const set = (name: RecipeFormField) => (value: string) => setCurrent((c) => ({ ...c, [name]: value }));
   const text = (name: RecipeFormField) => ({
@@ -233,6 +261,7 @@ export function RecipeEditor({
           </div>
         </output>
       )}
+      {canImport && !dirty && <ImportBox base={initial} onImported={importRecipe} className="mt-4" />}
       <Form
         method="post"
         data-testid="RecipeEditor-form"
@@ -349,7 +378,14 @@ export function RecipeEditor({
             <label htmlFor="servings" className={labelClass}>
               Aantal porties
             </label>
-            <input {...text('servings')} type="text" inputMode="numeric" autoComplete="off" className={inputClass} />
+            <input
+              {...text('servings')}
+              data-testid="RecipeEditor-servings"
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
+              className={inputClass}
+            />
             {error('servings')}
           </div>
           <div>
@@ -383,7 +419,20 @@ export function RecipeEditor({
             />
             {error('tags')}
           </div>
-          <PhotoField key={resets} value={current.image} onPhotoChange={set('image')} onStateChange={setPhoto} tile={tile} seal={seal} />
+          <PhotoField
+            key={resets}
+            value={current.image}
+            incoming={incoming}
+            onPhotoChange={(path) => (setPhotoSkipped(false), set('image')(path))}
+            onStateChange={(state) => (state === 'uploading' && setPhotoSkipped(false), setPhoto(state))}
+            tile={tile}
+            seal={seal}
+          />
+          {photoSkipped && (
+            <p data-testid="RecipeEditor-photoSkipped" className="-mt-3 font-bold text-red">
+              De foto is overgeslagen.
+            </p>
+          )}
           {seal && <input type="hidden" name="seal" value={seal} />}
         </div>
         <SaveBar cancelTo={cancelTo} busy={busy} saveBlocked={photo !== 'ready'} dirty={dirty} kept={kept} onFormReset={reset}>

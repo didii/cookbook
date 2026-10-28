@@ -1,12 +1,15 @@
 import assert from 'node:assert/strict';
 import type { ComponentProps } from 'react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
-import { describe, test } from 'vitest';
+import { afterEach, describe, test, vi } from 'vitest';
 import { defaultRules } from '~app/shared/rules';
-import { act, fireEvent, openAutocomplete, precedes, render, screen } from '~testing/dom';
+import { act, cleanup, fireEvent, openAutocomplete, precedes, render, screen } from '~testing/dom';
 import { emptyDraftSeed } from './draft';
 import { RecipeEditor } from './RecipeEditor';
 import { limits } from './recipeValidation';
+
+// Shrinking needs a canvas and uploading needs the Worker; the photo field's own tests cover them. Here the upload stays pending, so the field shows the preview.
+vi.mock('./photo/photoFile', () => ({ resizePhoto: async (blob: Blob) => blob, uploadPhoto: () => new Promise(() => undefined) }));
 
 // Needs a browser: the layout at a wide width.
 test.todo('recipe-form › Wide screen layout');
@@ -283,5 +286,192 @@ describe('recipe-source › Edit form shows the stored source', () => {
     const stored = { ...emptyDraftSeed, title: 'Soep', author: 'Oma', source: 'Libelle' };
     show({ initial: stored, values: stored });
     assert.equal((screen.getByTestId('RecipeEditor-source') as HTMLInputElement).value, 'Libelle');
+  });
+});
+
+describe('RecipeEditor import', () => {
+  const recipePage = (extra: Record<string, unknown> = {}) =>
+    `<html><head><script type="application/ld+json">${JSON.stringify({
+      '@type': 'Recipe',
+      name: 'Tomatensoep',
+      description: 'Een klassieker.',
+      recipeYield: '4 porties',
+      totalTime: 'PT1H20M',
+      recipeIngredient: ['500 g tomaten', '1 ui'],
+      recipeInstructions: ['Snijd de ui.', 'Kook 20 minuten.'],
+      image: 'https://example.com/soep.jpg',
+      author: { name: 'Jamie' },
+      ...extra,
+    })}</script></head></html>`;
+  const html = (body: string) => new Response(body, { headers: { 'Content-Type': 'text/html' } });
+  const png = () => new Response(new Uint8Array([0x89, 0x50, 0x4e, 0x47]), { headers: { 'Content-Type': 'image/png' } });
+  type Answers = { page?: () => Response; image?: () => Response };
+  /** A Worker that answers both import endpoints. */
+  const stubWorker = ({ page = () => html(recipePage()), image = png }: Answers = {}) => {
+    const stub = vi.fn(async (url: string) => (url === '/importeren/foto' ? image() : page()));
+    vi.stubGlobal('fetch', stub);
+    return stub;
+  };
+  const importPage = async (address = 'https://example.com/soep') => {
+    fireEvent.change(screen.getByTestId('ImportBox-address'), { target: { value: address } });
+    await act(async () => void fireEvent.click(screen.getByTestId('ImportBox-button')));
+  };
+  const field = (id: string) => screen.getByTestId<HTMLInputElement>(id);
+  const imageSrc = () => screen.queryByTestId('PhotoField-image')?.getAttribute('src');
+  const askedFor = (stub: ReturnType<typeof stubWorker>) => stub.mock.calls.map(([url]) => url);
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  describe('recipe-import › Form is prefilled', () => {
+    test('the title, intro, servings and time are filled in', async () => {
+      stubWorker();
+      show({ canImport: true });
+      await importPage();
+      assert.equal(field('RecipeEditor-title').value, 'Tomatensoep');
+      assert.equal(field('RecipeEditor-intro').value, 'Een klassieker.');
+      assert.equal(field('RecipeEditor-servings').value, '4');
+      assert.equal(field('RecipeEditor-time').value, '1u 20');
+    });
+
+    test('the ingredients are filled in', async () => {
+      stubWorker();
+      show({ canImport: true });
+      await importPage();
+      assert.deepEqual(
+        screen.getAllByTestId<HTMLInputElement>('IngredientItem-field').map((i) => i.value),
+        ['500 g tomaten', '1 ui', ''],
+      );
+    });
+
+    test('the steps are filled in', async () => {
+      stubWorker();
+      show({ canImport: true });
+      await importPage();
+      assert.deepEqual(
+        screen.getAllByTestId<HTMLTextAreaElement>('StepText-field').map((i) => i.value),
+        ['Snijd de ui.', 'Kook 20 minuten.', ''],
+      );
+    });
+
+    test('only the two fetch endpoints are called: nothing is saved', async () => {
+      const stub = stubWorker();
+      show({ canImport: true });
+      await importPage();
+      assert.deepEqual(askedFor(stub), ['/importeren/pagina', '/importeren/foto']);
+    });
+  });
+
+  describe('recipe-import › Source is the imported address', () => {
+    test('the source field holds the address', async () => {
+      stubWorker();
+      show({ canImport: true });
+      await importPage('https://example.com/soep');
+      assert.equal(field('RecipeEditor-source').value, 'https://example.com/soep');
+    });
+  });
+
+  describe('recipe-import › Author is not imported', () => {
+    test('the author field keeps its value', async () => {
+      stubWorker();
+      const initial = { ...emptyDraftSeed, author: 'Mam' };
+      show({ canImport: true, initial, values: initial });
+      await importPage();
+      assert.equal(field('AuthorInput-field').value, 'Mam');
+    });
+  });
+
+  describe('recipe-import › Page without an image', () => {
+    test('the form is filled and the photo field stays empty', async () => {
+      const stub = stubWorker({ page: () => html(recipePage({ image: undefined })) });
+      show({ canImport: true });
+      await importPage();
+      assert.equal(field('RecipeEditor-title').value, 'Tomatensoep');
+      assert.equal(imageSrc(), undefined);
+      assert.deepEqual(askedFor(stub), ['/importeren/pagina']);
+    });
+  });
+
+  describe('recipe-import › Photo is imported', () => {
+    test('the photo field is handed the image and shows it', async () => {
+      stubWorker();
+      show({ canImport: true });
+      await importPage();
+      assert.ok(imageSrc()?.startsWith('blob:'));
+    });
+  });
+
+  describe('recipe-import › Image that cannot be used', () => {
+    test('the form is filled, the photo field is empty and a message says the photo was skipped', async () => {
+      stubWorker({ image: () => new Response(null, { status: 415 }) });
+      show({ canImport: true });
+      await importPage();
+      assert.equal(field('RecipeEditor-title').value, 'Tomatensoep');
+      assert.equal(imageSrc(), undefined);
+      assert.ok(screen.getByTestId('RecipeEditor-photoSkipped'));
+    });
+
+    test('the message goes when the form is reset', async () => {
+      stubWorker({ image: () => new Response(null, { status: 502 }) });
+      show({ canImport: true });
+      await importPage();
+      fireEvent.click(screen.getByTestId('SaveBar-reset'));
+      fireEvent.click(screen.getByTestId('SaveBar-confirm'));
+      assert.equal(screen.queryByTestId('RecipeEditor-photoSkipped'), null);
+    });
+  });
+
+  describe('recipe-import › Import is offered only on an untouched form', () => {
+    test('the import field is offered on an untouched form', () => {
+      show({ canImport: true });
+      assert.ok(screen.getByTestId('ImportBox-address'));
+    });
+
+    test('it is gone once the member typed something', () => {
+      show({ canImport: true });
+      fireEvent.change(field('RecipeEditor-title'), { target: { value: 'Eigen recept' } });
+      assert.equal(screen.queryByTestId('ImportBox-address'), null);
+    });
+
+    test('it is gone after an import', async () => {
+      stubWorker();
+      show({ canImport: true });
+      await importPage();
+      assert.equal(screen.queryByTestId('ImportBox-address'), null);
+    });
+
+    test('it returns when the form is reset', async () => {
+      stubWorker();
+      show({ canImport: true });
+      await importPage();
+      fireEvent.click(screen.getByTestId('SaveBar-reset'));
+      fireEvent.click(screen.getByTestId('SaveBar-confirm'));
+      assert.ok(screen.getByTestId('ImportBox-address'));
+      assert.equal(field('RecipeEditor-title').value, '');
+    });
+
+    test('a failed import leaves the field in place', async () => {
+      stubWorker({ page: () => new Response(null, { status: 502 }) });
+      show({ canImport: true });
+      await importPage();
+      assert.ok(screen.getByTestId('ImportBox-address'));
+    });
+  });
+
+  describe('recipe-import › Import is not offered when editing', () => {
+    test('an editor without the import option has no import field', () => {
+      show({ slug: 'appeltaart' });
+      assert.equal(screen.queryByTestId('ImportBox-address'), null);
+    });
+  });
+
+  describe('recipe-import › Imported content is kept as a draft', () => {
+    test('the imported content is back after the page is opened again', async () => {
+      stubWorker();
+      show({ canImport: true });
+      await importPage();
+      cleanup();
+      show({ canImport: true });
+      assert.equal(field('RecipeEditor-title').value, 'Tomatensoep');
+    });
   });
 });
