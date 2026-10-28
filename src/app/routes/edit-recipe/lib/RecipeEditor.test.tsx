@@ -457,8 +457,8 @@ describe('RecipeEditor import', () => {
     });
   });
 
-  describe('recipe-import › Import is not offered when editing', () => {
-    test('an editor without the import option has no import field', () => {
+  describe('without the import option', () => {
+    test('the editor of a stored recipe has no import field', () => {
       show({ slug: 'appeltaart' });
       assert.equal(screen.queryByTestId('ImportBox-address'), null);
     });

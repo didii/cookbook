@@ -253,3 +253,10 @@ describe('the new recipe source', () => {
     assert.equal(await getRecipe(db, 'te-lang'), undefined);
   });
 });
+
+describe('recipe-import › Import is not offered elsewhere', () => {
+  test('the plain new recipe form has no import field', () => {
+    form();
+    assert.equal(screen.queryByTestId('ImportBox-address'), null);
+  });
+});

@@ -17,6 +17,7 @@ export default [
     route('over', 'routes/about/AboutPageRoute.tsx'),
     route('tags', 'routes/tags/TagsPageRoute.tsx'),
     route('recepten/nieuw', 'routes/edit-recipe/NewRecipePageRoute.tsx'),
+    route('recepten/importeren', 'routes/edit-recipe/ImportRecipePageRoute.tsx'),
     route('recepten/:slug/bewerken', 'routes/edit-recipe/EditRecipePageRoute.tsx'),
     route('recepten/:slug', 'routes/recipe/RecipePageRoute.tsx'),
   ]),
