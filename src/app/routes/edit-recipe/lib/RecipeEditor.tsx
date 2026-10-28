@@ -181,7 +181,9 @@ export function RecipeEditor({
     );
 
   // After a refused submit, focus goes to the first thing in error, in page order, so its label and message are read. A list focuses its own row when it is the first.
-  const firstInError = (['title', 'intro', 'ingredients', 'steps', 'author', 'source', 'servings', 'time', 'tags'] as const).find((name) => errors[name]);
+  const firstInError = (['title', 'intro', 'ingredients', 'steps', 'author', 'source', 'servings', 'time', 'tags'] as const).find(
+    (name) => errors[name],
+  );
   useEffect(() => {
     if (firstInError && firstInError !== 'ingredients' && firstInError !== 'steps') document.getElementById(firstInError)?.focus();
     // Only when the errors change, not on every keystroke.
