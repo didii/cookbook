@@ -430,6 +430,3 @@ describe('FilterBar author field', () => {
 
 // Whether the suggestions sit above the phone keyboard needs a real viewport and keyboard.
 test.todo('FilterBar suggestions stay visible above the phone keyboard');
-
-// The author chips are gone; the main spec still lists this scenario until the change is archived. Delete this todo then.
-test.todo('recipe-filtering › Selected and unselected chips');
