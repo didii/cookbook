@@ -1,10 +1,13 @@
 import assert from 'node:assert/strict';
-import { describe, test } from 'vitest';
+import { afterEach, beforeEach, describe, test, vi } from 'vitest';
 import { isSessionExpired } from './isSessionExpired';
 
 const answer = (type: ResponseType) => (async () => ({ type }) as Response) as typeof fetch;
 
 describe('isSessionExpired', () => {
+  beforeEach(() => vi.stubGlobal('location', { href: 'http://localhost/' }));
+  afterEach(() => vi.unstubAllGlobals());
+
   test('is true for a redirect', async () => {
     assert.equal(await isSessionExpired(answer('opaqueredirect')), true);
   });
