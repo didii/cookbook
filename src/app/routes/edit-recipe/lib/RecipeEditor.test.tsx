@@ -446,30 +446,50 @@ describe('RecipeEditor import', () => {
     });
   });
 
+  describe('recipe-import › Form waits for an import', () => {
+    test('the form is not shown yet', () => {
+      show({ canImport: true });
+      assert.equal(screen.queryByTestId('RecipeEditor-form'), null);
+    });
+
+    test('a link leads to the plain new recipe form', () => {
+      show({ canImport: true });
+      assert.equal(screen.getByTestId('RecipeEditor-typeItself').getAttribute('href'), '/recepten/nieuw');
+    });
+
+    test('the form is shown after an import', async () => {
+      show({ canImport: true });
+      await importNow();
+      assert.ok(screen.getByTestId('RecipeEditor-form'));
+    });
+  });
+
   describe('recipe-import › Import is offered only on an untouched form', () => {
     test('the import box is offered on an untouched form', () => {
       show({ canImport: true });
       assert.ok(screen.getByTestId('ImportBox-import'));
     });
 
-    test('it is gone once the member typed something', () => {
-      show({ canImport: true });
-      fireEvent.change(field('RecipeEditor-title'), { target: { value: 'Eigen recept' } });
+    test('it is gone once the form holds changes', () => {
+      const initial = { ...emptyDraftSeed, title: 'Oud' };
+      show({ canImport: true, initial, values: { ...initial, title: 'Eigen recept' } });
       assert.equal(screen.queryByTestId('ImportBox-import'), null);
+      assert.ok(screen.getByTestId('RecipeEditor-form'));
     });
 
     test('it is gone after an import', async () => {
       show({ canImport: true });
       await importNow();
       assert.equal(screen.queryByTestId('ImportBox-import'), null);
+      assert.equal(screen.queryByTestId('RecipeEditor-typeItself'), null);
     });
 
-    test('it returns when the form is reset, and the form is empty again', async () => {
+    test('it returns instead of the form when the form is reset', async () => {
       show({ canImport: true });
       await importNow();
       reset();
       assert.ok(screen.getByTestId('ImportBox-import'));
-      assert.equal(field('RecipeEditor-title').value, '');
+      assert.equal(screen.queryByTestId('RecipeEditor-form'), null);
     });
 
     test('a reset drops an image that arrives afterwards', async () => {

@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: A new recipe can be prefilled from a web address
-The system SHALL offer a page at `/recepten/importeren` that shows the new recipe form with a field for a web address on top, and SHALL, when a family member imports it, prefill the form with the title, intro, servings, preparation time, ingredients, steps and photo found on that page. Nothing SHALL be stored until the form is saved. The author SHALL stay as it was, and the imported address SHALL be filled in as the recipe's source.
+The system SHALL offer a page at `/recepten/importeren` that shows only a field for a web address, and SHALL, when a family member imports it, show the new recipe form, prefilled with the title, intro, servings, preparation time, ingredients, steps and photo found on that page. Nothing SHALL be stored until the form is saved. The author SHALL stay as it was, and the imported address SHALL be filled in as the recipe's source.
 
 #### Scenario: Form is prefilled
 - **WHEN** a family member imports the address of a page with a recipe
@@ -45,7 +45,11 @@ The system SHALL offer a page at `/recepten/importeren` that shows the new recip
 
 #### Scenario: Import is offered only on an untouched form
 - **WHEN** the form holds changes the family member made or an earlier import
-- **THEN** the import field is not offered, and it returns when the form is reset
+- **THEN** the import field is not offered and the form is shown, and the import field returns instead of the form when the form is reset
+
+#### Scenario: Form waits for an import
+- **WHEN** a family member opens the import page
+- **THEN** only the web address field is shown, and the form appears once a recipe is imported. A link next to it leads to the plain new recipe form
 
 #### Scenario: Import is not offered elsewhere
 - **WHEN** a family member opens the plain new recipe form or the editor of a stored recipe
