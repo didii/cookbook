@@ -163,7 +163,7 @@ export function RecipeView({ recipe: r, tile, steps, liked = false, note: savedN
         </p>
         <p className="mt-2 max-w-[60ch] text-lg text-muted">{r.intro}</p>
 
-        <div className="@container relative mt-6 overflow-hidden rounded-xl border-3 border-ink bg-white shadow-hard">
+        <div data-testid="RecipeView-frame" className="@container relative mt-6 overflow-hidden rounded-xl border-3 border-ink bg-white shadow-hard">
           {r.image && (
             <img
               data-testid="RecipeView-image"

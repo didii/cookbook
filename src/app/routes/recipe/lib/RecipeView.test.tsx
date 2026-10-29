@@ -194,12 +194,12 @@ describe('recipe-viewing › Recipe with tags', () => {
 
   test('the pills sit below the picture frame', () => {
     tagged();
-    assert.ok(precedes(screen.getAllByTestId('TileBand-band')[0], screen.getByTestId('RecipeView-tags')));
+    assert.ok(precedes(screen.getByTestId('RecipeView-frame'), screen.getByTestId('RecipeView-tags')));
   });
 
   test('no pill stands in for hidden tags', () => {
     tagged();
-    assert.equal(screen.getAllByTestId('RecipeView-tag').length, 3);
+    assert.equal(screen.getByTestId('RecipeView-tags').childElementCount, 3);
   });
 });
 
