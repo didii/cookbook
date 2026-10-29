@@ -9,19 +9,19 @@ import { SiteMenu } from './SiteMenu';
 const show = (role: Role = 'user', path = '/') => {
   const router = createMemoryRouter(
     [
-    // The menu sits in a layout, as in the app, so it survives the navigation.
-    {
-      element: (
-        <>
-          <SiteMenu role={role} />
-          <Outlet />
-        </>
-      ),
-      children: [
-        { path: '/', element: <p data-testid="home">Start</p> },
-        { path: '/over', element: <p data-testid="about">Over pagina</p> },
-      ],
-    },
+      // The menu sits in a layout, as in the app, so it survives the navigation.
+      {
+        element: (
+          <>
+            <SiteMenu role={role} />
+            <Outlet />
+          </>
+        ),
+        children: [
+          { path: '/', element: <p data-testid="home">Start</p> },
+          { path: '/over', element: <p data-testid="about">Over pagina</p> },
+        ],
+      },
     ],
     { initialEntries: [path] },
   );
