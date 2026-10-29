@@ -6,6 +6,7 @@ import { defaultRules } from '~app/shared/rules';
 import { act, fireEvent, openAutocomplete, precedes, render, screen } from '~testing/dom';
 import { emptyDraftSeed } from './draft';
 import { RecipeEditor } from './RecipeEditor';
+import { limits } from './recipeValidation';
 
 // Needs a browser: the layout at a wide width.
 test.todo('recipe-form › Wide screen layout');
@@ -204,4 +205,57 @@ describe('the tags field in the editor', () => {
     show({ errors: { tags: 'Te lang.' } });
     assert.equal(document.getElementById(screen.getByTestId('TagInput-field').getAttribute('aria-describedby')!)?.textContent, 'Te lang.');
   });
+});
+
+describe('recipe-limits › Typing stops at the limit', () => {
+  const fields: [string, () => HTMLElement, number][] = [
+    ['title', () => screen.getByTestId('RecipeEditor-title'), limits.title],
+    ['intro', () => screen.getByTestId('RecipeEditor-intro'), limits.intro],
+    ['time', () => screen.getByTestId('RecipeEditor-time'), limits.time],
+    ['author', () => screen.getByTestId('AuthorInput-field'), limits.author],
+    ['ingredient', () => screen.getByTestId('IngredientItem-field'), limits.ingredientLine],
+    ['step', () => screen.getByTestId('StepText-field'), limits.step],
+  ];
+  for (const [name, find, max] of fields)
+    test(`the ${name} field takes at most ${max} characters`, () => {
+      show();
+      assert.equal((find() as HTMLInputElement).maxLength, max);
+    });
+});
+
+describe('RecipeEditor error wiring', () => {
+  const stepValues = {
+    ...emptyDraftSeed,
+    steps: [
+      { body: 'a', ingredients: [] },
+      { body: 'b', ingredients: [] },
+    ],
+  };
+  const withSteps = (errors: object) => show({ values: stepValues, initial: stepValues, errors });
+
+  test('a step error reaches the step it is keyed to', () => {
+    withSteps({ steps: { 1: 'Fout' } });
+    assert.equal(screen.getAllByTestId('StepEditor-error').length, 1);
+  });
+
+  test('focus goes to the title before a step', () => {
+    withSteps({ title: 'Fout', steps: { 1: 'Fout' } });
+    assert.ok(document.activeElement === screen.getByTestId('RecipeEditor-title'));
+  });
+
+  test('focus goes to an ingredient row before a step', () => {
+    withSteps({ ingredients: { 0: 'Fout' }, steps: { 1: 'Fout' } });
+    assert.ok(document.activeElement === screen.getAllByTestId('IngredientItem-field')[0]);
+  });
+
+  test('focus goes to a step before the author', () => {
+    withSteps({ author: 'Fout', steps: { 1: 'Fout' } });
+    assert.ok(document.activeElement === screen.getAllByTestId('StepText-field')[1]);
+  });
+
+  for (const name of ['intro', 'time'] as const)
+    test(`${name} gets its error`, () => {
+      show({ errors: { [name]: 'Te lang.' } });
+      assert.ok(screen.getByTestId(`RecipeEditor-${name}`).getAttribute('aria-describedby'));
+    });
 });

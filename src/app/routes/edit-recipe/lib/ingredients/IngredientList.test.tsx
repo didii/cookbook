@@ -4,8 +4,7 @@ import { describe, test } from 'vitest';
 import { defaultRules } from '~app/shared/rules';
 import { cssFor } from '~testing/css';
 import { fireEvent, precedes, render, screen, within } from '~testing/dom';
-import type { IngredientLine } from './IngredientList';
-import { IngredientList } from './IngredientList';
+import { IngredientList, type IngredientLine } from './IngredientList';
 
 /** The list as the editor holds it: a few rows and the free row at the end. */
 function Harness({ start }: { start: string[] }) {
@@ -319,5 +318,38 @@ describe('recipe-ingredient-editing › Move is announced', () => {
     fireEvent.click(buttonsOf(1)[1]);
     press(field(2), 'ArrowDown', { altKey: true });
     assert.ok(['250 g bloem', '3'].every((part) => live().textContent!.includes(part)));
+  });
+});
+
+describe('IngredientList limits and errors', () => {
+  const list = (props: Partial<Parameters<typeof IngredientList>[0]> = {}) =>
+    render(
+      <IngredientList
+        rows={[
+          { id: 'a', text: 'zout' },
+          { id: 'b', text: 'peper' },
+          { id: 'c', text: '' },
+        ]}
+        rules={defaultRules}
+        onType={() => {}}
+        onRemove={() => {}}
+        onMove={() => {}}
+        {...props}
+      />,
+    );
+
+  test('every row gets the maximum length', () => {
+    list({ maxLength: 42 });
+    for (const input of fields()) assert.equal(input.maxLength, 42);
+  });
+
+  test('the first row in error is focused when focusErrors is set', () => {
+    list({ errors: { 1: 'Fout' }, focusErrors: true });
+    assert.ok(document.activeElement === field(2));
+  });
+
+  test('nothing is focused without focusErrors', () => {
+    list({ errors: { 1: 'Fout' } });
+    assert.ok(document.activeElement !== field(2));
   });
 });

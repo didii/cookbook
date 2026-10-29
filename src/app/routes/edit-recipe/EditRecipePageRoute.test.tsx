@@ -10,6 +10,7 @@ import { fake } from '~testing/fake';
 import { test } from '~testing/test';
 import type { Route } from './+types/EditRecipePageRoute';
 import EditRecipePage, { action, loader } from './EditRecipePageRoute';
+import { limits } from './lib/recipeValidation';
 
 const addRecipe = (db: D1Database, slug: string, image: string | null = null) =>
   db.prepare("INSERT INTO recipes (slug, title, author, image) VALUES (?, 'Soep', 'Oma', ?)").bind(slug, image).run();
@@ -410,5 +411,27 @@ describe('recipe-storage › Range is read with the recipe', () => {
     assert.deepEqual((await getRecipe(db, 'bereik'))?.ingredients, [
       { quantityText: '2-3 el', quantityValue: 2, quantityValueMax: 3, quantityUnit: 'el', name: 'olie' },
     ]);
+  });
+});
+
+describe('recipe-limits › Editing is limited the same way', () => {
+  let res: { init?: { status?: number }; data: { errors: { title?: string }; values: { title: string } } };
+
+  test.beforeEach(async ({ db, photos }) => {
+    await addRecipe(db, 'soep');
+    res = (await submit(db, photos, 'soep', { title: 'a'.repeat(limits.title + 1), author: 'Oma' })) as unknown as typeof res;
+  });
+
+  test('the editor shows a message at the title that states the maximum', () => {
+    assert.equal(res.init?.status, 400);
+    assert.ok(res.data.errors.title?.includes(String(limits.title)));
+  });
+
+  test('the entered values come back', () => {
+    assert.equal(res.data.values.title.length, limits.title + 1);
+  });
+
+  test('the stored recipe is unchanged', async ({ db }) => {
+    assert.equal((await getRecipe(db, 'soep'))?.title, 'Soep');
   });
 });

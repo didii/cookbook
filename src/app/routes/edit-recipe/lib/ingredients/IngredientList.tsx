@@ -15,6 +15,10 @@ interface IngredientListProps extends ComponentProps<'div'> {
   rules: Rules;
   /** Messages by row index. */
   errors?: Record<number, string>;
+  /** Focus the first row in error when the errors change; set by the parent when this list holds the first error on the page. */
+  focusErrors?: boolean;
+  /** The most characters a row takes. */
+  maxLength?: number;
   /** Step numbers that use a row; filled in by the chips change. */
   usedIn?: (id: string) => number[];
   onType: (id: string, text: string) => void;
@@ -34,7 +38,18 @@ const none: number[] = [];
 const noErrors: Record<number, string> = {};
 
 /** The ingredient list: one line per row, keyboard navigation between rows, move announcements, and the list as the form field `ingredients`. */
-export function IngredientList({ rows, rules, errors = noErrors, usedIn = () => none, onType, onRemove, onMove, ...props }: IngredientListProps) {
+export function IngredientList({
+  rows,
+  rules,
+  errors = noErrors,
+  focusErrors = false,
+  maxLength,
+  usedIn = () => none,
+  onType,
+  onRemove,
+  onMove,
+  ...props
+}: IngredientListProps) {
   const items = useRef(new Map<string, ItemHandle>());
   // Work to do once the rows have rendered, such as focusing a row that did not exist yet.
   const afterRender = useRef<() => void>(undefined);
@@ -54,7 +69,7 @@ export function IngredientList({ rows, rules, errors = noErrors, usedIn = () => 
   // After a refused submit, put focus on the first row in error so its message is read.
   useEffect(() => {
     const first = rows.findIndex((_, i) => errors[i]);
-    if (first >= 0) items.current.get(rows[first].id)?.focusField('end');
+    if (focusErrors && first >= 0) items.current.get(rows[first].id)?.focusField('end');
     // Only when the errors change, not on every keystroke.
     // oxlint-disable-next-line react/exhaustive-deps
   }, [errors]);
@@ -92,6 +107,7 @@ export function IngredientList({ rows, rules, errors = noErrors, usedIn = () => 
               canUp={!free && i > 0}
               canDown={i < rows.length - 2}
               error={errors[i]}
+              maxLength={maxLength}
               usedIn={usedIn(row.id)}
               onType={(text) => onType(row.id, text)}
               onRemove={() => remove(row.id, 'next')}

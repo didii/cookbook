@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'vitest';
 import type { Step } from '~app/shared/recipe';
 import { defaultRules } from '~app/shared/rules';
-import { readIngredients, readSteps, readTags, tagError, validate } from './recipeValidation';
+import { limits, readForm, readIngredients, readSteps, readTags, tagError, validate } from './recipeValidation';
 
 const ok = { title: 'Soep', author: 'Oma', servings: '4', time: '', intro: '', image: '' };
 
@@ -324,5 +324,172 @@ describe('chip range on save', () => {
   test('the chip keeps its maximum value', () => {
     const { steps } = postSteps([{ body: 'bak', ingredients: [{ quantityText: '2-3 el', name: 'olie' }] }]);
     assert.deepEqual(steps?.[0].ingredients, [{ quantityText: '2-3 el', quantityValue: 2, quantityValueMax: 3, quantityUnit: 'el', name: 'olie' }]);
+  });
+});
+
+const text = (n: number) => 'a'.repeat(n);
+
+describe('recipe-limits › Title at the limit is accepted', () => {
+  test('a title of the maximum has no error', () => {
+    assert.equal(validate({ ...ok, title: text(limits.title) }).title, undefined);
+  });
+});
+
+describe('recipe-limits › Title over the limit is refused', () => {
+  test('the message is at the title and states the maximum', () => {
+    const errors = validate({ ...ok, title: text(limits.title + 1) });
+    assert.deepEqual(Object.keys(errors), ['title']);
+    assert.ok(errors.title?.includes(String(limits.title)));
+  });
+});
+
+describe('recipe-limits › Each other text field is refused over its limit', () => {
+  for (const field of ['author', 'time', 'intro'] as const)
+    test(`${field} states its maximum`, () => {
+      const errors = validate({ ...ok, [field]: text(limits[field] + 1) });
+      assert.deepEqual(Object.keys(errors), [field]);
+      assert.ok(errors[field]?.includes(String(limits[field])));
+    });
+});
+
+describe('recipe-limits › Whitespace does not count', () => {
+  test('the padded title is read trimmed and accepted', () => {
+    const form = new FormData();
+    form.set('title', `${' '.repeat(10)}${text(limits.title)}${' '.repeat(10)}`);
+    const values = readForm(form);
+    assert.equal(values.title.length, limits.title);
+    assert.equal(validate({ ...values, author: 'Oma' }).title, undefined);
+  });
+});
+
+describe('recipe-limits › 999 servings are accepted', () => {
+  test('no error', () => {
+    assert.equal(validate({ ...ok, servings: String(limits.servings) }).servings, undefined);
+  });
+});
+
+describe('recipe-limits › 1000 servings are refused', () => {
+  for (const servings of [String(limits.servings + 1), '9'.repeat(400)])
+    test(`${servings.slice(0, 10)} states the maximum`, () => {
+      assert.ok(validate({ ...ok, servings }).servings?.includes(String(limits.servings)));
+    });
+});
+
+describe('recipe-limits › Zero and non-numbers keep being refused', () => {
+  for (const servings of ['0', '-1', '2.5', 'veel'])
+    test(`${servings} states the range`, () => {
+      const message = validate({ ...ok, servings }).servings;
+      assert.ok(message?.includes('1') && message.includes(String(limits.servings)));
+    });
+});
+
+describe('recipe-limits › An ingredient line over the limit is refused on its row', () => {
+  test('only the second row has a message that states the maximum', () => {
+    const { errors } = post([{ text: 'zout' }, { text: text(limits.ingredientLine + 1) }, { text: 'peper' }]);
+    assert.deepEqual(Object.keys(errors), ['1']);
+    assert.ok(errors[1].includes(String(limits.ingredientLine)));
+  });
+
+  test('a line of the maximum is accepted', () => {
+    assert.deepEqual(post([{ text: text(limits.ingredientLine) }]).errors, {});
+  });
+});
+
+const lines = (n: number) => Array.from({ length: n }, (_, i) => ({ text: `zout ${i}` }));
+
+describe('recipe-limits › 100 ingredients are accepted', () => {
+  test('all are kept without errors', () => {
+    const result = post(lines(limits.ingredients));
+    assert.deepEqual(result.errors, {});
+    assert.equal(result.ingredients?.length, limits.ingredients);
+  });
+});
+
+describe('recipe-limits › 101 ingredients are refused', () => {
+  test('the 101st row states the maximum', () => {
+    const { errors } = post(lines(limits.ingredients + 3));
+    assert.deepEqual(Object.keys(errors), [String(limits.ingredients)]);
+    assert.ok(errors[limits.ingredients].includes(String(limits.ingredients)));
+  });
+});
+
+describe('recipe-limits › Blank lines do not count', () => {
+  test('100 lines with 20 blanks between them are accepted', () => {
+    const rows = lines(limits.ingredients).flatMap((r, i) => (i < 20 ? [r, { text: '' }] : [r]));
+    const result = post(rows);
+    assert.deepEqual(result.errors, {});
+    assert.equal(result.ingredients?.length, limits.ingredients);
+  });
+});
+
+describe('recipe-limits › A step over the limit is refused on its row', () => {
+  test('only the first step has a message that states the maximum', () => {
+    const { errors } = postSteps([{ body: text(limits.step + 1) }, { body: 'bak' }]);
+    assert.deepEqual(Object.keys(errors), ['0']);
+    assert.ok(errors[0].includes(String(limits.step)));
+  });
+
+  test('a step of the maximum is accepted', () => {
+    assert.deepEqual(postSteps([{ body: text(limits.step) }]).errors, {});
+  });
+});
+
+describe("recipe-limits › A step's timer name and chips are limited", () => {
+  const timer = (label: string) => ({ body: 'bak', timer: { minutes: 5, label } });
+  const chip = (quantityText: string, name: string) => ({ body: 'bak', ingredients: [{ quantityText, name }] });
+  const cases: [string, unknown, number][] = [
+    ['timer name', timer(text(limits.timerName + 1)), limits.timerName],
+    ['chip quantity', chip(text(limits.chipQuantity + 1), 'olie'), limits.chipQuantity],
+    ['chip name', chip('', text(limits.chipName + 1)), limits.chipName],
+  ];
+  for (const [name, step, max] of cases)
+    test(`${name} over the maximum states it on that step`, () => {
+      const { errors } = postSteps([{ body: 'eerst' }, step]);
+      assert.deepEqual(Object.keys(errors), ['1']);
+      assert.ok(errors[1].includes(String(max)));
+    });
+
+  test('values at the maximum are accepted', () => {
+    const { errors } = postSteps([timer(text(limits.timerName)), chip(text(limits.chipQuantity), text(limits.chipName))]);
+    assert.deepEqual(errors, {});
+  });
+});
+
+describe('recipe-limits › 101 steps are refused', () => {
+  test('the 101st step states the maximum, blanks not counted', () => {
+    const steps = Array.from({ length: limits.steps + 3 }, (_, i) => ({ body: `stap ${i}` }));
+    const { errors } = postSteps([{ body: '' }, ...steps]);
+    assert.deepEqual(Object.keys(errors), [String(limits.steps + 1)]);
+    assert.ok(errors[limits.steps + 1].includes(String(limits.steps)));
+  });
+
+  test('100 steps are accepted', () => {
+    const steps = Array.from({ length: limits.steps }, (_, i) => ({ body: `stap ${i}` }));
+    assert.deepEqual(postSteps(steps).errors, {});
+  });
+});
+
+describe('recipe-limits › 101 chips in one step are refused', () => {
+  const chips = (n: number) => Array.from({ length: n }, (_, i) => ({ quantityText: '', name: `i${i}` }));
+  test('that step states the maximum', () => {
+    const { errors } = postSteps([{ body: 'bak', ingredients: chips(limits.chips + 1) }]);
+    assert.deepEqual(Object.keys(errors), ['0']);
+    assert.ok(errors[0].includes(String(limits.chips)));
+  });
+
+  test('100 chips are accepted', () => {
+    assert.deepEqual(postSteps([{ body: 'bak', ingredients: chips(limits.chips) }]).errors, {});
+  });
+});
+
+describe('recipe-limits › 50 tags are accepted', () => {
+  test('no error', () => {
+    assert.equal(tagError(Array.from({ length: limits.tags }, (_, i) => `t${i}`)), undefined);
+  });
+});
+
+describe('recipe-limits › 51 tags are refused', () => {
+  test('the message states the maximum', () => {
+    assert.ok(tagError(Array.from({ length: limits.tags + 1 }, (_, i) => `t${i}`))?.includes(String(limits.tags)));
   });
 });

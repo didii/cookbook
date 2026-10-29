@@ -37,7 +37,7 @@ import {
 } from './draftStore';
 import { IngredientList } from './ingredients/IngredientList';
 import { PhotoField, type PhotoState } from './photo/PhotoField';
-import type { RecipeFormErrors, RecipeFormField } from './recipeValidation';
+import { limits, type RecipeFormErrors, type RecipeFormField } from './recipeValidation';
 import { SaveBar } from './SaveBar';
 import { proposals, usedIn } from './steps/chips';
 import { OpenProposals } from './steps/OpenProposals';
@@ -180,10 +180,12 @@ export function RecipeEditor({
       </p>
     );
 
-  // After a refused submit, put focus on the first field in error so its label and message are read.
+  // After a refused submit, focus goes to the first thing in error, in page order, so its label and message are read. A list focuses its own row when it is the first.
+  const firstInError = (['title', 'intro', 'ingredients', 'steps', 'author', 'servings', 'time', 'tags'] as const).find((name) => errors[name]);
   useEffect(() => {
-    const first = (['title', 'author', 'servings', 'tags'] as const).find((name) => errors[name]);
-    if (first) document.getElementById(first)?.focus();
+    if (firstInError && firstInError !== 'ingredients' && firstInError !== 'steps') document.getElementById(firstInError)?.focus();
+    // Only when the errors change, not on every keystroke.
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [errors]);
 
   return (
@@ -251,6 +253,7 @@ export function RecipeEditor({
             <input
               {...text('title')}
               data-testid="RecipeEditor-title"
+              maxLength={limits.title}
               type="text"
               autoComplete="off"
               required
@@ -263,7 +266,8 @@ export function RecipeEditor({
             <label htmlFor="intro" className={labelClass}>
               Inleiding
             </label>
-            <textarea {...text('intro')} rows={4} className={cn(inputClass, 'py-2')} />
+            <textarea {...text('intro')} data-testid="RecipeEditor-intro" maxLength={limits.intro} rows={4} className={cn(inputClass, 'py-2')} />
+            {error('intro')}
           </div>
           <section aria-labelledby="ingredients-heading">
             <h2 id="ingredients-heading" className="text-2xl font-black">
@@ -275,6 +279,8 @@ export function RecipeEditor({
               rules={rules}
               usedIn={(id) => usedIn(current.steps, id)}
               errors={errors.ingredients}
+              focusErrors={firstInError === 'ingredients'}
+              maxLength={limits.ingredientLine}
               onType={(id, value) => setCurrent((c) => typeIngredient(c, id, value, rules))}
               onRemove={(id) => setCurrent((c) => removeIngredient(c, id, rules))}
               onMove={(id, to) => setCurrent((c) => moveIngredient(c, id, to, rules))}
@@ -291,6 +297,9 @@ export function RecipeEditor({
             <StepList
               key={resets}
               steps={current.steps}
+              errors={errors.steps}
+              focusErrors={firstInError === 'steps'}
+              maxLength={limits.step}
               contexts={contexts}
               onChips={(id, change) => setCurrent((c) => changeChips(c, id, change, rules))}
               onType={(id, body) => setCurrent((c) => editStep(c, id, body))}
@@ -312,6 +321,7 @@ export function RecipeEditor({
               authors={authors}
               value={current.author}
               onValueChange={set('author')}
+              maxLength={limits.author}
               invalid={!!errors.author}
               describedBy={errors.author ? 'author-error' : undefined}
               className={inputClass}
@@ -329,7 +339,16 @@ export function RecipeEditor({
             <label htmlFor="time" className={labelClass}>
               Bereidingstijd
             </label>
-            <input {...text('time')} data-testid="RecipeEditor-time" type="text" autoComplete="off" placeholder="1u30" className={inputClass} />
+            <input
+              {...text('time')}
+              data-testid="RecipeEditor-time"
+              maxLength={limits.time}
+              type="text"
+              autoComplete="off"
+              placeholder="1u30"
+              className={inputClass}
+            />
+            {error('time')}
           </div>
           <div>
             <label htmlFor="tags" className={labelClass}>
