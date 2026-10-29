@@ -1,6 +1,6 @@
 ## 1. Popup
 
-- [ ] 1.1 `lib/RestoreDraftDialog.tsx` (+ test): modal `<dialog>` with testids for photo, title, servings, source, ingredients, steps, the "+ N meer" lines, and the two buttons ("Gebruik concept", "Weggooien"); first 3 ingredients and 2 steps, blank ones skipped, empty fields left out; Escape does not close it. Tests for "The popup shows the basics", "A draft without a photo or source", "The popup cannot be dismissed without a choice"
+- [x] 1.1 `lib/RestoreDraftDialog.tsx` (+ test): modal `<dialog>` with testids for photo, title, servings, source, ingredients, steps, the "+ N meer" lines, and the two buttons ("Gebruik concept", "Weggooien"); first 3 ingredients and 2 steps, blank ones skipped, empty fields left out; Escape does not close it. Tests for "The popup shows the basics", "A draft without a photo or source", "The popup cannot be dismissed without a choice"
 - [ ] 1.2 Check by hand at 390px and 1280px that the popup fits and scrolls with a long draft
 
 ## 2. Editor
