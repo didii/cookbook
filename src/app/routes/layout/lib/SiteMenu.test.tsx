@@ -6,8 +6,9 @@ import { cssFor } from '~testing/css';
 import { fireEvent, render, screen } from '~testing/dom';
 import { SiteMenu } from './SiteMenu';
 
-const show = (role: Role = 'user') => {
-  const router = createMemoryRouter([
+const show = (role: Role = 'user', path = '/') => {
+  const router = createMemoryRouter(
+    [
     // The menu sits in a layout, as in the app, so it survives the navigation.
     {
       element: (
@@ -17,11 +18,13 @@ const show = (role: Role = 'user') => {
         </>
       ),
       children: [
-        { path: '/', element: <p>Start</p> },
+        { path: '/', element: <p data-testid="home">Start</p> },
         { path: '/over', element: <p data-testid="about">Over pagina</p> },
       ],
     },
-  ]);
+    ],
+    { initialEntries: [path] },
+  );
   const view = render(<RouterProvider router={router} />);
   return { ...view, dialog: screen.getByTestId('SiteMenu-dialog') };
 };
@@ -50,6 +53,7 @@ describe('site-menu › Menu lists the links', () => {
     const { dialog } = show();
     openMenu();
     assert.deepEqual(links(dialog), [
+      ['Home', '/'],
       ['Nieuw recept', '/recepten/nieuw'],
       ['Recept importeren', '/recepten/importeren'],
       ['Tags', '/tags'],
@@ -57,6 +61,25 @@ describe('site-menu › Menu lists the links', () => {
       ['Over', '/over'],
       ['Uitloggen', '/cdn-cgi/access/logout'],
     ]);
+  });
+});
+
+describe('site-menu › Home link', () => {
+  const follow = async (role: Role) => {
+    const { dialog } = show(role, '/over');
+    openMenu();
+    fireEvent.click(screen.getAllByTestId('SiteMenu-link').find((link) => link.textContent === 'Home')!);
+    await screen.findByTestId('home');
+    return dialog;
+  };
+
+  test.each(['user', 'admin', 'superadmin'] as const)('the %s is taken to the home page', async (role) => {
+    await follow(role);
+    assert.ok(screen.getByTestId('home'));
+  });
+
+  test('the menu is closed', async () => {
+    assert.equal((await follow('user')).hasAttribute('open'), false);
   });
 });
 
@@ -113,6 +136,7 @@ describe('parsing-rules › User does not see the link', () => {
 describe('site-menu › Menu lists the links for a superadmin', () => {
   test('the menu lists all links', () => {
     assert.deepEqual(labels('superadmin'), [
+      'Home',
       'Nieuw recept',
       'Recept importeren',
       'Tags',
@@ -135,7 +159,7 @@ describe('site-menu › Menu lists the links for a superadmin', () => {
 
 describe('site-menu › Menu lists the links for an admin', () => {
   test('the menu lists the links without the users page', () => {
-    assert.deepEqual(labels('admin'), ['Nieuw recept', 'Recept importeren', 'Tags', 'Instellingen', 'Over', 'Herkenning', 'Uitloggen']);
+    assert.deepEqual(labels('admin'), ['Home', 'Nieuw recept', 'Recept importeren', 'Tags', 'Instellingen', 'Over', 'Herkenning', 'Uitloggen']);
   });
 });
 
