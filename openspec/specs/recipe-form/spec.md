@@ -128,7 +128,7 @@ The system SHALL, while a family member types in the tags field, suggest the sto
 - **THEN** "Soep" is shown as picked and no new tag is offered
 
 ### Requirement: A tag is at most 100 characters
-The system SHALL NOT let the tags field take more than 100 characters in a tag, and SHALL refuse a save that has a longer tag, storing nothing and showing a message at the tags field. The number of tags SHALL NOT be limited.
+The system SHALL NOT let the tags field take more than 100 characters in a tag, and SHALL refuse a save that has a longer tag, storing nothing and showing a message at the tags field. The number of tags is limited by the `recipe-limits` capability.
 
 #### Scenario: Tag length is limited
 - **WHEN** a family member types more than 100 characters in the tags field
