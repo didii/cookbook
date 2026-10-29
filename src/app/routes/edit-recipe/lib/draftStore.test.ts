@@ -516,3 +516,33 @@ describe('recipe-draft › A draft from before tags restores', () => {
     assert.ok(items.has(key));
   });
 });
+
+describe('recipe-source › Source is part of the draft', () => {
+  test('the draft on the device holds the source', () => {
+    const { storage } = fakeStorage();
+    saveDraft(storage, key, keeping({ ...edited, source: 'Libelle' }));
+    assert.equal(loadDraft(storage, key)?.state.source, 'Libelle');
+  });
+});
+
+describe('recipe-source › Draft kept before sources existed', () => {
+  const beforeSources = () => {
+    const { storage, items } = fakeStorage();
+    saveDraft(storage, key, keeping());
+    const stored = JSON.parse(items.get(key)!) as { state: { source?: string } };
+    delete stored.state.source;
+    items.set(key, JSON.stringify(stored));
+    return { storage, items };
+  };
+
+  test('the draft is restored with an empty source', () => {
+    const { storage } = beforeSources();
+    assert.deepEqual(loadDraft(storage, key)?.state, edited);
+  });
+
+  test('the draft is not removed', () => {
+    const { storage, items } = beforeSources();
+    loadDraft(storage, key);
+    assert.ok(items.has(key));
+  });
+});

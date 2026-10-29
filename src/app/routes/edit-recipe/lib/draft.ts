@@ -19,6 +19,7 @@ export const emptyDraftSeed: DraftSeed = {
   time: '',
   intro: '',
   image: '',
+  source: '',
   ingredients: [],
   steps: [],
   tags: [],

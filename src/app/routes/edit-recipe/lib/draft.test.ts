@@ -444,3 +444,16 @@ describe('recipe-form › Changing tags counts as an unsaved change', () => {
     assert.equal(isDirty(withTags, { ...withTags, tags: ['Soep'] }, defaultRules), false);
   });
 });
+
+describe('recipe-source › Reset restores the source', () => {
+  const withSource = { ...content, source: 'Libelle' };
+  const start = startingDraft(defaultRules, withSource);
+
+  test('a changed source makes the draft dirty', () => {
+    assert.equal(isDirty(start, { ...start, source: 'Buurvrouw' }, defaultRules), true);
+  });
+
+  test('starting again gives the starting source', () => {
+    assert.equal(startingDraft(defaultRules, withSource).source, 'Libelle');
+  });
+});
