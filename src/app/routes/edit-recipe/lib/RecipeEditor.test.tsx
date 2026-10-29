@@ -547,6 +547,12 @@ describe('unfinished draft of a new recipe', () => {
       assert.ok(screen.getByTestId('RestoreDraftDialog-heading'));
     });
 
+    test('the popup is offered the stored draft', () => {
+      keepDraft();
+      show();
+      assert.equal(screen.getByTestId('RestoreDraftDialog-title').textContent, 'Soep van gisteren');
+    });
+
     test('the form is not filled yet', () => {
       keepDraft();
       show();
@@ -573,7 +579,7 @@ describe('unfinished draft of a new recipe', () => {
       keepDraft();
       show();
       fireEvent.click(screen.getByTestId('RestoreDraftDialog-use'));
-      assert.ok(screen.getByTestId('SaveBar-status').textContent?.includes('hersteld'));
+      assert.ok(screen.getByTestId('RecipeEditor-restored'));
     });
   });
 
@@ -598,6 +604,16 @@ describe('unfinished draft of a new recipe', () => {
       show({ canImport: true });
       fireEvent.click(screen.getByTestId('RestoreDraftDialog-discard'));
       assert.ok(screen.getByTestId('ImportBox-import'));
+    });
+  });
+
+  describe('recipe-draft › The popup cannot be dismissed without a choice', () => {
+    test('Escape leaves the offered draft on the device', () => {
+      keepDraft();
+      const offered = localStorage.getItem(keyFor());
+      show();
+      fireEvent(screen.getByTestId('RestoreDraftDialog-dialog'), new Event('cancel', { cancelable: true }));
+      assert.equal(localStorage.getItem(keyFor()), offered);
     });
   });
 

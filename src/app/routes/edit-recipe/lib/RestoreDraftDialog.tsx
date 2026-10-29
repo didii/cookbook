@@ -31,6 +31,10 @@ export function RestoreDraftDialog({ draft, savedAt, onUse, onDiscard, className
       aria-labelledby="restore-title"
       // Escape closes a modal dialog by default; the choice must be made.
       onCancel={(e) => e.preventDefault()}
+      // Chromium can still close it on a second Escape without a `cancel`; it opens again until a choice is made.
+      onClose={(e) => e.currentTarget.showModal()}
+      {...{ closedby: 'none' }}
+      data-testid="RestoreDraftDialog-dialog"
       className={cn(
         'm-auto max-h-[calc(100dvh-2rem)] w-[min(28rem,calc(100vw-2rem))] overflow-y-auto rounded-xl border-3 border-ink bg-white p-0 text-ink shadow-hard backdrop:bg-ink/40',
         className,
@@ -96,6 +100,9 @@ export function RestoreDraftDialog({ draft, savedAt, onUse, onDiscard, className
           </button>
           <button
             type="button"
+            // The safe choice has the focus: Enter right away must not discard the draft.
+            // oxlint-disable-next-line jsx-a11y/no-autofocus -- the dialog opens with this button focused on purpose
+            autoFocus
             data-testid="RestoreDraftDialog-use"
             onClick={onUse}
             className="min-h-11 cursor-pointer rounded-full border-3 border-ink bg-yel px-5 font-extrabold"

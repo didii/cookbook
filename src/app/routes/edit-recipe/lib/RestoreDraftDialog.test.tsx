@@ -89,12 +89,24 @@ describe('recipe-draft › A draft without a photo or source', () => {
 describe('recipe-draft › The popup cannot be dismissed without a choice', () => {
   test('is open when shown', () => {
     show();
-    assert.equal(document.querySelector('dialog')!.open, true);
+    assert.equal(screen.getByTestId<HTMLDialogElement>('RestoreDraftDialog-dialog').open, true);
+  });
+
+  test('it opens again when the browser closes it anyway', () => {
+    show();
+    const dialog = screen.getByTestId<HTMLDialogElement>('RestoreDraftDialog-dialog');
+    dialog.close();
+    assert.equal(dialog.open, true);
+  });
+
+  test('the safe choice has the focus', () => {
+    show();
+    assert.equal(document.activeElement, screen.getByTestId('RestoreDraftDialog-use'));
   });
 
   test('Escape (cancel) is prevented', () => {
     show();
-    const notPrevented = fireEvent(document.querySelector('dialog')!, new Event('cancel', { cancelable: true }));
+    const notPrevented = fireEvent(screen.getByTestId('RestoreDraftDialog-dialog'), new Event('cancel', { cancelable: true }));
     assert.equal(notPrevented, false);
   });
 });

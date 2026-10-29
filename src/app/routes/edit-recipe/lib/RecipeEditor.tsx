@@ -458,7 +458,9 @@ export function RecipeEditor({
             {seal && <input type="hidden" name="seal" value={seal} />}
           </div>
           <SaveBar cancelTo={cancelTo} busy={busy} saveBlocked={photo !== 'ready'} dirty={dirty} kept={kept} onFormReset={reset}>
-            {restored && restored.draft === current && <span>Concept van {describeSavedAt(restored.at, new Date())} hersteld</span>}
+            {restored && restored.draft === current && (
+              <span data-testid="RecipeEditor-restored">Concept van {describeSavedAt(restored.at, new Date())} hersteld</span>
+            )}
             <OpenProposals count={proposalCount} />
             {photo === 'uploading' && <span>Foto wordt geüpload…</span>}
             {photo === 'error' && <span className="text-red">Foto is niet geüpload</span>}
