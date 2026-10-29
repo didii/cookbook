@@ -31,6 +31,15 @@ const show = (role: Role = 'user', path = '/') => {
 const links = (dialog: HTMLElement) => [...dialog.querySelectorAll('a')].map((a) => [a.textContent, a.getAttribute('href')]);
 const openMenu = () => fireEvent.click(screen.getByTestId('SiteMenu-open'));
 
+/** Open the menu, follow the link with this label and wait for the navigation to settle. Returns the dialog. */
+const follow = async (label: string, role: Role = 'user', path = '/') => {
+  const { dialog } = show(role, path);
+  openMenu();
+  fireEvent.click(screen.getAllByTestId('SiteMenu-link').find((link) => link.textContent === label)!);
+  await screen.findByTestId(label === 'Home' ? 'home' : 'about');
+  return dialog;
+};
+
 const labels = (role: Role) => {
   const { dialog } = show(role);
   openMenu();
@@ -65,21 +74,13 @@ describe('site-menu › Menu lists the links', () => {
 });
 
 describe('site-menu › Home link', () => {
-  const follow = async (role: Role) => {
-    const { dialog } = show(role, '/over');
-    openMenu();
-    fireEvent.click(screen.getAllByTestId('SiteMenu-link').find((link) => link.textContent === 'Home')!);
-    await screen.findByTestId('home');
-    return dialog;
-  };
-
   test.each(['user', 'admin', 'superadmin'] as const)('the %s is taken to the home page', async (role) => {
-    await follow(role);
-    assert.ok(screen.getByTestId('home'));
+    await follow('Home', role, '/over');
+    await screen.findByTestId('home');
   });
 
   test('the menu is closed', async () => {
-    assert.equal((await follow('user')).hasAttribute('open'), false);
+    assert.equal((await follow('Home', 'user', '/over')).hasAttribute('open'), false);
   });
 });
 
@@ -213,20 +214,12 @@ describe('site-menu › Menu closes', () => {
 });
 
 describe('site-menu › Following a link closes the menu', () => {
-  const follow = async () => {
-    const { dialog } = show();
-    openMenu();
-    fireEvent.click(screen.getAllByTestId('SiteMenu-link').find((link) => link.textContent === 'Over')!);
-    await screen.findByTestId('about');
-    return dialog;
-  };
-
   test('the menu stays in the layout', async () => {
-    assert.equal((await follow()).isConnected, true);
+    assert.equal((await follow('Over')).isConnected, true);
   });
 
   test('the menu is closed', async () => {
-    assert.equal((await follow()).hasAttribute('open'), false);
+    assert.equal((await follow('Over')).hasAttribute('open'), false);
   });
 });
 

@@ -19,4 +19,3 @@ The only way home is the site name in the header. Once the sidebar is open, a fa
 ## Impact
 
 - `src/app/routes/layout/lib/SiteMenu.tsx` (links list) and `SiteMenu.test.tsx`.
-- The `site-menu` delta is written on top of the unarchived `import-recipe-from-url` delta (which adds "Recept importeren" and "Tags", already in the code). Archive that change first, or merge the two deltas by hand.
