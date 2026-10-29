@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'vitest';
-import { activeFilterCount, authorsOf, filterParams, filterRecipes, isFiltered, parseFilters, tagsOf, type Filters } from './filterRecipes';
+import { filterParams, type Filters } from '~app/shared/filterParams';
+import { activeFilterCount, authorsOf, filterRecipes, isFiltered, parseFilters, tagsOf } from './filterRecipes';
 
 const none: Filters = {};
 const recipes = [
@@ -305,17 +306,9 @@ describe('parseFilters', () => {
   });
 });
 
-describe('filterParams', () => {
-  test('leaves out defaults', () => {
-    assert.equal(filterParams(none).toString(), '');
-  });
-
+describe('filterParams with parseFilters', () => {
   test('round-trips through parseFilters', () => {
     const f: Filters = { q: 'crème brûlée', authors: ['Tante An', 'Oma'], tags: ['Soep', 'Dessert'], sort: 'az' };
     assert.deepEqual(parseFilters(new URLSearchParams(filterParams(f).toString())), f);
-  });
-
-  test('writes a non-default order', () => {
-    assert.equal(filterParams({ sort: 'az' }).toString(), 'sort=az');
   });
 });

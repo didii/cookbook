@@ -1,7 +1,8 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { cn } from '~app/shared/cn';
-import { Fret, LikeButton, Seal, TileBand } from '~app/shared/components';
+import { Fret, LikeButton, Pill, Seal, TileBand } from '~app/shared/components';
+import { filterParams } from '~app/shared/filterParams';
 import { ChevronBack } from '~app/shared/icons';
 import type { Recipe, Step } from '~app/shared/recipe';
 import { initialCook, observe, setByHand, wantsCookMode } from './cook/cookMode';
@@ -176,6 +177,15 @@ export function RecipeView({ recipe: r, tile, steps, liked = false, note: savedN
           {r.image && r.seal && <Seal sealId={r.seal} className="h-16" />}
           <TileBand first={tile} rows={r.image ? 1 : 3} responsive className="border-b-0" />
         </div>
+        {r.tags.length > 0 && (
+          <div data-testid="RecipeView-tags" className="mt-1.5 flex flex-wrap gap-1.5">
+            {r.tags.map((name) => (
+              <Link key={name} to={`/?${filterParams({ tags: [name] })}`} data-testid="RecipeView-tagLink">
+                <Pill data-testid="RecipeView-tag">{name}</Pill>
+              </Link>
+            ))}
+          </div>
+        )}
 
         <ClockSetting />
         <CookSwitch wanted={wanted} lock={lock} manual={cook.manual} onToggle={() => setCook((c) => setByHand(c, !wantsCookMode(c, true)))} />
