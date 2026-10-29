@@ -35,6 +35,7 @@ import {
   loadDraft,
   purgeDrafts,
   resolveStart,
+  type Start,
 } from './draftStore';
 import { fetchImage } from './import/fetchImage';
 import { ImportBox } from './import/ImportBox';
@@ -42,6 +43,7 @@ import type { ImportedRecipe } from './import/readRecipe';
 import { IngredientList } from './ingredients/IngredientList';
 import { PhotoField, type PhotoState } from './photo/PhotoField';
 import { limits, type RecipeFormErrors, type RecipeFormField } from './recipeValidation';
+import { RestoreDraftDialog } from './RestoreDraftDialog';
 import { SaveBar } from './SaveBar';
 import { proposals, usedIn } from './steps/chips';
 import { OpenProposals } from './steps/OpenProposals';
@@ -138,6 +140,16 @@ export function RecipeEditor({
   const [base, setBase] = useState<{ updatedAt?: string }>({ updatedAt });
   const [restored, setRestored] = useState<{ at: string; draft: RecipeDraft }>();
   const [changedMeanwhile, setChangedMeanwhile] = useState(false);
+  // The draft of a new recipe waits here until the family member chose to use or discard it.
+  const [pending, setPending] = useState<Start>();
+  const applyStart = (start: Start) => {
+    setCurrent(start.state);
+    setBase(start.base);
+    setRestored({ at: start.restoredAt!, draft: start.state });
+    setChangedMeanwhile(start.changedMeanwhile);
+    // The step texts keep their own text while mounted, so they start over on what was restored.
+    setResets((n) => n + 1);
+  };
   useLayoutEffect(() => {
     const storage = browserStorage();
     purgeDrafts(storage, new Date());
@@ -147,14 +159,11 @@ export function RecipeEditor({
       // The flag is used up: a reload from here on restores the new draft instead of starting fresh again.
       navigate(`${location.pathname}${location.search}`, { replace: true, state: null });
     }
-    if (start.restoredAt) {
-      setCurrent(start.state);
-      setBase(start.base);
-      setRestored({ at: start.restoredAt, draft: start.state });
-      setChangedMeanwhile(start.changedMeanwhile);
-      // The step texts keep their own text while mounted, so they start over on what was restored.
-      setResets((n) => n + 1);
+    if (start.restoredAt && slug === undefined) {
+      setPending(start);
+      return;
     }
+    if (start.restoredAt) applyStart(start);
     setReady(true);
     // Once, on mount.
     // oxlint-disable-next-line react-hooks/exhaustive-deps
@@ -458,6 +467,22 @@ export function RecipeEditor({
       )}
       {/* Outside the save form (forms cannot nest); it posts to its own route. */}
       {slug && <DeleteRecipe headingText={initial.title} slug={slug} />}
+      {pending && (
+        <RestoreDraftDialog
+          draft={pending.state}
+          savedAt={pending.restoredAt!}
+          onUse={() => {
+            applyStart(pending);
+            setPending(undefined);
+            setReady(true);
+          }}
+          onDiscard={() => {
+            clearDraft(browserStorage(), key);
+            setPending(undefined);
+            setReady(true);
+          }}
+        />
+      )}
     </main>
   );
 }

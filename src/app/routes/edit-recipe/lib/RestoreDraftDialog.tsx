@@ -15,14 +15,6 @@ interface RestoreDraftDialogProps extends Omit<ComponentProps<'dialog'>, 'onCanc
 const shownIngredients = 3;
 const shownSteps = 2;
 
-/** "+ 2 meer" when `left` items are not shown. */
-const more = (testId: string, left: number) =>
-  left > 0 && (
-    <p data-testid={testId} className="text-muted">
-      + {left} meer
-    </p>
-  );
-
 /** Modal popup that opens on mount and asks whether to use the draft of a new recipe; it stays until one of the two buttons is pressed. */
 export function RestoreDraftDialog({ draft, savedAt, onUse, onDiscard, className, ...props }: RestoreDraftDialogProps) {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -74,7 +66,11 @@ export function RestoreDraftDialog({ draft, savedAt, onUse, onDiscard, className
             ))}
           </ul>
         )}
-        {more('RestoreDraftDialog-moreIngredients', ingredients.length - shownIngredients)}
+        {ingredients.length > shownIngredients && (
+          <p data-testid="RestoreDraftDialog-moreIngredients" className="text-muted">
+            + {ingredients.length - shownIngredients} meer
+          </p>
+        )}
         {steps.length > 0 && (
           <ol className="list-decimal pl-5">
             {steps.slice(0, shownSteps).map((body, i) => (
@@ -84,7 +80,11 @@ export function RestoreDraftDialog({ draft, savedAt, onUse, onDiscard, className
             ))}
           </ol>
         )}
-        {more('RestoreDraftDialog-moreSteps', steps.length - shownSteps)}
+        {steps.length > shownSteps && (
+          <p data-testid="RestoreDraftDialog-moreSteps" className="text-muted">
+            + {steps.length - shownSteps} meer
+          </p>
+        )}
         <div className="flex flex-wrap justify-end gap-3">
           <button
             type="button"

@@ -5,9 +5,9 @@
 
 ## 2. Editor
 
-- [ ] 2.1 In `RecipeEditor.tsx`, for a new recipe hold the restoring start as `pending` and keep `ready` false; render `RestoreDraftDialog`; Use applies the start (state, base, restored line, step reset) and sets `ready`; Discard clears the draft and sets `ready`. A stored recipe keeps restoring at once
-- [ ] 2.2 Editor tests (`RecipeEditor.test.tsx`, `NewRecipeForm.test.tsx`): "An unfinished new recipe returns", "Using the draft", "Discarding the draft" (also on the import page: import box shown), "Nothing is written before the choice", "A stored recipe asks nothing". Update existing tests that expect a new recipe draft to restore at once
-- [ ] 2.3 If `import-recipe-from-url` is merged, make its "Imported content is kept as a draft" test choose "use" first
+- [x] 2.1 In `RecipeEditor.tsx`, for a new recipe hold the restoring start as `pending` and keep `ready` false; render `RestoreDraftDialog`; Use applies the start (state, base, restored line, step reset) and sets `ready`; Discard clears the draft and sets `ready`. A stored recipe keeps restoring at once
+- [x] 2.2 Editor tests (`RecipeEditor.test.tsx`, `NewRecipeForm.test.tsx`): "An unfinished new recipe returns", "Using the draft", "Discarding the draft" (also on the import page: import box shown), "Nothing is written before the choice", "A stored recipe asks nothing". Update existing tests that expect a new recipe draft to restore at once
+- [x] 2.3 If `import-recipe-from-url` is merged, make its "Imported content is kept as a draft" test choose "use" first
 
 ## 3. Finish
 

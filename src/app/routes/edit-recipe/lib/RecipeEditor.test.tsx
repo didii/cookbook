@@ -4,7 +4,8 @@ import { createMemoryRouter, RouterProvider } from 'react-router';
 import { beforeEach, describe, test, vi } from 'vitest';
 import { defaultRules } from '~app/shared/rules';
 import { act, cleanup, fireEvent, openAutocomplete, precedes, render, screen } from '~testing/dom';
-import { emptyDraftSeed } from './draft';
+import { emptyDraftSeed, startingDraft } from './draft';
+import { browserStorage, draftKey, saveDraft } from './draftStore';
 import type { ImportedRecipe } from './import/readRecipe';
 import { RecipeEditor } from './RecipeEditor';
 import { limits } from './recipeValidation';
@@ -516,7 +517,119 @@ describe('RecipeEditor import', () => {
       await importNow();
       cleanup();
       show({ canImport: true });
+      fireEvent.click(screen.getByTestId('RestoreDraftDialog-use'));
       assert.equal(field('RecipeEditor-title').value, imported.title);
+    });
+  });
+});
+
+describe('unfinished draft of a new recipe', () => {
+  const keyFor = (slug?: string) => draftKey('', slug);
+  /** Puts a draft of a half-written recipe on the device. */
+  const keepDraft = (slug?: string) => {
+    const initial = startingDraft(defaultRules, emptyDraftSeed);
+    saveDraft(browserStorage(), keyFor(slug), {
+      state: { ...initial, title: 'Soep van gisteren' },
+      initial,
+      base: {},
+      uploading: false,
+      settledImage: '',
+      now: new Date(),
+      rules: defaultRules,
+    });
+  };
+  const title = () => screen.getByTestId<HTMLInputElement>('RecipeEditor-title').value;
+
+  describe('recipe-draft › An unfinished new recipe returns', () => {
+    test('a popup asks about the draft', () => {
+      keepDraft();
+      show();
+      assert.ok(screen.getByTestId('RestoreDraftDialog-heading'));
+    });
+
+    test('the form is not filled yet', () => {
+      keepDraft();
+      show();
+      assert.equal(title(), '');
+    });
+  });
+
+  describe('recipe-draft › Using the draft', () => {
+    test('the popup closes', () => {
+      keepDraft();
+      show();
+      fireEvent.click(screen.getByTestId('RestoreDraftDialog-use'));
+      assert.equal(screen.queryByTestId('RestoreDraftDialog-heading'), null);
+    });
+
+    test('the form shows what was written', () => {
+      keepDraft();
+      show();
+      fireEvent.click(screen.getByTestId('RestoreDraftDialog-use'));
+      assert.equal(title(), 'Soep van gisteren');
+    });
+
+    test('the save bar says a draft was restored', () => {
+      keepDraft();
+      show();
+      fireEvent.click(screen.getByTestId('RestoreDraftDialog-use'));
+      assert.ok(screen.getByTestId('SaveBar-status').textContent?.includes('hersteld'));
+    });
+  });
+
+  describe('recipe-draft › Discarding the draft', () => {
+    test('the popup closes and the form is empty', () => {
+      keepDraft();
+      show();
+      fireEvent.click(screen.getByTestId('RestoreDraftDialog-discard'));
+      assert.equal(screen.queryByTestId('RestoreDraftDialog-heading'), null);
+      assert.equal(title(), '');
+    });
+
+    test('the draft is removed from the device', () => {
+      keepDraft();
+      show();
+      fireEvent.click(screen.getByTestId('RestoreDraftDialog-discard'));
+      assert.equal(localStorage.getItem(keyFor()), null);
+    });
+
+    test('on the import page the import box is shown', () => {
+      keepDraft();
+      show({ canImport: true });
+      fireEvent.click(screen.getByTestId('RestoreDraftDialog-discard'));
+      assert.ok(screen.getByTestId('ImportBox-import'));
+    });
+  });
+
+  describe('recipe-draft › Nothing is written before the choice', () => {
+    test('hiding the page leaves the offered draft unchanged', () => {
+      keepDraft();
+      const offered = localStorage.getItem(keyFor());
+      show();
+      window.dispatchEvent(new Event('pagehide'));
+      assert.equal(localStorage.getItem(keyFor()), offered);
+    });
+
+    test('closing the editor leaves the offered draft unchanged', () => {
+      keepDraft();
+      const offered = localStorage.getItem(keyFor());
+      show();
+      cleanup();
+      assert.equal(localStorage.getItem(keyFor()), offered);
+    });
+  });
+
+  describe('recipe-draft › A stored recipe asks nothing', () => {
+    test('no popup is shown', () => {
+      keepDraft('soep');
+      show({ slug: 'soep' });
+      assert.equal(screen.queryByTestId('RestoreDraftDialog-heading'), null);
+    });
+
+    test('the draft is restored', () => {
+      keepDraft('soep');
+      show({ slug: 'soep' });
+      assert.equal(title(), 'Soep van gisteren');
     });
   });
 });
