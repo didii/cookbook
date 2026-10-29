@@ -73,7 +73,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   useEffect(() => {
     if (!maybeExpired) return;
     let cancelled = false;
-    void isSessionExpired().then((expired) => {
+    void isSessionExpired(location.href).then((expired) => {
       if (cancelled) return;
       if (expired) location.reload();
       else setChecking(false);

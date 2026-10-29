@@ -6,6 +6,9 @@ import { render, waitFor, within } from '~testing/dom';
 import type { Route } from './+types/root';
 import { ErrorBoundary, links } from './root';
 import { ThemeColor } from './shared/components';
+import { isSessionExpired } from './shared/isSessionExpired';
+
+vi.mock('./shared/isSessionExpired', () => ({ isSessionExpired: vi.fn() }));
 
 const pub = new URL('../../public/', import.meta.url);
 const manifest = JSON.parse(readFileSync(new URL('manifest.webmanifest', pub), 'utf8'));
@@ -31,7 +34,6 @@ describe('installable-app › Pages link the manifest', () => {
 });
 
 describe('ErrorBoundary', () => {
-  const originalFetch = globalThis.fetch;
   const originalLocation = window.location;
   let reload: ReturnType<typeof vi.fn>;
 
@@ -40,22 +42,21 @@ describe('ErrorBoundary', () => {
     Object.defineProperty(window, 'location', { configurable: true, value: { href: 'http://localhost/', reload } });
   });
   afterEach(() => {
-    globalThis.fetch = originalFetch;
+    vi.mocked(isSessionExpired).mockReset();
     Object.defineProperty(window, 'location', { configurable: true, value: originalLocation });
   });
 
-  const stubFetch = (fn: () => Promise<unknown>) => (globalThis.fetch = fn as typeof fetch);
   const props = (error: unknown) => ({ error }) as Route.ErrorBoundaryProps;
 
   describe('session-expiry › Expired session while saving', () => {
     test('reloads the page', async () => {
-      stubFetch(async () => ({ type: 'opaqueredirect' }));
+      vi.mocked(isSessionExpired).mockResolvedValue(true);
       render(<ErrorBoundary {...props(new TypeError('Failed to fetch'))} />);
       await waitFor(() => assert.equal(reload.mock.calls.length, 1));
     });
 
     test('shows the sign-in line, not the error', async () => {
-      stubFetch(async () => ({ type: 'opaqueredirect' }));
+      vi.mocked(isSessionExpired).mockResolvedValue(true);
       const { findByTestId, queryByTestId } = render(<ErrorBoundary {...props(new TypeError('Failed to fetch'))} />);
       await findByTestId('ErrorBoundary-signin');
       assert.equal(queryByTestId('ErrorBoundary-error'), null);
@@ -64,7 +65,7 @@ describe('ErrorBoundary', () => {
 
   describe('session-expiry › Expired session while opening a page', () => {
     test('reloads the page', async () => {
-      stubFetch(async () => ({ type: 'opaqueredirect' }));
+      vi.mocked(isSessionExpired).mockResolvedValue(true);
       render(<ErrorBoundary {...props(new TypeError('Failed to fetch'))} />);
       await waitFor(() => assert.equal(reload.mock.calls.length, 1));
     });
@@ -72,7 +73,7 @@ describe('ErrorBoundary', () => {
 
   describe('session-expiry › No connection is not an expired session', () => {
     test('shows the error page and does not reload', async () => {
-      stubFetch(async () => Promise.reject(new TypeError('offline')));
+      vi.mocked(isSessionExpired).mockResolvedValue(false);
       const { findByTestId } = render(<ErrorBoundary {...props(new TypeError('Failed to fetch'))} />);
       await findByTestId('ErrorBoundary-error');
       assert.equal(reload.mock.calls.length, 0);
@@ -81,20 +82,19 @@ describe('ErrorBoundary', () => {
 
   describe('session-expiry › Other failures are not an expired session', () => {
     test('shows the error page and does not reload', async () => {
-      stubFetch(async () => ({ type: 'basic' }));
+      vi.mocked(isSessionExpired).mockResolvedValue(false);
       const { findByTestId } = render(<ErrorBoundary {...props(new TypeError('Failed to fetch'))} />);
       await findByTestId('ErrorBoundary-error');
       assert.equal(reload.mock.calls.length, 0);
     });
 
     test('does not probe for an error that is not a TypeError', async () => {
-      const probe = vi.fn();
-      stubFetch(probe);
       const { getByTestId } = render(<ErrorBoundary {...props(new Error('boom'))} />);
       getByTestId('ErrorBoundary-error');
-      assert.equal(probe.mock.calls.length, 0);
+      assert.equal(vi.mocked(isSessionExpired).mock.calls.length, 0);
     });
   });
 });
 
-test.todo('session-expiry › Edits come back after signing in'); // Covered by recipe-draft › A reload restores the draft (draftStore.test.ts): the failed save leaves the draft in localStorage.
+// Covered by recipe-draft › A reload restores the draft (draftStore.test.ts) and endDraftAfterSave.test.ts › "a failure that is not a redirect does not end it": a failed save keeps the draft, a reload restores it.
+test.todo('session-expiry › Edits come back after signing in');
