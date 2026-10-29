@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createMemoryRouter, data, RouterProvider } from 'react-router';
 import { describe, test } from 'vitest';
-import { fireEvent, render, screen } from '~testing/dom';
+import { fireEvent, render, screen, waitFor } from '~testing/dom';
 import type { ActionResult } from './actionResult';
 import { AddTagForm } from './AddTagForm';
 
@@ -57,15 +57,15 @@ describe('tag-management › A tag is added', () => {
     const { sent, done } = show({ done: 'Tag “Kerst” toegevoegd.' });
     add('Kerst');
     await screen.findByTestId('AddTagForm-name');
-    await new Promise((r) => setTimeout(r, 20));
+    await waitFor(() => assert.ok(done.length === 1));
     assert.deepEqual(Object.fromEntries(sent[0]!), { intent: 'add', name: 'Kerst' });
     assert.deepEqual(done, ['Tag “Kerst” toegevoegd.']);
   });
 
   test('the field is emptied', async () => {
-    show({ done: 'ok' });
+    const { done } = show({ done: 'ok' });
     add('Kerst');
-    await new Promise((r) => setTimeout(r, 20));
+    await waitFor(() => assert.ok(done.length === 1));
     assert.equal(field().value, '');
   });
 });

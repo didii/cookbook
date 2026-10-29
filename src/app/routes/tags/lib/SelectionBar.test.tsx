@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createMemoryRouter, data, RouterProvider } from 'react-router';
 import { describe, test } from 'vitest';
-import { fireEvent, render, screen } from '~testing/dom';
+import { fireEvent, render, screen, waitFor } from '~testing/dom';
 import type { ActionResult } from './actionResult';
 import { SelectionBar } from './SelectionBar';
 
@@ -60,7 +60,7 @@ describe('tag-management › Setting a category on the selection', () => {
     const { sent } = show(['Soep', 'Bakken']);
     fireEvent.change(field(), { target: { value: 'Gerecht' } });
     fireEvent.click(apply());
-    await new Promise((r) => setTimeout(r, 20));
+    await waitFor(() => assert.ok(sent.length === 1));
     assert.equal(sent[0]!.get('intent'), 'bulk');
     assert.equal(sent[0]!.get('category'), 'Gerecht');
     assert.deepEqual(sent[0]!.getAll('name'), ['Soep', 'Bakken']);
@@ -70,7 +70,7 @@ describe('tag-management › Setting a category on the selection', () => {
     const { calls } = show(['Soep', 'Bakken']);
     fireEvent.change(field(), { target: { value: 'Gerecht' } });
     fireEvent.click(apply());
-    await new Promise((r) => setTimeout(r, 20));
+    await waitFor(() => assert.ok(calls.done.length === 1));
     assert.deepEqual(calls.done, ['2 tags aangepast.']);
     assert.equal(field().value, '');
   });
@@ -80,7 +80,7 @@ describe('tag-management › Empty category on the selection', () => {
   test('an empty category is sent as it is', async () => {
     const { sent } = show(['Soep']);
     fireEvent.click(apply());
-    await new Promise((r) => setTimeout(r, 20));
+    await waitFor(() => assert.ok(sent.length === 1));
     assert.equal(sent[0]!.get('category'), '');
   });
 });
