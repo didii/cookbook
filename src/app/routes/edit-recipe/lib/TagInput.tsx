@@ -2,7 +2,7 @@ import { Combobox } from '@base-ui/react/combobox';
 import { useState } from 'react';
 import { Pill } from '~app/shared/components';
 import { sortTags } from '~app/shared/tags';
-import { maxTagLength } from './recipeValidation';
+import { limits } from './recipeValidation';
 
 type Props = {
   /** Every stored tag, to suggest. */
@@ -42,7 +42,7 @@ export function TagInput({ tags, tagCategories = {}, value, onValueChange, id, i
         setText('');
       }}
       inputValue={text}
-      onInputValueChange={(next) => setText(next.slice(0, maxTagLength))}
+      onInputValueChange={(next) => setText(next.slice(0, limits.tag))}
       autoHighlight
     >
       <Combobox.Chips
@@ -72,7 +72,7 @@ export function TagInput({ tags, tagCategories = {}, value, onValueChange, id, i
         <Combobox.Input
           id={id}
           data-testid="TagInput-field"
-          maxLength={maxTagLength}
+          maxLength={limits.tag}
           autoComplete="off"
           aria-invalid={invalid ? true : undefined}
           aria-describedby={describedBy}
