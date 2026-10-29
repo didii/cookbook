@@ -31,7 +31,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
         <ThemeColor />
         <Meta />
-        <Links />
+        {/* Links need no nonce (style-src and script-src allow 'self'). The empty value keeps the server's nonce off them: browsers hide it from the DOM, so hydration would warn about a mismatch. */}
+        <Links nonce="" />
       </head>
       <body>
         {children}
