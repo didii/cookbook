@@ -10,7 +10,7 @@
 
 ## Decisions
 
-- **One place for the numbers in code.** Export the limits from `recipeValidation.ts` next to `maxTagLength` so the server checks and the inputs' `maxLength` read the same constant. The migration repeats the numbers in SQL; a test (task 5.1) inserts values at and over each limit so the two cannot drift unnoticed.
+- **One place for the numbers in code.** Export the limits from `recipeValidation.ts` in `limits` so the server checks and the inputs' `maxLength` read the same constant. The migration repeats the numbers in SQL; a test (task 5.1) inserts values at and over each limit so the two cannot drift unnoticed.
 - **Refuse, never truncate on the server.** Silent truncation would store something the member did not see. The client stops typing at the limit, so a server refusal only happens for non-browser or stale input.
 - **Messages state the limit, their wording is free.** A message at the field includes the maximum (like the existing tag message "... hoogstens 100 tekens ..."). Tests build the expected number from the exported constant and assert the message contains it and sits at the right field or row; no test or spec pins the sentence.
 - **Length is `String.length` of the trimmed value**, the same as the tag check. Characters outside the BMP count as two; accepted, the limits are generous. In SQL `length()` counts characters, so a value that is at the limit in code is at most the limit in SQL.
