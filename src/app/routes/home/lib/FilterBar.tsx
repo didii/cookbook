@@ -123,7 +123,7 @@ export function FilterBar({ filters, authors, tags, tagCategories, onFiltersChan
             </div>
           </fieldset>
         )}
-        <div className="mb-4 flex items-end justify-between gap-3 md:col-span-2 md:mb-0 lg:col-span-1">
+        <div className="mb-4 flex items-end justify-between gap-3 md:col-span-2 md:mb-0 md:items-start md:[&_label]:min-h-12 lg:col-span-1">
           <Segmented
             legend="Volgorde"
             legendClassName="md:float-none md:mb-2"
