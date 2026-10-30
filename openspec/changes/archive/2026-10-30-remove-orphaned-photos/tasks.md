@@ -21,5 +21,5 @@ Needs `tag-manager`, `import-recipe-from-url` and `add-home-menu-item` merged fi
 
 ## 5. Wrap-up
 
-- [ ] 5.1 By hand with `pnpm dev`: upload a photo in the editor, discard the form, see the photo in the list once "Ouder dan 1 dag" is off (or wait out the 24 hours), delete it, confirm the recipe photos stay and that the book icon opens the right recipe
+- [x] 5.1 By hand with `pnpm dev`: upload a photo in the editor, discard the form, see the photo in the list once "Ouder dan 1 dag" is off (or wait out the 24 hours), delete it, confirm the recipe photos stay and that the book icon opens the right recipe
 - [x] 5.2 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check`, `pnpm test:ai` and `pnpm test:spec remove-orphaned-photos`; all clean
