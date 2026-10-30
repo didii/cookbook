@@ -104,6 +104,20 @@ describe('site-menu › Import link', () => {
   });
 });
 
+describe('site-menu › Photos link', () => {
+  test.each(['admin', 'superadmin'] as const)('the %s sees a link to the orphaned photos page', (role) => {
+    labels(role);
+    assert.deepEqual(
+      links(screen.getByTestId('SiteMenu-dialog')).find(([label]) => label === "Foto's"),
+      ["Foto's", '/beheer/fotos'],
+    );
+  });
+
+  test('a user does not see it', () => {
+    assert.equal(labels('user').includes("Foto's"), false);
+  });
+});
+
 describe('parsing-rules › Admin sees the link', () => {
   test('the link is in the menu', () => {
     assert.equal(labels('admin').includes('Herkenning'), true);
@@ -144,6 +158,7 @@ describe('site-menu › Menu lists the links for a superadmin', () => {
       'Instellingen',
       'Over',
       'Herkenning',
+      "Foto's",
       'Gebruikers',
       'Uitloggen',
     ]);
@@ -160,7 +175,17 @@ describe('site-menu › Menu lists the links for a superadmin', () => {
 
 describe('site-menu › Menu lists the links for an admin', () => {
   test('the menu lists the links without the users page', () => {
-    assert.deepEqual(labels('admin'), ['Home', 'Nieuw recept', 'Recept importeren', 'Tags', 'Instellingen', 'Over', 'Herkenning', 'Uitloggen']);
+    assert.deepEqual(labels('admin'), [
+      'Home',
+      'Nieuw recept',
+      'Recept importeren',
+      'Tags',
+      'Instellingen',
+      'Over',
+      'Herkenning',
+      "Foto's",
+      'Uitloggen',
+    ]);
   });
 });
 

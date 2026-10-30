@@ -12,6 +12,7 @@ const links = [
   { to: '/instellingen', label: 'Instellingen' },
   { to: '/over', label: 'Over' },
   { to: '/beheer/herkenning', label: 'Herkenning', admin: true },
+  { to: '/beheer/fotos', label: "Foto's", admin: true },
   { to: '/beheer/gebruikers', label: 'Gebruikers', superadmin: true },
 ];
 const focus = 'focus-visible:outline-white';

@@ -13,6 +13,7 @@ export default [
     index('routes/home/HomePageRoute.tsx'),
     route('instellingen', 'routes/settings/SettingsPageRoute.tsx'),
     route('beheer/herkenning', 'routes/admin-rules/AdminRulesPageRoute.tsx'),
+    route('beheer/fotos', 'routes/admin-photos/AdminPhotosPageRoute.tsx'),
     route('beheer/gebruikers', 'routes/admin-users/AdminUsersPageRoute.tsx', [route(':id', 'routes/admin-users/AdminUserPageRoute.tsx')]),
     route('over', 'routes/about/AboutPageRoute.tsx'),
     route('tags', 'routes/tags/TagsPageRoute.tsx'),
