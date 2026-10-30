@@ -9,6 +9,8 @@ import {
   ChevronDown as LucideChevronDown,
   ChevronLeft as LucideChevronLeft,
   ChevronUp as LucideChevronUp,
+  Clock as LucideClock,
+  Info as LucideInfo,
   Link as LucideLink,
   Lock as LucideLock,
   Menu as LucideMenu,
@@ -59,6 +61,9 @@ export const Pin = icon(LucidePin);
 export const Search = icon(LucideSearch);
 export const Sliders = icon(SlidersHorizontal);
 export const Clock = icon(Timer);
+/** A clock face: something is recent or waiting. */
+export const Recent = icon(LucideClock);
+export const Info = icon(LucideInfo);
 export const Ingredient = icon(Utensils);
 export const MapleLeaf = ({ className, ...props }: ComponentProps<'svg'>) => (
   <svg

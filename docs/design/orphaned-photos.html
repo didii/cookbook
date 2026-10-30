@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Orphaned photos mockup</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;700;800;900&display=swap" />
+    <style>
+      :root {
+        --red: #9c2419;
+        --yel: #c9a04a;
+        --jade: #2f6f5e;
+        --blu: #1f4e79;
+        --ink: #1c1512;
+        --por: #f4eee0;
+        --muted: #5c4f48;
+        --shadow-xs: 2px 2px 0 var(--ink);
+        --shadow-sm: 3px 3px 0 var(--ink);
+        --r: 0.625rem;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        background: var(--por);
+      }
+      body {
+        margin: 0;
+        font-family: Mulish, system-ui, sans-serif;
+        color: var(--ink);
+        line-height: 1.45;
+        font-size: 1.0625rem;
+        padding-bottom: 6.5rem;
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        cursor: pointer;
+      }
+      :focus-visible {
+        outline: 4px solid var(--blu);
+        outline-offset: 2px;
+      }
+      ::selection {
+        background: var(--yel);
+      }
+      [hidden] {
+        display: none !important;
+      }
+      .sr {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }
+      svg.i {
+        width: 1.1em;
+        height: 1.1em;
+        flex: none;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2.2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      /* mockup only: state switcher */
+      .mock {
+        background: var(--ink);
+        color: #fff;
+        font-size: 0.875rem;
+        font-weight: 800;
+      }
+      .mock div {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem 0.9rem;
+        align-items: center;
+        padding: 0.5rem max(1rem, 4vw);
+      }
+      .mock a {
+        color: #fff;
+        text-underline-offset: 3px;
+      }
+      .mock a[aria-current='true'] {
+        color: var(--yel);
+      }
+
+      .top {
+        background: var(--red);
+        color: #fff;
+      }
+      .top div {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem max(1rem, 4vw);
+      }
+      .top b {
+        font-size: 1.5rem;
+        font-weight: 900;
+      }
+      .top span {
+        font-weight: 700;
+        font-size: 0.9rem;
+      }
+
+      main {
+        max-width: 48rem;
+        margin: 0 auto;
+        padding: 1.5rem max(1rem, 4vw) 0;
+      }
+      h1 {
+        margin: 0;
+        font-size: clamp(2rem, 6vw, 3rem);
+        line-height: 1.05;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+      }
+      .lead {
+        margin: 0.5rem 0 0;
+        font-size: 1.125rem;
+        color: var(--muted);
+        max-width: 38rem;
+      }
+
+      /* buttons: same as the tag manager */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        min-height: 3rem;
+        padding: 0 1.1rem;
+        border: 3px solid var(--ink);
+        border-radius: var(--r);
+        background: #fff;
+        font-weight: 900;
+        box-shadow: var(--shadow-sm);
+        white-space: nowrap;
+      }
+      .btn.dng {
+        background: var(--red);
+        color: #fff;
+      }
+      .btn:active {
+        transform: translate(2px, 2px);
+        box-shadow: 1px 1px 0 var(--ink);
+      }
+      .btn:disabled {
+        opacity: 0.45;
+        box-shadow: none;
+        cursor: not-allowed;
+      }
+      .link {
+        min-height: 2.75rem;
+        border: 0;
+        background: none;
+        padding: 0 0.25rem;
+        font-weight: 800;
+        color: var(--blu);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        text-decoration-thickness: 2px;
+      }
+      .link:hover {
+        color: var(--red);
+      }
+
+      /* totals */
+      .sum {
+        margin-top: 1.25rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.1rem 0.75rem;
+      }
+      .sum .selact {
+        margin-left: auto;
+        display: flex;
+        gap: 0.5rem;
+      }
+      .sum small {
+        font-size: 1rem;
+        font-weight: 800;
+        color: var(--muted);
+      }
+      .chips {
+        margin-top: 0.6rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      /* same chip as the tag manager */
+      .chip {
+        min-height: 2.5rem;
+        padding: 0 0.9rem;
+        border: 3px solid var(--ink);
+        border-radius: 999px;
+        background: #fff;
+        font-weight: 800;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+      .chip[aria-pressed='true'] {
+        background: var(--yel);
+      }
+      .sum b {
+        font-size: 1.375rem;
+        font-weight: 900;
+        font-variant-numeric: tabular-nums;
+      }
+      .sum span {
+        color: var(--muted);
+        font-weight: 800;
+      }
+      .notice {
+        margin-top: 0.75rem;
+        display: flex;
+        gap: 0.6rem;
+        align-items: start;
+        padding: 0.7rem 0.85rem;
+        border: 3px solid var(--ink);
+        border-radius: var(--r);
+        background: #fff;
+        font-weight: 700;
+      }
+      .notice b {
+        font-weight: 900;
+      }
+      .notice svg {
+        margin-top: 0.2em;
+      }
+      .notice.ok {
+        border-color: var(--jade);
+      }
+      .notice.ok svg {
+        color: var(--jade);
+      }
+      .notice.cap svg {
+        color: var(--muted);
+      }
+      /* focused after a delete so screen readers read it; no ring, it is not a control */
+      .notice:focus,
+      .notice:focus-visible {
+        outline: none;
+      }
+
+      /* grid of photos */
+      .grid {
+        margin: 1rem 0 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+      }
+      @media (min-width: 30rem) {
+        .grid {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+      }
+      @media (min-width: 40rem) {
+        .grid {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 1rem;
+        }
+      }
+      .tile {
+        position: relative;
+        display: block;
+        border: 3px solid var(--ink);
+        border-radius: var(--r);
+        background: #fff;
+        overflow: clip;
+        cursor: pointer;
+        box-shadow: var(--shadow-xs);
+      }
+      .tile:hover {
+        background: color-mix(in srgb, var(--yel) 22%, #fff);
+      }
+      .tile:has(:focus-visible) {
+        outline: 4px solid var(--blu);
+        outline-offset: 2px;
+      }
+      .tile:has(:checked) {
+        border-color: var(--blu);
+        background: color-mix(in srgb, var(--blu) 10%, #fff);
+        box-shadow: 0 0 0 2px var(--blu);
+      }
+      .tile img {
+        display: block;
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: cover;
+        border-bottom: 2px solid var(--ink);
+        background: color-mix(in srgb, var(--ink) 8%, var(--por));
+      }
+      .tile:has(:checked) img {
+        border-color: var(--blu);
+      }
+      /* checkbox drawn as a box in the corner of the photo */
+      .tile input {
+        position: absolute;
+        opacity: 0;
+        inset: 0.5rem auto auto 0.5rem;
+        width: 2rem;
+        height: 2rem;
+        margin: 0;
+      }
+      .box {
+        position: absolute;
+        top: 0.5rem;
+        left: 0.5rem;
+        width: 2rem;
+        height: 2rem;
+        display: grid;
+        place-items: center;
+        border: 3px solid var(--ink);
+        border-radius: 0.45rem;
+        background: #fff;
+        color: transparent;
+        box-shadow: var(--shadow-xs);
+      }
+      .tile:has(:checked) .box {
+        background: var(--blu);
+        border-color: var(--ink);
+        color: #fff;
+      }
+      /* footer: date, size under it, and the recipe icon of a used photo at the bottom right */
+      .meta {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: end;
+        padding: 0.45rem 0.6rem 0.5rem;
+        font-size: 0.9375rem;
+        font-variant-numeric: tabular-nums;
+      }
+      .meta time {
+        grid-column: 1;
+        font-weight: 900;
+      }
+      .meta .sz {
+        grid-column: 1;
+        font-weight: 800;
+        color: var(--muted);
+      }
+      /* the icon is muted like the recipe count in the tag manager; the padding is the tap area */
+      .meta .ref {
+        grid-column: 2;
+        grid-row: 1 / 3;
+        margin: -0.5rem -0.45rem -0.5rem 0;
+        padding: 0.5rem 0.45rem;
+        display: grid;
+        place-items: center;
+        color: color-mix(in srgb, var(--ink) 45%, transparent);
+      }
+      /* the clock is a warning, not a link: warning colour instead of muted */
+      .meta .ref.new {
+        color: var(--yel);
+      }
+      .meta a.ref:hover {
+        color: var(--red);
+      }
+      /* a photo a recipe uses cannot be deleted: no box, no shadow */
+      .tile.lock {
+        cursor: default;
+        border-color: color-mix(in srgb, var(--ink) 40%, var(--por));
+        box-shadow: none;
+      }
+      .tile.lock:hover {
+        background: #fff;
+      }
+      .tile.lock img {
+        border-color: color-mix(in srgb, var(--ink) 40%, var(--por));
+      }
+
+      /* confirmation: a modal dialog in the middle, so a double click on the button below cannot reach "Verwijder"; a click outside it cancels */
+      dialog {
+        width: min(26rem, calc(100% - 2rem));
+        padding: 1.25rem;
+        border: 3px solid var(--red);
+        border-radius: var(--r);
+        background: var(--por);
+        color: var(--ink);
+        box-shadow: var(--shadow-sm);
+      }
+      dialog::backdrop {
+        background: color-mix(in srgb, var(--ink) 55%, transparent);
+      }
+      dialog .acts {
+        margin-top: 1rem;
+      }
+      dialog .acts .btn {
+        flex: 1 1 auto;
+      }
+
+      /* empty state */
+      .empty {
+        margin-top: 1.5rem;
+        padding: 2.25rem 1.25rem;
+        border: 3px solid var(--ink);
+        border-radius: var(--r);
+        background: #fff;
+        text-align: center;
+        font-weight: 700;
+        color: var(--muted);
+      }
+      .empty svg.i {
+        width: 2.75rem;
+        height: 2.75rem;
+        color: var(--jade);
+        stroke-width: 2;
+      }
+      .empty b {
+        display: block;
+        margin-top: 0.5rem;
+        color: var(--ink);
+        font-weight: 900;
+        font-size: 1.375rem;
+      }
+      .empty p {
+        margin: 0.35rem auto 0;
+        max-width: 26rem;
+      }
+
+      /* bar: same place and look as the tag manager's selection bar */
+      .bar {
+        position: fixed;
+        inset: auto 0 0 0;
+        z-index: 10;
+        background: var(--por);
+        border-top: 3px solid var(--ink);
+      }
+      .bar > div {
+        max-width: 48rem;
+        margin: 0 auto;
+        padding: 0.6rem max(1rem, 4vw) calc(0.6rem + env(safe-area-inset-bottom));
+      }
+      .acts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      .acts .btn {
+        flex: 1 1 auto;
+      }
+      @media (min-width: 40rem) {
+        .acts .btn {
+          flex: 0 0 auto;
+        }
+      }
+      .warn {
+        margin: 0;
+        font-weight: 700;
+      }
+      .warn b {
+        display: block;
+        font-weight: 900;
+        color: var(--red);
+        font-size: 1.125rem;
+      }
+      .warn span {
+        display: block;
+        margin-top: 0.2rem;
+        font-size: 0.9375rem;
+        color: var(--muted);
+      }
+
+      .note {
+        margin: 2.5rem 0 0;
+        max-width: 40rem;
+        font-size: 0.9rem;
+        color: var(--muted);
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <symbol id="check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" /></symbol>
+      <symbol id="trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6" /></symbol>
+      <symbol id="info" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 11v6M12 7.5v.5" />
+      </symbol>
+      <symbol id="book" viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 19V5M9 8h6" /></symbol>
+      <symbol id="clock" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 7v5l3 2" />
+      </symbol>
+      <symbol id="clean" viewBox="0 0 24 24">
+        <rect x="3" y="5" width="18" height="14" rx="2" />
+        <path d="M8.5 12.5l2.5 2.5 4.5-5" />
+      </symbol>
+    </svg>
+
+    <nav class="mock" aria-label="Mockup-staat">
+      <div>
+        <span>Mockup:</span>
+        <a href="#">Lijst</a>
+        <a href="#select">Selectie</a>
+        <a href="#confirm">Bevestigen</a>
+        <a href="#result">Resultaat</a>
+        <a href="#nouse">Gebruikt erbij</a>
+        <a href="#all">Filters uit</a>
+        <a href="#cap">Meer dan 100</a>
+        <a href="#empty">Leeg</a>
+      </div>
+    </nav>
+
+    <header class="top">
+      <div><b>Familiekookboek</b><span>dieter.vbroeck@gmail.com</span></div>
+    </header>
+
+    <main id="main">
+      <h1>Foto's</h1>
+      <p class="lead">De foto's in de opslag.</p>
+
+      <div id="result" class="notice ok" role="status" tabindex="-1" hidden></div>
+
+      <div id="body"></div>
+
+      <p class="note">
+        Mockup: aanvinken, alles selecteren en verwijderen werken op voorbeeldfoto's; niets wordt echt verwijderd. De foto van 14 mrt doet alsof een
+        recept hem intussen gebruikt, en blijft dus bewaard. Gebruik de balk bovenaan (alleen in de mockup) of voeg <code>#select</code>,
+        <code>#confirm</code>, <code>#result</code>, <code>#nouse</code> (filter Ongebruikt uit), <code>#all</code> (beide filters uit),
+        <code>#cap</code> of <code>#empty</code> toe aan het adres. In de echte pagina zijn de filters adresparameters.
+      </p>
+    </main>
+
+    <div class="bar" id="bar" hidden>
+      <div id="barIn"></div>
+    </div>
+
+    <dialog id="dlg" aria-labelledby="dlgTitle"></dialog>
+
+    <script>
+      const imgs = ['appeltaart', 'erwtensoep', 'frikandellen', 'pannenkoeken', 'rijstpap', 'stoofvlees'];
+      const pos = ['50% 50%', '20% 30%', '80% 70%', '40% 80%', '70% 20%', '30% 60%'];
+      const CAP = 100;
+      const $ = (id) => document.getElementById(id);
+      const icon = (id) => `<svg class="i" aria-hidden="true"><use href="#${id}" /></svg>`;
+      const num = new Intl.NumberFormat('nl', { maximumFractionDigits: 1 });
+      const day = new Intl.DateTimeFormat('nl', { day: 'numeric', month: 'short', year: 'numeric' });
+      const size = (b) => (b < 1e6 ? `${Math.round(b / 1e3)} kB` : `${num.format(b / 1e6)} MB`);
+      const photos = (n) => (n === 1 ? '1 foto' : `${n} foto's`);
+
+      // The whole bucket, oldest first, as the loader returns it. Every 5th photo is used by a recipe, the last two were uploaded today.
+      function make(n) {
+        return Array.from({ length: n }, (_, i) => {
+          const recent = i >= n - 2;
+          return {
+            id: `${(0x3fa1c + i * 7919).toString(16)}-${i}.jpg`,
+            img: imgs[i % 6],
+            pos: pos[(i * 5) % 6],
+            date: recent ? new Date(2026, 9, 28 + (i - (n - 2))) : new Date(2026, 2, 2 + i * 2 + (i % 3)),
+            bytes: 180e3 + ((i * 137e3) % 620e3),
+            used: !recent && i % 5 === 2,
+            recent,
+          };
+        });
+      }
+
+      let hash = location.hash.slice(1);
+      let bucket;
+      let st;
+      function reset() {
+        hash = location.hash.slice(1);
+        bucket = hash === 'empty' ? [] : make(hash === 'cap' ? 137 : 12);
+        // the two quick filters; both on is the default
+        st = { sel: new Set(), confirm: null, result: null, onlyUnused: hash !== 'nouse' && hash !== 'all', onlyOld: hash !== 'all' };
+        if (hash === 'select' || hash === 'confirm') [0, 1, 4].forEach((i) => st.sel.add(bucket[i].id));
+        if (hash === 'confirm') st.confirm = 'sel';
+        if (hash === 'result') {
+          bucket = bucket.slice(4);
+          st.result = { deleted: 3, kept: [{ title: 'Appeltaart', href: 'recipe-editor.html' }] };
+        }
+        document
+          .querySelectorAll('.mock a')
+          .forEach((a) => a.setAttribute('aria-current', String(a.getAttribute('href') === '#' + hash || (!hash && a.getAttribute('href') === '#'))));
+        render();
+      }
+
+      const bytesOf = (list) => list.reduce((s, p) => s + p.bytes, 0);
+      const locked = (p) => p.used;
+      // matching photos, oldest first; the cap of 100 always applies
+      const matching = () => bucket.filter((p) => (!st.onlyUnused || !p.used) && (!st.onlyOld || !p.recent));
+      const deletableOf = () =>
+        matching()
+          .slice(0, CAP)
+          .filter((p) => !locked(p));
+      const going = (deletable) => deletable.filter((p) => st.sel.has(p.id));
+
+      function tile(p, on) {
+        const meta = (ref = '') =>
+          `<span class="meta"><time datetime="${p.date.toISOString().slice(0, 10)}">${day.format(p.date)}</time><span class="sz">${size(p.bytes)}</span>${ref}</span>`;
+        const img = `<img src="../../public/img/${p.img}.jpg" style="object-position:${p.pos}" alt="" loading="lazy" />`;
+        if (locked(p)) {
+          // the real page links to the recipe that uses the photo; here it goes to the editor mockup
+          const ref = `<a class="ref" href="recipe-editor.html" target="_blank" rel="noopener" title="Open het recept">${icon('book')}<span class="sr">Open het recept dat deze foto gebruikt</span></a>`;
+          return `<li><div class="tile lock">${img}${meta(ref)}</div></li>`;
+        }
+        // a photo under a day old gets a clock (a used one gets the book above instead)
+        const clock = p.recent
+          ? `<span class="ref new" title="Minder dan een dag oud">${icon('clock')}<span class="sr">Minder dan een dag oud</span></span>`
+          : '';
+        return `<li><label class="tile">${img}
+          <input type="checkbox" data-id="${p.id}" ${on ? 'checked' : ''} aria-label="Foto van ${day.format(p.date)}, ${size(p.bytes)}" />
+          <span class="box" aria-hidden="true">${icon('check')}</span>
+          ${meta(clock)}</label></li>`;
+      }
+
+      function render() {
+        const match = matching();
+        const shown = match.slice(0, CAP);
+        const deletable = shown.filter((p) => !locked(p));
+        const selList = deletable.filter((p) => st.sel.has(p.id));
+        const res = $('result');
+        res.hidden = !st.result;
+        if (st.result) {
+          const { deleted, kept } = st.result;
+          // the server names the recipe that uses each kept photo, so the page can link to it
+          const links = kept.map((k) => `<a class="link" href="${k.href}" target="_blank" rel="noopener">${k.title}</a>`).join(', ');
+          res.innerHTML = `${icon('check')}<span><b>${photos(deleted)} verwijderd.</b>${
+            kept.length
+              ? ` ${photos(kept.length)} bewaard, want ${kept.length === 1 ? 'een recept gebruikt hem' : 'recepten gebruiken ze'} intussen: ${links}.`
+              : ''
+          }</span>`;
+        }
+
+        const chips = `<div class="chips" role="group" aria-label="Filters">
+          <button class="chip" type="button" data-act="fUnused" aria-pressed="${st.onlyUnused}">Ongebruikt</button>
+          <button class="chip" type="button" data-act="fOld" aria-pressed="${st.onlyOld}">Ouder dan 1 dag</button>
+        </div>`;
+
+        // totals and selection on one line: "2/12 foto's", the selected size, then the select links
+        let head = '';
+        if (deletable.length) {
+          const n = selList.length;
+          const rest = shown.length - deletable.length;
+          head = `<p class="sum">
+            <b>${n}/${deletable.length} foto's</b>
+            <small>${size(bytesOf(selList))} / ${size(bytesOf(deletable))}${rest ? ` · ${rest} in gebruik` : ''}</small>
+            <span class="selact">
+              <button class="link" type="button" data-act="selAll">Alles selecteren</button>
+              <button class="link" type="button" data-act="selNone" ${n ? '' : 'hidden'}>Niets</button>
+            </span>
+          </p>`;
+        }
+        const cap =
+          match.length > shown.length
+            ? `<div class="notice cap">${icon('info')}<span>Je ziet de oudste ${shown.length} van ${match.length}. Na het verwijderen komen de volgende in beeld.</span></div>`
+            : '';
+        const list = shown.length
+          ? `<ul class="grid" id="grid" aria-label="Foto's">${shown.map((p) => tile(p, st.sel.has(p.id))).join('')}</ul>`
+          : `<div class="empty">${icon('clean')}<b>${bucket.length ? 'Niets om op te ruimen' : "Geen foto's"}</b><p>${
+              bucket.length ? 'Elke foto hoort bij een recept.' : 'Er staat nog niets in de opslag.'
+            }</p></div>`;
+        $('body').innerHTML = head + chips + cap + list;
+
+        $('bar').hidden = !deletable.length;
+        $('barIn').innerHTML = `<div class="acts">
+          <button class="btn dng" type="button" data-act="delSel" ${selList.length ? '' : 'disabled'}>${icon('trash')}Verwijder selectie</button>
+        </div>`;
+
+        // confirmation: a modal dialog in the middle of the screen, focus on the safe button
+        const dlg = $('dlg');
+        if (st.confirm && deletable.length) {
+          const g = going(deletable);
+          dlg.innerHTML = `
+            <p class="warn" role="alert" id="dlgTitle"><b>Weet je het zeker?</b>
+              <span>${photos(g.length)}, ${size(bytesOf(g))}.</span>${
+                g.some((p) => p.recent) ? '<span>Een foto van minder dan een dag oud hoort misschien bij een formulier dat nog openstaat.</span>' : ''
+              }</p>
+            <div class="acts">
+              <button class="btn" type="button" data-act="no" autofocus>Annuleer</button>
+              <button class="btn dng" type="button" data-act="yes">${icon('trash')}Verwijder ${photos(g.length)}</button>
+            </div>`;
+          if (!dlg.open) dlg.showModal();
+        } else if (dlg.open) {
+          dlg.close();
+        }
+      }
+
+      document.addEventListener('change', (e) => {
+        const id = e.target.dataset && e.target.dataset.id;
+        if (!id) return;
+        e.target.checked ? st.sel.add(id) : st.sel.delete(id);
+        st.confirm = null; // changing the selection cancels a pending confirmation
+        render();
+        document.querySelector(`[data-id="${id}"]`).focus();
+      });
+
+      document.addEventListener('click', (e) => {
+        const a = e.target.closest('[data-act]');
+        if (!a) return;
+        const act = a.dataset.act;
+        const deletable = deletableOf();
+        if (act === 'fUnused' || act === 'fOld') {
+          const key = act === 'fUnused' ? 'onlyUnused' : 'onlyOld';
+          st[key] = !st[key];
+          st.sel.clear(); // another filter, another list: the selection and any confirmation go
+          st.confirm = null;
+          st.result = null;
+          render();
+          document.querySelector(`[data-act="${act}"]`).focus();
+          return;
+        }
+        if (act === 'selAll') deletable.forEach((p) => st.sel.add(p.id));
+        if (act === 'selNone') st.sel.clear();
+        if (act === 'delSel') st.confirm = 'sel';
+        if (act === 'no') st.confirm = null;
+        if (act === 'yes') {
+          // the server re-checks: the photo of 14 mrt is "used in the meantime"
+          const g = going(deletable);
+          const kept = g.filter((p) => p.date.getDate() === 14 && p.date.getMonth() === 2);
+          const gone = new Set(g.filter((p) => !kept.includes(p)).map((p) => p.id));
+          bucket = bucket.filter((p) => !gone.has(p.id));
+          kept.forEach((p) => (p.used = true)); // now in use: it shows the book
+          const title = (p) => p.img[0].toUpperCase() + p.img.slice(1);
+          st = {
+            ...st,
+            sel: new Set(),
+            confirm: null,
+            result: { deleted: gone.size, kept: kept.map((p) => ({ title: title(p), href: 'recipe-editor.html' })) },
+          };
+          render();
+          $('result').focus();
+          window.scrollTo({ top: 0 });
+          return;
+        }
+        render();
+      });
+
+      // a click outside the dialog's box (on the backdrop) cancels, like Esc
+      $('dlg').addEventListener('click', (e) => {
+        const r = $('dlg').getBoundingClientRect();
+        if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) $('dlg').close();
+      });
+      // Esc closes the dialog natively; keep the state in step
+      $('dlg').addEventListener('close', () => {
+        if (st.confirm) {
+          st.confirm = null;
+          render();
+        }
+      });
+
+      window.addEventListener('hashchange', reset);
+      reset();
+    </script>
+  </body>
+</html>

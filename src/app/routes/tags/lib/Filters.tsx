@@ -1,7 +1,4 @@
-import type { ComponentProps } from 'react';
-import { cn } from '~app/shared/cn';
-import { Segmented } from '~app/shared/components';
-import { control } from '~app/shared/control';
+import { Chip, Segmented } from '~app/shared/components';
 import { Search } from '~app/shared/icons';
 import type { TagFilters, TagOrder } from './arrangeTags';
 
@@ -68,25 +65,5 @@ export function Filters({ filters, onChange, selecting, onSelectingChange, shown
         />
       </div>
     </div>
-  );
-}
-
-interface ChipProps extends ComponentProps<'button'> {
-  pressed: boolean;
-}
-
-/** A toggle: white when off, yellow when on. */
-function Chip({ pressed, className, ...props }: ChipProps) {
-  return (
-    <button
-      {...props}
-      type="button"
-      aria-pressed={pressed}
-      className={cn(
-        control,
-        'min-h-10 rounded-full bg-white px-3.5 font-extrabold hover:not-aria-pressed:bg-hover aria-pressed:bg-yel aria-pressed:hover:brightness-95',
-        className,
-      )}
-    />
   );
 }

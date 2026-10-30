@@ -1,6 +1,7 @@
 export * from './Announcement';
 export * from './AuthorInput';
 export * from './Button';
+export * from './Chip';
 export * from './Fret';
 export * from './LikeButton';
 export * from './Pill';
