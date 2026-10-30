@@ -59,7 +59,7 @@ export default function FridgePage({ loaderData }: Route.ComponentProps) {
           <p data-testid="FridgePage-intro" className="mt-2 text-lg text-pretty text-muted">
             Typ wat je nog hebt. Recepten die het meeste gebruiken staan bovenaan.
           </p>
-          <div className="mt-6 grid gap-4 md:grid-cols-2 md:gap-8">
+          <div data-testid="FridgePage-lists" className="mt-6 grid gap-4 md:grid-cols-2 md:gap-8">
             <IngredientList
               kind="heb"
               entries={lists.heb}

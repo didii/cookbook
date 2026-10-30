@@ -5,6 +5,7 @@ import { envContext, userEmailContext } from '~app/shared/context.server';
 import type { RecipeSummary } from '~app/shared/recipe';
 import { createRecipe } from '~app/shared/recipes.server';
 import { saveStaples } from '~app/shared/staples.server';
+import { cssFor, mediaFor } from '~testing/css';
 import { act, fireEvent, precedes, render, screen, within } from '~testing/dom';
 import { fake } from '~testing/fake';
 import { routePaths } from '~testing/routes';
@@ -268,6 +269,43 @@ describe('fridge-search › Choosing the order', () => {
     assert.equal(screen.queryByTestId('FridgePage-clear'), null);
   });
 });
+
+// Needs real scrolling on a phone.
+test.todo('fridge-search › Scrolling on a phone');
+
+describe('fridge-search › Narrow screen', () => {
+  test('the lists are one column, so Heb ik is above Liever niet', async () => {
+    renderAt('/koelkast');
+    const css = (await cssFor(screen.getByTestId('FridgePage-lists').className)).replace(/\s+/g, ' ');
+    assert.match(css, /display: grid/);
+    assert.equal(css.split('@media')[0]?.includes('grid-template-columns'), false);
+  });
+
+  test('the lists are before each other in the page', () => {
+    renderAt('/koelkast');
+    assert.ok(precedes(listOf('heb'), listOf('zonder')));
+  });
+});
+
+describe('fridge-search › Wide screen', () => {
+  test('the lists are two columns from 48rem', async () => {
+    renderAt('/koelkast');
+    assert.match(
+      await mediaFor(screen.getByTestId('FridgePage-lists').className, '(width >= 48rem)'),
+      /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/,
+    );
+  });
+});
+
+describe('fridge-search › The lists scroll with the page', () => {
+  test('the lists are neither fixed nor sticky', async () => {
+    renderAt('/koelkast');
+    assert.doesNotMatch(await cssFor(screen.getByTestId('FridgePage-lists').className), /position: (fixed|sticky)/);
+  });
+});
+
+// Needs a real pointer: hover is gated behind (hover: hover) and resolves per element in a browser.
+test.todo('fridge-search › Hover tints, not raises');
 
 describe('shouldRevalidate', () => {
   const url = (s: string) => new URL(`https://cookbook.test/${s}`);

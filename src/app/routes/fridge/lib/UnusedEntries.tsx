@@ -18,7 +18,7 @@ export function UnusedEntries({ entries }: Props) {
             data-testid="UnusedEntries-item"
             className="rounded-lg border-2 border-dashed border-muted px-2.5 py-0.5 font-extrabold text-muted"
           >
-            <span data-testid="UnusedEntries-entry" className="line-through">
+            <span data-testid="UnusedEntries-entry" className="line-through decoration-red decoration-2">
               {entry}
             </span>
             <span data-testid="UnusedEntries-reason" className="sr-only">

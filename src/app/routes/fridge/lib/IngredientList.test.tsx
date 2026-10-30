@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { useState } from 'react';
 import { describe, test } from 'vitest';
+import { cssFor } from '~testing/css';
 import { fireEvent, render, screen } from '~testing/dom';
 import { IngredientList, type ListKind } from './IngredientList';
 
@@ -111,6 +112,20 @@ describe('fridge-search › Removing a chip', () => {
     render(<Harness initial={['kip']} />);
     fireEvent.click(screen.getByTestId('IngredientList-remove'));
     assert.equal(document.activeElement, input());
+  });
+});
+
+describe('fridge-search › The lists are on top of the page', () => {
+  test('the input is at least 48px high with text of at least 16px', async () => {
+    render(<Harness />);
+    const css = (await cssFor(input().className)).replace(/\s+/g, ' ');
+    assert.match(css, /min-height: calc\(var\(--spacing\) \* 12\)/);
+    assert.match(css, /font-size: var\(--text-base\)/);
+  });
+
+  test('the button is 48px high', async () => {
+    render(<Harness />);
+    assert.match(await cssFor(screen.getByTestId('IngredientList-button').className), /height: calc\(var\(--spacing\) \* 12\)/);
   });
 });
 
