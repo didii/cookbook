@@ -112,3 +112,10 @@ describe('fridge-search › Excluding a missing ingredient', () => {
     assert.deepEqual(onSkip.mock.calls, [['kaneel']]);
   });
 });
+
+describe('fridge-search › The card opens the recipe', () => {
+  test('the title links to the recipe', () => {
+    show();
+    assert.equal(screen.getByTestId('RecipeCard-link').getAttribute('href'), '/recepten/pap');
+  });
+});

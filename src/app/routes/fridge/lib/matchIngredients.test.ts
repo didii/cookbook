@@ -157,3 +157,24 @@ describe('rankRecipes used, unused and missing', () => {
     assert.deepEqual(found?.missing, []);
   });
 });
+
+describe('fridge-search › Staples are not missing', () => {
+  test('a staple is not listed, the other ingredient is', () => {
+    const [found] = rankRecipes([recipe('a')], { a: ['rijst', 'boter'] }, lists({ heb: ['rijst'] }), ['boter']);
+    assert.deepEqual(found?.missing, []);
+  });
+});
+
+describe('staple-management › A staple is not listed as missing', () => {
+  test('the recipe with the ingredient "zout" lists no zout', () => {
+    const [found] = rankRecipes([recipe('a')], { a: ['zout', 'kip'] }, lists({ heb: ['kip'] }), ['zout']);
+    assert.deepEqual(found?.missing, []);
+  });
+});
+
+describe('staple-management › A staple typed in Heb ik', () => {
+  test('recipes with the ingredient match it like any other entry', () => {
+    const found = rankRecipes([recipe('a'), recipe('b')], { a: ['boter'], b: ['kip'] }, lists({ heb: ['boter'] }), ['boter']);
+    assert.deepEqual(slugs(found), ['a']);
+  });
+});

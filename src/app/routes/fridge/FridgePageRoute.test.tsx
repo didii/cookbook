@@ -150,7 +150,7 @@ describe('fridge-search › Opening an address with lists', () => {
   });
 });
 
-describe('fridge-search › Adding to the lists', () => {
+describe('FridgePage adding to the lists', () => {
   test('adding to Heb ik narrows the recipes', () => {
     renderAt('/koelkast');
     add('heb', 'melk');
@@ -297,7 +297,7 @@ describe('fridge-search › Wide screen', () => {
   });
 });
 
-describe('fridge-search › The lists scroll with the page', () => {
+describe('FridgePage lists scroll', () => {
   test('the lists are neither fixed nor sticky', async () => {
     renderAt('/koelkast');
     assert.doesNotMatch(await cssFor(screen.getByTestId('FridgePage-lists').className), /position: (fixed|sticky)/);

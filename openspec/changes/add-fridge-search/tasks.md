@@ -31,7 +31,7 @@ Per CLAUDE.md: test names follow the spec scenarios, run `pnpm test:spec add-fri
 
 ## 6. Finish
 
-- [ ] 6.1 Run `pnpm test:spec add-fridge-search` and confirm no scenario lacks a test; run `pnpm format:check`, `pnpm lint:check` and `pnpm test:ai`.
+- [x] 6.1 Run `pnpm test:spec add-fridge-search` and confirm no scenario lacks a test; run `pnpm format:check`, `pnpm lint:check` and `pnpm test:ai`.
 - [ ] 6.2 Update `docs/design/README.md` where the built page differs from the mockup, if it does.
 
 ## Workflow follow-up

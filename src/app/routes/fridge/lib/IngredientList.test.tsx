@@ -115,7 +115,7 @@ describe('fridge-search › Removing a chip', () => {
   });
 });
 
-describe('fridge-search › The lists are on top of the page', () => {
+describe('IngredientList sizes', () => {
   test('the input is at least 48px high with text of at least 16px', async () => {
     render(<Harness />);
     const css = (await cssFor(input().className)).replace(/\s+/g, ' ');
