@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { isSessionExpired } from '~app/shared/isSessionExpired';
+import { keepNote, takeNote } from './keptNote';
 
 /** How long typing must pause before the note saves by itself: slower typing on a narrow screen, so longer there. */
 export const pauseMs = (narrow: boolean) => (narrow ? 5000 : 2000);
@@ -13,7 +15,7 @@ export type Note = ReturnType<typeof useNote>;
  * It is the only place that decides whether anything changed: saving compares with the text last stored, and the components only call
  * `open`, `dismiss`, `change` and `blur`. The text starts from `saved` and is never taken back from the loader, so a refresh cannot overwrite typing.
  */
-export function useNote(slug: string, saved: string, narrow: boolean) {
+export function useNote(slug: string, saved: string, narrow: boolean, email = '') {
   const [text, setText] = useState(saved);
   const [isOpen, setIsOpen] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -69,6 +71,12 @@ export function useNote(slug: string, saved: string, narrow: boolean) {
       // After unmount only the request matters: no state, no cue.
       if (!alive.current) break;
       if (!ok) {
+        // An expired Access session fails every request: keep the text and sign in again; the reload brings the text back.
+        if (await isSessionExpired(location.href)) {
+          keepNote(email, slug, latest.current);
+          location.reload();
+          return;
+        }
         inFlight.current = false;
         // A failed save must not vanish with the closed field: the text is still there, so the field comes back.
         // Only once: when the member closes it again after a failure, it stays closed (a failure that never heals must not trap them).
@@ -86,7 +94,7 @@ export function useNote(slug: string, saved: string, narrow: boolean) {
       if (!open.current) showCue();
     }
     inFlight.current = false;
-  }, [post]);
+  }, [post, email, slug]);
 
   const change = (next: string) => {
     latest.current = next;
@@ -110,6 +118,13 @@ export function useNote(slug: string, saved: string, narrow: boolean) {
       leave();
     };
   }, [save, post]);
+
+  // A text kept before a sign-in comes back as typed: it shows in the field and is saved again after the pause.
+  useEffect(() => {
+    const kept = takeNote(email, slug);
+    if (kept !== undefined && kept !== stored.current) change(kept);
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- only on arrival at the recipe
+  }, [email, slug]);
 
   useEffect(() => {
     alive.current = true;

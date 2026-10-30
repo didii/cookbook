@@ -13,9 +13,9 @@ Verify each task with the type check and `pnpm test:ai`; `pnpm test:spec handle-
 
 ## 3. Keep a note across the sign-in
 
-- [ ] 3.1 Add `notes/keptNote.ts` (key per member and recipe; `keepNote`, `takeNote`, storage failures ignored) with unit tests
-- [ ] 3.2 In `useNote`: when a save fails and `isSessionExpired(location.href)` is true, keep the text and `location.reload()`; on mount take a kept text and pass it to `change`. `RecipeView` passes the member's email from the root loader data. Tests named "Note kept when the session expired", "Note comes back after signing in", "Note failure without an expired session" (mock `isSessionExpired`, stub `location.reload`)
+- [x] 3.1 Add `notes/keptNote.ts` (key per member and recipe; `keepNote`, `takeNote`, storage failures ignored) with unit tests
+- [x] 3.2 In `useNote`: when a save fails and `isSessionExpired(location.href)` is true, keep the text and `location.reload()`; on mount take a kept text and pass it to `change`. `RecipeView` passes the member's email from the root loader data. Tests named "Note kept when the session expired", "Note comes back after signing in", "Note failure without an expired session" (mock `isSessionExpired`, stub `location.reload`)
 
 ## 4. Wrap-up
 
-- [ ] 4.1 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check`, `pnpm test:ai` and `pnpm test:spec handle-expired-session`; all clean
+- [x] 4.1 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check`, `pnpm test:ai` and `pnpm test:spec handle-expired-session`; all clean
