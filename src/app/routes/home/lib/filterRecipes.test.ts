@@ -365,7 +365,7 @@ describe('parseFilters', () => {
   });
 });
 
-describe('recipe-filtering › Opening an address with favourites', () => {
+describe('parseFilters favourites', () => {
   test('favoriet=1 turns favourites on', () => {
     assert.equal(parseFilters(new URLSearchParams('favoriet=1')).liked, true);
   });

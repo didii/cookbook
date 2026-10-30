@@ -264,6 +264,20 @@ describe('recipe-filtering › Clearing all filters', () => {
   });
 });
 
+describe('recipe-filtering › Opening an address with favourites', () => {
+  const oneLiked = family.map((r) => ({ ...r, liked: r.title === 'Erwtensoep' }));
+
+  test('only the liked recipe is shown', () => {
+    renderAt('/?favoriet=1', oneLiked);
+    assert.deepEqual(shownTitles(), ['erwtensoep']);
+  });
+
+  test('the favourites button is pressed', () => {
+    renderAt('/?favoriet=1', oneLiked);
+    assert.equal(screen.getAllByTestId('FilterBar-favourites')[0]!.getAttribute('aria-pressed'), 'true');
+  });
+});
+
 describe('recipe-filtering › No favourites yet', () => {
   // Nobody in the family has liked a recipe in this list, so the favourites filter shows nothing.
   test.beforeEach(() => {

@@ -42,8 +42,9 @@ function FavouritesToggle({ pressed, onPressedChange, className }: FavouritesTog
       title="Mijn favorieten"
       onClick={() => onPressedChange(!pressed)}
       className={cn(
-        'group grid size-11 shrink-0 cursor-pointer place-items-center rounded-[10px] border-3 border-ink bg-white text-ink hover:bg-yel aria-pressed:bg-red aria-pressed:text-white aria-pressed:hover:bg-red',
+        'group grid size-11 shrink-0 cursor-pointer place-items-center rounded-[10px] border-3 border-ink bg-white text-ink hover:bg-yel aria-pressed:bg-red aria-pressed:text-white aria-pressed:hover:bg-red md:size-12',
         press,
+        hoverDarken,
         className,
       )}
     >

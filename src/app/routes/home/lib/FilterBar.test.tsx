@@ -347,6 +347,14 @@ describe('recipe-filtering › Opening the sheet', () => {
     assert.ok(sortInput('az', sheet()));
     assert.ok(within(sheet()).getByTestId('FilterBar-clear'));
   });
+
+  test('the sheet holds the favourites button', () => {
+    assert.ok(within(sheet()).getByTestId('FilterBar-favourites'));
+  });
+
+  test('the favourites button in the search row is hidden on a phone', async () => {
+    assert.match(await cssFor(searchFavourites().className), /display: none/);
+  });
 });
 
 describe('recipe-filtering › Closing the sheet', () => {
