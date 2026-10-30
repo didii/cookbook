@@ -6,6 +6,8 @@ type TestId = { 'data-testid'?: string };
 
 interface SegmentedProps<V extends string> extends Omit<ComponentProps<'fieldset'>, 'onChange' | 'value'> {
   legend: string;
+  /** Overrides the legend's classes (e.g. to stack it above the control from 48rem). */
+  legendClassName?: string;
   options: { value: V; label: string }[];
   value: V;
   onChange: (value: V) => void;
@@ -15,11 +17,21 @@ interface SegmentedProps<V extends string> extends Omit<ComponentProps<'fieldset
 }
 
 /** Joined radio buttons with a black border; the checked one is red. The inputs are visually hidden, the labels are the buttons. */
-export function Segmented<V extends string>({ legend, options, value, onChange, inputProps, labelProps, className, ...props }: SegmentedProps<V>) {
+export function Segmented<V extends string>({
+  legend,
+  legendClassName,
+  options,
+  value,
+  onChange,
+  inputProps,
+  labelProps,
+  className,
+  ...props
+}: SegmentedProps<V>) {
   const id = useId();
   return (
     <fieldset {...props} className={cn('m-0 min-w-0 border-0 p-0', className)}>
-      <legend className="mb-2 p-0 font-black md:float-left md:mb-0">{legend}</legend>
+      <legend className={cn('mb-2 p-0 font-black md:float-left md:mb-0', legendClassName)}>{legend}</legend>
       <div className="inline-flex">
         {options.map((option, i) => (
           <span key={option.value} className="flex">

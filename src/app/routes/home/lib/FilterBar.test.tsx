@@ -189,7 +189,7 @@ describe('recipe-filtering › Wide screen', () => {
   });
 
   test('the sheet is always shown', async () => {
-    assert.match(wide(await cssFor(sheet().className)), /display: block/);
+    assert.match(wide(await cssFor(sheet().className)), /display: grid/);
   });
 
   test('the Filter button is gone', async () => {
@@ -205,6 +205,12 @@ describe('recipe-filtering › Wide screen', () => {
     assert.equal(await hidesAt(sheetFavourites().className, '(width >= 48rem)'), true);
   });
 });
+
+// The search box and the fields fill the content width from 48rem: the widths come from the layout, not from a rule a test can read.
+test.todo('recipe-filtering › Full width');
+
+// Which row the sort control sits on depends on the real viewport width, which the test environment does not lay out.
+test.todo('recipe-filtering › Narrower than 64rem');
 
 describe('recipe-filtering › Showing only favourites', () => {
   test('the favourites button is not pressed by default', () => {
