@@ -100,17 +100,16 @@ describe('orphaned-photos › Oldest first', () => {
 
 describe('orphaned-photos › Only 100 are shown', () => {
   test('lists the cap and counts all matches', async ({ db, photos }) => {
-    for (let i = 1; i <= photoCap + 2; i++) await put(photos, name(i));
+    await Promise.all(Array.from({ length: photoCap + 2 }, (_, i) => put(photos, name(i + 1))));
     const found = await findPhotos(db, photos, both, later());
     assert.equal(found.photos.length, photoCap);
     assert.equal(found.matches, photoCap + 2);
   });
 
   test('the filters apply before the cap', async ({ db, photos }) => {
-    for (let i = 1; i <= photoCap; i++) {
-      await put(photos, name(i));
-      await recipe(db, `r${i}`, `R${i}`, `/foto/${name(i)}`);
-    }
+    await Promise.all(
+      Array.from({ length: photoCap }, (_, i) => Promise.all([put(photos, name(i + 1)), recipe(db, `r${i}`, `R${i}`, `/foto/${name(i + 1)}`)])),
+    );
     await put(photos, name(500));
     assert.deepEqual(await names(db, photos), [name(500)]);
   });

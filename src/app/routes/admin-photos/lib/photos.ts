@@ -23,3 +23,6 @@ export function withFilter(params: URLSearchParams, filter: keyof PhotoFilters, 
   else next.set(filterParam[filter], '0');
   return next;
 }
+
+/** What a delete answers: how many photos went, and the recipe of every photo that was kept because it is used. */
+export type DeleteResult = { deleted: number; kept: PhotoRecipe[] };
