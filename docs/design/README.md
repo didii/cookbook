@@ -105,3 +105,17 @@ Behaviour: pressing Enter in an input, or its button, adds the word as a chip to
 Colours, fonts and spacing follow the tokens in `app/app.css`; if those change, update the mockup or treat the app as the truth.
 
 Differences in the built page: "Wis alles" shows only while a list or the A–Z order is set, a card shows no plain part when nothing is missing or unused, and the count line says "1 recept" for a single stored recipe, as on home.
+
+## `admin.html`
+
+Static mockup of the admin shell (`/beheer`): one nav for Herkenning, Foto's and Gebruikers, around the existing pages. Open it in a browser; it needs no build. Fonts load from Google Fonts. Not approved yet.
+
+The dark bar at the top is mockup-only: it switches the page and the role (an admin does not see "Gebruikers"). Saving, deleting and selecting do nothing; words, photos and users are made-up. Check it at 1000px and at 390px.
+
+- From 64rem the nav is a sticky column at the left, 14rem wide. Below it the same list sits on top of the content, stacked, and scrolls away with it.
+- The current section is yellow with the ink border and hard shadow (`aria-current="page"`); the others tint on hover.
+- On Herkenning each heading (Eenheden, Duur, Graden, Basisproducten) folds its list open and closed, so there are no sub-items in the nav. All are closed at the start; `#expanded` starts them open. Folding only hides the fields (they stay in the page), so what was typed is kept, and a section with a message after a refused save opens itself.
+- The fixed bottom bars (Herkenning's save bar, Foto's delete bar) start where the content column starts.
+- **Only the frame is new.** The Foto's and Gebruikers pages are drawn in simplified form here (the Gebruikers page differs most from the built page). Reuse the existing pages and their content; the change is the layout around them, not a redesign of what they show.
+
+Colours, fonts and spacing follow the tokens in `app/app.css`; if those change, update the mockup or treat the app as the truth.
