@@ -111,6 +111,22 @@ describe('recipe-draft › The popup cannot be dismissed without a choice', () =
   });
 });
 
+describe('recipe-draft › Clicking outside keeps the draft', () => {
+  test('a click on the backdrop calls onUse', () => {
+    const onUse = vi.fn();
+    show(full, { onUse });
+    fireEvent.click(screen.getByTestId('RestoreDraftDialog-dialog'));
+    assert.equal(onUse.mock.calls.length, 1);
+  });
+
+  test('a click on the content does not', () => {
+    const onUse = vi.fn();
+    show(full, { onUse });
+    fireEvent.click(screen.getByTestId('RestoreDraftDialog-heading'));
+    assert.equal(onUse.mock.calls.length, 0);
+  });
+});
+
 describe('RestoreDraftDialog buttons', () => {
   test('use calls onUse', () => {
     const onUse = vi.fn();

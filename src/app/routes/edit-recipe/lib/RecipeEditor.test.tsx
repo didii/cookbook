@@ -553,10 +553,10 @@ describe('unfinished draft of a new recipe', () => {
       assert.equal(screen.getByTestId('RestoreDraftDialog-title').textContent, 'Soep van gisteren');
     });
 
-    test('the form is not filled yet', () => {
+    test('the form already shows the draft', () => {
       keepDraft();
       show();
-      assert.equal(title(), '');
+      assert.equal(title(), 'Soep van gisteren');
     });
   });
 
@@ -575,11 +575,11 @@ describe('unfinished draft of a new recipe', () => {
       assert.equal(title(), 'Soep van gisteren');
     });
 
-    test('the save bar says a draft was restored', () => {
+    test('the save bar does not say a draft was restored', () => {
       keepDraft();
       show();
       fireEvent.click(screen.getByTestId('RestoreDraftDialog-use'));
-      assert.ok(screen.getByTestId('RecipeEditor-restored'));
+      assert.equal(screen.queryByTestId('RecipeEditor-restored'), null);
     });
   });
 
@@ -614,6 +614,16 @@ describe('unfinished draft of a new recipe', () => {
       show();
       fireEvent(screen.getByTestId('RestoreDraftDialog-dialog'), new Event('cancel', { cancelable: true }));
       assert.equal(localStorage.getItem(keyFor()), offered);
+    });
+  });
+
+  describe('recipe-draft › Clicking outside keeps the draft', () => {
+    test('the popup closes and the form keeps the draft', () => {
+      keepDraft();
+      show();
+      fireEvent.click(screen.getByTestId('RestoreDraftDialog-dialog'));
+      assert.equal(screen.queryByTestId('RestoreDraftDialog-heading'), null);
+      assert.equal(title(), 'Soep van gisteren');
     });
   });
 
