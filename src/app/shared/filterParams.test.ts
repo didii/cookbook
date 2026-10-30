@@ -24,4 +24,12 @@ describe('filterParams', () => {
   test('writes a non-default order', () => {
     assert.equal(filterParams({ sort: 'az' }).toString(), 'sort=az');
   });
+
+  test('writes favoriet=1 while favourites are on', () => {
+    assert.equal(filterParams({ liked: true }).toString(), 'favoriet=1');
+  });
+
+  test('leaves favoriet out while favourites are off', () => {
+    assert.equal(filterParams({ liked: false }).toString(), '');
+  });
 });

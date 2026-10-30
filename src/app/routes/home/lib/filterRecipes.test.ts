@@ -1,16 +1,16 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'vitest';
 import { filterParams, type Filters } from '~app/shared/filterParams';
-import { activeFilterCount, authorsOf, filterRecipes, isFiltered, parseFilters, tagsOf } from './filterRecipes';
+import { activeFilterCount, authorsOf, filterRecipes, isFiltered, noFilters, parseFilters, tagsOf } from './filterRecipes';
 
 const none: Filters = {};
 const recipes = [
-  { title: 'Erwtensoep', author: 'Papa', tags: ['Soep', 'Winter'] },
-  { title: 'Appeltaart', author: 'Oma', tags: ['Dessert'] },
-  { title: 'Crème brûlée', author: 'oma', tags: ['Dessert', 'Vegetarisch'] },
-  { title: 'Stoofvlees', author: 'Papa', tags: ['Winter'] },
-  { title: 'Èclair', author: 'Mama', tags: [] },
-  { title: 'Groentesoep', author: 'Mama', tags: ['Soep', 'Vegetarisch'] },
+  { title: 'Erwtensoep', author: 'Papa', tags: ['Soep', 'Winter'], liked: true },
+  { title: 'Appeltaart', author: 'Oma', tags: ['Dessert'], liked: false },
+  { title: 'Crème brûlée', author: 'oma', tags: ['Dessert', 'Vegetarisch'], liked: true },
+  { title: 'Stoofvlees', author: 'Papa', tags: ['Winter'], liked: false },
+  { title: 'Èclair', author: 'Mama', tags: [], liked: false },
+  { title: 'Groentesoep', author: 'Mama', tags: ['Soep', 'Vegetarisch'], liked: true },
 ];
 const titles = (list: { title: string }[]) => list.map((r) => r.title);
 
@@ -216,6 +216,59 @@ describe('filterRecipes', () => {
   });
 });
 
+describe('recipe-filtering › Showing only favourites', () => {
+  test('lists the recipes the member liked', () => {
+    assert.deepEqual(titles(filterRecipes(recipes, { liked: true })), ['Erwtensoep', 'Crème brûlée', 'Groentesoep']);
+  });
+
+  test('leaves out a recipe the member did not like', () => {
+    assert.ok(!titles(filterRecipes(recipes, { liked: true })).includes('Appeltaart'));
+  });
+});
+
+describe("recipe-filtering › Other members' likes do not count", () => {
+  // RecipeSummary.liked is the signed-in member's own like, so a recipe with liked: false is one only someone else liked.
+  test('leaves out a recipe that only another member liked', () => {
+    assert.ok(!titles(filterRecipes(recipes, { liked: true })).includes('Stoofvlees'));
+  });
+});
+
+describe('recipe-filtering › Turning favourites off', () => {
+  test('shows every recipe when favourites are off', () => {
+    assert.deepEqual(titles(filterRecipes(recipes, { liked: false })), titles(recipes));
+  });
+});
+
+describe('recipe-filtering › Favourites and other filters combine', () => {
+  test('only liked recipes that also match the search are shown', () => {
+    assert.deepEqual(titles(filterRecipes(recipes, { liked: true, q: 'soep' })), ['Erwtensoep', 'Groentesoep']);
+  });
+});
+
+describe('recipe-filtering › Favourites count as one filter', () => {
+  test('favourites alone count as one', () => {
+    assert.equal(activeFilterCount({ liked: true }), 1);
+  });
+
+  test('favourites count next to the other filters', () => {
+    assert.equal(activeFilterCount({ liked: true, authors: ['Oma', 'Papa'], tags: ['Soep'], sort: 'az' }), 4);
+  });
+
+  test('favourites alone make the list filtered', () => {
+    assert.equal(isFiltered({ liked: true }), true);
+  });
+});
+
+describe('recipe-filtering › Clearing all filters', () => {
+  test('the cleared filters leave favourites off', () => {
+    assert.deepEqual(titles(filterRecipes(recipes, noFilters)), titles(recipes));
+  });
+
+  test('the cleared filters do not count as filtered', () => {
+    assert.equal(isFiltered(noFilters), false);
+  });
+});
+
 describe('tagsOf', () => {
   test('lists tags once, alphabetical', () => {
     assert.deepEqual(tagsOf(recipes), ['Dessert', 'Soep', 'Vegetarisch', 'Winter']);
@@ -298,17 +351,33 @@ describe('isFiltered', () => {
 
 describe('parseFilters', () => {
   test('reads the address', () => {
-    assert.deepEqual(parseFilters(new URLSearchParams('q=appel&auteur=Oma&sort=az')), { q: 'appel', authors: ['Oma'], tags: [], sort: 'az' });
+    assert.deepEqual(parseFilters(new URLSearchParams('q=appel&auteur=Oma&sort=az')), {
+      q: 'appel',
+      authors: ['Oma'],
+      tags: [],
+      liked: false,
+      sort: 'az',
+    });
   });
 
   test('falls back to defaults', () => {
-    assert.deepEqual(parseFilters(new URLSearchParams('sort=bogus&auteur=')), { q: '', authors: [], tags: [], sort: 'nieuwste' });
+    assert.deepEqual(parseFilters(new URLSearchParams('sort=bogus&auteur=')), { q: '', authors: [], tags: [], liked: false, sort: 'nieuwste' });
+  });
+});
+
+describe('parseFilters favourites', () => {
+  test('favoriet=1 turns favourites on', () => {
+    assert.equal(parseFilters(new URLSearchParams('favoriet=1')).liked, true);
+  });
+
+  test('a favoriet value other than 1 leaves favourites off', () => {
+    assert.equal(parseFilters(new URLSearchParams('favoriet=0')).liked, false);
   });
 });
 
 describe('filterParams with parseFilters', () => {
   test('round-trips through parseFilters', () => {
-    const f: Filters = { q: 'crème brûlée', authors: ['Tante An', 'Oma'], tags: ['Soep', 'Dessert'], sort: 'az' };
+    const f: Filters = { q: 'crème brûlée', authors: ['Tante An', 'Oma'], tags: ['Soep', 'Dessert'], liked: true, sort: 'az' };
     assert.deepEqual(parseFilters(new URLSearchParams(filterParams(f).toString())), f);
   });
 });

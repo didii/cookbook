@@ -223,6 +223,22 @@ describe('recipe-filtering › Clearing all filters', () => {
     });
   });
 
+  describe('with favourites on', () => {
+    // Only Erwtensoep is liked by the member.
+    const oneLiked = family.map((r) => ({ ...r, liked: r.title === 'Erwtensoep' }));
+
+    test('the page shows only the liked recipe before clearing', () => {
+      renderAt('/?favoriet=1', oneLiked);
+      assert.deepEqual(shownTitles(), ['erwtensoep']);
+    });
+
+    test('the clear button turns favourites off and shows every recipe', () => {
+      renderAt('/?favoriet=1', oneLiked);
+      fireEvent.click(screen.getByTestId('FilterBar-clear'));
+      assert.equal(shownTitles().length, family.length);
+    });
+  });
+
   // Using the button from the nothing-found message gets there.
   describe('the clear button', () => {
     test.beforeEach(() => {
@@ -245,6 +261,40 @@ describe('recipe-filtering › Clearing all filters', () => {
     test('picks no tag', () => {
       assert.deepEqual(pickedTags(), []);
     });
+  });
+});
+
+describe('recipe-filtering › Opening an address with favourites', () => {
+  const oneLiked = family.map((r) => ({ ...r, liked: r.title === 'Erwtensoep' }));
+
+  test('only the liked recipe is shown', () => {
+    renderAt('/?favoriet=1', oneLiked);
+    assert.deepEqual(shownTitles(), ['erwtensoep']);
+  });
+
+  test('the favourites button is pressed', () => {
+    renderAt('/?favoriet=1', oneLiked);
+    assert.equal(screen.getAllByTestId('FilterBar-favourites')[0]!.getAttribute('aria-pressed'), 'true');
+  });
+});
+
+describe('recipe-filtering › No favourites yet', () => {
+  // Nobody in the family has liked a recipe in this list, so the favourites filter shows nothing.
+  test.beforeEach(() => {
+    renderAt('/?favoriet=1', family);
+  });
+
+  test('says nothing was found', () => {
+    assert.ok(screen.getByTestId('HomePage-none'));
+  });
+
+  test('offers the Wis filters button', () => {
+    assert.ok(screen.getByTestId('HomePage-clear'));
+  });
+
+  test('the Wis filters button turns favourites off and shows every recipe', () => {
+    fireEvent.click(screen.getByTestId('HomePage-clear'));
+    assert.equal(shownTitles().length, family.length);
   });
 });
 

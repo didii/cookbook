@@ -119,3 +119,13 @@ The dark bar at the top is mockup-only: it switches the page and the role (an ad
 - **Only the frame is new.** The Foto's and Gebruikers pages are drawn in simplified form here (the Gebruikers page differs most from the built page). Reuse the existing pages and their content; the change is the layout around them, not a redesign of what they show.
 
 Colours, fonts and spacing follow the tokens in `app/app.css`; if those change, update the mockup or treat the app as the truth.
+
+## `home-filters.html`
+
+Static mockup of the home page filters with the new favourites filter, the design reference for the home filters redesign. Open it in a browser; it needs no build. Fonts load from Google Fonts, images and seals from `public/img`. Check it at 390px, 800px and 1280px. Append `#open` to start with the phone sheet open, `#liked` to start with the toggle on.
+
+Only the Filter button (phone) and the favourites toggle work; search, chips and sort filter nothing. Names and counts are made-up samples.
+
+- **Phone:** unchanged bar and sheet. The only addition is the favourites toggle, icon only, at the right edge of the sheet, on the "Volgorde" row. It counts as one active filter on the Filter button.
+- **From 48rem:** one block over the full content width (no background, border or shadow). Row 1: search takes the free width, the icon-only favourites toggle sits right of it. Row 2: "Van wie" and "Tags" share the width, "Volgorde" keeps its own. Footer: dashed line, "Wis filters" at the right. Below 64rem "Volgorde" drops to its own row.
+- The toggle is a pressed button (`aria-pressed`, `aria-label` "Mijn favorieten"): white with an outlined maple leaf when off, red with a filled leaf when on, yellow on hover, as the leaf on a recipe.
