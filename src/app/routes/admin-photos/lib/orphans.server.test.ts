@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe } from 'vitest';
 import { test } from '~testing/test';
-import { deletePhotos, findPhotos, photoCap } from './orphans.server';
+import { deletePhotos, findPhotos } from './orphans.server';
+import { photoCap } from './photos';
 
 const name = (n: number, ext = 'jpg') => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}.${ext}`;
 const put = (photos: R2Bucket, file: string, bytes = 3) => photos.put(`photos/${file}`, new Uint8Array(bytes));

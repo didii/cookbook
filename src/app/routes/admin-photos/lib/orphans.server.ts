@@ -1,12 +1,7 @@
 import { deletePhoto, isPhotoPath } from '~app/shared/photos.server';
+import { photoCap, type PhotoFilters, type PhotoRecipe, type StoredPhotoInfo } from './photos';
 
-export const photoCap = 100;
 const day = 24 * 60 * 60 * 1000;
-
-export type PhotoRecipe = { title: string; slug: string };
-/** A stored photo. `recipe` is the recipe that uses it (the first one when several share it), null when none does. */
-export type StoredPhotoInfo = { name: string; size: number; uploaded: Date; recent: boolean; recipe: PhotoRecipe | null };
-export type PhotoFilters = { onlyUnused: boolean; onlyOld: boolean };
 
 /** The recipe that uses each stored photo, by file name, from the image of every recipe and step. */
 async function usedPhotos(db: D1Database) {
