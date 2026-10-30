@@ -1,14 +1,22 @@
 import assert from 'node:assert/strict';
 import { afterEach, beforeEach, describe, test, vi } from 'vitest';
+import { isSessionExpired } from '~app/shared/isSessionExpired';
 import { act, fireEvent, render, screen } from '~testing/dom';
-import { useNote } from './useNote';
+import { keepNote, takeNote } from './keptNote';
+import { pauseMs, useNote } from './useNote';
+
+vi.mock('~app/shared/isSessionExpired', () => ({ isSessionExpired: vi.fn(async () => false) }));
 
 const realFetch = globalThis.fetch;
+const realLocation = window.location;
+let reload: ReturnType<typeof vi.fn>;
 let sent: { url: string; body: string; keepalive: boolean | undefined }[];
 let status: number | 'offline';
 
 beforeEach(() => {
   sent = [];
+  reload = vi.fn();
+  Object.defineProperty(window, 'location', { configurable: true, value: { href: 'http://localhost/', reload } });
   status = 204;
   vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
   globalThis.fetch = ((url: string, init: RequestInit) => {
@@ -19,11 +27,14 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers();
   globalThis.fetch = realFetch;
+  Object.defineProperty(window, 'location', { configurable: true, value: realLocation });
+  vi.mocked(isSessionExpired).mockReset();
+  vi.mocked(isSessionExpired).mockResolvedValue(false);
 });
 
 /** The hook shown in the DOM: its state as text, its functions as buttons and a field. */
-function Harness({ saved = 'oud', narrow = false }: { saved?: string; narrow?: boolean }) {
-  const note = useNote('soep', saved, narrow);
+function Harness({ saved = 'oud', narrow = false, email = 'a@x.nl' }: { saved?: string; narrow?: boolean; email?: string }) {
+  const note = useNote('soep', saved, narrow, email);
   return (
     <div>
       <textarea data-testid="field" value={note.text} onChange={(e) => note.change(e.target.value)} />
@@ -335,5 +346,99 @@ describe('recipe-note › Failed note can be abandoned', () => {
   test('the second dismiss closes it without a cue', async () => {
     await press('dismiss');
     assert.deepEqual(state(), { open: false, failed: true, savedSinceOpen: false, cue: 'off' });
+  });
+});
+
+describe('session-expiry › Note kept when the session expired', () => {
+  beforeEach(async () => {
+    status = 'offline';
+    vi.mocked(isSessionExpired).mockResolvedValue(true);
+    render(<Harness narrow />);
+    await press('open');
+    await type('nieuw');
+    await press('dismiss');
+  });
+
+  test('keeps the text on the device', () => {
+    assert.deepEqual(takeNote('a@x.nl', 'soep'), { text: 'nieuw', base: 'oud' });
+  });
+
+  test('loads the page again', () => {
+    assert.equal(reload.mock.calls.length, 1);
+  });
+
+  test('checks the current page', () => {
+    assert.equal(vi.mocked(isSessionExpired).mock.lastCall?.[0], 'http://localhost/');
+  });
+});
+
+describe('session-expiry › Note comes back after signing in', () => {
+  beforeEach(async () => {
+    keepNote('a@x.nl', 'soep', { text: 'bewaard', base: 'oud' });
+    render(<Harness narrow />);
+    await wait(0);
+  });
+
+  test('the field shows the kept text', () => {
+    assert.equal((screen.getByTestId('field') as HTMLTextAreaElement).value, 'bewaard');
+  });
+
+  test('the kept copy is removed', () => {
+    assert.equal(takeNote('a@x.nl', 'soep'), undefined);
+  });
+
+  test('the text is saved again after the pause', async () => {
+    await wait(pauseMs(true));
+    assert.deepEqual(
+      sent.map((s) => s.body),
+      ['note=bewaard'],
+    );
+  });
+});
+
+describe('session-expiry › Note kept when the member left before the save failed', () => {
+  test('keeps the text without loading the page again', async () => {
+    status = 'offline';
+    vi.mocked(isSessionExpired).mockResolvedValue(true);
+    const { unmount } = render(<Harness narrow />);
+    await press('open');
+    await type('nieuw');
+    unmount();
+    await act(async () => {});
+    assert.deepEqual(takeNote('a@x.nl', 'soep'), { text: 'nieuw', base: 'oud' });
+    assert.equal(reload.mock.calls.length, 0);
+  });
+});
+
+describe('session-expiry › Stale kept note is not restored', () => {
+  test('is dropped and not restored when the stored note changed meanwhile', async () => {
+    keepNote('a@x.nl', 'soep', { text: 'bewaard', base: 'ouder' });
+    render(<Harness narrow />);
+    await wait(pauseMs(true));
+    assert.equal((screen.getByTestId('field') as HTMLTextAreaElement).value, 'oud');
+    assert.equal(sent.length, 0);
+    assert.equal(takeNote('a@x.nl', 'soep'), undefined);
+  });
+});
+
+describe('session-expiry › Note failure without an expired session', () => {
+  beforeEach(async () => {
+    status = 'offline';
+    render(<Harness narrow />);
+    await press('open');
+    await type('nieuw');
+    await press('dismiss');
+  });
+
+  test('keeps nothing', () => {
+    assert.equal(takeNote('a@x.nl', 'soep'), undefined);
+  });
+
+  test('does not load the page again', () => {
+    assert.equal(reload.mock.calls.length, 0);
+  });
+
+  test('shows the failure', () => {
+    assert.equal(state().failed, true);
   });
 });
