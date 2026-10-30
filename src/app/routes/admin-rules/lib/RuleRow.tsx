@@ -35,7 +35,7 @@ interface RuleRowProps extends ComponentProps<'li'> {
 }
 
 const fieldClass =
-  'block min-h-10 w-full rounded-[0.625rem] border-3 border-ink bg-white px-2.5 text-base leading-[1.4] font-bold text-ink hover:not-focus:bg-ink/5 placeholder:text-ink/50 focus:shadow-focus focus:outline-transparent aria-invalid:border-red';
+  'block min-h-10 w-full rounded-[0.625rem] border-3 border-ink bg-white px-2.5 text-base leading-[1.4] font-bold text-ink hover:not-focus:bg-hover placeholder:text-ink/50 focus:shadow-focus focus:outline-transparent aria-invalid:border-red';
 
 /** One compact row of a rules list: grip, one field, optional extra cells and a cross. Keys as in the ingredient list. */
 export function RuleRow({

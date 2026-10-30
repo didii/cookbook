@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ComponentProps } from 'react';
 import { cn } from '~app/shared/cn';
+import { hoverDarken } from '~app/shared/hover';
 import { Check, Cross, Lock, StickyNote } from '~app/shared/icons';
 import { pressCss } from '~app/shared/press';
 import { maxNoteLength } from './note';
@@ -56,7 +57,7 @@ export function NoteSheet({ note, className, ...props }: NoteSheetProps) {
             maxLength={maxNoteLength}
             value={note.text}
             onChange={(e) => note.change(e.target.value)}
-            className="mt-2.5 box-border min-h-36 w-full resize-none rounded-[10px] border-3 border-ink bg-[#fffdf7] px-3 py-2.5 text-lg/snug  font-semibold text-ink"
+            className="mt-2.5 box-border min-h-36 w-full resize-none rounded-[10px] border-3 border-ink bg-[#fffdf7] px-3 py-2.5 text-lg/snug  font-semibold text-ink hover:not-focus:bg-hover"
           />
           <output data-testid="NoteSheet-status" className="mt-2 block">
             {note.failed ? (
@@ -93,6 +94,7 @@ export function NoteSheet({ note, className, ...props }: NoteSheetProps) {
         className={cn(
           'fixed right-4 bottom-[calc(1.125rem+env(safe-area-inset-bottom))] z-40 grid size-14 cursor-pointer place-items-center rounded-[14px] border-3 border-ink',
           pressCss(),
+          hoverDarken,
           isOpen ? 'bg-red text-white' : 'bg-yel text-ink',
         )}
       >

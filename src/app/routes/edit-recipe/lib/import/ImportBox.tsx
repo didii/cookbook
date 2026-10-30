@@ -79,7 +79,7 @@ export function ImportBox({ onImported, className, ...props }: ImportBoxProps) {
           placeholder="https://"
           value={address}
           onChange={(e) => setAddress(e.target.value)}
-          className="block min-h-13 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-lg text-ink focus:shadow-focus focus:outline-transparent"
+          className="block min-h-13 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-lg text-ink hover:not-focus:bg-hover focus:shadow-focus focus:outline-transparent"
         />
         <Button type="submit" main disabled={busy} data-testid="ImportBox-button" className="px-5 sm:flex-none">
           {busy ? 'Bezig met ophalen…' : 'Importeren'}

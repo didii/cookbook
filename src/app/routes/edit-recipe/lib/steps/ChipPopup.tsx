@@ -19,7 +19,7 @@ interface ChipPopupProps extends ComponentProps<'dialog'> {
 }
 
 const inputClass =
-  'mt-0.5 block min-h-11 w-full rounded-[0.625rem] border-2 border-ink bg-white px-3 text-base font-bold text-ink hover:not-focus:bg-[color-mix(in_srgb,var(--color-ink)_5%,white)]';
+  'mt-0.5 block min-h-11 w-full rounded-[0.625rem] border-2 border-ink bg-white px-3 text-base font-bold text-ink hover:not-focus:bg-hover';
 const labelClass = 'text-[0.8125rem] font-black text-muted';
 const kindLabel = { ingredient: 'Ingrediënt', oven: 'Oven', timer: 'Timer' } as const;
 
@@ -191,7 +191,7 @@ export function ChipPopup({ chip, values, anchor, onValues, onLabel, onMode, onR
                 data-testid="ChipPopup-mode"
                 aria-pressed={follows === (mode === 'auto')}
                 onClick={() => onMode(mode)}
-                className="flex min-h-10 cursor-pointer items-center justify-center gap-1.5 border-2 border-ink bg-white text-sm font-black hover:not-aria-pressed:bg-[color-mix(in_srgb,var(--color-ink)_5%,white)] first-of-type:rounded-l-lg last:-ml-0.5 last:rounded-r-lg aria-pressed:bg-red aria-pressed:text-white"
+                className="flex min-h-10 cursor-pointer items-center justify-center gap-1.5 border-2 border-ink bg-white text-sm font-black hover:not-aria-pressed:bg-hover first-of-type:rounded-l-lg last:-ml-0.5 last:rounded-r-lg aria-pressed:bg-red aria-pressed:text-white"
               >
                 {icon}
                 {text}

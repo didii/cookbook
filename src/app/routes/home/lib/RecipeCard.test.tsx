@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router';
 import { afterEach, describe, test, vi } from 'vitest';
 import type { LikeButton, Pill, Seal, TileBand } from '~app/shared/components';
 import type { RecipeSummary } from '~app/shared/recipe';
-import { cssFor } from '~testing/css';
+import { cssFor, mediaFor } from '~testing/css';
 import { precedes, render, screen, within } from '~testing/dom';
 import { RecipeCard } from './RecipeCard';
 
@@ -132,10 +132,30 @@ describe('recipe-browsing › The whole card opens the recipe', () => {
 });
 
 describe('recipe-browsing › Card reacts to the pointer', () => {
-  test('the hover shadow is the larger one', async () => {
+  const hovered = async () => {
     card();
-    const css = (await cssFor(screen.getByTestId('RecipeCard-card').className)).replace(/\s+/g, ' ');
-    assert.match(css, /--tw-shadow: 7px 7px 0/);
+    return mediaFor(screen.getByTestId('RecipeCard-card').className, '(hover: hover)');
+  };
+
+  test('the card gets the tint', async () => {
+    assert.match(await hovered(), /background-color: var\(--color-hover\)/);
+  });
+
+  test('the card does not move', async () => {
+    assert.doesNotMatch(await hovered(), /translate/);
+  });
+
+  test('the shadow does not change', async () => {
+    assert.doesNotMatch(await hovered(), /shadow/);
+  });
+});
+
+describe('hover-feedback › Hovering a card', () => {
+  test('the card gets the tint and does not move', async () => {
+    card();
+    const css = await mediaFor(screen.getByTestId('RecipeCard-card').className, '(hover: hover)');
+    assert.match(css, /background-color: var\(--color-hover\)/);
+    assert.doesNotMatch(css, /translate/);
   });
 });
 

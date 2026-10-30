@@ -110,7 +110,7 @@ export function TagForm({ tag, names, categories, onClose, onDone }: TagFormProp
               autoComplete="off"
               aria-invalid={nameError ? true : undefined}
               aria-describedby={nameError ? `${id}-name-error` : undefined}
-              className="block min-h-12 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-base font-bold text-ink focus:shadow-focus focus:outline-transparent aria-invalid:border-red"
+              className="block min-h-12 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-base font-bold text-ink hover:not-focus:bg-hover focus:shadow-focus focus:outline-transparent aria-invalid:border-red"
             />
             {nameError && (
               <div id={`${id}-name-error`}>

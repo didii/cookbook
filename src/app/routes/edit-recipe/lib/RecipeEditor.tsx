@@ -83,7 +83,7 @@ interface RecipeEditorProps extends ComponentProps<'main'> {
 }
 
 const inputClass =
-  'mt-1 block min-h-13 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-lg text-ink hover:not-focus:bg-[color-mix(in_srgb,var(--color-ink)_5%,white)] focus:shadow-focus focus:outline-transparent aria-invalid:border-red';
+  'mt-1 block min-h-13 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-lg text-ink hover:not-focus:bg-hover focus:shadow-focus focus:outline-transparent aria-invalid:border-red';
 const labelClass = 'font-extrabold';
 const asterisk = (
   <span aria-hidden="true" className="ml-1 font-black text-red">
@@ -257,7 +257,7 @@ export function RecipeEditor({
                 setBase({ updatedAt });
                 setChangedMeanwhile(false);
               }}
-              className="min-h-11 cursor-pointer rounded-[0.625rem] border-3 border-ink bg-white px-3 font-black"
+              className="min-h-11 cursor-pointer rounded-[0.625rem] border-3 border-ink bg-white px-3 font-black hover:bg-hover"
             >
               Concept houden
             </button>
@@ -268,7 +268,7 @@ export function RecipeEditor({
                 setBase({ updatedAt });
                 setChangedMeanwhile(false);
               }}
-              className="min-h-11 cursor-pointer rounded-[0.625rem] border-3 border-ink bg-white px-3 font-black"
+              className="min-h-11 cursor-pointer rounded-[0.625rem] border-3 border-ink bg-white px-3 font-black hover:bg-hover"
             >
               Opnieuw beginnen
             </button>
@@ -278,7 +278,11 @@ export function RecipeEditor({
       {offerImport && (
         <>
           <ImportBox onImported={importRecipe} className="mt-4" />
-          <Link to="/recepten/nieuw" data-testid="RecipeEditor-typeItself" className="mt-4 inline-block font-black text-blu hover:underline">
+          <Link
+            to="/recepten/nieuw"
+            data-testid="RecipeEditor-typeItself"
+            className="mt-4 inline-block font-black text-blu underline-offset-[0.25em] hover:underline"
+          >
             Zelf typen
           </Link>
         </>

@@ -3,6 +3,7 @@ import { Link, useRouteLoaderData } from 'react-router';
 import { cn } from '~app/shared/cn';
 import { Fret, LikeButton, Pill, Seal, TileBand } from '~app/shared/components';
 import { filterParams } from '~app/shared/filterParams';
+import { hoverRecolor, hoverUnderline } from '~app/shared/hover';
 import { ChevronBack } from '~app/shared/icons';
 import type { Recipe, Step } from '~app/shared/recipe';
 import { initialCook, observe, setByHand, wantsCookMode } from './cook/cookMode';
@@ -136,7 +137,7 @@ export function RecipeView({ recipe: r, tile, steps, liked = false, note: savedN
     <TimersContext value={timers}>
       <main id="main" className="mx-auto max-w-272 px-[max(1rem,4vw)] pt-8 pb-16 max-[51.99rem]:pb-0">
         <div className="mb-2 flex items-center justify-between gap-4">
-          <Link to="/" className="inline-flex min-h-11 items-center gap-1 font-extrabold underline-offset-[0.25em] hover:underline">
+          <Link to="/" className={`inline-flex min-h-11 items-center gap-1 font-extrabold ${hoverUnderline}`}>
             <ChevronBack className="-ml-1.5" /> Alle recepten
           </Link>
           <div className="flex items-center gap-3.5">
@@ -145,7 +146,7 @@ export function RecipeView({ recipe: r, tile, steps, liked = false, note: savedN
               to={`/recepten/${r.slug}/bewerken`}
               state={{ fresh: true }}
               data-testid="RecipeView-edit"
-              className="inline-flex min-h-11 items-center font-extrabold underline-offset-[0.25em] hover:underline"
+              className={`inline-flex min-h-11 items-center font-extrabold ${hoverUnderline}`}
             >
               Bewerk
             </Link>
@@ -181,8 +182,10 @@ export function RecipeView({ recipe: r, tile, steps, liked = false, note: savedN
         {r.tags.length > 0 && (
           <div data-testid="RecipeView-tags" className="mt-1.5 flex flex-wrap gap-1.5">
             {r.tags.map((name) => (
-              <Link key={name} to={`/?${filterParams({ tags: [name] })}`} data-testid="RecipeView-tagLink">
-                <Pill data-testid="RecipeView-tag">{name}</Pill>
+              <Link key={name} to={`/?${filterParams({ tags: [name] })}`} data-testid="RecipeView-tagLink" className="group inline-flex">
+                <Pill data-testid="RecipeView-tag" className="inline-flex min-h-9 items-center bg-white text-base group-hover:bg-hover">
+                  {name}
+                </Pill>
               </Link>
             ))}
           </div>
@@ -234,7 +237,7 @@ type SourceProps = { source: string };
 function Source({ source }: SourceProps) {
   const link = sourceLink(source);
   return link ? (
-    <a data-testid="RecipeView-source" href={link.href} target="_blank" rel="noopener noreferrer" className="underline">
+    <a data-testid="RecipeView-source" href={link.href} target="_blank" rel="noopener noreferrer" className={`underline ${hoverRecolor}`}>
       {link.text}
     </a>
   ) : (

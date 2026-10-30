@@ -68,11 +68,16 @@ export function SaveBar({ cancelTo, busy, saveBlocked, dirty, kept, onFormReset,
                   setAsking(false);
                   onFormReset();
                 }}
-                className="min-h-11 cursor-pointer px-2 font-black text-red underline"
+                className="min-h-11 cursor-pointer px-2 font-black text-red underline hover:text-blu"
               >
                 Ja
               </button>
-              <button ref={nee} type="button" onClick={() => setAsking(false)} className="min-h-11 cursor-pointer px-2 font-black underline">
+              <button
+                ref={nee}
+                type="button"
+                onClick={() => setAsking(false)}
+                className="min-h-11 cursor-pointer px-2 font-black underline hover:text-blu"
+              >
                 Nee
               </button>
             </fieldset>
@@ -83,13 +88,13 @@ export function SaveBar({ cancelTo, busy, saveBlocked, dirty, kept, onFormReset,
                 data-testid="SaveBar-reset"
                 type="button"
                 onClick={() => setAsking(true)}
-                className="min-h-11 cursor-pointer px-2 font-black text-muted underline"
+                className="min-h-11 cursor-pointer px-2 font-black text-muted underline hover:text-blu"
               >
                 Herstel
               </button>
             )
           )}
-          <Link to={cancelTo} className="inline-flex min-h-13 items-center px-2 font-black text-blu hover:underline">
+          <Link to={cancelTo} className="inline-flex min-h-13 items-center px-2 font-black text-blu underline-offset-[0.25em] hover:underline">
             Annuleren
           </Link>
           <Button type="submit" main disabled={busy || saveBlocked} className="max-w-none min-w-32 flex-none px-4 max-sm:flex-1">

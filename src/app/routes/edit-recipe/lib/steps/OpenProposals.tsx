@@ -25,7 +25,7 @@ export function OpenProposals({ count, className, ...props }: OpenProposalsProps
       type="button"
       data-testid="OpenProposals-link"
       onClick={jump}
-      className={cn('min-h-11 cursor-pointer border-0 bg-transparent p-0 font-black text-blu underline', className)}
+      className={cn('min-h-11 cursor-pointer border-0 bg-transparent p-0 font-black text-blu underline hover:text-red', className)}
     >
       {count === 1 ? '1 voorstel open' : `${count} voorstellen open`}
     </button>
