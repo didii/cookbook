@@ -57,7 +57,7 @@ export function NoteSheet({ note, className, ...props }: NoteSheetProps) {
             maxLength={maxNoteLength}
             value={note.text}
             onChange={(e) => note.change(e.target.value)}
-            className="mt-2.5 box-border min-h-36 w-full resize-none rounded-[10px] border-3 border-ink bg-[#fffdf7] px-3 py-2.5 text-lg/snug  font-semibold text-ink"
+            className="mt-2.5 box-border min-h-36 w-full resize-none rounded-[10px] border-3 border-ink bg-[#fffdf7] px-3 py-2.5 text-lg/snug  font-semibold text-ink hover:not-focus:bg-hover"
           />
           <output data-testid="NoteSheet-status" className="mt-2 block">
             {note.failed ? (

@@ -126,7 +126,7 @@ export function FilterBar({ filters, authors, tags, tagCategories, onFiltersChan
               onFiltersChange({ ...filters, q: e.target.value });
             }}
             onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
-            className="min-h-12 w-full rounded-[0.625rem] border-3 border-ink bg-white pr-4 pl-11 text-base font-bold text-ink placeholder:font-medium placeholder:text-muted focus-visible:outline-offset-0"
+            className="min-h-12 w-full rounded-[0.625rem] border-3 border-ink bg-white pr-4 pl-11 text-base font-bold text-ink hover:not-focus:bg-hover placeholder:font-medium placeholder:text-muted focus-visible:outline-offset-0"
           />
         </label>
         <button

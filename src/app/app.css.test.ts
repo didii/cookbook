@@ -9,6 +9,10 @@ describe('app.css tokens', () => {
     assert.match(css, /--animate-rise: rise 0\.22s/);
   });
 
+  test('links inherit colour in the base layer, so a hover colour utility can win', () => {
+    assert.match(css, /@layer base \{\s*a \{\s*color: inherit;/);
+  });
+
   test('the hover tint is 5% ink over white', () => {
     assert.match(css, /--color-hover: color-mix\(in srgb, var\(--color-ink\) 5%, white\)/);
   });

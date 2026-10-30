@@ -4,7 +4,7 @@ import { cssFor, mediaFor } from '~testing/css';
 import { render, screen } from '~testing/dom';
 import { Button } from './components/Button';
 import { Segmented } from './components/Segmented';
-import { hoverDarken, hoverRecolor, hoverTint, hoverUnderline } from './hover';
+import { hoverDarken, hoverField, hoverRecolor, hoverTint, hoverUnderline } from './hover';
 
 const hovering = '(hover: hover)';
 const tint = /background-color: var\(--color-hover\)/;
@@ -58,6 +58,14 @@ describe('hover-feedback › Hovering a plain text link', () => {
 describe('hover-feedback › Hovering an underlined link', () => {
   test('the colour changes', async () => {
     assert.match(await mediaFor(hoverRecolor, hovering), /color: var\(--color-blu\)/);
+  });
+});
+
+describe('hoverField', () => {
+  test('the field gets the tint until it has focus', async () => {
+    const css = await mediaFor(hoverField, hovering);
+    assert.match(css, tint);
+    assert.match(css, /:not\(:focus\)/);
   });
 });
 
