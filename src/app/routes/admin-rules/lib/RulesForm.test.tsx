@@ -53,14 +53,14 @@ describe('RulesForm', () => {
 
 const sections = () => screen.getAllByTestId('RulesForm-section') as HTMLDetailsElement[];
 const toggle = (title: string) =>
-  fireEvent.click(within(sections().find((s) => s.querySelector('h2')?.textContent === title)!).getByTestId('RulesForm-toggle'));
-const sectionOf = (title: string) => sections().find((s) => s.querySelector('h2')?.textContent === title)!;
+  fireEvent.click(within(sections().find((s) => within(s).getByTestId('RulesForm-title').textContent === title)!).getByTestId('RulesForm-toggle'));
+const sectionOf = (title: string) => sections().find((s) => within(s).getByTestId('RulesForm-title').textContent === title)!;
 
 describe('parsing-rules › Sections start closed', () => {
   test('the four headings are shown', () => {
     show();
     assert.deepEqual(
-      sections().map((s) => s.querySelector('h2')?.textContent),
+      sections().map((s) => within(s).getByTestId('RulesForm-title').textContent),
       ['Eenheden', 'Duur', 'Graden', 'Basisproducten'],
     );
   });

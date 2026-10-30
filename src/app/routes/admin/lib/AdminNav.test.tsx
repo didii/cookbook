@@ -80,6 +80,11 @@ describe('admin-nav › Wide screen', () => {
     const classes = screen.getByTestId('AdminNav-nav').className;
     assert.match(await mediaFor(classes, '(width >= 64rem)'), /position: sticky/);
   });
+});
+
+describe('admin-nav › Narrow screen', () => {
+  // Needs a browser: whether the navigation scrolls away depends on real scrolling.
+  test.todo('the navigation scrolls away with the page');
 
   test('it is not sticky below 64rem', async () => {
     show('admin');
@@ -87,7 +92,9 @@ describe('admin-nav › Wide screen', () => {
     const all = (await cssFor(classes)).replace(/\s+/g, ' ');
     assert.doesNotMatch(all.replace(await mediaFor(classes, '(width >= 64rem)'), ''), /position: sticky/);
   });
-});
 
-// Needs a browser: whether the navigation scrolls away or stays depends on real layout.
-test.todo('admin-nav › Narrow screen');
+  test('the links are in one list, one under the other', () => {
+    show('admin');
+    assert.equal(screen.getByTestId('AdminNav-list').children.length, 2);
+  });
+});

@@ -31,7 +31,9 @@ const Section = ({ title, open, children }: { title: string; open: boolean; chil
       data-testid="RulesForm-toggle"
       className={`flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 px-1 [&::-webkit-details-marker]:hidden ${hoverTint}`}
     >
-      <h2 className="text-2xl font-black tracking-[-0.01em]">{title}</h2>
+      <h2 data-testid="RulesForm-title" className="text-2xl font-black tracking-[-0.01em]">
+        {title}
+      </h2>
       <span
         aria-hidden="true"
         className="mr-1.5 size-2.5 shrink-0 -translate-y-1/4 rotate-45 border-r-3 border-b-3 border-ink group-open:translate-y-1/4 group-open:rotate-225"

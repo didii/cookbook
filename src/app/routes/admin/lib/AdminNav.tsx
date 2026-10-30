@@ -11,8 +11,8 @@ const links = [
 /** The navigation of the admin area: only the pages the role may use. The current page is marked by `aria-current`, which `NavLink` sets (also on a user's detail). */
 export function AdminNav({ role }: { role: Role }) {
   return (
-    <nav aria-label="Beheer" data-testid="AdminNav-nav" className="lg:sticky lg:top-[calc(var(--spacing-header)+1rem)] lg:self-start">
-      <ul className="grid gap-1">
+    <nav aria-label="Beheer" data-testid="AdminNav-nav" className="lg:sticky lg:top-4 lg:self-start">
+      <ul data-testid="AdminNav-list" className="grid gap-1">
         {links
           .filter((l) => !l.superadmin || role === 'superadmin')
           .map(({ to, label }) => (

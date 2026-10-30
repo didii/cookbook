@@ -1,8 +1,19 @@
 import assert from 'node:assert/strict';
-import { createMemoryRouter, RouterProvider } from 'react-router';
-import { describe, test } from 'vitest';
-import { fireEvent, precedes, render, screen } from '~testing/dom';
+import { createMemoryRouter, Link, RouterProvider } from 'react-router';
+import { describe, test, vi } from 'vitest';
+import { fireEvent, precedes, render, screen, within } from '~testing/dom';
 import AdminLayout from './AdminLayoutRoute';
+
+// Stand-in for the child (it has its own test): it shows the role it gets and links to the photos page.
+vi.mock('./lib/AdminNav', () => ({
+  AdminNav: ({ role }: { role: string }) => (
+    <nav data-testid="AdminNav-nav" data-role={role}>
+      <Link to="/beheer/fotos" data-testid="AdminNav-link">
+        Foto&apos;s
+      </Link>
+    </nav>
+  ),
+}));
 
 const show = (role: 'admin' | 'superadmin') => {
   const router = createMemoryRouter(
@@ -36,21 +47,22 @@ describe('admin-nav › Rules page inside the layout', () => {
 
   test('the page content is in the one main', async () => {
     show('admin');
-    const page = await screen.findByTestId('page');
-    assert.equal(page.closest('main')?.id, 'main');
+    const main = await screen.findByTestId('AdminLayout-main');
+    assert.equal(main.id, 'main');
+    assert.ok(within(main).getByTestId('page'));
   });
 
-  test('the navigation follows the role from the root loader', async () => {
+  test('the navigation gets the role from the root loader', async () => {
     show('superadmin');
-    assert.equal((await screen.findAllByTestId('AdminNav-link')).length, 3);
+    assert.equal((await screen.findByTestId('AdminNav-nav')).dataset.role, 'superadmin');
   });
 });
 
 describe('admin-nav › Link leads to its page', () => {
   test('following the photos link shows the photos page with the navigation in place', async () => {
     show('admin');
-    fireEvent.click((await screen.findAllByTestId('AdminNav-link'))[1]);
+    fireEvent.click((await screen.findAllByTestId('AdminNav-link'))[0]);
     await screen.findByTestId('photos');
-    assert.equal(screen.getAllByTestId('AdminNav-link').length, 2);
+    assert.ok(screen.getByTestId('AdminNav-nav'));
   });
 });

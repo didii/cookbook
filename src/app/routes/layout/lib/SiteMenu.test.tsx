@@ -3,7 +3,7 @@ import { createMemoryRouter, Outlet, RouterProvider } from 'react-router';
 import { describe, test } from 'vitest';
 import type { Role } from '~app/shared/role';
 import { cssFor } from '~testing/css';
-import { act, fireEvent, render, screen } from '~testing/dom';
+import { fireEvent, render, screen } from '~testing/dom';
 import { SiteMenu } from './SiteMenu';
 
 const show = (role: Role = 'user', path = '/') => {
@@ -139,7 +139,7 @@ describe('site-menu › Admin link', () => {
     const { dialog } = show('admin');
     openMenu();
     fireEvent.click(screen.getAllByTestId('SiteMenu-link').find((link) => link.textContent === 'Beheer')!);
-    await act(async () => {});
+    await screen.findByTestId('admin');
     assert.equal(dialog.hasAttribute('open'), false);
   });
 });

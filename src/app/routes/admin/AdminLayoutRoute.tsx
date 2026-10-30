@@ -10,7 +10,7 @@ export default function AdminLayout() {
   return (
     <div className={cn(shellFrame, shellColumns, 'pt-6')}>
       <AdminNav role={root?.role ?? 'user'} />
-      <main id="main" className={shellContent}>
+      <main id="main" data-testid="AdminLayout-main" className={shellContent}>
         <Outlet />
       </main>
     </div>
