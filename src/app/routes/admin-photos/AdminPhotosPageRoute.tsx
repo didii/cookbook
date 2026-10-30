@@ -28,10 +28,10 @@ export function meta() {
 
 export default function AdminPhotosPage({ loaderData }: Route.ComponentProps) {
   return (
-    <main id="main" className="mx-auto max-w-3xl px-[max(1rem,4vw)] pt-6">
+    <div>
       <h1 className="text-[clamp(2rem,6vw,3rem)] leading-[1.05] font-black tracking-[-0.03em]">Foto&apos;s</h1>
       <p className="mt-2 text-lg text-muted">De foto&apos;s in de opslag.</p>
       <PhotoList photos={loaderData.photos} matches={loaderData.matches} filters={loaderData.filters} />
-    </main>
+    </div>
   );
 }
