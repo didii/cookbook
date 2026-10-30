@@ -8,4 +8,8 @@ describe('app.css tokens', () => {
   test('the rise animation lasts 0.22 s', () => {
     assert.match(css, /--animate-rise: rise 0\.22s/);
   });
+
+  test('the hover tint is 5% ink over white', () => {
+    assert.match(css, /--color-hover: color-mix\(in srgb, var\(--color-ink\) 5%, white\)/);
+  });
 });

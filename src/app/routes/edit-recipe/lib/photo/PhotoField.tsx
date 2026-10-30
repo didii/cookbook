@@ -158,7 +158,7 @@ export function PhotoField({ value, onPhotoChange, onStateChange, tile, seal, in
         {state === 'error' && pending && (
           <p className="mt-2 font-bold text-red">
             De foto kon niet worden geüpload.{' '}
-            <button type="button" onClick={() => void send(pending)} className="min-h-11 cursor-pointer font-black underline">
+            <button type="button" onClick={() => void send(pending)} className="min-h-11 cursor-pointer font-black underline hover:text-blu">
               Opnieuw proberen
             </button>
           </p>

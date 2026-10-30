@@ -61,7 +61,7 @@ export default function WelcomePage({ loaderData, actionData }: Route.ComponentP
             defaultValue={actionData?.name}
             aria-invalid={actionData?.error ? true : undefined}
             aria-describedby={actionData?.error ? 'callingName-error' : undefined}
-            className="mt-1 block min-h-13 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-lg text-ink hover:not-focus:bg-[color-mix(in_srgb,var(--color-ink)_5%,white)] focus:shadow-focus focus:outline-transparent aria-invalid:border-red"
+            className="mt-1 block min-h-13 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-lg text-ink hover:not-focus:bg-hover focus:shadow-focus focus:outline-transparent aria-invalid:border-red"
           />
           <p data-testid="WelcomePage-email" className="mt-1 text-muted text-sm">
             Voor {loaderData.email}

@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ComponentProps } from 'react';
 import { cn } from '~app/shared/cn';
+import { hoverDarken } from '~app/shared/hover';
 import { Check, Cross, Lock, StickyNote } from '~app/shared/icons';
 import { pressCss } from '~app/shared/press';
 import { maxNoteLength } from './note';
@@ -93,6 +94,7 @@ export function NoteSheet({ note, className, ...props }: NoteSheetProps) {
         className={cn(
           'fixed right-4 bottom-[calc(1.125rem+env(safe-area-inset-bottom))] z-40 grid size-14 cursor-pointer place-items-center rounded-[14px] border-3 border-ink',
           pressCss(),
+          hoverDarken,
           isOpen ? 'bg-red text-white' : 'bg-yel text-ink',
         )}
       >

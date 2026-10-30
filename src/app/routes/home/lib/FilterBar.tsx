@@ -3,6 +3,7 @@ import { cn } from '~app/shared/cn';
 import { Button, Segmented } from '~app/shared/components';
 import { control } from '~app/shared/control';
 import type { Filters, Sort } from '~app/shared/filterParams';
+import { hoverDarken } from '~app/shared/hover';
 import { Search, Sliders } from '~app/shared/icons';
 import { press } from '~app/shared/press';
 import { useKeyboardOffset } from '~app/shared/useKeyboardOffset';
@@ -135,7 +136,12 @@ export function FilterBar({ filters, authors, tags, tagCategories, onFiltersChan
           aria-expanded={open}
           aria-controls={sheetId}
           onClick={() => setOpen(!open)}
-          className={cn(control, press, 'relative min-h-12 min-w-12 gap-2 bg-yel px-3.5 aria-expanded:bg-red aria-expanded:text-white md:hidden')}
+          className={cn(
+            control,
+            press,
+            hoverDarken,
+            'relative min-h-12 min-w-12 gap-2 bg-yel px-3.5 aria-expanded:bg-red aria-expanded:text-white md:hidden',
+          )}
         >
           <Sliders />
           <span>Filter</span>

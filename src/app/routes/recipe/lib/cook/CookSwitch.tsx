@@ -20,7 +20,7 @@ export function CookSwitch({ wanted, lock, manual, onToggle, className, ...props
       {...props}
       data-testid="CookSwitch-label"
       className={cn(
-        'mt-6 flex min-h-12 w-full cursor-pointer items-center gap-3 rounded-[0.625rem] border-3 border-ink bg-white py-1 pr-3.5 pl-2 text-left font-extrabold min-[52rem]:hidden',
+        'mt-6 flex min-h-12 w-full cursor-pointer items-center gap-3 rounded-[0.625rem] border-3 border-ink bg-white py-1 pr-3.5 pl-2 text-left font-extrabold hover:bg-hover min-[52rem]:hidden',
         className,
       )}
     >

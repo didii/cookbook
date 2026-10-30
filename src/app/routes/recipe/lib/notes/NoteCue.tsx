@@ -1,5 +1,6 @@
 import type { ComponentProps } from 'react';
 import { cn } from '~app/shared/cn';
+import { hoverUnderline } from '~app/shared/hover';
 import { Check } from '~app/shared/icons';
 import type { Cue } from './useNote';
 
@@ -22,6 +23,7 @@ export function NoteCue({ cue, onClear, onEnd, className, ...props }: NoteCuePro
           onAnimationEnd={onEnd}
           className={cn(
             'inline-flex min-h-11 cursor-pointer items-center gap-1.5 font-black',
+            hoverUnderline,
             cue === 'fading' && 'animate-fade motion-reduce:animate-none',
             className,
           )}

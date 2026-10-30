@@ -82,7 +82,11 @@ function Chip({ pressed, className, ...props }: ChipProps) {
       {...props}
       type="button"
       aria-pressed={pressed}
-      className={cn(control, 'min-h-10 rounded-full bg-white px-3.5 font-extrabold hover:bg-ink/8 aria-pressed:bg-yel', className)}
+      className={cn(
+        control,
+        'min-h-10 rounded-full bg-white px-3.5 font-extrabold hover:not-aria-pressed:bg-hover aria-pressed:bg-yel aria-pressed:hover:brightness-95',
+        className,
+      )}
     />
   );
 }

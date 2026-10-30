@@ -128,7 +128,12 @@ export function StepList({
     <li key="removed" className="flex items-center gap-3 rounded-[0.625rem] bg-ink/7 px-3 py-2 font-bold">
       <output>Stap verwijderd</output>
       <span aria-hidden="true">·</span>
-      <button ref={undoButton} type="button" onClick={restore} className="cursor-pointer font-black text-blu underline underline-offset-4">
+      <button
+        ref={undoButton}
+        type="button"
+        onClick={restore}
+        className="cursor-pointer font-black text-blu underline underline-offset-4 hover:text-red"
+      >
         Ongedaan maken
       </button>
     </li>

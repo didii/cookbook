@@ -48,7 +48,7 @@ export function DeleteUser({ name, isSelf, accessUrl, disabledReason, className,
           <p>Het account en de gezien-markeringen van dit lid worden verwijderd. Recepten blijven staan.</p>
           <p data-testid="DeleteUser-allowlist">
             Hij of zij kan opnieuw inloggen zolang het e-mailadres op de toegestane lijst staat.{' '}
-            <a href={accessUrl} target="_blank" rel="noreferrer" data-testid="DeleteUser-link" className="font-extrabold underline">
+            <a href={accessUrl} target="_blank" rel="noreferrer" data-testid="DeleteUser-link" className="font-extrabold underline hover:text-blu">
               Beheer de lijst in Cloudflare
             </a>
           </p>

@@ -37,7 +37,7 @@ export function TabBar({ tab, onTabSelect, className, ...props }: TabBarProps) {
           tabIndex={tab === t.id ? 0 : -1}
           onClick={() => onTabSelect(t.id)}
           onKeyDown={onKeyDown}
-          className="min-h-10 flex-1 cursor-pointer rounded-[0.625rem] border-3 border-ink bg-white px-2 text-[1.0625rem] font-black aria-selected:bg-red aria-selected:text-white aria-selected:shadow-hard-sm"
+          className="min-h-10 flex-1 cursor-pointer rounded-[0.625rem] border-3 border-ink bg-white px-2 text-[1.0625rem] font-black hover:not-aria-selected:bg-hover aria-selected:bg-red aria-selected:hover:brightness-95 aria-selected:text-white aria-selected:shadow-hard-sm"
         >
           {t.label}
         </button>
