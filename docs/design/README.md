@@ -64,13 +64,14 @@ Static mockup of the orphaned photos page ("Foto's"), the design reference for t
 
 It works on made-up photos; nothing is deleted. Check it at 390px and at desktop width.
 
-- Top: title, a lead that explains the 24-hour rule, the result message after a delete, the total count and size, and the 100-entry note when more remain.
-- Photos are square tiles, oldest first: 2 columns on a phone, 3 from 30rem, 4 from 40rem. The whole tile is the checkbox (blue when ticked); the date and size sit under the photo.
-- A bar fixed to the bottom, like the tag manager's selection bar: the count and size of the selection, "Alles selecteren" / "Niets", "Verwijder selectie" and "Verwijder alle N" ("Verwijder deze 100" when capped).
-- The first press turns the bar red and asks "Weet je het zeker? Verwijderde foto's komen niet terug.", with the count, the size and the draft warning; the photos that go turn grey with a red frame. The same spot then holds "Ja, verwijder N foto's" and "Annuleer". Changing the selection or `Esc` cancels.
-- After a delete, a green message at the top says how many were deleted and how many kept. The photo of 14 mrt acts as one a recipe started to use, so it is kept.
-- With nothing to remove: "Niets om op te ruimen" and no bar.
-- The dark bar at the top switches between states (mockup only). Append `#select`, `#confirm`, `#confirm-all`, `#result`, `#cap` or `#empty` to start in that state.
+- Top: title, a one-line lead, and the result message after a delete.
+- One line with the selection against the totals ("2/12 foto's", the selected size / the total size, "· 3 in gebruik" when used photos are listed) and "Alles selecteren" / "Niets" at its right. Under it two filter chips, "Ongebruikt" and "Ouder dan 1 dag", both on (yellow) by default; turning one off shows more photos and clears the selection. Then the 100-entry note when more match.
+- Photos are square tiles, oldest first: 2 columns on a phone, 3 from 30rem, 4 from 40rem. The whole tile is the checkbox (blue when ticked); the date and size sit in the footer. A photo a recipe uses has no checkbox and a muted book icon at the bottom right of the footer, a link to the recipe (in the mockup it opens the editor mockup). A photo under a day old shows a yellow (warning) clock there instead, and can be selected. The book wins over the clock.
+- A bar fixed to the bottom with one button, "Verwijder selectie" (disabled without a selection). There is no delete-all.
+- The button opens a dialog in the middle of the screen: "Weet je het zeker?", "N foto's, size." and, only when the selection has a photo under a day old, the form warning. "Annuleer" has focus; `Esc` or a click outside also cancels. The button reads "Verwijder N foto's".
+- After a delete, a green message at the top says how many were deleted and how many kept, with a link to the recipe of each kept photo. The photo of 14 mrt acts as one a recipe started to use: it is kept and turns into a used tile.
+- With nothing to show: "Niets om op te ruimen" (or "Geen foto's" for an empty bucket), the filters stay and there is no bar.
+- The dark bar at the top switches between states (mockup only). Append `#select`, `#confirm`, `#result`, `#nouse` (filter "Ongebruikt" off), `#all` (both filters off), `#cap` or `#empty` to start in that state.
 
 Colours, fonts and spacing follow the tokens in `app/app.css`; if those change, update the mockup or treat the app as the truth.
 
