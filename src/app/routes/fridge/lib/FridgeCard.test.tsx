@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, useLocation } from 'react-router';
 import { describe, test, vi } from 'vitest';
 import type { RecipeSummary } from '~app/shared/recipe';
 import { fireEvent, render, screen, within } from '~testing/dom';
@@ -16,12 +16,24 @@ const recipe: RecipeSummary = {
   liked: false,
   hasNote: false,
 };
+const Path = () => <p data-testid="Test-path">{useLocation().pathname}</p>;
 const show = (props: Partial<Parameters<typeof FridgeCard>[0]> = {}) => {
   const onHave = vi.fn();
   const onSkip = vi.fn();
   render(
-    <MemoryRouter>
-      <FridgeCard recipe={recipe} tile={0} total={4} used={['melk', 'ei', 'bloem']} unused={['rijst']} missing={['kaneel']} onHave={onHave} onSkip={onSkip} {...props} />
+    <MemoryRouter initialEntries={['/koelkast']}>
+      <Path />
+      <FridgeCard
+        recipe={recipe}
+        tile={0}
+        total={4}
+        used={['melk', 'ei', 'bloem']}
+        unused={['rijst']}
+        missing={['kaneel']}
+        onHave={onHave}
+        onSkip={onSkip}
+        {...props}
+      />
     </MemoryRouter>,
   );
   return { onHave, onSkip };
@@ -78,10 +90,10 @@ describe('fridge-search › Buttons do not open the recipe', () => {
     assert.ok(!screen.getByTestId('RecipeCard-link').contains(screen.getByTestId('MissingIngredients-have')));
   });
 
-  test('a press on it does not leave the page', () => {
+  test('a press on it stays on the page', () => {
     show();
-    // A click that is not stopped would be followed by the link only when it is the link's; the button is in the plain part.
-    assert.ok(plainPart().contains(screen.getByTestId('MissingIngredients-have')));
+    fireEvent.click(screen.getByTestId('MissingIngredients-have'));
+    assert.equal(screen.getByTestId('Test-path').textContent, '/koelkast');
   });
 });
 
