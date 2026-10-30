@@ -1,22 +1,27 @@
-import { useId, type ComponentProps } from 'react';
+import { useId, type ComponentProps, type ReactNode } from 'react';
 import { Link } from 'react-router';
-import { cn } from '~app/shared/cn';
-import { LikeButton, Pill, Seal, TileBand } from '~app/shared/components';
-import { StickyNote } from '~app/shared/icons';
-import type { RecipeSummary } from '~app/shared/recipe';
-import { twoTileRows } from '~app/shared/tile';
+import { LikeButton } from './LikeButton';
+import { Pill } from './Pill';
+import { Seal } from './Seal';
+import { TileBand } from './TileBand';
+import { cn } from '../cn';
+import { StickyNote } from '../icons';
+import type { RecipeSummary } from '../recipe';
+import { twoTileRows } from '../tile';
 
 interface RecipeCardProps extends ComponentProps<'article'> {
   recipe: RecipeSummary;
   tile: number;
   eager?: boolean;
   onSaved?: () => void;
+  /** Shown under the tags, still in the part that opens the recipe. */
+  footer?: ReactNode;
 }
 
 const maxTags = 2;
 
-/** Recipe card: image (two tiles high), tile band with the buttons, then the text. The title link is stretched over the card, the buttons sit above it. */
-export function RecipeCard({ recipe: r, tile, eager, onSaved, className, ...props }: RecipeCardProps) {
+/** Recipe card: image (two tiles high), tile band with the buttons, then the text. The title link is stretched over the card, the buttons sit above it. Children go below a separator, above the link, so nothing in them opens the recipe. */
+export function RecipeCard({ recipe: r, tile, eager, onSaved, footer, children, className, ...props }: RecipeCardProps) {
   const newId = useId();
   const titleId = useId();
   const more = r.tags.length - maxTags;
@@ -95,7 +100,13 @@ export function RecipeCard({ recipe: r, tile, eager, onSaved, className, ...prop
             )}
           </div>
         )}
+        {footer}
       </div>
+      {children && (
+        <div data-testid="RecipeCard-extra" className="relative z-2 border-t-3 border-ink px-4 pb-4">
+          {children}
+        </div>
+      )}
     </article>
   );
 }

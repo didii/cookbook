@@ -20,6 +20,7 @@ const show = (role: Role = 'user', path = '/') => {
         children: [
           { path: '/', element: <p data-testid="home">Start</p> },
           { path: '/over', element: <p data-testid="about">Over pagina</p> },
+          { path: '/koelkast', element: <p data-testid="fridge">Koelkast pagina</p> },
         ],
       },
     ],
@@ -36,7 +37,7 @@ const follow = async (label: string, role: Role = 'user', path = '/') => {
   const { dialog } = show(role, path);
   openMenu();
   fireEvent.click(screen.getAllByTestId('SiteMenu-link').find((link) => link.textContent === label)!);
-  await screen.findByTestId(label === 'Home' ? 'home' : 'about');
+  await screen.findByTestId({ Home: 'home', Koelkast: 'fridge' }[label] ?? 'about');
   return dialog;
 };
 
@@ -63,6 +64,7 @@ describe('site-menu › Menu lists the links', () => {
     openMenu();
     assert.deepEqual(links(dialog), [
       ['Home', '/'],
+      ['Koelkast', '/koelkast'],
       ['Nieuw recept', '/recepten/nieuw'],
       ['Recept importeren', '/recepten/importeren'],
       ['Tags', '/tags'],
@@ -81,6 +83,21 @@ describe('site-menu › Home link', () => {
 
   test('the menu is closed', async () => {
     assert.equal((await follow('Home', 'user', '/over')).hasAttribute('open'), false);
+  });
+});
+
+describe('site-menu › Fridge link', () => {
+  test.each(['user', 'admin', 'superadmin'] as const)('the %s is taken to the fridge page', async (role) => {
+    await follow('Koelkast', role);
+    await screen.findByTestId('fridge');
+  });
+
+  test('the menu is closed', async () => {
+    assert.equal((await follow('Koelkast')).hasAttribute('open'), false);
+  });
+
+  test('the link comes after Home', () => {
+    assert.deepEqual(labels('user').slice(0, 2), ['Home', 'Koelkast']);
   });
 });
 
@@ -152,6 +169,7 @@ describe('site-menu › Menu lists the links for a superadmin', () => {
   test('the menu lists all links', () => {
     assert.deepEqual(labels('superadmin'), [
       'Home',
+      'Koelkast',
       'Nieuw recept',
       'Recept importeren',
       'Tags',
@@ -177,6 +195,7 @@ describe('site-menu › Menu lists the links for an admin', () => {
   test('the menu lists the links without the users page', () => {
     assert.deepEqual(labels('admin'), [
       'Home',
+      'Koelkast',
       'Nieuw recept',
       'Recept importeren',
       'Tags',

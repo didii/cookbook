@@ -85,3 +85,23 @@ Static mockups of the recipe page with the heart (like) and the personal note, t
 - Rejected: a note panel at the top of the wide page (option B), which only existed in the first review round.
 
 Colours, fonts and spacing follow the tokens in `app/app.css`; if those change, update the mockup or treat the app as the truth. The same mockups live in a private Artifact: https://claude.ai/artifact/CMDsakVtQjhjYjiUiEKK8R
+
+## `koelkast.html`
+
+Static mockup of the fridge page ("Wat zit er in de koelkast?"), mobile first (use the browser's device toolbar at about 390px wide), the design reference for the fridge search OpenSpec change. Open it in a browser; it needs no build. Fonts load from Google Fonts, images, seals and tiles from `public/img`.
+
+Behaviour: pressing Enter in an input, or its button, adds the word as a chip to its list, clears the input and keeps it focused; a cross removes a chip. Nothing filters, and the maple leaf, the + and − buttons in the cards and the sort do nothing. Ingredients, authors and counts are made-up samples.
+
+- The filters sit at the top of the page and scroll away with it, on a phone too. Below 48rem **Heb ik** is stacked above **Liever niet**; from 48rem they sit side by side over the full width.
+- Each list: label, then the input with its button (blue **+** for Heb ik, **−** for Liever niet), then the chips under it. The input never moves when chips are added, and the labels line up. Under the lists: the tie-break order and "Wis alles".
+- Recipes with more of the "Heb ik" ingredients come first; ties keep the chosen order. A recipe with a "Liever niet" ingredient is gone.
+- The top of each card is the real card: photo two tile rows high, one tile row with the maple leaf, then the text block with title, author, time and tags. The tile count follows the card width.
+- Only that top part opens the recipe (the title link is stretched over it, as on home). A separator line (same 3px ink line as above the text block) divides it from the ingredient part, which is plain, so a missed tap on + or − cannot leave the page.
+- **Hover colours, never raises.** Hovering the clickable part tints its text block lightly (ink at 8%, the same tint as `Button`'s hover); the card does not lift or change its shadow. This is the rule for every clickable item in the page: cards, buttons (+, −, the chip crosses, the maple leaf, "Wis alles"), the segmented sort and the inputs. The mockup tints the card and the buttons only; inputs and the sort should hover like the other inputs and segments in the app. The home page still raises its cards today and is going to change to this rule in a separate change.
+- Under the tags: "N/M in huis", N the Heb ik ingredients this recipe uses, M the length of the Heb ik list. Then **Ontbreekt**: the ingredients that are not in Heb ik and not a staple, each with a quiet **+** ("Ik heb …") and **−** ("Liever geen …") button. More than about five rows fold into "+N meer".
+- **Heb je, niet in dit recept** lists the Heb ik ingredients the recipe does not use, struck through (and announced as "niet in dit recept" to screen readers).
+- Matching is whole word only. Staples (zout, peper, boter...) are managed by admins and never listed as missing.
+
+Colours, fonts and spacing follow the tokens in `app/app.css`; if those change, update the mockup or treat the app as the truth.
+
+Differences in the built page: "Wis alles" shows only while a list or the A–Z order is set, a card shows no plain part when nothing is missing or unused, and the count line says "1 recept" for a single stored recipe, as on home.

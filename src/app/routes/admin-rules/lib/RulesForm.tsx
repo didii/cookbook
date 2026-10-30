@@ -41,6 +41,7 @@ export function RulesForm({ initial, errors = noErrors }: RulesFormProps) {
   const [units, setUnits] = useState(() => words(initial.units, 'units'));
   const [looseUnits, setLooseUnits] = useState(() => words(initial.looseUnits, 'loose'));
   const [degrees, setDegrees] = useState(() => words(initial.degreeWords, 'degrees'));
+  const [staples, setStaples] = useState(() => words(initial.staples, 'staples'));
   const [durations, setDurations] = useState(() =>
     ensureFree(
       initial.durations.map((d, i) => ({ id: `duration-${i}`, text: d.word, minutes: d.minutes === null ? '' : String(d.minutes), fixed: d.fixed })),
@@ -54,6 +55,7 @@ export function RulesForm({ initial, errors = noErrors }: RulesFormProps) {
     units: posted(units).map((r) => r.text),
     looseUnits: posted(looseUnits).map((r) => r.text),
     degreeWords: posted(degrees).map((r) => r.text),
+    staples: posted(staples).map((r) => r.text),
     durations: posted(durations).map((r) => ({ word: r.text, minutes: r.minutes?.trim() ? Number(r.minutes) : null, fixed: !!r.fixed })),
   };
 
@@ -69,11 +71,12 @@ export function RulesForm({ initial, errors = noErrors }: RulesFormProps) {
       looseUnits: byId('looseUnits', 'loose'),
       durations: byId('durations', 'duration'),
       degreeWords: byId('degreeWords', 'degrees'),
+      staples: byId('staples', 'staples'),
     };
   });
 
   // After a refused save the first list with a message takes focus.
-  const firstWithErrors = (['units', 'looseUnits', 'durations', 'degreeWords'] as const).find((list) => errors[list]?.rows);
+  const firstWithErrors = (['units', 'looseUnits', 'durations', 'degreeWords', 'staples'] as const).find((list) => errors[list]?.rows);
   const listError = (list: keyof RulesRows) =>
     errors[list]?.list && (
       <p role="alert" data-testid="RulesForm-error" className="mt-1 mb-2 font-extrabold text-red">
@@ -168,6 +171,23 @@ export function RulesForm({ initial, errors = noErrors }: RulesFormProps) {
             placeholder="bv. graad"
             focusError={firstWithErrors === 'degreeWords'}
             onChange={setDegrees}
+          />
+        </div>
+      </Section>
+      <Section title="Basisproducten">
+        <div className="mt-3.5 sm:w-1/2">
+          <Help>Wat bijna iedereen in huis heeft, zoals “zout”. Staat nooit bij “Ontbreekt” op de koelkastpagina.</Help>
+          {listError('staples')}
+          <RuleList
+            data-testid="RulesForm-staples"
+            aria-label="Basisproducten"
+            rows={staples}
+            noun="Basisproduct"
+            blank={blank}
+            errors={messages.staples}
+            placeholder="bv. zout"
+            focusError={firstWithErrors === 'staples'}
+            onChange={setStaples}
           />
         </div>
       </Section>

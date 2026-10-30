@@ -6,6 +6,7 @@ import type { Role } from '~app/shared/role';
 
 const links = [
   { to: '/', label: 'Home' },
+  { to: '/koelkast', label: 'Koelkast' },
   { to: '/recepten/nieuw', label: 'Nieuw recept' },
   { to: '/recepten/importeren', label: 'Recept importeren' },
   { to: '/tags', label: 'Tags' },

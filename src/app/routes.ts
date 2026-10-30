@@ -11,6 +11,7 @@ export default [
   route('recepten/:slug/verwijderen', 'routes/recipe/RecipeDeleteRoute.ts'),
   layout('routes/layout/LayoutRoute.tsx', [
     index('routes/home/HomePageRoute.tsx'),
+    route('koelkast', 'routes/fridge/FridgePageRoute.tsx'),
     route('instellingen', 'routes/settings/SettingsPageRoute.tsx'),
     route('beheer/herkenning', 'routes/admin-rules/AdminRulesPageRoute.tsx'),
     route('beheer/fotos', 'routes/admin-photos/AdminPhotosPageRoute.tsx'),

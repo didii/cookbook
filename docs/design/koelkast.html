@@ -1,0 +1,1360 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Koelkast mockup</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
+    <style>
+      /* Mockup of the home page, mobile first. Static data, only the filter sheet opens and closes.
+     Tokens copied from ./app/app.css; images from ./public/img. */
+      :root {
+        --red: #9c2419;
+        --yel: #c9a04a;
+        --blu: #1f4e79;
+        --ink: #1c1512;
+        --por: #f4eee0;
+        --muted: #5c4f48;
+        --shadow: 5px 5px 0 var(--ink);
+        --shadow-sm: 3px 3px 0 var(--ink);
+        --img: ../../public/img;
+        --bar-h: 4.5rem;
+        --line: rgba(28, 21, 18, 0.15);
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--por);
+        color: var(--ink);
+        font:
+          400 1.0625rem/1.45 'Mulish',
+          ui-sans-serif,
+          system-ui,
+          sans-serif;
+        /* room so the last card clears the fixed bar */
+        padding-bottom: calc(var(--bar-h) + env(safe-area-inset-bottom) + 1.5rem);
+      }
+      :focus-visible {
+        outline: 4px solid var(--blu);
+        outline-offset: 3px;
+      }
+      ::selection {
+        background: var(--yel);
+        color: var(--ink);
+      }
+      a {
+        color: inherit;
+      }
+
+      /* Header, as in the app */
+      header {
+        background: var(--red);
+        color: #fff;
+      }
+      .head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.75rem max(1rem, 4vw);
+      }
+      .brand {
+        font-size: 1.5rem;
+        font-weight: 900;
+        letter-spacing: -0.01em;
+        text-decoration: none;
+      }
+      .new {
+        display: flex;
+        align-items: center;
+        min-height: 2.75rem;
+        padding: 0 0.75rem;
+        border: 3px solid #fff;
+        border-radius: 0.625rem;
+        font-weight: 900;
+        text-decoration: none;
+      }
+      .fret {
+        height: 14px;
+        margin-bottom: 6px;
+        color: var(--yel);
+        background: currentColor;
+        -webkit-mask: url(../../public/img/fret.svg) 0 0 / 14px 14px round;
+        mask: url(../../public/img/fret.svg) 0 0 / 14px 14px round;
+      }
+
+      main {
+        max-width: 68rem;
+        margin: 0 auto;
+        padding: 1.5rem max(1rem, 4vw) 0;
+      }
+      h1 {
+        margin: 0;
+        font-size: clamp(2rem, 6vw, 3.5rem);
+        line-height: 1.05;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+        text-wrap: balance;
+      }
+      .intro {
+        margin: 0.5rem 0 0;
+        max-width: 34ch;
+        font-size: 1.125rem;
+        color: var(--muted);
+        text-wrap: pretty;
+      }
+
+      .count {
+        margin: 1.5rem 0 1rem;
+        font-weight: 800;
+        color: var(--muted);
+      }
+
+      /* Cards */
+      .grid {
+        display: grid;
+        gap: 1.5rem;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+      }
+      .card {
+        position: relative;
+        display: block;
+        overflow: hidden;
+        background: #fff;
+        border: 3px solid var(--ink);
+        border-radius: 0.75rem;
+        box-shadow: var(--shadow);
+        text-decoration: none;
+        transition:
+          transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+          box-shadow 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      .card:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: 7px 7px 0 var(--ink);
+      }
+      .card img.photo {
+        display: block;
+        width: 100%;
+        height: auto;
+        aspect-ratio: 5/2;
+        object-fit: cover;
+        border-bottom: 3px solid var(--ink);
+      }
+      .seal {
+        position: absolute;
+        top: 0.625rem;
+        right: 0.625rem;
+        height: 3.25rem;
+        width: auto;
+        opacity: 0.95;
+        mix-blend-mode: multiply;
+      }
+      .tiles {
+        display: block;
+        height: 0;
+        padding-bottom: calc(100% / 7);
+        border-bottom: 3px solid var(--ink);
+        background-size: calc(100% / 7) auto;
+        background-repeat: repeat-x;
+      }
+      .body {
+        display: block;
+        padding: 0.75rem 1rem 1rem;
+      }
+      .title {
+        display: block;
+        font-size: 1.375rem;
+        line-height: 1.1;
+        font-weight: 900;
+      }
+      .meta {
+        display: block;
+        margin-top: 0.25rem;
+        font-size: 0.9375rem;
+        font-weight: 700;
+        color: var(--muted);
+      }
+      .badge {
+        position: absolute;
+        top: 0.625rem;
+        left: 0.625rem;
+        z-index: 1;
+        padding: 0.125rem 0.625rem;
+        background: var(--yel);
+        border: 3px solid var(--ink);
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 900;
+        box-shadow: var(--shadow-sm);
+      }
+
+      /* Filter sheet: chips, sort, actions. On phones it floats above the bar; from 48rem it is inline and always shown. */
+      .sheet {
+        display: none;
+      }
+      .sheet[data-open] {
+        display: block;
+      }
+      .group {
+        margin: 0 0 1rem;
+        padding: 0;
+        border: 0;
+        min-width: 0;
+      }
+      .group legend {
+        padding: 0;
+        margin-bottom: 0.5rem;
+        font-weight: 900;
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      .chip,
+      .seg label,
+      .btn {
+        min-height: 2.75rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 1rem;
+        font:
+          900 1rem/1 'Mulish',
+          sans-serif;
+        color: var(--ink);
+        background: #fff;
+        border: 3px solid var(--ink);
+        border-radius: 0.625rem;
+        cursor: pointer;
+      }
+      .chip {
+        background: transparent;
+        border-style: dashed;
+      }
+      .chip[aria-pressed='true'] {
+        background: var(--red);
+        color: #fff;
+        border-style: solid;
+      }
+      .seg {
+        display: inline-flex;
+      }
+      .seg input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .seg label {
+        border-radius: 0;
+        box-shadow: none;
+      }
+      .seg label:first-of-type {
+        border-radius: 0.625rem 0 0 0.625rem;
+      }
+      .seg label:last-of-type {
+        border-radius: 0 0.625rem 0.625rem 0;
+        margin-left: -3px;
+      }
+      .seg input:checked + label {
+        background: var(--red);
+        color: #fff;
+      }
+      .seg input:focus-visible + label {
+        outline: 4px solid var(--blu);
+        outline-offset: 3px;
+        position: relative;
+      }
+      .actions {
+        display: flex;
+        gap: 0.75rem;
+      }
+      .btn {
+        flex: 1;
+        box-shadow: var(--shadow-sm);
+      }
+      .btn,
+      .filter {
+        transition:
+          transform 0.08s,
+          box-shadow 0.08s;
+      }
+      .btn:active,
+      .filter:active {
+        transform: translate(3px, 3px);
+        box-shadow: none;
+      }
+
+      /* Search bar */
+      .find {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+      }
+      .search {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+      }
+      .search svg {
+        position: absolute;
+        left: 0.875rem;
+        top: 50%;
+        translate: 0 -50%;
+        pointer-events: none;
+      }
+      .search input {
+        width: 100%;
+        min-height: 3rem;
+        padding: 0 1rem 0 2.75rem;
+        font:
+          700 1rem 'Mulish',
+          sans-serif;
+        color: var(--ink);
+        background: #fff;
+        border: 3px solid var(--ink);
+        border-radius: 0.625rem;
+      }
+      .search input::placeholder {
+        color: var(--muted);
+        opacity: 1;
+        font-weight: 500;
+      }
+      .search input:focus-visible {
+        outline: 4px solid var(--blu);
+        outline-offset: 0;
+      }
+      .filter {
+        position: relative;
+        min-height: 3rem;
+        min-width: 3rem;
+        padding: 0 0.875rem;
+        display: inline-flex;
+        gap: 0.5rem;
+        align-items: center;
+        font:
+          900 1rem 'Mulish',
+          sans-serif;
+        color: var(--ink);
+        background: var(--yel);
+        border: 3px solid var(--ink);
+        border-radius: 0.625rem;
+        box-shadow: var(--shadow-sm);
+        cursor: pointer;
+      }
+      .filter[aria-expanded='true'] {
+        background: var(--red);
+        color: #fff;
+      }
+      .filter .dot {
+        position: absolute;
+        top: -0.5rem;
+        right: -0.5rem;
+        min-width: 1.375rem;
+        height: 1.375rem;
+        padding: 0 0.25rem;
+        display: grid;
+        place-items: center;
+        font-size: 0.8125rem;
+        font-weight: 900;
+        color: #fff;
+        background: var(--red);
+        border: 2px solid var(--ink);
+        border-radius: 99px;
+      }
+      .sr {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }
+
+      /* Phone: bar fixed at the bottom, in thumb reach */
+      .dock {
+        position: fixed;
+        inset: auto 0 0 0;
+        z-index: 10;
+        background: var(--por);
+        border-top: 3px solid var(--ink);
+        padding: 0.75rem max(1rem, 4vw) calc(0.75rem + env(safe-area-inset-bottom));
+      }
+      /* Grows upward from the bar. The gray line sits where the bar's top padding ends, so the input never moves. */
+      .sheet {
+        padding-bottom: 0.75rem;
+        margin-bottom: 0.75rem;
+        border-bottom: 3px solid var(--line);
+      }
+      .sheet[data-open] {
+        animation: rise 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(0.75rem);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .sheet[data-open],
+        .card {
+          animation: none;
+          transition: none;
+        }
+      }
+
+      /* Wider: bar sits inline above the results, sheet content always visible, no filter button */
+      @media (min-width: 48rem) {
+        body {
+          padding-bottom: 4rem;
+        }
+        .dock {
+          position: static;
+          background: none;
+          border: 0;
+          padding: 0;
+          margin-top: 2rem;
+        }
+        .dock {
+          display: flex;
+          flex-direction: column-reverse;
+          gap: 1rem;
+        }
+        .sheet,
+        .sheet[data-open] {
+          display: block;
+          animation: none;
+          padding: 0;
+          margin: 0;
+          border: 0;
+        }
+        .sheet .group {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.75rem;
+          margin: 0 1.5rem 0.75rem 0;
+        }
+        .sheet .group legend {
+          margin: 0;
+          float: left;
+        }
+        .sheet .actions,
+        .filter {
+          display: none;
+        }
+        .find {
+          max-width: 32rem;
+        }
+        .card img.photo {
+          aspect-ratio: 16/10;
+        }
+        .dock {
+          margin-top: 1.5rem;
+        }
+        .count {
+          margin-top: 1.5rem;
+        }
+      }
+
+      /* Fridge page additions */
+      body {
+        padding-bottom: 4rem;
+      }
+
+      /* Card top as in the app: photo = two tile rows high, band = one tile row, tile count follows the card width. */
+      .card {
+        container-type: inline-size;
+      }
+      .card img.photo {
+        aspect-ratio: calc(var(--cols) / 2);
+        border-bottom: 3px solid var(--ink);
+      }
+      .band {
+        position: relative;
+        display: block;
+        aspect-ratio: var(--cols) / 1;
+        background-size: calc(100% / var(--cols)) auto;
+        background-repeat: repeat;
+      }
+      .card-in {
+        --cols: 6;
+        display: block;
+      }
+      @container (min-width: 21rem) {
+        .card-in {
+          --cols: 8;
+        }
+      }
+      @container (min-width: 29rem) {
+        .card-in {
+          --cols: 10;
+        }
+      }
+      @container (min-width: 37rem) {
+        .card-in {
+          --cols: 14;
+        }
+      }
+      @container (min-width: 49rem) {
+        .card-in {
+          --cols: 18;
+        }
+      }
+      .leaf {
+        position: absolute;
+        z-index: 2;
+        right: 0.1875rem;
+        bottom: 0.1875rem;
+        width: 2.75rem;
+        height: 2.75rem;
+        display: grid;
+        place-items: center;
+        color: var(--ink);
+        background: #fff;
+        border: 3px solid var(--ink);
+        border-radius: 10px;
+        cursor: pointer;
+      }
+      /* Hover colours instead of raising: the card stays put, clickable things get a light ink tint. */
+      .card:hover {
+        transform: none;
+        box-shadow: var(--shadow);
+      }
+      .btn:hover,
+      .tag button:hover,
+      .leaf:hover,
+      .mini:hover {
+        background-image: linear-gradient(rgb(28 21 18 / 0.08), rgb(28 21 18 / 0.08));
+      }
+      /* Only .open (photo to count) opens the recipe: the title link is stretched over it, the fridge part below a separator is plain. */
+      .open {
+        position: relative;
+        display: block;
+      }
+      .open:hover .text {
+        background: color-mix(in srgb, var(--ink) 8%, #fff);
+      }
+      .text {
+        display: block;
+        padding: 0.75rem 1rem 1rem;
+        border-top: 3px solid var(--ink);
+        background: #fff;
+      }
+      .title::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+      }
+      .title {
+        color: inherit;
+        text-decoration: none;
+      }
+      .pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.375rem;
+        margin-top: 0.375rem;
+      }
+      .pill {
+        padding: 0 0.625rem;
+        font-size: 0.8125rem;
+        line-height: 1.45;
+        font-weight: 800;
+        background: var(--por);
+        border: 2px solid var(--ink);
+        border-radius: 99px;
+      }
+      .count-in {
+        display: block;
+        margin-top: 0.375rem;
+        font-weight: 900;
+        color: var(--blu);
+      }
+      .fridge {
+        position: relative;
+        padding: 0 1rem 1rem;
+        background: #fff;
+        border-top: 3px solid var(--ink);
+      }
+
+      /* Filters: on top of the page, not fixed. Each list: label, input with its button, chips under it. */
+      .lists {
+        display: grid;
+        gap: 1rem;
+        margin-top: 1.5rem;
+      }
+      .lists .group {
+        margin: 0;
+      }
+      .entry {
+        display: flex;
+        gap: 0.5rem;
+      }
+      .entry input {
+        flex: 1;
+        min-width: 0;
+        min-height: 3rem;
+        padding: 0 0.75rem;
+        font:
+          700 1rem 'Mulish',
+          sans-serif;
+        color: var(--ink);
+        background: #fff;
+        border: 3px solid var(--ink);
+        border-radius: 0.625rem;
+      }
+      .entry input::placeholder {
+        color: var(--muted);
+        opacity: 1;
+        font-weight: 500;
+      }
+      .entry input:focus-visible {
+        outline: 4px solid var(--blu);
+        outline-offset: 0;
+      }
+      .entry .btn {
+        flex: none;
+        width: 3rem;
+        padding: 0;
+      }
+      .entry .plus {
+        background: var(--blu);
+        color: #fff;
+      }
+      .lists .chips {
+        margin-top: 0.75rem;
+      }
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.125rem;
+        min-height: 2.25rem;
+        padding: 0 0.125rem 0 0.625rem;
+        font:
+          900 0.9375rem/1 'Mulish',
+          sans-serif;
+        background: #fff;
+        border: 3px solid var(--ink);
+        border-radius: 0.625rem;
+      }
+      .tag.have {
+        background: var(--blu);
+        color: #fff;
+      }
+      .tag.skip {
+        border-style: dashed;
+      }
+      .tag button {
+        width: 2rem;
+        height: 2rem;
+        display: grid;
+        place-items: center;
+        color: inherit;
+        background: none;
+        border: 0;
+        border-radius: 0.5rem;
+        cursor: pointer;
+      }
+      .opts {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem 1.5rem;
+        margin-top: 1rem;
+      }
+      .opts .group {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin: 0;
+      }
+      .opts .group legend {
+        float: left;
+        margin: 0;
+      }
+      .opts .btn {
+        flex: none;
+        padding: 0 1rem;
+      }
+
+      /* Ingredient block */
+      .miss,
+      .gone {
+        margin: 0.75rem 0 0;
+      }
+      .miss h3,
+      .gone h3 {
+        margin: 0 0 0.25rem;
+        font-size: 0.9375rem;
+        font-weight: 900;
+        color: var(--muted);
+      }
+      .miss ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      .miss li {
+        display: flex;
+        align-items: center;
+        border-top: 2px solid var(--line);
+      }
+      .miss li span {
+        flex: 1;
+        font-weight: 800;
+      }
+      /* Quiet buttons: light outline, muted icon, close together. Hit area 44 x 48px. */
+      .mini {
+        flex: none;
+        width: 2.75rem;
+        height: 3rem;
+        display: grid;
+        place-items: center;
+        color: var(--muted);
+        background: none;
+        border: 0;
+        border-radius: 0.625rem;
+        cursor: pointer;
+      }
+      .mini + .mini {
+        margin-left: -0.25rem;
+      }
+      .mini svg {
+        padding: 3px;
+        box-sizing: content-box;
+        border: 2px solid var(--line);
+        border-radius: 0.5rem;
+      }
+      .mini:hover {
+        color: var(--ink);
+      }
+      .mini:hover svg {
+        border-color: var(--ink);
+      }
+      .more {
+        min-height: 2.75rem;
+        padding: 0;
+        font:
+          900 1rem 'Mulish',
+          sans-serif;
+        text-decoration: underline;
+        background: none;
+        border: 0;
+        cursor: pointer;
+        color: var(--blu);
+      }
+      .gone ul {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      .gone li {
+        padding: 0.125rem 0.625rem;
+        font-weight: 800;
+        color: var(--muted);
+        border: 2px dashed var(--muted);
+        border-radius: 0.5rem;
+      }
+      .gone s {
+        text-decoration-thickness: 3px;
+        text-decoration-color: var(--red);
+      }
+      @media (min-width: 48rem) {
+        .lists {
+          grid-template-columns: 1fr 1fr;
+          gap: 1.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="head">
+        <a class="brand" href="#">Familiekookboek</a>
+        <a class="new" href="#">+ Nieuw</a>
+      </div>
+      <div class="fret" aria-hidden="true"></div>
+    </header>
+
+    <main id="main">
+      <h1>Wat zit er in de koelkast?</h1>
+      <p class="intro">Typ wat je nog hebt. Recepten die het meeste gebruiken staan bovenaan.</p>
+
+      <div class="lists">
+        <fieldset class="group">
+          <legend>Heb ik</legend>
+          <div class="entry">
+            <input type="text" placeholder="Wat heb je nog?" aria-label="Ingrediënt dat ik heb" enterkeyhint="enter" autocomplete="off" />
+            <button class="btn plus" type="button" data-list="have" aria-label="Voeg toe aan Heb ik">
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3.5"
+                stroke-linecap="round"
+                aria-hidden="true"
+              >
+                <path d="M12 4v16M4 12h16" />
+              </svg>
+            </button>
+          </div>
+          <div class="chips" id="have">
+            <span class="tag have"
+              >rijst<button type="button" aria-label="Haal rijst weg uit Heb ik">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="3.5"
+                  stroke-linecap="round"
+                  aria-hidden="true"
+                >
+                  <path d="m6 6 12 12M18 6 6 18" />
+                </svg></button></span
+            ><span class="tag have"
+              >melk<button type="button" aria-label="Haal melk weg uit Heb ik">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="3.5"
+                  stroke-linecap="round"
+                  aria-hidden="true"
+                >
+                  <path d="m6 6 12 12M18 6 6 18" />
+                </svg></button></span
+            ><span class="tag have"
+              >ei<button type="button" aria-label="Haal ei weg uit Heb ik">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="3.5"
+                  stroke-linecap="round"
+                  aria-hidden="true"
+                >
+                  <path d="m6 6 12 12M18 6 6 18" />
+                </svg></button></span
+            ><span class="tag have"
+              >bloem<button type="button" aria-label="Haal bloem weg uit Heb ik">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="3.5"
+                  stroke-linecap="round"
+                  aria-hidden="true"
+                >
+                  <path d="m6 6 12 12M18 6 6 18" />
+                </svg></button
+            ></span>
+          </div>
+        </fieldset>
+        <fieldset class="group">
+          <legend>Liever niet</legend>
+          <div class="entry">
+            <input
+              type="text"
+              placeholder="Wat wil je niet?"
+              aria-label="Ingrediënt dat ik liever niet wil"
+              enterkeyhint="enter"
+              autocomplete="off"
+            />
+            <button class="btn minus" type="button" data-list="skip" aria-label="Voeg toe aan Liever niet">
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3.5"
+                stroke-linecap="round"
+                aria-hidden="true"
+              >
+                <path d="M4 12h16" />
+              </svg>
+            </button>
+          </div>
+          <div class="chips" id="skip">
+            <span class="tag skip"
+              >spruitjes<button type="button" aria-label="Haal spruitjes weg uit Liever niet">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="3.5"
+                  stroke-linecap="round"
+                  aria-hidden="true"
+                >
+                  <path d="m6 6 12 12M18 6 6 18" />
+                </svg></button
+            ></span>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="opts">
+        <fieldset class="group">
+          <legend>Volgorde bij gelijk</legend>
+          <div class="seg">
+            <input type="radio" name="sort" id="s1" checked /><label for="s1">Nieuwste</label> <input type="radio" name="sort" id="s2" /><label
+              for="s2"
+              >A–Z</label
+            >
+          </div>
+        </fieldset>
+        <button class="btn" type="button">Wis alles</button>
+      </div>
+
+      <p class="count" role="status">3 van 6 recepten</p>
+
+      <ul class="grid">
+        <li>
+          <article class="card">
+            <div class="card-in">
+              <div class="open">
+                <img class="photo" src="../../public/img/pannenkoeken.jpg" alt="" width="640" height="400" />
+                <img class="seal" src="../../public/img/seal/kai-fan.svg" alt="" />
+                <span class="band" style="background-image: url(../../public/img/tile/tile11-blue.svg)"
+                  ><button class="leaf" type="button" aria-label="Markeer als favoriet">
+                    <svg
+                      width="28"
+                      height="28"
+                      viewBox="0 0 14 14"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="0.8"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M6.7552516 12.9749c0-.014.026-.6078.057-1.3203.07-1.5937.069-1.5091.014-1.5845-.05-.069-.1077-.1023-.1772-.1023-.083 0-.6683.078-1.4387.1904-.7811.1145-1.2022.1714-1.2088.1634 0 0 .049-.178.114-.3894.1362-.4432.1431-.4966.081-.6202-.037-.072-.1235-.1458-1.3903-1.174-.7431-.6032-1.3498-1.1029-1.3482-1.1104 0-.01.1399-.078.3074-.1559.1674-.078.3208-.1578.3409-.1767.047-.044.06-.1153.039-.2162-.01-.044-.1191-.4536-.2445-.9098-.1254-.4562-.2262-.831-.224-.8328 0 0 .3498.069.7726.1586.4228.089.7944.1619.8258.1619.071 0 .1472-.039.186-.096.016-.024.073-.1961.1262-.3829.053-.1868.101-.3477.1063-.3576.01-.012.2307.2294.6279.6742.34.3808.6426.7132.6725.7388.063.054.1597.085.2205.072.09-.02.1459-.1186.1458-.2569 0-.039-.1214-.7149-.2696-1.5015-.1483-.7867-.2675-1.4324-.2648-1.4351 0 0 .196.092.4297.2111.4084.2074.4284.2159.5121.2164.1052.0006.1874-.04.2375-.1163.018-.028.2467-.4496.5077-.937.2609-.4873.4788-.8861.4842-.8861.01 0 .2234.3988.4845.8861.261.4874.4894.9087.5074.9363.037.056.099.098.1693.1137.098.022.1873-.011.6018-.223.2219-.1136.4057-.2042.4084-.2014 0 0-.1162.6486-.2645 1.4353-.1502.7968-.2696 1.4661-.2696 1.5111-.0001.1929.1119.2909.2654.2322.036-.014.086-.043.1113-.065.025-.022.3239-.3516.6633-.7316.3964004-.444.6204004-.6845.6266004-.6729.01.01.053.1708.1064.3576.053.1868.1099.3591.1262.3829.039.057.1148.096.1859.096.032 0 .4031-.073.8259-.1619.4228-.089.7704-.1604.7726-.1586 0 0-.1026.3902-.2328.863s-.2401.8987-.2442.9464c-.011.1313.011.1499.3886.3264.1717.08.3122.1507.3122.1566 0 .01-.6085.5047-1.3523 1.1084-1.2679004 1.0292-1.3548004 1.1025-1.3915004 1.175-.063.1236-.056.177.081.6202.065.2114.1163.3866.114.3894-.01.01-.4278-.049-1.2088-.1634-.7893-.1157-1.3563-.1904-1.4447-.1904-.069 0-.1496.065-.1857.1494-.023.054-.022.1261.01 1.3025.018.6851.033 1.3208.034 1.4128l.0008.1673h-.2206c-.2007 0-.2207 0-.2206-.025z"
+                      />
+                    </svg></button
+                ></span>
+                <span class="text">
+                  <a class="title" href="#">Pannenkoeken</a>
+                  <span class="meta">van Tante An · 30 min</span>
+                  <span class="pills"><span class="pill">Hoofdgerecht</span><span class="pill">Kinderen</span></span>
+                  <span class="count-in">3/4 in huis</span>
+                </span>
+              </div>
+              <div class="fridge">
+                <div class="miss">
+                  <h3>Ontbreekt</h3>
+                  <ul>
+                    <li>
+                      <span>poedersuiker</span
+                      ><button class="mini" type="button" aria-label="Ik heb poedersuiker">
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="3"
+                          stroke-linecap="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M12 4v16M4 12h16" />
+                        </svg></button
+                      ><button class="mini" type="button" aria-label="Liever geen poedersuiker">
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="3"
+                          stroke-linecap="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M4 12h16" />
+                        </svg>
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+                <div class="gone">
+                  <h3>Heb je, niet in dit recept</h3>
+                  <ul>
+                    <li><s>rijst</s><span class="sr"> (niet in dit recept)</span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </article>
+        </li>
+        <li>
+          <article class="card">
+            <div class="card-in">
+              <div class="open">
+                <span class="badge">Nieuw</span>
+                <img class="photo" src="../../public/img/rijstpap.jpg" alt="" width="640" height="400" />
+                <img class="seal" src="../../public/img/seal/hao-chi.svg" alt="" />
+                <span class="band" style="background-image: url(../../public/img/tile/tile10-blue.svg)"
+                  ><button class="leaf" type="button" aria-label="Markeer als favoriet">
+                    <svg
+                      width="28"
+                      height="28"
+                      viewBox="0 0 14 14"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="0.8"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M6.7552516 12.9749c0-.014.026-.6078.057-1.3203.07-1.5937.069-1.5091.014-1.5845-.05-.069-.1077-.1023-.1772-.1023-.083 0-.6683.078-1.4387.1904-.7811.1145-1.2022.1714-1.2088.1634 0 0 .049-.178.114-.3894.1362-.4432.1431-.4966.081-.6202-.037-.072-.1235-.1458-1.3903-1.174-.7431-.6032-1.3498-1.1029-1.3482-1.1104 0-.01.1399-.078.3074-.1559.1674-.078.3208-.1578.3409-.1767.047-.044.06-.1153.039-.2162-.01-.044-.1191-.4536-.2445-.9098-.1254-.4562-.2262-.831-.224-.8328 0 0 .3498.069.7726.1586.4228.089.7944.1619.8258.1619.071 0 .1472-.039.186-.096.016-.024.073-.1961.1262-.3829.053-.1868.101-.3477.1063-.3576.01-.012.2307.2294.6279.6742.34.3808.6426.7132.6725.7388.063.054.1597.085.2205.072.09-.02.1459-.1186.1458-.2569 0-.039-.1214-.7149-.2696-1.5015-.1483-.7867-.2675-1.4324-.2648-1.4351 0 0 .196.092.4297.2111.4084.2074.4284.2159.5121.2164.1052.0006.1874-.04.2375-.1163.018-.028.2467-.4496.5077-.937.2609-.4873.4788-.8861.4842-.8861.01 0 .2234.3988.4845.8861.261.4874.4894.9087.5074.9363.037.056.099.098.1693.1137.098.022.1873-.011.6018-.223.2219-.1136.4057-.2042.4084-.2014 0 0-.1162.6486-.2645 1.4353-.1502.7968-.2696 1.4661-.2696 1.5111-.0001.1929.1119.2909.2654.2322.036-.014.086-.043.1113-.065.025-.022.3239-.3516.6633-.7316.3964004-.444.6204004-.6845.6266004-.6729.01.01.053.1708.1064.3576.053.1868.1099.3591.1262.3829.039.057.1148.096.1859.096.032 0 .4031-.073.8259-.1619.4228-.089.7704-.1604.7726-.1586 0 0-.1026.3902-.2328.863s-.2401.8987-.2442.9464c-.011.1313.011.1499.3886.3264.1717.08.3122.1507.3122.1566 0 .01-.6085.5047-1.3523 1.1084-1.2679004 1.0292-1.3548004 1.1025-1.3915004 1.175-.063.1236-.056.177.081.6202.065.2114.1163.3866.114.3894-.01.01-.4278-.049-1.2088-.1634-.7893-.1157-1.3563-.1904-1.4447-.1904-.069 0-.1496.065-.1857.1494-.023.054-.022.1261.01 1.3025.018.6851.033 1.3208.034 1.4128l.0008.1673h-.2206c-.2007 0-.2207 0-.2206-.025z"
+                      />
+                    </svg></button
+                ></span>
+                <span class="text">
+                  <a class="title" href="#">Rijstpap</a>
+                  <span class="meta">van Mama · 45 min</span>
+                  <span class="pills"><span class="pill">Dessert</span></span>
+                  <span class="count-in">2/4 in huis</span>
+                </span>
+              </div>
+              <div class="fridge">
+                <div class="miss">
+                  <h3>Ontbreekt</h3>
+                  <ul>
+                    <li>
+                      <span>kaneel</span
+                      ><button class="mini" type="button" aria-label="Ik heb kaneel">
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="3"
+                          stroke-linecap="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M12 4v16M4 12h16" />
+                        </svg></button
+                      ><button class="mini" type="button" aria-label="Liever geen kaneel">
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="3"
+                          stroke-linecap="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M4 12h16" />
+                        </svg>
+                      </button>
+                    </li>
+                    <li>
+                      <span>rozijnen</span
+                      ><button class="mini" type="button" aria-label="Ik heb rozijnen">
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="3"
+                          stroke-linecap="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M12 4v16M4 12h16" />
+                        </svg></button
+                      ><button class="mini" type="button" aria-label="Liever geen rozijnen">
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="3"
+                          stroke-linecap="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M4 12h16" />
+                        </svg>
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+                <div class="gone">
+                  <h3>Heb je, niet in dit recept</h3>
+                  <ul>
+                    <li><s>ei</s><span class="sr"> (niet in dit recept)</span></li>
+                    <li><s>bloem</s><span class="sr"> (niet in dit recept)</span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </article>
+        </li>
+        <li>
+          <article class="card">
+            <div class="card-in">
+              <div class="open">
+                <img class="photo" src="../../public/img/appeltaart.jpg" alt="" width="640" height="400" />
+                <img class="seal" src="../../public/img/seal/jia-wei.svg" alt="" />
+                <span class="band" style="background-image: url(../../public/img/tile/tile5-blue.svg)"
+                  ><button class="leaf" type="button" aria-label="Markeer als favoriet">
+                    <svg
+                      width="28"
+                      height="28"
+                      viewBox="0 0 14 14"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="0.8"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M6.7552516 12.9749c0-.014.026-.6078.057-1.3203.07-1.5937.069-1.5091.014-1.5845-.05-.069-.1077-.1023-.1772-.1023-.083 0-.6683.078-1.4387.1904-.7811.1145-1.2022.1714-1.2088.1634 0 0 .049-.178.114-.3894.1362-.4432.1431-.4966.081-.6202-.037-.072-.1235-.1458-1.3903-1.174-.7431-.6032-1.3498-1.1029-1.3482-1.1104 0-.01.1399-.078.3074-.1559.1674-.078.3208-.1578.3409-.1767.047-.044.06-.1153.039-.2162-.01-.044-.1191-.4536-.2445-.9098-.1254-.4562-.2262-.831-.224-.8328 0 0 .3498.069.7726.1586.4228.089.7944.1619.8258.1619.071 0 .1472-.039.186-.096.016-.024.073-.1961.1262-.3829.053-.1868.101-.3477.1063-.3576.01-.012.2307.2294.6279.6742.34.3808.6426.7132.6725.7388.063.054.1597.085.2205.072.09-.02.1459-.1186.1458-.2569 0-.039-.1214-.7149-.2696-1.5015-.1483-.7867-.2675-1.4324-.2648-1.4351 0 0 .196.092.4297.2111.4084.2074.4284.2159.5121.2164.1052.0006.1874-.04.2375-.1163.018-.028.2467-.4496.5077-.937.2609-.4873.4788-.8861.4842-.8861.01 0 .2234.3988.4845.8861.261.4874.4894.9087.5074.9363.037.056.099.098.1693.1137.098.022.1873-.011.6018-.223.2219-.1136.4057-.2042.4084-.2014 0 0-.1162.6486-.2645 1.4353-.1502.7968-.2696 1.4661-.2696 1.5111-.0001.1929.1119.2909.2654.2322.036-.014.086-.043.1113-.065.025-.022.3239-.3516.6633-.7316.3964004-.444.6204004-.6845.6266004-.6729.01.01.053.1708.1064.3576.053.1868.1099.3591.1262.3829.039.057.1148.096.1859.096.032 0 .4031-.073.8259-.1619.4228-.089.7704-.1604.7726-.1586 0 0-.1026.3902-.2328.863s-.2401.8987-.2442.9464c-.011.1313.011.1499.3886.3264.1717.08.3122.1507.3122.1566 0 .01-.6085.5047-1.3523 1.1084-1.2679004 1.0292-1.3548004 1.1025-1.3915004 1.175-.063.1236-.056.177.081.6202.065.2114.1163.3866.114.3894-.01.01-.4278-.049-1.2088-.1634-.7893-.1157-1.3563-.1904-1.4447-.1904-.069 0-.1496.065-.1857.1494-.023.054-.022.1261.01 1.3025.018.6851.033 1.3208.034 1.4128l.0008.1673h-.2206c-.2007 0-.2207 0-.2206-.025z"
+                      />
+                    </svg></button
+                ></span>
+                <span class="text">
+                  <a class="title" href="#">Appeltaart</a>
+                  <span class="meta">van Oma · 1u 20</span>
+                  <span class="pills"><span class="pill">Dessert</span><span class="pill">Gebak</span></span>
+                  <span class="count-in">2/4 in huis</span>
+                </span>
+              </div>
+              <div class="fridge">
+                <div class="miss">
+                  <h3>Ontbreekt</h3>
+                  <ul>
+                    <li>
+                      <span>appels</span
+                      ><button class="mini" type="button" aria-label="Ik heb appels">
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="3"
+                          stroke-linecap="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M12 4v16M4 12h16" />
+                        </svg></button
+                      ><button class="mini" type="button" aria-label="Liever geen appels">
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="3"
+                          stroke-linecap="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M4 12h16" />
+                        </svg>
+                      </button>
+                    </li>
+                    <li>
+                      <span>kaneel</span
+                      ><button class="mini" type="button" aria-label="Ik heb kaneel">
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="3"
+                          stroke-linecap="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M12 4v16M4 12h16" />
+                        </svg></button
+                      ><button class="mini" type="button" aria-label="Liever geen kaneel">
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="3"
+                          stroke-linecap="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M4 12h16" />
+                        </svg>
+                      </button>
+                    </li>
+                    <li>
+                      <span>rozijnen</span
+                      ><button class="mini" type="button" aria-label="Ik heb rozijnen">
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="3"
+                          stroke-linecap="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M12 4v16M4 12h16" />
+                        </svg></button
+                      ><button class="mini" type="button" aria-label="Liever geen rozijnen">
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="3"
+                          stroke-linecap="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M4 12h16" />
+                        </svg>
+                      </button>
+                    </li>
+                    <li>
+                      <span>amandelspijs</span
+                      ><button class="mini" type="button" aria-label="Ik heb amandelspijs">
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="3"
+                          stroke-linecap="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M12 4v16M4 12h16" />
+                        </svg></button
+                      ><button class="mini" type="button" aria-label="Liever geen amandelspijs">
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="3"
+                          stroke-linecap="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M4 12h16" />
+                        </svg>
+                      </button>
+                    </li>
+                    <li>
+                      <span>citroen</span
+                      ><button class="mini" type="button" aria-label="Ik heb citroen">
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="3"
+                          stroke-linecap="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M12 4v16M4 12h16" />
+                        </svg></button
+                      ><button class="mini" type="button" aria-label="Liever geen citroen">
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="3"
+                          stroke-linecap="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M4 12h16" />
+                        </svg>
+                      </button>
+                    </li>
+                  </ul>
+                  <button class="more" type="button">+1 meer</button>
+                </div>
+                <div class="gone">
+                  <h3>Heb je, niet in dit recept</h3>
+                  <ul>
+                    <li><s>rijst</s><span class="sr"> (niet in dit recept)</span></li>
+                    <li><s>melk</s><span class="sr"> (niet in dit recept)</span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </article>
+        </li>
+      </ul>
+    </main>
+
+    <script>
+      // Mockup behaviour: Enter or the button adds the word as a chip to its list, clears the input and keeps focus; a cross removes a chip.
+      const label = { have: 'Heb ik', skip: 'Liever niet' };
+      const cross = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>`;
+      function add(input, kind) {
+        const name = input.value.trim().toLowerCase();
+        input.value = '';
+        input.focus();
+        if (!name) return;
+        const list = document.getElementById(kind);
+        if ([...list.children].some((c) => c.firstChild.textContent === name)) return;
+        const chip = document.createElement('span');
+        chip.className = 'tag ' + kind;
+        chip.append(name);
+        chip.insertAdjacentHTML('beforeend', `<button type="button" aria-label="Haal ${name} weg uit ${label[kind]}">${cross}</button>`);
+        list.append(chip);
+      }
+      document.querySelectorAll('.entry').forEach((entry) => {
+        const input = entry.querySelector('input');
+        const kind = entry.querySelector('button').dataset.list;
+        input.addEventListener('keydown', (e) => {
+          if (e.key !== 'Enter') return;
+          e.preventDefault();
+          add(input, kind);
+        });
+        entry.querySelector('button').addEventListener('click', () => add(input, kind));
+      });
+      document.querySelectorAll('.chips').forEach((list) =>
+        list.addEventListener('click', (e) => {
+          const chip = e.target.closest('.tag');
+          if (!chip || !e.target.closest('button')) return;
+          chip.remove();
+          list.parentElement.querySelector('input').focus();
+        }),
+      );
+    </script>
+  </body>
+</html>

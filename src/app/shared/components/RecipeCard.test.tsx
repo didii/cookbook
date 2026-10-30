@@ -1,30 +1,40 @@
 import assert from 'node:assert/strict';
-import type { ReactNode } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, test, vi } from 'vitest';
-import type { LikeButton, Pill, Seal, TileBand } from '~app/shared/components';
-import type { RecipeSummary } from '~app/shared/recipe';
 import { cssFor, mediaFor } from '~testing/css';
 import { precedes, render, screen, within } from '~testing/dom';
+import type { LikeButton } from './LikeButton';
+import type { Pill } from './Pill';
 import { RecipeCard } from './RecipeCard';
+import type { Seal } from './Seal';
+import type { TileBand } from './TileBand';
+import type { RecipeSummary } from '../recipe';
 
 /** The last props each shared child got, so the card's tests check what it passes and not the child's markup. */
 const passed = vi.hoisted(() => new Map<string, unknown>());
-vi.mock('~app/shared/components', async (importOriginal) => {
-  const real = await importOriginal<typeof import('~app/shared/components')>();
-  const record =
-    <P extends object>(name: string, Child: (props: P) => ReactNode) =>
-    (props: P) => {
-      passed.set(name, props);
-      return <Child {...props} />;
-    };
-  return {
-    ...real,
-    LikeButton: record('LikeButton', real.LikeButton),
-    Pill: record('Pill', real.Pill),
-    Seal: record('Seal', real.Seal),
-    TileBand: record('TileBand', real.TileBand),
+// A function declaration, so the hoisted mock factories below can use it.
+function record<P extends object>(name: string, Child: (props: P) => ReactNode) {
+  return (props: P) => {
+    passed.set(name, props);
+    return <Child {...props} />;
   };
+}
+vi.mock('./LikeButton', async (importOriginal) => {
+  const real = await importOriginal<typeof import('./LikeButton')>();
+  return { ...real, LikeButton: record('LikeButton', real.LikeButton) };
+});
+vi.mock('./Pill', async (importOriginal) => {
+  const real = await importOriginal<typeof import('./Pill')>();
+  return { ...real, Pill: record('Pill', real.Pill) };
+});
+vi.mock('./Seal', async (importOriginal) => {
+  const real = await importOriginal<typeof import('./Seal')>();
+  return { ...real, Seal: record('Seal', real.Seal) };
+});
+vi.mock('./TileBand', async (importOriginal) => {
+  const real = await importOriginal<typeof import('./TileBand')>();
+  return { ...real, TileBand: record('TileBand', real.TileBand) };
 });
 afterEach(() => passed.clear());
 const propsOf = <C extends (props: never) => ReactNode>(name: string) => passed.get(name) as Parameters<C>[0] | undefined;
@@ -40,10 +50,10 @@ const recipe: RecipeSummary = {
   liked: false,
   hasNote: false,
 };
-const card = (r: Partial<RecipeSummary> = {}) =>
+const card = (r: Partial<RecipeSummary> = {}, extra: Partial<ComponentProps<typeof RecipeCard>> = {}) =>
   render(
     <MemoryRouter>
-      <RecipeCard recipe={{ ...recipe, ...r }} tile={0} />
+      <RecipeCard recipe={{ ...recipe, ...r }} tile={0} {...extra} />
     </MemoryRouter>,
   );
 const pills = () => screen.queryAllByTestId('RecipeCard-tag').map((p) => p.textContent);
@@ -315,5 +325,39 @@ describe('recipe-new-marker › Marker on a card without an image', () => {
   test('is announced as the description of the link', () => {
     card({ isNew: true, image: null });
     assert.equal(screen.getByTestId('RecipeCard-link').getAttribute('aria-describedby'), screen.getByTestId('RecipeCard-new').id);
+  });
+});
+
+describe('RecipeCard footer and children', () => {
+  test('the footer is shown under the tags', () => {
+    card({ tags: ['Soep'] }, { footer: <p data-testid="Test-footer" /> });
+    assert.ok(precedes(screen.getByTestId('RecipeCard-tags'), screen.getByTestId('Test-footer')));
+  });
+
+  test('the footer is part of the link area, with the title and not the children', () => {
+    card({}, { footer: <p data-testid="Test-footer" />, children: <p data-testid="Test-child" /> });
+    const area = screen.getByTestId('RecipeCard-link').parentElement!;
+    assert.ok(area.contains(screen.getByTestId('Test-footer')));
+    assert.ok(!area.contains(screen.getByTestId('Test-child')));
+  });
+
+  test('the children are below the link area', () => {
+    card({}, { children: <p data-testid="Test-child" /> });
+    assert.ok(precedes(screen.getByTestId('RecipeCard-author'), screen.getByTestId('Test-child')));
+  });
+
+  test('the children are not inside the link', () => {
+    card({}, { children: <p data-testid="Test-child" /> });
+    assert.ok(!screen.getByTestId('RecipeCard-link').contains(screen.getByTestId('Test-child')));
+  });
+
+  test('the children sit above the stretched link', async () => {
+    card({}, { children: <p data-testid="Test-child" /> });
+    assert.match(await cssFor(screen.getByTestId('RecipeCard-extra').className), /z-index: 2/);
+  });
+
+  test('without footer and children there is no extra part', () => {
+    card();
+    assert.equal(screen.queryByTestId('RecipeCard-extra'), null);
   });
 });

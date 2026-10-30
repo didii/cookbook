@@ -1,6 +1,7 @@
 import { data } from 'react-router';
 import { envContext, userEmailContext } from '~app/shared/context.server';
-import { getRules, resetRules, saveRules, toRows, type RulesRows } from '~app/shared/rules.server';
+import { getRules, readRules, resetRules, saveRules, toRows, type RulesErrors, type RulesRows } from '~app/shared/rules.server';
+import { getStaples, readStaples, resetStaples, saveStaples } from '~app/shared/staples.server';
 import { requireAdmin } from '~app/shared/users.server';
 import type { Route } from './+types/AdminRulesPageRoute';
 import { RulesForm } from './lib/RulesForm';
@@ -14,6 +15,7 @@ const isRows = (v: unknown): v is RulesRows => {
     isStrings(r.units) &&
     isStrings(r.looseUnits) &&
     isStrings(r.degreeWords) &&
+    isStrings(r.staples) &&
     Array.isArray(r.durations) &&
     r.durations.every((d) => typeof d === 'object' && d !== null && typeof d.word === 'string' && typeof d.fixed === 'boolean')
   );
@@ -23,7 +25,7 @@ const isRows = (v: unknown): v is RulesRows => {
 export async function loader({ context }: Route.LoaderArgs) {
   const db = context.get(envContext).DB;
   await requireAdmin(db, context.get(userEmailContext));
-  return { rows: toRows(await getRules(db)) };
+  return { rows: toRows(await getRules(db), await getStaples(db)) };
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
@@ -33,6 +35,7 @@ export async function action({ request, context }: Route.ActionArgs) {
   const intent = form.get('intent');
   if (intent === 'reset') {
     await resetRules(db);
+    await resetStaples(db);
     return data({ saved: true as const, nonce: crypto.randomUUID() });
   }
   if (intent !== 'save') throw data('Onbekende actie.', { status: 400 });
@@ -43,8 +46,13 @@ export async function action({ request, context }: Route.ActionArgs) {
     throw data('Onleesbare regels.', { status: 400 });
   }
   if (!isRows(rows)) throw data('Onleesbare regels.', { status: 400 });
-  const { errors } = await saveRules(db, rows);
-  if (errors) return data({ errors, rows, nonce: crypto.randomUUID() }, { status: 400 });
+  // Every list is checked before anything is stored, so a fault in one keeps the others out too.
+  const readRule = readRules(rows);
+  const readStaple = readStaples(rows.staples);
+  const errors: RulesErrors = { ...('errors' in readRule && readRule.errors), ...('errors' in readStaple && { staples: readStaple.errors }) };
+  if (Object.keys(errors).length) return data({ errors, rows, nonce: crypto.randomUUID() }, { status: 400 });
+  await saveRules(db, rows);
+  if ('staples' in readStaple) await saveStaples(db, readStaple.staples);
   return data({ saved: true as const, nonce: crypto.randomUUID() });
 }
 

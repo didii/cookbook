@@ -14,6 +14,7 @@ import {
   Link as LucideLink,
   Lock as LucideLock,
   Menu as LucideMenu,
+  Minus as LucideMinus,
   Pin as LucidePin,
   Play as LucidePlay,
   Plus as LucidePlus,
@@ -52,6 +53,7 @@ export const ArrowDown = icon(ArrowBigDown);
 export const Cross = icon(X);
 export const Check = icon(LucideCheck);
 export const Plus = icon(LucidePlus);
+export const Minus = icon(LucideMinus);
 export const Arrow = icon(ArrowRight);
 export const Link = icon(LucideLink);
 export const Menu = icon(LucideMenu);

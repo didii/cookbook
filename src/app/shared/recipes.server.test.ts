@@ -8,6 +8,7 @@ import {
   getMemberRecipeData,
   getRecipe,
   listAuthors,
+  listIngredientNames,
   listRecipes,
   listTags,
   setLike,
@@ -244,6 +245,30 @@ describe('listRecipes', () => {
         isNew: true,
       },
     ]);
+  });
+});
+
+describe('listIngredientNames', () => {
+  test('lists nothing without recipes', async ({ db }) => {
+    assert.deepEqual(await listIngredientNames(db), {});
+  });
+
+  test('has the names per slug in recipe order, and no entry for a recipe without ingredients', async ({ db }) => {
+    await seedOrdering(db);
+    assert.deepEqual(await listIngredientNames(db), { ordering: ['ei', 'zout'] });
+  });
+
+  test('keeps the recipes apart', async ({ db }) => {
+    await createRecipe(db, { title: 'Soep', author: 'Oma', ingredients: [{ name: 'water', quantityText: '' }] });
+    await createRecipe(db, {
+      title: 'Brood',
+      author: 'Oma',
+      ingredients: [
+        { name: 'meel', quantityText: '' },
+        { name: 'gist', quantityText: '' },
+      ],
+    });
+    assert.deepEqual(await listIngredientNames(db), { soep: ['water'], brood: ['meel', 'gist'] });
   });
 });
 
