@@ -108,7 +108,7 @@ Differences in the built page: "Wis alles" shows only while a list or the A–Z 
 
 ## `admin.html`
 
-Static mockup of the admin shell (`/beheer`): one nav for Herkenning, Foto's and Gebruikers, around the existing pages. Open it in a browser; it needs no build. Fonts load from Google Fonts. Not approved yet.
+Static mockup of the admin shell (`/beheer`): one nav for Herkenning, Foto's and Gebruikers, around the existing pages. Open it in a browser; it needs no build. Fonts load from Google Fonts. Approved.
 
 The dark bar at the top is mockup-only: it switches the page and the role (an admin does not see "Gebruikers"). Saving, deleting and selecting do nothing; words, photos and users are made-up. Check it at 1000px and at 390px.
 

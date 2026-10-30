@@ -21,5 +21,5 @@
 
 ## 5. Wrap-up
 
-- [ ] 5.1 By hand with `pnpm dev` at 390px and 1000px as admin and superadmin: nav column and stacked nav, current marker (also on a user's detail), `/beheer` redirect, folding on Herkenning, a refused save opening its section, both fixed bars starting at the content; set `docs/design/README.md`'s "Not approved yet" for `admin.html` to approved and list any differences from the mockup
+- [x] 5.1 By hand with `pnpm dev` at 390px and 1000px as admin and superadmin: nav column and stacked nav, current marker (also on a user's detail), `/beheer` redirect, folding on Herkenning, a refused save opening its section, both fixed bars starting at the content; set `docs/design/README.md`'s "Not approved yet" for `admin.html` to approved and list any differences from the mockup
 - [x] 5.2 Run `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check`, `pnpm test:ai` and `pnpm test:spec admin-shell`; all clean
