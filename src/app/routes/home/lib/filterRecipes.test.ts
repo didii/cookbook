@@ -298,17 +298,33 @@ describe('isFiltered', () => {
 
 describe('parseFilters', () => {
   test('reads the address', () => {
-    assert.deepEqual(parseFilters(new URLSearchParams('q=appel&auteur=Oma&sort=az')), { q: 'appel', authors: ['Oma'], tags: [], sort: 'az' });
+    assert.deepEqual(parseFilters(new URLSearchParams('q=appel&auteur=Oma&sort=az')), {
+      q: 'appel',
+      authors: ['Oma'],
+      tags: [],
+      liked: false,
+      sort: 'az',
+    });
   });
 
   test('falls back to defaults', () => {
-    assert.deepEqual(parseFilters(new URLSearchParams('sort=bogus&auteur=')), { q: '', authors: [], tags: [], sort: 'nieuwste' });
+    assert.deepEqual(parseFilters(new URLSearchParams('sort=bogus&auteur=')), { q: '', authors: [], tags: [], liked: false, sort: 'nieuwste' });
+  });
+});
+
+describe('recipe-filtering › Opening an address with favourites', () => {
+  test('favoriet=1 turns favourites on', () => {
+    assert.equal(parseFilters(new URLSearchParams('favoriet=1')).liked, true);
+  });
+
+  test('a favoriet value other than 1 leaves favourites off', () => {
+    assert.equal(parseFilters(new URLSearchParams('favoriet=0')).liked, false);
   });
 });
 
 describe('filterParams with parseFilters', () => {
   test('round-trips through parseFilters', () => {
-    const f: Filters = { q: 'crème brûlée', authors: ['Tante An', 'Oma'], tags: ['Soep', 'Dessert'], sort: 'az' };
+    const f: Filters = { q: 'crème brûlée', authors: ['Tante An', 'Oma'], tags: ['Soep', 'Dessert'], liked: true, sort: 'az' };
     assert.deepEqual(parseFilters(new URLSearchParams(filterParams(f).toString())), f);
   });
 });

@@ -2,7 +2,7 @@
 
 ## 1. Filter logic and address
 
-- [ ] 1.1 Add `liked` to `Filters`, `filterParams` (`favoriet=1`, omitted when off) and `parseFilters`; verify `filterParams.test.ts` and `filterRecipes.test.ts` cover the address round trip and the default being omitted
+- [x] 1.1 Add `liked` to `Filters`, `filterParams` (`favoriet=1`, omitted when off) and `parseFilters`; verify `filterParams.test.ts` and `filterRecipes.test.ts` cover the address round trip and the default being omitted
 - [ ] 1.2 Make `filterRecipes` keep only liked recipes when `liked` is set, and count it in `isFiltered` and `activeFilterCount`; verify unit tests for "Showing only favourites", "Favourites and other filters combine", "Favourites count as one filter" and that `noFilters` turns it off
 
 ## 2. Filter bar

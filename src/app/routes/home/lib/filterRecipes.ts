@@ -13,12 +13,13 @@ const collator = new Intl.Collator('nl', { sensitivity: 'base' });
 /** Whether two spellings are the same author or tag (case and accents ignored). */
 export const sameName = (a: string, b: string) => collator.compare(a, b) === 0;
 
-/** Filters from the page address (`q`, `auteur`, `tag`, `sort`); anything missing or unknown is the default. */
+/** Filters from the page address (`q`, `auteur`, `tag`, `favoriet`, `sort`); anything missing or unknown is the default. */
 export function parseFilters(params: URLSearchParams): Filters {
   return {
     q: params.get('q') ?? '',
     authors: params.getAll('auteur').filter(Boolean),
     tags: params.getAll('tag').filter(Boolean),
+    liked: params.get('favoriet') === '1',
     sort: params.get('sort') === 'az' ? 'az' : 'nieuwste',
   };
 }
