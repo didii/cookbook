@@ -17,7 +17,7 @@ Needs `tag-manager`, `import-recipe-from-url` and `add-home-menu-item` merged fi
 
 ## 4. Menu
 
-- [ ] 4.1 `SiteMenu.tsx`: "Foto's" with `admin: true` after "Herkenning" and before "Gebruikers" (the list starts with "Home"); update the `site-menu` tests for the new order. Tests: the three menu list scenarios and "Photos link"
+- [x] 4.1 `SiteMenu.tsx`: "Foto's" with `admin: true` after "Herkenning" and before "Gebruikers" (the list starts with "Home"); update the `site-menu` tests for the new order. Tests: the three menu list scenarios and "Photos link"
 
 ## 5. Wrap-up
 
