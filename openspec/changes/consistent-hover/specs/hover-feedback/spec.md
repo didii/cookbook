@@ -24,6 +24,17 @@ The system SHALL, while a mouse pointer is over an enabled control that has a ba
 - **WHEN** the pointer is over a disabled button
 - **THEN** its colour does not change
 
+### Requirement: Text fields tint under the pointer
+The system SHALL, while a mouse pointer is over a text field (input, textarea, or a chips field such as the tags input) that does not have focus, give it the same tint as other controls, whatever the colour of the page behind it. A field with focus keeps its focus look.
+
+#### Scenario: Hovering a field
+- **WHEN** the pointer is over a text field that does not have focus, such as the category field on the tags page
+- **THEN** its background gets the slight tint
+
+#### Scenario: Hovering a focused field
+- **WHEN** the pointer is over a text field that has focus
+- **THEN** its background does not change
+
 ### Requirement: Text links underline under the pointer
 The system SHALL, while a mouse pointer is over a link or button that is only text (such as "Alle recepten", "Bewerk" and "Annuleren"), underline that text. A text link that is already underlined (such as the source of a recipe) SHALL instead change to a slightly different colour.
 

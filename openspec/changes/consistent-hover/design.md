@@ -23,6 +23,8 @@ Hover styles are written per component. The tint exists as `hover:not-focus:bg-[
 - **Text links**: `hover:underline underline-offset-[0.25em]` as in `RecipeView`. Applied to "Voeg het eerste recept toe", "Annuleren", the header title and any other bare link found.
 - **Already underlined links** (source, DeleteUser access link, RulesBar/SelectionBar buttons): change colour, using `hover:text-blu` (existing ones use `hover:text-red`; keep those).
 - **Tag pills on the recipe page**: `Pill` stays the card's small pill. `RecipeView` passes `className` to enlarge it (`text-base`, `min-h-9`, flex-centered, `bg-white`, `hover:bg-hover` via the link's `group`). The link gets the hover so the whole target reacts.
+- **Helpers** in `shared/hover.ts`: `hoverTint` (white controls), `hoverDarken` (coloured or selected controls), `hoverField` (white text fields: `hover:not-focus:bg-hover`; chips fields use `hover:not-focus-within:bg-hover`), `hoverUnderline` (text links), `hoverRecolor` (underlined links). New clickable things use these, never a new colour. Fields use the opaque `bg-hover`, not `bg-ink/5`: a see-through tint shows the page behind it and looks different per page.
+- **Links**: the base rule `a { color: inherit }` sits in `@layer base`; unlayered it would beat every `hover:text-*` utility.
 - **Audit**: tasks list the known gaps; the last step greps `src/app` for `<button`, `<Link`, `<a`, `role=` and `cursor-pointer` to catch the rest.
 
 ## Risks / Trade-offs

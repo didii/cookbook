@@ -41,7 +41,7 @@ export function SuggestInput({ items, value, onValueChange, id, placeholder, inv
         aria-invalid={invalid ? true : undefined}
         aria-describedby={describedBy}
         className={cn(
-          'block min-h-12 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-base font-bold text-ink placeholder:font-medium placeholder:text-muted focus:shadow-focus focus:outline-transparent aria-invalid:border-red',
+          'block min-h-12 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-base font-bold text-ink hover:not-focus:bg-hover placeholder:font-medium placeholder:text-muted focus:shadow-focus focus:outline-transparent aria-invalid:border-red',
           className,
         )}
       />

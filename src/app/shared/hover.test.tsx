@@ -61,11 +61,15 @@ describe('hover-feedback › Hovering an underlined link', () => {
   });
 });
 
-describe('hoverField', () => {
-  test('the field gets the tint until it has focus', async () => {
-    const css = await mediaFor(hoverField, hovering);
-    assert.match(css, tint);
-    assert.match(css, /:not\(:focus\)/);
+describe('hover-feedback › Hovering a field', () => {
+  test('the field gets the tint', async () => {
+    assert.match(await mediaFor(hoverField, hovering), tint);
+  });
+});
+
+describe('hover-feedback › Hovering a focused field', () => {
+  test('the tint skips a field with focus', async () => {
+    assert.match(await mediaFor(hoverField, hovering), /:not\(:focus\)/);
   });
 });
 
