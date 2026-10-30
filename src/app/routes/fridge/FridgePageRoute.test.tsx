@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
-import { describe } from 'vitest';
+import { describe, vi } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import type { RecipeSummary } from '~app/shared/recipe';
 import { createRecipe } from '~app/shared/recipes.server';
@@ -138,10 +138,10 @@ describe('fridge-search › Opening an address with lists', () => {
     assert.deepEqual(shown(), ['rijstepap', 'kippensoep', 'pannenkoeken']);
   });
 
-  test('a card says how many of the entries it uses', () => {
+  test('a card gets the entries it uses, those it does not and the number of entries', () => {
     renderAt('/koelkast?heb=kip&heb=ui&heb=rijst');
-    const [first] = screen.getAllByTestId('FridgeCard-count');
-    assert.equal(first?.textContent, '2/3 in huis');
+    const { total, used, unused } = cardProps.get('kippensoep')!;
+    assert.deepEqual({ total, used, unused }, { total: 3, used: ['kip', 'ui'], unused: ['rijst'] });
   });
 
   test('A–Z is chosen by the address', () => {
@@ -176,6 +176,16 @@ describe('FridgePage adding to the lists', () => {
     assert.deepEqual(chipsOf('heb'), ['rijst', 'melk']);
   });
 
+  test('the ingredient is no longer listed under Ontbreekt', () => {
+    renderAt('/koelkast?heb=rijst');
+    const card = screen.getAllByTestId('RecipeCard-card')[0]!;
+    fireEvent.click(within(within(card).getAllByTestId('MissingIngredients-row')[0]!).getByTestId('MissingIngredients-have'));
+    const names = within(screen.getAllByTestId('RecipeCard-card')[0]!)
+      .getAllByTestId('MissingIngredients-name')
+      .map((n) => n.textContent);
+    assert.ok(!names.includes('melk'));
+  });
+
   test('pressing − on a missing ingredient adds it to Liever niet and hides the recipes with it', () => {
     renderAt('/koelkast?heb=rijst&heb=kip&heb=melk');
     const card = screen.getAllByTestId('RecipeCard-card')[0]!;
@@ -208,7 +218,24 @@ describe('fridge-search › Count with a list', () => {
   });
 });
 
+/** The props the page gave each FridgeCard, by slug. */
+const cardProps = vi.hoisted(() => new Map<string, { total: number; used: string[]; unused: string[]; missing: string[] }>());
+vi.mock('./lib/FridgeCard', async (importOriginal) => {
+  const real = await importOriginal<typeof import('./lib/FridgeCard')>();
+  return {
+    FridgeCard: (props: Parameters<typeof real.FridgeCard>[0]) => {
+      cardProps.set(props.recipe.slug, props);
+      return real.FridgeCard(props);
+    },
+  };
+});
+
 describe('fridge-search › Count without a list', () => {
+  test('the order alone does not make it "N van M"', () => {
+    renderAt('/koelkast?sort=az');
+    assert.equal(count(), '4 recepten');
+  });
+
   test('the page says how many recipes there are', () => {
     renderAt('/koelkast');
     assert.equal(count(), '4 recepten');

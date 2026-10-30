@@ -5,8 +5,7 @@ import { hoverDarken, hoverField, hoverTint } from '~app/shared/hover';
 import { Cross, Minus, Plus } from '~app/shared/icons';
 import { press } from '~app/shared/press';
 import { cleanEntry, sameEntry } from './fold';
-
-export type ListKind = 'heb' | 'zonder';
+import type { ListKind } from './lists';
 
 type Props = {
   /** `heb` is "Heb ik" (blue +), `zonder` is "Liever niet" (−). */

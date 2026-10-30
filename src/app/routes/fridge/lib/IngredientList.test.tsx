@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { describe, test } from 'vitest';
 import { cssFor } from '~testing/css';
 import { fireEvent, render, screen } from '~testing/dom';
-import { IngredientList, type ListKind } from './IngredientList';
+import { IngredientList } from './IngredientList';
+import type { ListKind } from './lists';
 
 /** The list kept in state, as the page keeps it. */
 function Harness({ kind = 'heb', initial = [] }: { kind?: ListKind; initial?: string[] }) {

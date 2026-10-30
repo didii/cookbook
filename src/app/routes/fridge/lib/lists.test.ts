@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'vitest';
-import { addEntry, isFiltered, listParams, noLists, parseLists, removeEntry, type Lists } from './lists';
+import { addEntry, isFiltered, listParams, maxEntries, maxEntryLength, noLists, parseLists, removeEntry, type Lists } from './lists';
 
 const lists = (change: Partial<Lists>): Lists => ({ ...noLists, ...change });
 
@@ -59,6 +59,21 @@ describe('fridge-search › Opening an address with lists', () => {
   test('a word in both lists stays in Liever niet only', () => {
     const parsed = parseLists(new URLSearchParams('heb=ui&heb=kip&zonder=ui'));
     assert.deepEqual([parsed.heb, parsed.zonder], [['kip'], ['ui']]);
+  });
+});
+
+describe('parseLists limits', () => {
+  test('only the first entries of a list are read', () => {
+    const query = Array.from({ length: maxEntries + 20 }, (_, i) => 'heb=w' + i).join('&');
+    assert.equal(parseLists(new URLSearchParams(query)).heb.length, maxEntries);
+  });
+
+  test('an entry that is too long is dropped', () => {
+    assert.deepEqual(parseLists(new URLSearchParams({ heb: 'a'.repeat(maxEntryLength + 1) })).heb, []);
+  });
+
+  test('an entry of the longest length is kept', () => {
+    assert.equal(parseLists(new URLSearchParams({ zonder: 'a'.repeat(maxEntryLength) })).zonder.length, 1);
   });
 });
 

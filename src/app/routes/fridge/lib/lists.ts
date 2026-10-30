@@ -1,13 +1,23 @@
 import type { Sort } from '~app/shared/filterParams';
 import { cleanEntry, sameEntry } from './fold';
-import type { ListKind } from './IngredientList';
+
+/** The two lists: "Heb ik" and "Liever niet". */
+export type ListKind = 'heb' | 'zonder';
+
+/** Most entries per list and longest entry an address is read with; more is dropped, so a crafted link cannot make the page slow. */
+export const maxEntries = 50;
+export const maxEntryLength = 40;
 
 /** What the fridge page narrows and orders the recipes by: the "Heb ik" and "Liever niet" entries and the order. */
 export type Lists = { heb: string[]; zonder: string[]; sort: Sort };
 
 export const noLists: Lists = { heb: [], zonder: [], sort: 'nieuwste' };
 
-const withoutRepeats = (entries: string[]) => entries.map(cleanEntry).filter((e, i, all) => e && all.findIndex((x) => sameEntry(x, e)) === i);
+const withoutRepeats = (entries: string[]) =>
+  entries
+    .map(cleanEntry)
+    .filter((e, i, all) => e && e.length <= maxEntryLength && all.findIndex((x) => sameEntry(x, e)) === i)
+    .slice(0, maxEntries);
 
 /** The lists from the page address (`heb`, `zonder`, `sort`); anything missing or unknown is empty or the default. A word in both lists stays only in "Liever niet". */
 export function parseLists(params: URLSearchParams): Lists {

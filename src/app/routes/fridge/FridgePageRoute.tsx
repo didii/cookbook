@@ -41,6 +41,8 @@ export default function FridgePage({ loaderData }: Route.ComponentProps) {
   const { revalidate } = useRevalidator();
   const lists = parseLists(params);
   const change = (next: typeof lists) => setParams(listParams(next), { replace: true });
+  // The order alone does not narrow the list.
+  const narrowed = lists.heb.length + lists.zonder.length > 0;
   const shown = rankRecipes(recipes, ingredients, lists, staples);
   return (
     <main id="main" data-testid="FridgePage-main" className="mx-auto max-w-272 px-[max(1rem,4vw)] pt-8 pb-[calc(4rem+env(safe-area-inset-bottom))]">
@@ -89,7 +91,7 @@ export default function FridgePage({ loaderData }: Route.ComponentProps) {
             )}
           </div>
           <output data-testid="FridgePage-count" className="mt-6 mb-4 block font-extrabold text-muted">
-            {isFiltered(lists) ? `${shown.length} van ${recipes.length}` : shown.length} {recipes.length === 1 ? 'recept' : 'recepten'}
+            {narrowed ? `${shown.length} van ${recipes.length}` : shown.length} {recipes.length === 1 ? 'recept' : 'recepten'}
           </output>
           {shown.length === 0 ? (
             <p data-testid="FridgePage-none" className="text-lg">
