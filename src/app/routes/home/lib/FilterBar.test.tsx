@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import { beforeEach, describe, test } from 'vitest';
+import type { Filters } from '~app/shared/filterParams';
 import { cssFor } from '~testing/css';
 import { act, fireEvent, openAutocomplete, precedes, render, screen, within } from '~testing/dom';
 import { FilterBar } from './FilterBar';
-import { noFilters, type Filters } from './filterRecipes';
+import { noFilters } from './filterRecipes';
 
 const authors = ['Mama', 'Oma', 'Papa'];
 const tags = ['Dessert', 'Soep'];

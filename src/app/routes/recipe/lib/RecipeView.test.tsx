@@ -181,6 +181,42 @@ describe('recipe-viewing › Ingredient without quantity', () => {
   });
 });
 
+describe('recipe-viewing › Recipe with tags', () => {
+  const tagged = () => page({ recipe: { ...recipe, tags: ['Hoofdgerecht', 'Vlees', 'Winter'] } });
+
+  test('a pill for each tag shows in the recipe order', () => {
+    tagged();
+    assert.deepEqual(
+      screen.getAllByTestId('RecipeView-tag').map((t) => t.textContent),
+      ['Hoofdgerecht', 'Vlees', 'Winter'],
+    );
+  });
+
+  test('the pills sit below the picture frame', () => {
+    tagged();
+    assert.ok(precedes(screen.getByTestId('RecipeView-frame'), screen.getByTestId('RecipeView-tags')));
+  });
+
+  test('no pill stands in for hidden tags', () => {
+    tagged();
+    assert.equal(screen.getByTestId('RecipeView-tags').childElementCount, 3);
+  });
+});
+
+describe('recipe-viewing › Recipe without tags', () => {
+  test('no tag pills show', () => {
+    page();
+    assert.equal(screen.queryByTestId('RecipeView-tags'), null);
+  });
+});
+
+describe('recipe-viewing › Pill opens the filtered home page', () => {
+  test('the pill links to the home page filtered on its tag', () => {
+    page({ recipe: { ...recipe, tags: ['Soep'] } });
+    assert.equal(screen.getByTestId('RecipeView-tagLink').getAttribute('href'), '/?tag=Soep');
+  });
+});
+
 describe('recipe-deletion › No delete button on the recipe page', () => {
   test('the page has no delete button', () => {
     page();
