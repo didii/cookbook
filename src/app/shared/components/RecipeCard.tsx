@@ -103,7 +103,7 @@ export function RecipeCard({ recipe: r, tile, eager, onSaved, footer, children, 
         {footer}
       </div>
       {children && (
-        <div data-testid="RecipeCard-extra" className="relative z-2 border-t-3 border-ink px-4 pt-3 pb-4">
+        <div data-testid="RecipeCard-extra" className="relative z-2 border-t-3 border-ink px-4 pb-4">
           {children}
         </div>
       )}
