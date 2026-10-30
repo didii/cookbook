@@ -1,10 +1,13 @@
 import { useId, type ComponentProps } from 'react';
 import { Link } from 'react-router';
-import { cn } from '~app/shared/cn';
-import { LikeButton, Pill, Seal, TileBand } from '~app/shared/components';
-import { StickyNote } from '~app/shared/icons';
-import type { RecipeSummary } from '~app/shared/recipe';
-import { twoTileRows } from '~app/shared/tile';
+import { LikeButton } from './LikeButton';
+import { Pill } from './Pill';
+import { Seal } from './Seal';
+import { TileBand } from './TileBand';
+import { cn } from '../cn';
+import { StickyNote } from '../icons';
+import type { RecipeSummary } from '../recipe';
+import { twoTileRows } from '../tile';
 
 interface RecipeCardProps extends ComponentProps<'article'> {
   recipe: RecipeSummary;

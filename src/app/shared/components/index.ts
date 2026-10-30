@@ -5,6 +5,7 @@ export * from './Fret';
 export * from './LikeButton';
 export * from './Pill';
 export * from './Plaid';
+export * from './RecipeCard';
 export * from './Seal';
 export * from './Segmented';
 export * from './ServiceWorker';

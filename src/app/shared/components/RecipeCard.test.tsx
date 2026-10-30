@@ -2,29 +2,39 @@ import assert from 'node:assert/strict';
 import type { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, test, vi } from 'vitest';
-import type { LikeButton, Pill, Seal, TileBand } from '~app/shared/components';
-import type { RecipeSummary } from '~app/shared/recipe';
 import { cssFor, mediaFor } from '~testing/css';
 import { precedes, render, screen, within } from '~testing/dom';
+import type { LikeButton } from './LikeButton';
+import type { Pill } from './Pill';
 import { RecipeCard } from './RecipeCard';
+import type { Seal } from './Seal';
+import type { TileBand } from './TileBand';
+import type { RecipeSummary } from '../recipe';
 
 /** The last props each shared child got, so the card's tests check what it passes and not the child's markup. */
 const passed = vi.hoisted(() => new Map<string, unknown>());
-vi.mock('~app/shared/components', async (importOriginal) => {
-  const real = await importOriginal<typeof import('~app/shared/components')>();
-  const record =
-    <P extends object>(name: string, Child: (props: P) => ReactNode) =>
-    (props: P) => {
-      passed.set(name, props);
-      return <Child {...props} />;
-    };
-  return {
-    ...real,
-    LikeButton: record('LikeButton', real.LikeButton),
-    Pill: record('Pill', real.Pill),
-    Seal: record('Seal', real.Seal),
-    TileBand: record('TileBand', real.TileBand),
+// A function declaration, so the hoisted mock factories below can use it.
+function record<P extends object>(name: string, Child: (props: P) => ReactNode) {
+  return (props: P) => {
+    passed.set(name, props);
+    return <Child {...props} />;
   };
+}
+vi.mock('./LikeButton', async (importOriginal) => {
+  const real = await importOriginal<typeof import('./LikeButton')>();
+  return { ...real, LikeButton: record('LikeButton', real.LikeButton) };
+});
+vi.mock('./Pill', async (importOriginal) => {
+  const real = await importOriginal<typeof import('./Pill')>();
+  return { ...real, Pill: record('Pill', real.Pill) };
+});
+vi.mock('./Seal', async (importOriginal) => {
+  const real = await importOriginal<typeof import('./Seal')>();
+  return { ...real, Seal: record('Seal', real.Seal) };
+});
+vi.mock('./TileBand', async (importOriginal) => {
+  const real = await importOriginal<typeof import('./TileBand')>();
+  return { ...real, TileBand: record('TileBand', real.TileBand) };
 });
 afterEach(() => passed.clear());
 const propsOf = <C extends (props: never) => ReactNode>(name: string) => passed.get(name) as Parameters<C>[0] | undefined;

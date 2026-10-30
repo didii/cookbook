@@ -1,5 +1,5 @@
 import { Link, useRevalidator, useSearchParams, type ShouldRevalidateFunctionArgs } from 'react-router';
-import { Button } from '~app/shared/components';
+import { Button, RecipeCard } from '~app/shared/components';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { filterParams, type Filters } from '~app/shared/filterParams';
 import { hoverUnderline } from '~app/shared/hover';
@@ -10,7 +10,6 @@ import { tileFor } from '~app/shared/tile';
 import type { Route } from './+types/HomePageRoute';
 import { FilterBar } from './lib/FilterBar';
 import { authorsOf, filterRecipes, isFiltered, noFilters, parseFilters, tagsOf } from './lib/filterRecipes';
-import { RecipeCard } from './lib/RecipeCard';
 
 export async function loader({ context }: Route.LoaderArgs) {
   const db = context.get(envContext).DB;
