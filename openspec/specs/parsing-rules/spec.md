@@ -68,11 +68,11 @@ The system SHALL refuse every request for the rules page, and every request that
 
 #### Scenario: Superadmin opens the page
 - **WHEN** a superadmin opens the rules page
-- **THEN** the page shows the stored rules, one row per word, in the categories Eenheden, Duur and Graden
+- **THEN** the page shows the stored rules, one row per word, in the categories Eenheden, Duur, Graden and Basisproducten
 
 #### Scenario: Admin opens the page
 - **WHEN** an admin opens the rules page
-- **THEN** the page shows the stored rules, one row per word, in the categories Eenheden, Duur and Graden
+- **THEN** the page shows the stored rules, one row per word, in the categories Eenheden, Duur, Graden and Basisproducten
 
 ### Requirement: An admin changes the rules as rows of words
 The system SHALL let an admin edit the units, loose units and degree words as rows with one word each, and the durations as rows with a word, a whole number of minutes and a checkbox "Vast", and save all rows at once. A row with "Vast" checked is a fixed duration; an unchecked row multiplies the number before the word. Words SHALL be matched literally, never as regular expressions, ignoring letter case. The system SHALL refuse the whole save, store nothing and say on the faulty row what is wrong when a duration has no whole number of minutes from 1 to 1440, a duration has minutes but no word, a word is in two of the lists units, duration words (checked or not) and degree words (a loose unit may also be a unit), a word is twice in the durations, a word has characters other than letters, `°` and spaces, or a unit or loose unit has anything but letters (these are matched as one word). It SHALL refuse a save with no units, no degree words or no unchecked duration, and say so at the list. Empty rows and repeated words in the other lists are dropped.
@@ -150,15 +150,19 @@ The system SHALL let an admin edit the units, loose units and degree words as ro
 - **THEN** it matches only the literal text "m+", so "20 m+" gives a timer of 20 minutes and "20 mmm" gives none
 
 ### Requirement: An admin restores the default rules
-The system SHALL let an admin restore the default rules with one link-style button "Standaardwaarden herstellen" on the rules page, after the admin confirms, which removes the saved rules.
+The system SHALL let an admin restore the default rules with one link-style button "Standaardwaarden herstellen" on the rules page, after the admin confirms, which removes the saved rules and the saved staples.
 
 #### Scenario: Restore defaults
 - **WHEN** an admin has saved a unit "kopje" and presses "Standaardwaarden herstellen"
 - **THEN** the rules in use are the defaults and "kopje" is no longer a unit
 
+#### Scenario: Restore also restores the staples
+- **WHEN** an admin has saved a staple "meel" and presses "Standaardwaarden herstellen"
+- **THEN** the default staples are in use and "meel" is no longer a staple
+
 #### Scenario: Restore is confirmed first
 - **WHEN** an admin presses "Standaardwaarden herstellen" and declines the confirmation
-- **THEN** nothing is sent and the stored rules are unchanged
+- **THEN** nothing is sent and the stored rules and staples are unchanged
 
 ### Requirement: Recognition follows the stored rules on save
 The system SHALL use the stored rules, not fixed lists, when it splits an ingredient line into amount, unit and name, when it finds a timer or an oven temperature in a step, and when it finds the amounts in a step to store them on save, and SHALL pick up a saved change without the member reloading the page. A duration word SHALL give its number times its minutes per number. A unit saved after a step was saved SHALL apply to that step only once the step is saved again.
