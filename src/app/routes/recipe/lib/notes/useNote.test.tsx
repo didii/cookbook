@@ -28,6 +28,7 @@ afterEach(() => {
   vi.useRealTimers();
   globalThis.fetch = realFetch;
   Object.defineProperty(window, 'location', { configurable: true, value: realLocation });
+  vi.mocked(isSessionExpired).mockReset();
   vi.mocked(isSessionExpired).mockResolvedValue(false);
 });
 
@@ -359,7 +360,7 @@ describe('session-expiry › Note kept when the session expired', () => {
   });
 
   test('keeps the text on the device', () => {
-    assert.equal(takeNote('a@x.nl', 'soep'), 'nieuw');
+    assert.deepEqual(takeNote('a@x.nl', 'soep'), { text: 'nieuw', base: 'oud' });
   });
 
   test('loads the page again', () => {
@@ -367,13 +368,13 @@ describe('session-expiry › Note kept when the session expired', () => {
   });
 
   test('checks the current page', () => {
-    assert.equal(vi.mocked(isSessionExpired).mock.calls[0]?.[0], 'http://localhost/');
+    assert.equal(vi.mocked(isSessionExpired).mock.lastCall?.[0], 'http://localhost/');
   });
 });
 
 describe('session-expiry › Note comes back after signing in', () => {
   beforeEach(async () => {
-    keepNote('a@x.nl', 'soep', 'bewaard');
+    keepNote('a@x.nl', 'soep', { text: 'bewaard', base: 'oud' });
     render(<Harness narrow />);
     await wait(0);
   });
@@ -392,6 +393,31 @@ describe('session-expiry › Note comes back after signing in', () => {
       sent.map((s) => s.body),
       ['note=bewaard'],
     );
+  });
+});
+
+describe('session-expiry › Note kept when the member left before the save failed', () => {
+  test('keeps the text without loading the page again', async () => {
+    status = 'offline';
+    vi.mocked(isSessionExpired).mockResolvedValue(true);
+    const { unmount } = render(<Harness narrow />);
+    await press('open');
+    await type('nieuw');
+    unmount();
+    await act(async () => {});
+    assert.deepEqual(takeNote('a@x.nl', 'soep'), { text: 'nieuw', base: 'oud' });
+    assert.equal(reload.mock.calls.length, 0);
+  });
+});
+
+describe('session-expiry › Stale kept note is not restored', () => {
+  test('is dropped and not restored when the stored note changed meanwhile', async () => {
+    keepNote('a@x.nl', 'soep', { text: 'bewaard', base: 'ouder' });
+    render(<Harness narrow />);
+    await wait(pauseMs(true));
+    assert.equal((screen.getByTestId('field') as HTMLTextAreaElement).value, 'oud');
+    assert.equal(sent.length, 0);
+    assert.equal(takeNote('a@x.nl', 'soep'), undefined);
   });
 });
 

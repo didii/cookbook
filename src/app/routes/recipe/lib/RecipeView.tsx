@@ -106,7 +106,7 @@ export function RecipeView({ recipe: r, tile, steps, liked = false, note: savedN
   // Cook mode: starts by itself once cooking has started (the open tab's first item is past the middle of the screen, or an ingredient is ticked)
   // until the switch is used. Narrow screens only.
   const narrow = useNarrow();
-  const email = useRouteLoaderData<{ email: string }>('root')?.email;
+  const email = useRouteLoaderData<{ email: string }>('root')?.email ?? '';
   const note = useNote(r.slug, savedNote, narrow, email);
   const [cook, setCook] = useState(initialCook);
   const tickedCount = ticked.size;
