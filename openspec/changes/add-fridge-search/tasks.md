@@ -10,7 +10,7 @@ Per CLAUDE.md: test names follow the spec scenarios, run `pnpm test:spec add-fri
 
 - [x] 2.1 Move `RecipeCard` and its test to `shared/components/`, export it from `components/index.ts`, point home at it; verify `pnpm test:ai` still passes for home and the card.
 - [x] 2.2 Give `RecipeCard` an optional `footer` (inside the link area, under the tags) and `children` (below a separator, outside the link area); verify in `RecipeCard.test.tsx` that the footer is part of the link area, the children are not, and that home's output is unchanged.
-- [ ] 2.3 Write `routes/fridge/lib/IngredientList.tsx` (label, input, +/− button, removable chips; Enter or button adds, trims, ignores empty and duplicates, empties the input and keeps focus; cross removes and focuses the input); verify with `IngredientList.test.tsx` for "Adding with Enter", "Adding with the button", "Adding several in a row", "Empty text", "The same word twice" and "Removing a chip".
+- [x] 2.3 Write `routes/fridge/lib/IngredientList.tsx` (label, input, +/− button, removable chips; Enter or button adds, trims, ignores empty and duplicates, empties the input and keeps focus; cross removes and focuses the input); verify with `IngredientList.test.tsx` for "Adding with Enter", "Adding with the button", "Adding several in a row", "Empty text", "The same word twice" and "Removing a chip".
 
 ## 3. Staples on the rules page
 
