@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { createMemoryRouter, data, RouterProvider, useLoaderData } from 'react-router';
 import { describe, test, vi } from 'vitest';
+import { mediaFor } from '~testing/css';
 import { fireEvent, render, screen, waitFor } from '~testing/dom';
 import { formatSize, photoCount } from './format';
 import { PhotoList } from './PhotoList';
@@ -352,5 +353,16 @@ describe('orphaned-photos › Kept photo shows its recipe', () => {
         ['appeltaart', undefined],
       ),
     );
+  });
+});
+
+describe('admin-nav › Bar beside the navigation', () => {
+  // Needs a browser: the pixel position of the bar is real layout.
+  test.todo('the delete bar starts at the left edge of the content');
+
+  test('from 64rem the content skips the navigation column', async () => {
+    show({ photos: [photo(1)] });
+    const content = await screen.findByTestId('PhotoList-barContent');
+    assert.match(await mediaFor(content.className, '(width >= 64rem)'), /grid-column-start: 2/);
   });
 });

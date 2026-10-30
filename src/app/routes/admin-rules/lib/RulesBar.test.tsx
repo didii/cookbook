@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { afterEach, describe, test, vi } from 'vitest';
+import { cssFor, mediaFor } from '~testing/css';
 import { fireEvent, precedes, render, screen } from '~testing/dom';
 import { RulesBar } from './RulesBar';
 
@@ -39,5 +40,21 @@ describe('parsing-rules › Restore is confirmed first', () => {
     vi.stubGlobal('confirm', () => true);
     render(<RulesBar />);
     assert.equal(fireEvent.click(screen.getByTestId('RulesBar-reset')), true);
+  });
+});
+
+describe('admin-nav › Bar beside the navigation', () => {
+  // Needs a browser: the pixel position of the bar is real layout.
+  test.todo('the save bar starts at the left edge of the content');
+
+  test('from 64rem the content skips the navigation column', async () => {
+    render(<RulesBar />);
+    assert.match(await mediaFor(screen.getByTestId('RulesBar-content').className, '(width >= 64rem)'), /grid-column-start: 2/);
+  });
+
+  test('the bar is not placed in a column below 64rem', async () => {
+    render(<RulesBar />);
+    const css = (await cssFor(screen.getByTestId('RulesBar-content').className)).replace(/\s+/g, ' ');
+    assert.doesNotMatch(css.replace(await mediaFor(screen.getByTestId('RulesBar-content').className, '(width >= 64rem)'), ''), /grid-column-start/);
   });
 });
