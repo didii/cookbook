@@ -27,5 +27,5 @@ A photo is uploaded the moment it is chosen, not when the recipe is saved. A for
 - New route module `src/app/routes/admin-photos/` (page route plus a server-only `lib/orphans.server.ts`), and one entry in `routes.ts` (`beheer/fotos`).
 - `SiteMenu.tsx`: one more admin link.
 - Reads the `PHOTOS` bucket listing and the image columns of `recipes` and `steps` (with the owning recipe's slug and title); deletes through the existing `deletePhoto`. No migration, no new dependency, no new binding.
-- Depends on `tag-manager` and `import-recipe-from-url` landing first, because all three change the menu requirement.
+- Depends on `tag-manager`, `import-recipe-from-url` and `add-home-menu-item` landing first, because all four change the menu requirement.
 - Out of scope: deleting automatically on a schedule, orphans other than photos, photos of deleted recipes (those are already deleted with the recipe), and browsing or restoring deleted photos.

@@ -30,7 +30,7 @@ The photo helpers live in `shared/photos.server.ts` (`isPhotoPath`, `deletePhoto
 - **Load:** thumbnails use the existing `/foto/<file>` route with `loading="lazy"`, at full stored size (max 1600 px, 2 MB cap). With the cap of 100 tiles a page load is at most about 40 MB, usually less because only visible tiles load; photos are cached for a year, and R2 egress is free. No resizing is added; revisit if the bucket reaches thousands of photos.
 - **Confirmation** is a native `<dialog>` opened with `showModal()`, not `window.confirm`, so it can be tested and styled. It sits in the middle of the screen, away from the delete button, so the second click of a double click lands outside it. Focus starts on "Annuleer"; Escape and a click outside close it. Title "Weet je het zeker?", text "N foto's, size." and, only for a selection with a recent photo, the form warning; the button reads "Verwijder N foto's". It no longer says that deleted photos cannot be brought back.
 - **Result:** after a delete the page shows "N foto's verwijderd." and, if some were kept, "K foto's bewaard, want een recept gebruikt hem intussen:" followed by links to those recipes. The kept photos stay in the list as used tiles.
-- **Menu:** `site-menu` is modified with the full requirement text based on the versions in `tag-manager` and `import-recipe-from-url`, so this change lands after both. The link shows for `admin` and `superadmin`, after "Herkenning".
+- **Menu:** `site-menu` is modified with the full requirement text based on the versions in `tag-manager`, `import-recipe-from-url` and `add-home-menu-item`, so this change lands after all three. The link shows for `admin` and `superadmin`, after "Herkenning".
 - **Visual design:** done and approved in `docs/design/orphaned-photos.html` (see `docs/design/README.md`); the build follows it.
 
 ## Risks / Trade-offs
@@ -39,4 +39,4 @@ The photo helpers live in `shared/photos.server.ts` (`isPhotoPath`, `deletePhoto
 - [Race: a recipe saved between listing and deleting] → The action re-checks references right before each delete and reports the kept photos with their recipes. A save in the few milliseconds between the check and the delete is still possible; accepted for an admin-only, rarely used page, and fixed by uploading the photo again.
 - [Data use on a phone with the filters off] → Up to about 40 MB per page load; accepted for an admin page.
 - [A bucket listing that grows] → One pass per page load; revisit past a few thousand photos.
-- [Menu requirement conflicts when the three changes are archived] → Each delta is based on the previous one; archive in the order `tag-manager`, `import-recipe-from-url`, then this change.
+- [Menu requirement conflicts when the changes are archived] → Each delta is based on the previous one; archive in the order `tag-manager`, `import-recipe-from-url`, `add-home-menu-item`, then this change.

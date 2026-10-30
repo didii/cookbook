@@ -1,6 +1,6 @@
 # Tasks
 
-Needs `tag-manager` and `import-recipe-from-url` merged first (all three change the menu requirement). Verify each task with the type check and `pnpm test:ai`; `pnpm test:spec remove-orphaned-photos` lists the delta scenarios still without a test.
+Needs `tag-manager`, `import-recipe-from-url` and `add-home-menu-item` merged first (all four change the menu requirement). Verify each task with the type check and `pnpm test:ai`; `pnpm test:spec remove-orphaned-photos` lists the delta scenarios still without a test.
 
 ## 1. Design
 
@@ -17,7 +17,7 @@ Needs `tag-manager` and `import-recipe-from-url` merged first (all three change 
 
 ## 4. Menu
 
-- [ ] 4.1 `SiteMenu.tsx`: "Foto's" with `admin: true` after "Herkenning" and before "Gebruikers"; update the `site-menu` tests for the new order. Tests: the three menu list scenarios and "Photos link"
+- [ ] 4.1 `SiteMenu.tsx`: "Foto's" with `admin: true` after "Herkenning" and before "Gebruikers" (the list starts with "Home"); update the `site-menu` tests for the new order. Tests: the three menu list scenarios and "Photos link"
 
 ## 5. Wrap-up
 
