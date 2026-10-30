@@ -15,6 +15,8 @@ interface PhotoFieldProps extends ComponentProps<'div'> {
   tile: number;
   /** Seal stamped on the photo, as on the recipe page. */
   seal?: string;
+  /** An image to take as if it had been chosen, e.g. one fetched for an import. A new object is a new image, so the same one can be handed twice. */
+  incoming?: { blob: Blob };
 }
 
 type Pending = { blob: Blob; preview: string };
@@ -22,7 +24,7 @@ type Pending = { blob: Blob; preview: string };
 const wide = 'inline-flex items-center justify-center gap-2 px-4';
 
 /** The recipe's photo: choose from camera or gallery, shrink and upload, show in the frame the recipe page uses, replace or remove. */
-export function PhotoField({ value, onPhotoChange, onStateChange, tile, seal, ...props }: PhotoFieldProps) {
+export function PhotoField({ value, onPhotoChange, onStateChange, tile, seal, incoming, ...props }: PhotoFieldProps) {
   const input = useRef<HTMLInputElement>(null);
   const [pending, setPending] = useState<Pending>();
   const [state, setState] = useState<PhotoState>('ready');
@@ -53,14 +55,12 @@ export function PhotoField({ value, onPhotoChange, onStateChange, tile, seal, ..
     }
   };
 
-  const choose = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = ''; // so choosing the same file again still fires
-    if (!file) return;
+  /** Takes an image as the photo: shrink, show at once, upload. Chosen files and handed images both come through here. */
+  const take = async (image: Blob) => {
     setUnreadable(false);
     let blob: Blob;
     try {
-      blob = await resizePhoto(file);
+      blob = await resizePhoto(image);
     } catch {
       setUnreadable(true);
       return;
@@ -69,6 +69,20 @@ export function PhotoField({ value, onPhotoChange, onStateChange, tile, seal, ..
     setPending(photo);
     void send(photo);
   };
+
+  const choose = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // so choosing the same file again still fires
+    if (file) void take(file);
+  };
+
+  const handled = useRef<typeof incoming>(undefined);
+  useEffect(() => {
+    if (!incoming || handled.current === incoming) return;
+    handled.current = incoming;
+    void take(incoming.blob);
+    // `take` only reads props and state setters; the hand-off is keyed by the object.
+  }, [incoming]); // oxlint-disable-line react-hooks/exhaustive-deps
 
   const remove = () => {
     upload.current?.abort();
@@ -88,7 +102,7 @@ export function PhotoField({ value, onPhotoChange, onStateChange, tile, seal, ..
       <input type="hidden" name="image" value={value} />
       <div className="mt-1">
         {!src ? (
-          <Button type="button" onClick={pick} className={`${wide} w-full`}>
+          <Button type="button" onClick={pick} data-testid="PhotoField-add" className={`${wide} w-full`}>
             <Camera />
             Foto toevoegen
           </Button>
@@ -113,7 +127,13 @@ export function PhotoField({ value, onPhotoChange, onStateChange, tile, seal, ..
                 <Camera />
                 Andere foto
               </Button>
-              <Button type="button" onClick={remove} aria-label="Foto verwijderen" className="flex-none px-3 text-muted">
+              <Button
+                type="button"
+                onClick={remove}
+                aria-label="Foto verwijderen"
+                data-testid="PhotoField-remove"
+                className="flex-none px-3 text-muted"
+              >
                 <Trash />
               </Button>
             </div>
@@ -122,6 +142,7 @@ export function PhotoField({ value, onPhotoChange, onStateChange, tile, seal, ..
                 <img
                   src={src}
                   alt="Foto van het recept"
+                  data-testid="PhotoField-image"
                   onError={() => setFailedSrc(src)}
                   className="block aspect-2/1 w-full border-b-3 border-ink object-cover"
                 />
@@ -142,7 +163,11 @@ export function PhotoField({ value, onPhotoChange, onStateChange, tile, seal, ..
             </button>
           </p>
         )}
-        {unreadable && <p className="mt-2 font-bold text-red">Deze foto kan niet worden gelezen.</p>}
+        {unreadable && (
+          <p data-testid="PhotoField-unreadable" className="mt-2 font-bold text-red">
+            Deze foto kan niet worden gelezen.
+          </p>
+        )}
       </div>
       <p className="mt-2 text-sm text-muted">Wordt automatisch verkleind. Op je telefoon kies je uit camera of galerij.</p>
     </div>

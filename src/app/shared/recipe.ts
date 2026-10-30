@@ -41,6 +41,8 @@ export type Recipe = {
   servings: number | null;
   intro: string;
   image: string | null;
+  /** Where the recipe came from: a name or a link. */
+  source: string | null;
   seal: string | null;
   /** When the recipe was last saved; the editor compares it to the version a draft started from. */
   updated_at: string;

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
-import { describe } from 'vitest';
+import { describe, vi } from 'vitest';
 import { envContext } from '~app/shared/context.server';
 import { getPhoto, storePhoto } from '~app/shared/photos.server';
 import { getRecipe } from '~app/shared/recipes.server';
@@ -10,6 +10,19 @@ import { fake } from '~testing/fake';
 import { test } from '~testing/test';
 import type { Route } from './+types/EditRecipePageRoute';
 import EditRecipePage, { action, loader } from './EditRecipePageRoute';
+import { limits } from './lib/recipeValidation';
+
+// Passes through to the real editor and records the props the route gave it.
+const spy = vi.hoisted(() => ({ props: undefined as { canImport?: boolean } | undefined }));
+vi.mock('./lib/RecipeEditor', async (importOriginal) => {
+  const original = await importOriginal<typeof import('./lib/RecipeEditor')>();
+  return {
+    RecipeEditor: (props: Parameters<typeof original.RecipeEditor>[0]) => {
+      spy.props = props;
+      return original.RecipeEditor(props);
+    },
+  };
+});
 
 const addRecipe = (db: D1Database, slug: string, image: string | null = null) =>
   db.prepare("INSERT INTO recipes (slug, title, author, image) VALUES (?, 'Soep', 'Oma', ?)").bind(slug, image).run();
@@ -55,6 +68,7 @@ describe('recipe-editing › Form shows the stored values', () => {
       time: '1u',
       intro: 'Warm',
       image: '/soep.jpg',
+      source: '',
       ingredients: [],
       steps: [],
       tags: [],
@@ -410,5 +424,91 @@ describe('recipe-storage › Range is read with the recipe', () => {
     assert.deepEqual((await getRecipe(db, 'bereik'))?.ingredients, [
       { quantityText: '2-3 el', quantityValue: 2, quantityValueMax: 3, quantityUnit: 'el', name: 'olie' },
     ]);
+  });
+});
+
+describe('recipe-limits › Editing is limited the same way', () => {
+  let res: { init?: { status?: number }; data: { errors: { title?: string }; values: { title: string } } };
+
+  test.beforeEach(async ({ db, photos }) => {
+    await addRecipe(db, 'soep');
+    res = (await submit(db, photos, 'soep', { title: 'a'.repeat(limits.title + 1), author: 'Oma' })) as unknown as typeof res;
+  });
+
+  test('the editor shows a message at the title that states the maximum', () => {
+    assert.equal(res.init?.status, 400);
+    assert.ok(res.data.errors.title?.includes(String(limits.title)));
+  });
+
+  test('the entered values come back', () => {
+    assert.equal(res.data.values.title.length, limits.title + 1);
+  });
+
+  test('the stored recipe is unchanged', async ({ db }) => {
+    assert.equal((await getRecipe(db, 'soep'))?.title, 'Soep');
+  });
+});
+
+describe('recipe-source › Edit form shows the stored source', () => {
+  test('the loader returns it', async ({ db, photos }) => {
+    await db.prepare("INSERT INTO recipes (slug, title, author, source) VALUES ('met-bron', 'Soep', 'Oma', 'Libelle')").run();
+    assert.equal((await load(db, photos, 'met-bron')).values.source, 'Libelle');
+  });
+});
+
+describe('recipe-source › Source is saved with the recipe', () => {
+  test('an edit stores the trimmed source', async ({ db, photos }) => {
+    await addRecipe(db, 'soep');
+    await submit(db, photos, 'soep', { title: 'Soep', author: 'Oma', source: ' Buurvrouw Marie ' });
+    assert.equal((await getRecipe(db, 'soep'))?.source, 'Buurvrouw Marie');
+  });
+});
+
+describe('recipe-source › Source is cleared', () => {
+  test('an edit with an empty source stores none', async ({ db, photos }) => {
+    await db.prepare("INSERT INTO recipes (slug, title, author, source) VALUES ('soep', 'Soep', 'Oma', 'Libelle')").run();
+    await submit(db, photos, 'soep', { title: 'Soep', author: 'Oma', source: '' });
+    assert.equal((await getRecipe(db, 'soep'))?.source, null);
+  });
+});
+
+describe('recipe-source › Source at the limit is accepted', () => {
+  test('an edit with a source of 500 characters is stored', async ({ db, photos }) => {
+    await addRecipe(db, 'soep');
+    await submit(db, photos, 'soep', { title: 'Soep', author: 'Oma', source: 'a'.repeat(limits.source) });
+    assert.equal((await getRecipe(db, 'soep'))?.source?.length, limits.source);
+  });
+});
+
+describe('recipe-source › Source over the limit is refused', () => {
+  let res: { init?: { status?: number }; data: { errors: { source?: string }; values: { source: string } } };
+
+  test.beforeEach(async ({ db, photos }) => {
+    await db.prepare("INSERT INTO recipes (slug, title, author, source) VALUES ('soep', 'Soep', 'Oma', 'Libelle')").run();
+    res = (await submit(db, photos, 'soep', { title: 'Soep', author: 'Oma', source: 'a'.repeat(limits.source + 1) })) as unknown as typeof res;
+  });
+
+  test('the editor shows a message at the source that states the maximum', () => {
+    assert.equal(res.init?.status, 400);
+    assert.ok(res.data.errors.source?.includes(String(limits.source)));
+  });
+
+  test('the entered value comes back', () => {
+    assert.equal(res.data.values.source.length, limits.source + 1);
+  });
+
+  test('the stored source is unchanged', async ({ db }) => {
+    assert.equal((await getRecipe(db, 'soep'))?.source, 'Libelle');
+  });
+});
+
+describe('recipe-import › Import is not offered elsewhere', () => {
+  test('the editor of a stored recipe is not given the import option', () => {
+    const values = { title: 'Soep', author: 'Oma', servings: '4', time: '1u', intro: 'Warm', image: '', ingredients: [], steps: [], tags: [] };
+    const props = fake<Route.ComponentProps>({
+      loaderData: { slug: 'soep', updatedAt: '2026-01-01T00:00:00Z', authors: ['Oma'], tags: [], tile: 0, seal: undefined, values },
+    });
+    render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <EditRecipePage {...props} /> }])} />);
+    assert.ok(!spy.props?.canImport);
   });
 });

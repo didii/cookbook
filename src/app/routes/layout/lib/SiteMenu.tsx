@@ -5,7 +5,9 @@ import { Cross, Menu } from '~app/shared/icons';
 import type { Role } from '~app/shared/role';
 
 const links = [
+  { to: '/', label: 'Home' },
   { to: '/recepten/nieuw', label: 'Nieuw recept' },
+  { to: '/recepten/importeren', label: 'Recept importeren' },
   { to: '/tags', label: 'Tags' },
   { to: '/instellingen', label: 'Instellingen' },
   { to: '/over', label: 'Over' },

@@ -1,13 +1,14 @@
 import { Link, useRevalidator, useSearchParams, type ShouldRevalidateFunctionArgs } from 'react-router';
 import { Button } from '~app/shared/components';
 import { envContext, userEmailContext } from '~app/shared/context.server';
+import { filterParams, type Filters } from '~app/shared/filterParams';
 import { listRecipes } from '~app/shared/recipes.server';
 import { listManagedTags } from '~app/shared/tagManagement.server';
 import { categoriesOf } from '~app/shared/tags';
 import { tileFor } from '~app/shared/tile';
 import type { Route } from './+types/HomePageRoute';
 import { FilterBar } from './lib/FilterBar';
-import { authorsOf, filterParams, filterRecipes, isFiltered, noFilters, parseFilters, tagsOf, type Filters } from './lib/filterRecipes';
+import { authorsOf, filterRecipes, isFiltered, noFilters, parseFilters, tagsOf } from './lib/filterRecipes';
 import { RecipeCard } from './lib/RecipeCard';
 
 export async function loader({ context }: Route.LoaderArgs) {

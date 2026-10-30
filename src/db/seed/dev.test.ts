@@ -26,4 +26,11 @@ describe('dev seed', () => {
     assert.ok(results.length > 0);
     for (const { text, value } of results) assert.equal(numberValue(text), value);
   });
+
+  test('one recipe has a text source and another a link', async ({ db }) => {
+    await applySql(db, join(import.meta.dirname, 'dev.sql'));
+    const { results } = await db.prepare('SELECT source FROM recipes WHERE source IS NOT NULL').all<{ source: string }>();
+    assert.ok(results.some((r) => r.source.startsWith('https://')));
+    assert.ok(results.some((r) => !r.source.startsWith('http')));
+  });
 });

@@ -57,6 +57,7 @@ describe('recipe-storage › Recipe is saved', () => {
         servings: 8,
         intro: 'intro',
         image: '/a.jpg',
+        source: null,
         seal: 'fu',
         created_by: 'mum@example.com',
         created_at: '',
@@ -949,5 +950,178 @@ describe('recipe-storage › Second number must come after the first', () => {
 
   test('a second number ending at its start is refused', async ({ db }) => {
     await assert.rejects(addRangeAmount(db, await addStep(db, await addRecipe(db, 'sq-max-empty'), 1), 3, 9, 9));
+  });
+});
+
+describe('migration 0016', () => {
+  test('every row, id and link written before the migration survives it', async () => {
+    const mf = createMiniflare();
+    try {
+      const db: D1Database = await mf.getD1Database('DB');
+      const dir = import.meta.dirname;
+      const files = readdirSync(dir)
+        .filter((f) => f.endsWith('.sql'))
+        .sort();
+      for (const f of files.filter((f) => f < '0016')) await applySql(db, join(dir, f));
+      await db.batch([
+        db.prepare("INSERT INTO users (id, email, calling_name) VALUES (7, 'oma@example.com', 'Oma')"),
+        db.prepare(
+          "INSERT INTO recipes (id, slug, title, author, time, servings, intro, image, seal, created_by) VALUES (5, 'old', 'Soep', 'Oma', '1u', 4, 'Warm', '/a.jpg', 'ab', 'oma@example.com')",
+        ),
+        db.prepare(
+          "INSERT INTO ingredients (id, recipe_id, position, name, quantity_text, quantity_value, quantity_value_max, quantity_unit) VALUES (11, 5, 1, 'bloem', '2-3 el', 2, 3, 'el')",
+        ),
+        db.prepare(
+          "INSERT INTO steps (id, recipe_id, position, body, image, image_alt, oven_temperature, timer_minutes, timer_label) VALUES (21, 5, 1, 'Kneed 2 el bloem', '/s.jpg', 'alt', 180, 10, 'deeg')",
+        ),
+        db.prepare("INSERT INTO step_ingredients (step_id, ingredient_id, recipe_id, amount, unit) VALUES (21, 11, 5, 2, 'el')"),
+        db.prepare(
+          "INSERT INTO step_ingredient_chips (step_id, position, quantity_text, quantity_value, quantity_value_max, quantity_unit, name) VALUES (21, 1, '1-2 el', 1, 2, 'el', 'olie')",
+        ),
+        db.prepare("INSERT INTO step_quantities (step_id, start_index, end_index, quantity_value, quantity_unit) VALUES (21, 6, 7, 2, 'el')"),
+        db.prepare('INSERT INTO recipe_views (user_id, recipe_id) VALUES (7, 5)'),
+        db.prepare('INSERT INTO recipe_likes (user_id, recipe_id) VALUES (7, 5)'),
+        db.prepare("INSERT INTO recipe_notes (user_id, recipe_id, body) VALUES (7, 5, 'lekker')"),
+        db.prepare("INSERT INTO tags (id, name) VALUES (3, 'Soep')"),
+        db.prepare('INSERT INTO recipe_tags (recipe_id, tag_id) VALUES (5, 3)'),
+      ]);
+      const tables = [
+        'recipes',
+        'ingredients',
+        'steps',
+        'step_ingredients',
+        'step_ingredient_chips',
+        'step_quantities',
+        'recipe_views',
+        'recipe_likes',
+        'recipe_notes',
+        'recipe_tags',
+      ];
+      const read = () => Promise.all(tables.map(async (t) => (await db.prepare(`SELECT * FROM ${t}`).all()).results));
+      const before = await read();
+      for (const t of before) assert.equal(t.length, 1);
+      for (const f of files.filter((f) => f >= '0016' && f < '0017')) await applySql(db, join(dir, f));
+      assert.deepEqual(await read(), before);
+      assert.equal(await db.prepare("SELECT 1 FROM sqlite_master WHERE name LIKE 'copy_%'").first(), null);
+      assert.ok(await db.prepare("SELECT 1 FROM sqlite_master WHERE name = 'recipes_seal'").first());
+    } finally {
+      await mf.dispose();
+    }
+  });
+});
+
+const text = (n: number) => 'a'.repeat(n);
+const insertRecipe = (db: D1Database, slug: string, column: string, value: string | number) =>
+  db.prepare(`INSERT INTO recipes (slug, title, author, ${column}) VALUES (?, 't', 'Oma', ?)`).bind(slug, value).run();
+
+describe('recipe-limits › Recipe columns are limited', () => {
+  test('a title of 201 characters is refused', async ({ db }) => {
+    await assert.rejects(db.prepare('INSERT INTO recipes (slug, title, author) VALUES (?, ?, ?)').bind('lim-title-201', text(201), 'Oma').run());
+  });
+
+  test('a title of 200 characters is stored', async ({ db }) => {
+    await db.prepare('INSERT INTO recipes (slug, title, author) VALUES (?, ?, ?)').bind('lim-title-200', text(200), 'Oma').run();
+    assert.equal(await count(db, 'SELECT id FROM recipes WHERE slug = ?', 'lim-title-200'), 1);
+  });
+});
+
+describe('recipe-limits › Recipe update is limited', () => {
+  test('an intro of 5001 characters is refused and the row is unchanged', async ({ db }) => {
+    const recipe = await addRecipe(db, 'lim-upd-intro');
+    await assert.rejects(db.prepare('UPDATE recipes SET intro = ? WHERE id = ?').bind(text(5001), recipe).run());
+    assert.equal((await db.prepare('SELECT intro FROM recipes WHERE id = ?').bind(recipe).first<{ intro: string }>())?.intro, '');
+  });
+
+  test('servings of 1000 are refused and the row is unchanged', async ({ db }) => {
+    const recipe = await addRecipe(db, 'lim-upd-servings');
+    await assert.rejects(db.prepare('UPDATE recipes SET servings = 1000 WHERE id = ?').bind(recipe).run());
+    assert.equal((await db.prepare('SELECT servings FROM recipes WHERE id = ?').bind(recipe).first<{ servings: number }>())?.servings, 4);
+  });
+});
+
+describe('recipe-limits › Other recipe text columns are limited', () => {
+  const cases: [string, string | number][] = [
+    ['time', text(101)],
+    ['intro', text(5001)],
+    ['servings', 1000],
+  ];
+  for (const [column, value] of cases)
+    test(`${column} over the limit is refused`, async ({ db }) => {
+      await assert.rejects(insertRecipe(db, `lim-${column}`, column, value));
+    });
+
+  test('an author of 101 characters is refused', async ({ db }) => {
+    await assert.rejects(db.prepare("INSERT INTO recipes (slug, title, author) VALUES ('lim-author', 't', ?)").bind(text(101)).run());
+  });
+
+  test('values at the limit are stored', async ({ db }) => {
+    await db
+      .prepare('INSERT INTO recipes (slug, title, author, time, intro, servings) VALUES (?, ?, ?, ?, ?, ?)')
+      .bind('lim-at', 't', text(100), text(100), text(5000), 999)
+      .run();
+    assert.equal(await count(db, 'SELECT id FROM recipes WHERE slug = ?', 'lim-at'), 1);
+  });
+});
+
+describe('recipe-limits › Ingredient columns are limited', () => {
+  const insert = (db: D1Database, recipe: number, name: string, quantityText: string) =>
+    db.prepare('INSERT INTO ingredients (recipe_id, position, name, quantity_text) VALUES (?, 1, ?, ?)').bind(recipe, name, quantityText).run();
+
+  test('a name of 201 characters is refused', async ({ db }) => {
+    await assert.rejects(insert(db, await addRecipe(db, 'lim-ing-name'), text(201), ''));
+  });
+
+  test('a quantity text of 201 characters is refused', async ({ db }) => {
+    await assert.rejects(insert(db, await addRecipe(db, 'lim-ing-qty'), 'x', text(201)));
+  });
+
+  test('values at the limit are stored', async ({ db }) => {
+    await insert(db, await addRecipe(db, 'lim-ing-at'), text(200), text(200));
+  });
+});
+
+describe('recipe-limits › Step and chip columns are limited', () => {
+  const insertStep = (db: D1Database, recipe: number, body: string, label: string | null = null) =>
+    db.prepare('INSERT INTO steps (recipe_id, position, body, timer_minutes, timer_label) VALUES (?, 1, ?, 5, ?)').bind(recipe, body, label).run();
+  const insertChip = (db: D1Database, step: number, quantityText: string, name: string) =>
+    db.prepare('INSERT INTO step_ingredient_chips (step_id, position, quantity_text, name) VALUES (?, 1, ?, ?)').bind(step, quantityText, name).run();
+
+  test('a body of 2001 characters is refused', async ({ db }) => {
+    await assert.rejects(insertStep(db, await addRecipe(db, 'lim-step-body'), text(2001)));
+  });
+
+  test('a timer name of 101 characters is refused', async ({ db }) => {
+    await assert.rejects(insertStep(db, await addRecipe(db, 'lim-step-timer'), 'x', text(101)));
+  });
+
+  test('a chip quantity text of 51 characters is refused', async ({ db }) => {
+    await assert.rejects(insertChip(db, await addStep(db, await addRecipe(db, 'lim-chip-qty'), 1), text(51), 'x'));
+  });
+
+  test('a chip name of 201 characters is refused', async ({ db }) => {
+    await assert.rejects(insertChip(db, await addStep(db, await addRecipe(db, 'lim-chip-name'), 1), '', text(201)));
+  });
+
+  test('values at the limit are stored', async ({ db }) => {
+    const recipe = await addRecipe(db, 'lim-step-at');
+    await insertStep(db, recipe, text(2000), text(100));
+    const step = (await db.prepare('SELECT id FROM steps WHERE recipe_id = ?').bind(recipe).first<{ id: number }>())!.id;
+    await insertChip(db, step, text(50), text(200));
+  });
+});
+
+describe('recipe-source › Source over the limit is refused by the database', () => {
+  test('a source of 501 characters is refused', async ({ db }) => {
+    await assert.rejects(insertRecipe(db, 'src-501', 'source', text(501)));
+  });
+
+  test('a source of 500 characters is stored', async ({ db }) => {
+    await insertRecipe(db, 'src-500', 'source', text(500));
+    assert.equal(await count(db, 'SELECT id FROM recipes WHERE slug = ?', 'src-500'), 1);
+  });
+
+  test('a recipe without a source reads back as null', async ({ db }) => {
+    const recipe = await addRecipe(db, 'src-none');
+    assert.equal((await db.prepare('SELECT source FROM recipes WHERE id = ?').bind(recipe).first<{ source: null }>())?.source, null);
   });
 });

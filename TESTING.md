@@ -22,6 +22,7 @@ A unit's contract is its props or parameters and its output. A test checks that 
 ## Shared state
 
 - `~testing/dom` empties `localStorage` and `sessionStorage` after every test. A test must not clear them itself, and must not rely on what an earlier test stored. If a test only passes after a manual `clear()`, find the store that leaks.
+- Do not wait on the clock: no `setTimeout` or fixed sleep in a test, because a loaded machine makes the timing flaky. Wait for the thing you assert with `findBy*` or `waitFor` (both from `~testing/dom`), or flush with `await act(async () => {})` when you assert that nothing happened. Use fake timers when the code under test uses a timer.
 - Every other global a test changes (`fetch`, `matchMedia`, the viewport, fake timers) is restored in `afterEach` in the same file.
 
 ## Database tests

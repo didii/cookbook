@@ -11,6 +11,7 @@ export type RecipeRow = {
   servings: number | null;
   intro: string;
   image: string | null;
+  source: string | null;
   seal: string | null;
   /** When the recipe was last saved; the editor compares it to the version a draft started from. */
   updated_at: string;
@@ -24,7 +25,7 @@ type StepRow = { id: number; body: string; oven_temperature: number | null; time
 /** One round trip (a single batch): the recipe plus its ingredients and steps (with their chips) in stored order. */
 export async function getRecipe(db: D1Database, slug: string): Promise<Recipe | undefined> {
   const [recipe, ingredients, steps, chips, quantities, tags] = await db.batch([
-    db.prepare('SELECT id, slug, title, author, time, servings, intro, image, seal, updated_at FROM recipes WHERE slug = ?').bind(slug),
+    db.prepare('SELECT id, slug, title, author, time, servings, intro, image, source, seal, updated_at FROM recipes WHERE slug = ?').bind(slug),
     db
       .prepare(
         'SELECT i.quantity_text AS quantityText, i.quantity_value AS quantityValue, i.quantity_value_max AS quantityValueMax, i.quantity_unit AS quantityUnit, i.name FROM ingredients i JOIN recipes r ON r.id = i.recipe_id WHERE r.slug = ? ORDER BY i.position',
@@ -90,6 +91,8 @@ export type RecipeInput = {
   time?: string;
   intro?: string;
   image?: string;
+  /** Where the recipe came from; blank is stored as none. */
+  source?: string;
   seal?: string;
   createdBy?: string;
   ingredients?: { name: string; quantityText?: string; quantityValue?: number; quantityValueMax?: number; quantityUnit?: string }[];
@@ -185,7 +188,7 @@ export async function createRecipe(db: D1Database, recipe: RecipeInput): Promise
     db
       .prepare(
         // A case variant of a stored author takes the stored spelling.
-        'INSERT INTO recipes (slug, title, author, servings, time, intro, image, seal, created_by) VALUES (?, ?, COALESCE((SELECT author FROM recipes WHERE author = ? COLLATE NOCASE LIMIT 1), ?), ?, ?, ?, ?, ?, ?)',
+        'INSERT INTO recipes (slug, title, author, servings, time, intro, image, source, seal, created_by) VALUES (?, ?, COALESCE((SELECT author FROM recipes WHERE author = ? COLLATE NOCASE LIMIT 1), ?), ?, ?, ?, ?, ?, ?, ?)',
       )
       .bind(
         slug,
@@ -196,6 +199,7 @@ export async function createRecipe(db: D1Database, recipe: RecipeInput): Promise
         recipe.time ?? null,
         recipe.intro ?? '',
         recipe.image ?? null,
+        recipe.source?.trim() || null,
         seal,
         recipe.createdBy ?? null,
       ),
@@ -260,7 +264,7 @@ export async function listAuthors(db: D1Database): Promise<string[]> {
 export async function updateRecipe(
   db: D1Database,
   slug: string,
-  recipe: Pick<RecipeInput, 'title' | 'author' | 'servings' | 'time' | 'intro' | 'image' | 'seal' | 'ingredients' | 'steps' | 'tags'>,
+  recipe: Pick<RecipeInput, 'title' | 'author' | 'servings' | 'time' | 'intro' | 'image' | 'source' | 'seal' | 'ingredients' | 'steps' | 'tags'>,
 ): Promise<{ previousImage: string | null } | undefined> {
   const [before, result] = await db.batch([
     db.prepare('SELECT image FROM recipes WHERE slug = ?').bind(slug),
@@ -268,7 +272,7 @@ export async function updateRecipe(
       .prepare(
         // Another recipe's spelling of the author wins; the recipe's own doesn't, or "Oma" could never become "oma".
         `UPDATE recipes SET title = ?, author = COALESCE((SELECT author FROM recipes WHERE author = ? COLLATE NOCASE AND slug != ? LIMIT 1), ?),
-        servings = ?, time = ?, intro = ?, image = ?, seal = COALESCE(?, seal), updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now')
+        servings = ?, time = ?, intro = ?, image = ?, source = ?, seal = COALESCE(?, seal), updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now')
       WHERE slug = ?`,
       )
       .bind(
@@ -280,6 +284,7 @@ export async function updateRecipe(
         recipe.time ?? null,
         recipe.intro ?? '',
         recipe.image ?? null,
+        recipe.source?.trim() || null,
         recipe.seal ?? null,
         slug,
       ),

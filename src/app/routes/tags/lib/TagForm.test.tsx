@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { createMemoryRouter, data, RouterProvider } from 'react-router';
 import { afterEach, describe, test } from 'vitest';
 import type { ManagedTag } from '~app/shared/tags';
-import { act, fireEvent, openAutocomplete, render, screen, setViewport, within } from '~testing/dom';
+import { act, fireEvent, openAutocomplete, render, screen, setViewport, waitFor, within } from '~testing/dom';
 import type { ActionResult } from './actionResult';
 import { TagForm } from './TagForm';
 
@@ -88,21 +88,21 @@ describe('tag-management › Name and category in one save', () => {
     type(categoryField(), 'Gerecht');
     click('TagActions-save');
     await screen.findByTestId('TagForm-form');
-    await new Promise((r) => setTimeout(r, 20));
+    await waitFor(() => assert.ok(sent.length === 1));
     assert.deepEqual(sent, [{ intent: 'save', current: 'Soepen', name: 'Bouillon', category: 'Gerecht' }]);
   });
 
   test('Enter in a field submits the form, which saves', async () => {
     const { sent } = show();
     fireEvent.submit(screen.getByTestId('TagForm-form'));
-    await new Promise((r) => setTimeout(r, 20));
+    await waitFor(() => assert.ok(sent.length === 1));
     assert.equal(sent.length, 1);
   });
 
   test('the confirmation of the answer is reported', async () => {
     const { done } = show({ done: 'Opgeslagen.' });
     click('TagActions-save');
-    await new Promise((r) => setTimeout(r, 20));
+    await waitFor(() => assert.ok(done.length === 1));
     assert.deepEqual(done, ['Opgeslagen.']);
   });
 });
@@ -228,7 +228,7 @@ describe('tag-management › Merge is cancelled', () => {
     click('TagActions-merge');
     click('MergeActions-cancel');
     assert.ok(actions().getByTestId('TagActions-save'));
-    await new Promise((r) => setTimeout(r, 20));
+    await act(async () => {});
     assert.deepEqual(sent, []);
   });
 });
@@ -239,7 +239,7 @@ describe('tag-management › Delete is cancelled', () => {
     click('TagActions-delete');
     click('DeleteActions-cancel');
     assert.ok(actions().getByTestId('TagActions-save'));
-    await new Promise((r) => setTimeout(r, 20));
+    await act(async () => {});
     assert.deepEqual(sent, []);
   });
 });
@@ -273,7 +273,8 @@ describe('TagForm', () => {
     const form = screen.getByTestId('TagForm-form');
     fireEvent.submit(form);
     fireEvent.submit(form);
-    await new Promise((r) => setTimeout(r, 20));
+    await waitFor(() => assert.ok(sent.length === 1));
+    await act(async () => {});
     assert.equal(sent.length, 1);
   });
 
@@ -281,7 +282,7 @@ describe('TagForm', () => {
     const { sent } = show();
     click('TagActions-merge');
     fireEvent.submit(screen.getByTestId('TagForm-form'));
-    await new Promise((r) => setTimeout(r, 20));
+    await act(async () => {});
     assert.deepEqual(sent, []);
   });
 
@@ -290,7 +291,7 @@ describe('TagForm', () => {
     click('TagActions-merge');
     type(actions().getByTestId('SuggestInput-field'), 'soep');
     click('MergeActions-confirm');
-    await new Promise((r) => setTimeout(r, 20));
+    await waitFor(() => assert.ok(done.length === 1));
     assert.deepEqual(sent, [{ intent: 'merge', from: 'Soepen', into: 'Soep' }]);
     assert.deepEqual(done, ['Samengevoegd met “Soep”.']);
   });
@@ -299,7 +300,7 @@ describe('TagForm', () => {
     const { sent, done } = show({ done: 'Tag “Soepen” verwijderd.' });
     click('TagActions-delete');
     click('DeleteActions-confirm');
-    await new Promise((r) => setTimeout(r, 20));
+    await waitFor(() => assert.ok(done.length === 1));
     assert.deepEqual(sent, [{ intent: 'delete', name: 'Soepen' }]);
     assert.equal(done.length, 1);
   });
