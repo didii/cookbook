@@ -246,6 +246,16 @@ export async function listRecipes(db: D1Database, email: string, now: Date): Pro
   }));
 }
 
+/** The names of the ingredients of every recipe with any, by slug, in recipe order. */
+export async function listIngredientNames(db: D1Database): Promise<Record<string, string[]>> {
+  const { results } = await db
+    .prepare('SELECT r.slug, i.name FROM ingredients i JOIN recipes r ON r.id = i.recipe_id ORDER BY i.recipe_id, i.position')
+    .all<{ slug: string; name: string }>();
+  const names: Record<string, string[]> = {};
+  for (const { slug, name } of results) (names[slug] ??= []).push(name);
+  return names;
+}
+
 /** Every stored tag, alphabetical, for suggestions. */
 export async function listTags(db: D1Database): Promise<string[]> {
   const { results } = await db.prepare('SELECT name FROM tags').all<{ name: string }>();

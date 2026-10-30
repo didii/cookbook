@@ -20,7 +20,7 @@ Per CLAUDE.md: test names follow the spec scenarios, run `pnpm test:spec add-fri
 ## 4. Matching and address
 
 - [x] 4.1 Write `routes/fridge/lib/matchIngredients.ts` (`words`, `matches`, `rankRecipes` returning used, unused and missing per recipe, narrowing and ordering) and `lists.ts` (`parseLists`, `listParams`, `addEntry` moving a word between lists); verify with unit tests named for "A whole word matches", "Part of a word does not match", "Case and accents are ignored", "An entry of several words", all scenarios of "The lists narrow and order the recipes", "A word moves to the other list" and the address scenarios.
-- [ ] 4.2 Add `listIngredientNames(db)` to `shared/recipes.server.ts`; verify with a database test that names come per slug in recipe order.
+- [x] 4.2 Add `listIngredientNames(db)` to `shared/recipes.server.ts`; verify with a database test that names come per slug in recipe order.
 
 ## 5. Fridge page
 
