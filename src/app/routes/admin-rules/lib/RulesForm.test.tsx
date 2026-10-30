@@ -3,6 +3,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router';
 import { describe, test } from 'vitest';
 import { defaultRules } from '~app/shared/rules';
 import { toRows, type RulesErrors, type RulesRows } from '~app/shared/rules.server';
+import { defaultStaples } from '~app/shared/staples';
 import { act, fireEvent, openAutocomplete, render, screen, within } from '~testing/dom';
 import { RulesForm } from './RulesForm';
 
@@ -10,12 +11,13 @@ const show = (initial: RulesRows = toRows(defaultRules), errors?: RulesErrors) =
   render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <RulesForm initial={initial} errors={errors} /> }])} />);
 
 const posted = (): RulesRows => JSON.parse((screen.getByTestId('RulesForm-rules') as HTMLInputElement).value);
-const lists = () => ['units', 'looseUnits', 'durations', 'degreeWords'].map((name) => screen.getByTestId(`RulesForm-${name}`));
+const lists = () => ['units', 'looseUnits', 'durations', 'degreeWords', 'staples'].map((name) => screen.getByTestId(`RulesForm-${name}`));
 const rowsOf = (list: HTMLElement) => within(list).getAllByTestId('RuleRow-field') as HTMLInputElement[];
 const durationList = () => screen.getByTestId('RulesForm-durations');
 const looseList = () => screen.getByTestId('RulesForm-looseUnits');
 const unitsList = () => screen.getByTestId('RulesForm-units');
 const degreesList = () => screen.getByTestId('RulesForm-degreeWords');
+const staplesList = () => screen.getByTestId('RulesForm-staples');
 const type = (el: HTMLElement, value: string) => fireEvent.change(el, { target: { value } });
 const settle = () => act(async () => {});
 const options = () => screen.queryAllByTestId('RuleRow-option').map((o) => o.textContent);
@@ -31,12 +33,12 @@ const addDuration = (word: string, minutes: string, fixed: boolean) => {
 };
 
 describe('RulesForm', () => {
-  test('the page has the lists of the categories Eenheden, Duur and Graden', () => {
+  test('the page has the lists of the categories Eenheden, Duur, Graden and Basisproducten', () => {
     show();
-    assert.equal(lists().length, 4);
+    assert.equal(lists().length, 5);
     assert.deepEqual(
       screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent),
-      ['Eenheden', 'Duur', 'Graden'],
+      ['Eenheden', 'Duur', 'Graden', 'Basisproducten'],
     );
   });
 
@@ -46,6 +48,61 @@ describe('RulesForm', () => {
       rowsOf(unitsList()).map((f) => f.value),
       [...defaultRules.units, ''],
     );
+  });
+});
+
+describe('staple-management › The page has the staples', () => {
+  test('the category Basisproducten is shown after Graden', () => {
+    show();
+    const headings = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent);
+    assert.equal(headings.indexOf('Basisproducten'), headings.indexOf('Graden') + 1);
+  });
+
+  test('the staples are rows of one word, with an empty row', () => {
+    show(toRows(defaultRules, ['zout', 'peper']));
+    assert.deepEqual(
+      rowsOf(staplesList()).map((f) => f.value),
+      ['zout', 'peper', ''],
+    );
+  });
+});
+
+describe('staple-management › Adding a staple', () => {
+  test('the staple is posted', () => {
+    show();
+    type(rowsOf(staplesList()).at(-1)!, 'meel');
+    assert.ok(posted().staples.includes('meel'));
+  });
+});
+
+describe('staple-management › Removing a staple', () => {
+  test('the staple is no longer posted', () => {
+    show();
+    fireEvent.click(within(staplesList()).getAllByTestId('RuleRow-remove')[defaultStaples.indexOf('suiker')]!);
+    assert.ok(!posted().staples.includes('suiker'));
+  });
+});
+
+describe('staple-management › Saved with the other lists', () => {
+  test('one form posts a unit and a staple together', () => {
+    show();
+    type(rowsOf(unitsList()).at(-1)!, 'kopje');
+    type(rowsOf(staplesList()).at(-1)!, 'meel');
+    assert.ok(posted().units.includes('kopje') && posted().staples.includes('meel'));
+  });
+});
+
+describe('staple-management › Other characters', () => {
+  test('the message of a refused save is on the faulty staple row', () => {
+    show({ ...toRows(defaultRules), staples: ['zout!'] }, { staples: { rows: { 0: 'alleen letters' } } });
+    assert.equal(within(within(staplesList()).getAllByTestId('RuleRow-row')[0]!).getByTestId('RuleRow-error').textContent, 'alleen letters');
+  });
+});
+
+describe('staple-management › Too many staples', () => {
+  test('the message about the list is shown with it', () => {
+    show(toRows(defaultRules), { staples: { list: 'te veel' } });
+    assert.equal(screen.getByTestId('RulesForm-error').textContent, 'te veel');
   });
 });
 

@@ -1,4 +1,5 @@
 import { defaultRules, type Rules } from './rules';
+import { defaultStaples } from './staples';
 
 const key = 'parsing-rules';
 
@@ -53,12 +54,12 @@ export async function getRules(db: D1Database): Promise<Rules> {
 
 export type DurationRow = { word: string; minutes: number | null; fixed: boolean };
 /** The rows of the admin form: what is posted and what the page shows. */
-export type RulesRows = { units: string[]; looseUnits: string[]; degreeWords: string[]; durations: DurationRow[] };
+export type RulesRows = { units: string[]; looseUnits: string[]; degreeWords: string[]; durations: DurationRow[]; staples: string[] };
 export type RulesList = keyof RulesRows;
 /** A message for a list as a whole and for single rows, by their index in the posted rows. */
 export type RulesErrors = Partial<Record<RulesList, { list?: string; rows?: Record<number, string> }>>;
 
-const label = { units: 'Eenheden', looseUnits: 'Losse eenheden', degreeWords: 'Graadwoorden', durations: 'Duur' };
+const label = { units: 'Eenheden', looseUnits: 'Losse eenheden', degreeWords: 'Graadwoorden', durations: 'Duur', staples: 'Basisproducten' };
 const clean = (word: unknown) =>
   String(word ?? '')
     .trim()
@@ -148,8 +149,9 @@ export async function resetRules(db: D1Database): Promise<void> {
   await db.prepare('DELETE FROM settings WHERE key = ?').bind(key).run();
 }
 
-/** The rules as the admin form shows them: one row per word, duration words before fixed durations. */
-export const toRows = (rules: Rules): RulesRows => ({
+/** The rules and the staples as the admin form shows them: one row per word, duration words before fixed durations. */
+export const toRows = (rules: Rules, staples: string[] = defaultStaples): RulesRows => ({
+  staples,
   units: rules.units,
   looseUnits: rules.looseUnits,
   degreeWords: rules.degreeWords,

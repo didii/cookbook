@@ -14,7 +14,7 @@ Per CLAUDE.md: test names follow the spec scenarios, run `pnpm test:spec add-fri
 
 ## 3. Staples on the rules page
 
-- [ ] 3.1 Add `staples` to `RulesRows` and a "Basisproducten" `Section` with a `RuleList` after "Graden" in `RulesForm.tsx`; the action reads, validates and saves it with the other lists (nothing stored when any list is faulty) and `reset` also resets the staples; verify with `AdminRulesPageRoute.test.ts` for "A user posts staples", "Saved with the other lists", "A refused save keeps the staples too", "Restore also restores the staples" and the error scenarios, and `RulesForm.test.tsx` for "The page has the staples", "Adding a staple", "Removing a staple" and the page scenarios of `parsing-rules` ("Superadmin opens the page", "Admin opens the page", "Restore is confirmed first").
+- [x] 3.1 Add `staples` to `RulesRows` and a "Basisproducten" `Section` with a `RuleList` after "Graden" in `RulesForm.tsx`; the action reads, validates and saves it with the other lists (nothing stored when any list is faulty) and `reset` also resets the staples; verify with `AdminRulesPageRoute.test.ts` for "A user posts staples", "Saved with the other lists", "A refused save keeps the staples too", "Restore also restores the staples" and the error scenarios, and `RulesForm.test.tsx` for "The page has the staples", "Adding a staple", "Removing a staple" and the page scenarios of `parsing-rules` ("Superadmin opens the page", "Admin opens the page", "Restore is confirmed first").
 - [ ] 3.2 Add the link "Koelkast" (after "Home", everyone) to `SiteMenu.tsx`; verify with `SiteMenu.test.tsx` for the menu scenarios of `site-menu` and "Fridge link".
 
 ## 4. Matching and address
