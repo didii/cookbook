@@ -18,6 +18,8 @@ A document navigation is not affected: the browser follows the redirect to the s
 - **While probing, render only a short line** ("Opnieuw inloggen…") so the member never sees the raw error flash by; if the probe says it is not an expired session, the error page appears as now.
 - **Where the code lives.** The check is a function in `shared/` (`isSessionExpired`, takes a `fetch` so a test can pass one); the boundary in `root.tsx` calls it from an effect.
 
+- **Notes handle their own failure.** `useNote` catches a failed save itself, so the boundary never sees it. When a save fails it calls `isSessionExpired(location.href)`; on true it stores the text under `cookbook:note:<email>:<slug>` in `localStorage` and calls `location.reload()`. On mount `useNote` takes a kept text (reads and removes it) and feeds it through `change`, so it shows in the field and is saved again by the normal pause timer; a failure then keeps it again. Storage that throws is ignored. No expiry or versioning: the entry is removed on the next visit to that recipe. The member's email comes from the root loader data, as the editor draft does.
+
 ## Risks
 
 - A reload loop if the probe is redirected but the document is not. They go through the same Access policy, so this does not happen in practice; no guard is added.
