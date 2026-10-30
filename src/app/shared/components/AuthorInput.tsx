@@ -9,11 +9,13 @@ type Props = {
   onValueChange: (value: string) => void;
   invalid?: boolean;
   describedBy?: string;
+  /** The most characters the field takes. */
+  maxLength?: number;
   className?: string;
 };
 
 /** Free-text author field that suggests the authors already on stored recipes; a name that isn't listed is submitted as typed. */
-export function AuthorInput({ authors, value, onValueChange, id, invalid, describedBy, className }: Props) {
+export function AuthorInput({ authors, value, onValueChange, id, invalid, describedBy, maxLength, className }: Props) {
   // Ignores letter case and accents: "oma" finds "Oma".
   const { contains } = Autocomplete.useFilter({ sensitivity: 'base' });
   const [open, setOpen] = useState(false);
@@ -36,6 +38,7 @@ export function AuthorInput({ authors, value, onValueChange, id, invalid, descri
         id={id}
         data-testid="AuthorInput-field"
         required
+        maxLength={maxLength}
         autoComplete="off"
         aria-invalid={invalid ? true : undefined}
         aria-describedby={describedBy}

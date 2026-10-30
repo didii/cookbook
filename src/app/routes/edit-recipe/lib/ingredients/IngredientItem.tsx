@@ -24,6 +24,8 @@ interface IngredientItemProps extends ComponentProps<'li'> {
   canUp: boolean;
   canDown: boolean;
   error?: string;
+  /** The most characters the field takes. */
+  maxLength?: number;
   /** Step numbers that use this ingredient: a check in the field, with the numbers as its name. */
   usedIn: number[];
   onType: (text: string) => void;
@@ -52,6 +54,7 @@ export function IngredientItem({
   canUp,
   canDown,
   error,
+  maxLength,
   usedIn,
   onType,
   onRemove,
@@ -148,6 +151,7 @@ export function IngredientItem({
           type="text"
           data-testid="IngredientItem-field"
           value={text}
+          maxLength={maxLength}
           placeholder={placeholder}
           aria-label={label}
           aria-invalid={error ? true : undefined}

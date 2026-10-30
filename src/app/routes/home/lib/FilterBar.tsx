@@ -2,10 +2,11 @@ import { useEffect, useId, useRef, useState, type ComponentProps } from 'react';
 import { cn } from '~app/shared/cn';
 import { Button, Segmented } from '~app/shared/components';
 import { control } from '~app/shared/control';
+import type { Filters, Sort } from '~app/shared/filterParams';
 import { Search, Sliders } from '~app/shared/icons';
 import { press } from '~app/shared/press';
 import { useKeyboardOffset } from '~app/shared/useKeyboardOffset';
-import { activeFilterCount, noFilters, type Filters, type Sort } from './filterRecipes';
+import { activeFilterCount, noFilters } from './filterRecipes';
 import { MultiSelect } from './MultiSelect';
 
 interface FilterBarProps extends ComponentProps<'search'> {

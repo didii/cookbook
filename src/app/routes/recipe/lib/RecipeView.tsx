@@ -1,7 +1,8 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useRouteLoaderData } from 'react-router';
 import { cn } from '~app/shared/cn';
-import { Fret, LikeButton, Seal, TileBand } from '~app/shared/components';
+import { Fret, LikeButton, Pill, Seal, TileBand } from '~app/shared/components';
+import { filterParams } from '~app/shared/filterParams';
 import { ChevronBack } from '~app/shared/icons';
 import type { Recipe, Step } from '~app/shared/recipe';
 import { initialCook, observe, setByHand, wantsCookMode } from './cook/cookMode';
@@ -13,6 +14,7 @@ import { NoteSheet } from './notes/NoteSheet';
 import { useNote } from './notes/useNote';
 import { scaleIngredient, scaleText } from './scale/scale';
 import { ScaleControl } from './scale/ScaleControl';
+import { sourceLink } from './sourceLink';
 import { StepList } from './StepList';
 import { TabBar } from './tabs/TabBar';
 import { arrive, tabFromHash, type Positions, type TabId } from './tabs/tabs';
@@ -105,7 +107,8 @@ export function RecipeView({ recipe: r, tile, steps, liked = false, note: savedN
   // Cook mode: starts by itself once cooking has started (the open tab's first item is past the middle of the screen, or an ingredient is ticked)
   // until the switch is used. Narrow screens only.
   const narrow = useNarrow();
-  const note = useNote(r.slug, savedNote, narrow);
+  const email = useRouteLoaderData<{ email: string }>('root')?.email ?? '';
+  const note = useNote(r.slug, savedNote, narrow, email);
   const [cook, setCook] = useState(initialCook);
   const tickedCount = ticked.size;
   useEffect(() => {
@@ -157,10 +160,11 @@ export function RecipeView({ recipe: r, tile, steps, liked = false, note: savedN
           </span>
           {r.time && <span data-testid="RecipeView-time">{r.time}</span>}
           {r.servings && <span data-testid="RecipeView-servings">{r.servings} porties</span>}
+          {r.source && <Source source={r.source} />}
         </p>
         <p className="mt-2 max-w-[60ch] text-lg text-muted">{r.intro}</p>
 
-        <div className="@container relative mt-6 overflow-hidden rounded-xl border-3 border-ink bg-white shadow-hard">
+        <div data-testid="RecipeView-frame" className="@container relative mt-6 overflow-hidden rounded-xl border-3 border-ink bg-white shadow-hard">
           {r.image && (
             <img
               data-testid="RecipeView-image"
@@ -174,6 +178,15 @@ export function RecipeView({ recipe: r, tile, steps, liked = false, note: savedN
           {r.image && r.seal && <Seal sealId={r.seal} className="h-16" />}
           <TileBand first={tile} rows={r.image ? 1 : 3} responsive className="border-b-0" />
         </div>
+        {r.tags.length > 0 && (
+          <div data-testid="RecipeView-tags" className="mt-1.5 flex flex-wrap gap-1.5">
+            {r.tags.map((name) => (
+              <Link key={name} to={`/?${filterParams({ tags: [name] })}`} data-testid="RecipeView-tagLink">
+                <Pill data-testid="RecipeView-tag">{name}</Pill>
+              </Link>
+            ))}
+          </div>
+        )}
 
         <ClockSetting />
         <CookSwitch wanted={wanted} lock={lock} manual={cook.manual} onToggle={() => setCook((c) => setByHand(c, !wantsCookMode(c, true)))} />
@@ -212,5 +225,19 @@ export function RecipeView({ recipe: r, tile, steps, liked = false, note: savedN
         <NoteSheet note={note} />
       </main>
     </TimersContext>
+  );
+}
+
+type SourceProps = { source: string };
+
+/** Where the recipe came from: a link to the address when the source is a web address, otherwise the text. */
+function Source({ source }: SourceProps) {
+  const link = sourceLink(source);
+  return link ? (
+    <a data-testid="RecipeView-source" href={link.href} target="_blank" rel="noopener noreferrer" className="underline">
+      {link.text}
+    </a>
+  ) : (
+    <span data-testid="RecipeView-source">{source}</span>
   );
 }

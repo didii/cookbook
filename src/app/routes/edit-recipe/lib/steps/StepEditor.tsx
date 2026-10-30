@@ -14,6 +14,10 @@ interface StepEditorProps extends ComponentProps<'li'> {
   /** The step's number, counting from 1. */
   number: number;
   step: StepDraft;
+  /** Why the step was refused. */
+  error?: string;
+  /** The most characters the step's text takes. */
+  maxLength?: number;
   /** What the step's chips are read against. */
   context: Context;
   canUp: boolean;
@@ -43,6 +47,8 @@ export function StepEditor({
   handleRef,
   number,
   step,
+  error,
+  maxLength,
   context,
   canUp,
   canDown,
@@ -122,6 +128,8 @@ export function StepEditor({
         label={`Stap ${number}`}
         value={step.body}
         marks={marks}
+        maxLength={maxLength}
+        errorId={error ? `step-${step.id}-error` : undefined}
         placeholder={number === 1 ? 'Kneed de bloem met de boter tot een deeg' : 'Wat doe je in deze stap?'}
         onTextChange={onType}
         onEdit={onEdit}
@@ -130,6 +138,11 @@ export function StepEditor({
         onEnter={onEnter}
         onBackspaceEmpty={onBackspaceEmpty}
       />
+      {error && (
+        <p id={`step-${step.id}-error`} data-testid="StepEditor-error" className="mt-1 font-bold text-red">
+          {error}
+        </p>
+      )}
       <StepChips step={step} context={context} number={number} hotId={hotId} onHot={setChipHot} onChipsChange={onChips} />
     </li>
   );
