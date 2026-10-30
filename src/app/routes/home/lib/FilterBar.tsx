@@ -4,7 +4,7 @@ import { Button, Segmented } from '~app/shared/components';
 import { control } from '~app/shared/control';
 import type { Filters, Sort } from '~app/shared/filterParams';
 import { hoverDarken } from '~app/shared/hover';
-import { Search, Sliders } from '~app/shared/icons';
+import { MapleLeaf, Search, Sliders } from '~app/shared/icons';
 import { press } from '~app/shared/press';
 import { useKeyboardOffset } from '~app/shared/useKeyboardOffset';
 import { activeFilterCount, noFilters } from './filterRecipes';
@@ -24,6 +24,33 @@ const sorts: { value: Sort; label: string }[] = [
   { value: 'nieuwste', label: 'Nieuwste' },
   { value: 'az', label: 'A–Z' },
 ];
+
+interface FavouritesToggleProps {
+  pressed: boolean;
+  onPressedChange: (pressed: boolean) => void;
+  className?: string;
+}
+
+/** The "Mijn favorieten" button: a leaf only, outlined when off and filled red when on. It filters the list; liking is on the recipe card. */
+function FavouritesToggle({ pressed, onPressedChange, className }: FavouritesToggleProps) {
+  return (
+    <button
+      type="button"
+      data-testid="FilterBar-favourites"
+      aria-pressed={pressed}
+      aria-label="Mijn favorieten"
+      title="Mijn favorieten"
+      onClick={() => onPressedChange(!pressed)}
+      className={cn(
+        'group grid size-11 shrink-0 cursor-pointer place-items-center rounded-[10px] border-3 border-ink bg-white text-ink hover:bg-yel aria-pressed:bg-red aria-pressed:text-white aria-pressed:hover:bg-red',
+        press,
+        className,
+      )}
+    >
+      <MapleLeaf className={cn('size-7', pressed ? 'fill-current stroke-none' : 'group-hover:fill-white group-hover:stroke-none')} />
+    </button>
+  );
+}
 
 /** The search box and the filters. Fixed to the bottom of the screen below 48rem, with the details in a sheet above the box; inline from 48rem. */
 export function FilterBar({ filters, authors, tags, tagCategories, onFiltersChange, className, ...props }: FilterBarProps) {
@@ -95,15 +122,17 @@ export function FilterBar({ filters, authors, tags, tagCategories, onFiltersChan
             </div>
           </fieldset>
         )}
-        <Segmented
-          legend="Volgorde"
-          options={sorts}
-          value={filters.sort ?? 'nieuwste'}
-          onChange={(sort) => onFiltersChange({ ...filters, sort })}
-          inputProps={{ 'data-testid': 'FilterBar-sort' }}
-          labelProps={{ 'data-testid': 'FilterBar-sortLabel' }}
-          className="mb-4 md:mr-6 md:mb-3 md:inline-flex md:items-center md:gap-3"
-        />
+        <div className="mb-4 flex items-end justify-between gap-3 md:mr-6 md:mb-3 md:inline-flex md:items-center">
+          <Segmented
+            legend="Volgorde"
+            options={sorts}
+            value={filters.sort ?? 'nieuwste'}
+            onChange={(sort) => onFiltersChange({ ...filters, sort })}
+            inputProps={{ 'data-testid': 'FilterBar-sort' }}
+            labelProps={{ 'data-testid': 'FilterBar-sortLabel' }}
+          />
+          <FavouritesToggle pressed={!!filters.liked} onPressedChange={(liked) => onFiltersChange({ ...filters, liked })} className="md:hidden" />
+        </div>
         <div className="flex gap-3 md:mb-3 md:inline-flex">
           <Button type="button" data-testid="FilterBar-clear" className="min-h-11 text-base" onClick={() => onFiltersChange(noFilters)}>
             Wis filters
@@ -152,6 +181,7 @@ export function FilterBar({ filters, authors, tags, tagCategories, onFiltersChan
             </span>
           )}
         </button>
+        <FavouritesToggle pressed={!!filters.liked} onPressedChange={(liked) => onFiltersChange({ ...filters, liked })} className="hidden md:grid" />
       </div>
     </search>
   );

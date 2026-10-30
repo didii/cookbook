@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { beforeEach, describe, test } from 'vitest';
 import type { Filters } from '~app/shared/filterParams';
-import { cssFor } from '~testing/css';
+import { cssFor, hidesAt, mediaFor } from '~testing/css';
 import { act, fireEvent, openAutocomplete, precedes, render, screen, within } from '~testing/dom';
 import { FilterBar } from './FilterBar';
 import { noFilters } from './filterRecipes';
@@ -14,6 +14,10 @@ const show = (filters: Filters = noFilters, stored = tags) =>
 const bar = () => screen.getByTestId('FilterBar-bar');
 const searchBox = () => screen.getByTestId('FilterBar-search');
 const filterButton = () => screen.getByTestId('FilterBar-toggle');
+// Both favourites buttons share the test id; the one in the sheet comes first in the page, the one in the search row second.
+const favourites = () => screen.getAllByTestId('FilterBar-favourites');
+const sheetFavourites = () => favourites()[0]!;
+const searchFavourites = () => favourites()[1]!;
 const authorField = (root: HTMLElement = document.body) => within(within(root).getByTestId('FilterBar-authors')).getByTestId('MultiSelect-field');
 const tagField = () => within(screen.getByTestId('FilterBar-tags')).getByTestId('MultiSelect-field');
 const pickedAuthors = () =>
@@ -190,6 +194,73 @@ describe('recipe-filtering › Wide screen', () => {
 
   test('the Filter button is gone', async () => {
     assert.match(wide(await cssFor(filterButton().className)), /display: none/);
+  });
+
+  // The two favourites buttons: the one in the search row shows from 48rem, the one in the sheet is hidden there.
+  test('the favourites button in the search row is shown', async () => {
+    assert.match(await mediaFor(searchFavourites().className, '(width >= 48rem)'), /display: grid/);
+  });
+
+  test('the favourites button in the sheet is hidden', async () => {
+    assert.equal(await hidesAt(sheetFavourites().className, '(width >= 48rem)'), true);
+  });
+});
+
+describe('recipe-filtering › Showing only favourites', () => {
+  test('the favourites button is not pressed by default', () => {
+    show();
+    assert.deepEqual(
+      favourites().map((b) => b.getAttribute('aria-pressed')),
+      ['false', 'false'],
+    );
+  });
+
+  test('both favourites buttons are pressed when favourites are on', () => {
+    show({ ...noFilters, liked: true });
+    assert.deepEqual(
+      favourites().map((b) => b.getAttribute('aria-pressed')),
+      ['true', 'true'],
+    );
+  });
+
+  test('the favourites button is labelled', () => {
+    show();
+    assert.equal(searchFavourites().getAttribute('aria-label'), 'Mijn favorieten');
+  });
+});
+
+describe('recipe-filtering › Turning favourites off', () => {
+  test('pressing a pressed favourites button reports favourites off', async () => {
+    const changes: Filters[] = [];
+    render(<FilterBar filters={{ ...noFilters, liked: true }} authors={authors} tags={tags} onFiltersChange={(f) => changes.push(f)} />);
+    fireEvent.click(searchFavourites());
+    await act(async () => {});
+    assert.equal(changes.at(-1)?.liked, false);
+  });
+
+  test('pressing an unpressed favourites button reports favourites on', async () => {
+    const changes: Filters[] = [];
+    render(<FilterBar filters={noFilters} authors={authors} tags={tags} onFiltersChange={(f) => changes.push(f)} />);
+    fireEvent.click(sheetFavourites());
+    await act(async () => {});
+    assert.equal(changes.at(-1)?.liked, true);
+  });
+});
+
+describe('recipe-filtering › Favourites and other filters combine', () => {
+  test('pressing favourites keeps the search text and the other filters', async () => {
+    const changes: Filters[] = [];
+    render(<FilterBar filters={{ ...noFilters, q: 'soep', sort: 'az' }} authors={authors} tags={tags} onFiltersChange={(f) => changes.push(f)} />);
+    fireEvent.click(searchFavourites());
+    await act(async () => {});
+    assert.deepEqual(changes.at(-1), { ...noFilters, q: 'soep', sort: 'az', liked: true });
+  });
+});
+
+describe('recipe-filtering › Favourites count as one filter', () => {
+  test('favourites alone show the number 1 on the Filter button', () => {
+    show({ ...noFilters, liked: true });
+    assert.equal(screen.getByTestId('FilterBar-count').textContent, '1');
   });
 });
 
