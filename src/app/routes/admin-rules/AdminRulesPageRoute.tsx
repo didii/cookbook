@@ -64,7 +64,7 @@ export default function AdminRulesPage({ loaderData, actionData }: Route.Compone
   const refused = actionData && 'errors' in actionData ? actionData : undefined;
   const saved = actionData && 'saved' in actionData;
   return (
-    <main id="main" className="mx-auto max-w-3xl px-[max(1rem,4vw)] pt-6">
+    <div>
       <h1 className="text-[clamp(2rem,6vw,3rem)] leading-[1.05] font-black tracking-[-0.03em]">Herkenning</h1>
       <p className="mt-2 text-lg text-muted">De woorden die het kookboek herkent in recepten. Hoofdletters maken niet uit.</p>
       {saved && (
@@ -74,6 +74,6 @@ export default function AdminRulesPage({ loaderData, actionData }: Route.Compone
       )}
       {/* Keyed on the stored rules and on every answer, so each answer shows its own rows: the stored rules after a save or a restore (also when they did not change), the posted rows with their messages after a refusal. */}
       <RulesForm key={`${actionData?.nonce}${JSON.stringify(loaderData.rows)}`} initial={refused?.rows ?? loaderData.rows} errors={refused?.errors} />
-    </main>
+    </div>
   );
 }

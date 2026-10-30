@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { Form } from 'react-router';
+import { hoverTint } from '~app/shared/hover';
 import type { RulesErrors, RulesRows } from '~app/shared/rules.server';
 import { DurationCells } from './DurationCells';
 import { ensureFree, isEmptyItem, type RuleItem } from './rows';
@@ -23,11 +24,23 @@ let added = 0;
 const blank = (): RuleItem => ({ id: `new-${added++}`, text: '' });
 const blankDuration = (): RuleItem => ({ ...blank(), minutes: '', fixed: false });
 
-const Section = ({ title, children }: { title: string; children: ReactNode }) => (
-  <section className="mt-10">
-    <h2 className="text-2xl font-black tracking-[-0.01em]">{title}</h2>
-    {children}
-  </section>
+/** A section that folds: closed at first, open at mount when `open` is set. Closing only hides it, its fields stay in the form. */
+const Section = ({ title, open, children }: { title: string; open: boolean; children: ReactNode }) => (
+  <details open={open} data-testid="RulesForm-section" className="group mt-6 border-t-3 border-ink">
+    <summary
+      data-testid="RulesForm-toggle"
+      className={`flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 px-1 [&::-webkit-details-marker]:hidden ${hoverTint}`}
+    >
+      <h2 data-testid="RulesForm-title" className="text-2xl font-black tracking-[-0.01em]">
+        {title}
+      </h2>
+      <span
+        aria-hidden="true"
+        className="mr-1.5 size-2.5 shrink-0 -translate-y-1/4 rotate-45 border-r-3 border-b-3 border-ink group-open:translate-y-1/4 group-open:rotate-225"
+      />
+    </summary>
+    <div className="px-1 pb-4">{children}</div>
+  </details>
 );
 const Help = ({ children }: { children: ReactNode }) => <p className="mb-2 text-sm font-bold text-muted">{children}</p>;
 
@@ -87,7 +100,7 @@ export function RulesForm({ initial, errors = noErrors }: RulesFormProps) {
   return (
     <Form method="post" noValidate data-testid="RulesForm-form" className="pb-24">
       <input type="hidden" name="rules" data-testid="RulesForm-rules" value={JSON.stringify(rules)} />
-      <Section title="Eenheden">
+      <Section title="Eenheden" open={!!(errors.units?.rows || errors.units?.list || errors.looseUnits?.rows || errors.looseUnits?.list)}>
         <div className="mt-3.5 grid gap-x-8 gap-y-6 sm:grid-cols-2">
           <div>
             <h3 id="units-heading" className="font-black">
@@ -132,7 +145,7 @@ export function RulesForm({ initial, errors = noErrors }: RulesFormProps) {
           </div>
         </div>
       </Section>
-      <Section title="Duur">
+      <Section title="Duur" open={!!(errors.durations?.rows || errors.durations?.list)}>
         <p className="mt-0.5 text-[0.9375rem] font-bold text-muted">Het woord en de tijd in minuten.</p>
         <Help>
           Zonder vinkje wordt het getal ervoor vermenigvuldigd: “1,5 <b>uur</b>” is 1,5 × 60. Met <b>Vast</b> staat het woord op zichzelf en duurt het
@@ -155,7 +168,7 @@ export function RulesForm({ initial, errors = noErrors }: RulesFormProps) {
           onChange={setDurations}
         />
       </Section>
-      <Section title="Graden">
+      <Section title="Graden" open={!!(errors.degreeWords?.rows || errors.degreeWords?.list)}>
         <div className="mt-3.5 sm:w-1/2">
           <Help>
             Na een oventemperatuur, zoals “180 <b>graden</b>” of “180 <b>°C</b>”.
@@ -174,7 +187,7 @@ export function RulesForm({ initial, errors = noErrors }: RulesFormProps) {
           />
         </div>
       </Section>
-      <Section title="Basisproducten">
+      <Section title="Basisproducten" open={!!(errors.staples?.rows || errors.staples?.list)}>
         <div className="mt-3.5 sm:w-1/2">
           <Help>Wat bijna iedereen in huis heeft, zoals “zout”. Staat nooit bij “Ontbreekt” op de koelkastpagina.</Help>
           {listError('staples')}

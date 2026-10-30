@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useFetcher, useSearchParams } from 'react-router';
+import { shellColumns, shellContent, shellFrame } from '~app/shared/adminShell';
+import { cn } from '~app/shared/cn';
 import { Button, Chip } from '~app/shared/components';
 import { hoverUnderline } from '~app/shared/hover';
 import { Check, Info, Trash } from '~app/shared/icons';
@@ -168,16 +170,18 @@ export function PhotoList({ photos, matches, filters }: PhotoListProps) {
 
       {selectable.length > 0 && (
         <div data-testid="PhotoList-bar" className="fixed inset-x-0 bottom-0 z-10 border-t-3 border-ink bg-por pb-[env(safe-area-inset-bottom)]">
-          <div className="mx-auto flex max-w-3xl flex-wrap gap-2 px-[max(1rem,4vw)] py-2.5">
-            <Button
-              type="button"
-              data-testid="PhotoList-delete"
-              disabled={chosen.length === 0 || fetcher.state !== 'idle'}
-              onClick={() => dialog.current?.showModal()}
-              className="inline-flex min-h-12 flex-auto items-center justify-center gap-1.5 bg-red px-4 text-base text-white hover:not-disabled:bg-red hover:not-disabled:brightness-90 sm:flex-none"
-            >
-              <Trash /> Verwijder selectie
-            </Button>
+          <div className={cn(shellFrame, shellColumns, 'py-2.5')}>
+            <div data-testid="PhotoList-barContent" className={cn(shellContent, 'flex flex-wrap gap-2')}>
+              <Button
+                type="button"
+                data-testid="PhotoList-delete"
+                disabled={chosen.length === 0 || fetcher.state !== 'idle'}
+                onClick={() => dialog.current?.showModal()}
+                className="inline-flex min-h-12 flex-auto items-center justify-center gap-1.5 bg-red px-4 text-base text-white hover:not-disabled:bg-red hover:not-disabled:brightness-90 sm:flex-none"
+              >
+                <Trash /> Verwijder selectie
+              </Button>
+            </div>
           </div>
         </div>
       )}

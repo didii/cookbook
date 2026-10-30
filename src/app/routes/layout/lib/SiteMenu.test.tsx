@@ -20,6 +20,7 @@ const show = (role: Role = 'user', path = '/') => {
         children: [
           { path: '/', element: <p data-testid="home">Start</p> },
           { path: '/over', element: <p data-testid="about">Over pagina</p> },
+          { path: '/beheer', element: <p data-testid="admin">Beheer pagina</p> },
           { path: '/koelkast', element: <p data-testid="fridge">Koelkast pagina</p> },
         ],
       },
@@ -121,47 +122,25 @@ describe('site-menu › Import link', () => {
   });
 });
 
-describe('site-menu › Photos link', () => {
-  test.each(['admin', 'superadmin'] as const)('the %s sees a link to the orphaned photos page', (role) => {
+describe('site-menu › Admin link', () => {
+  test.each(['admin', 'superadmin'] as const)('the %s sees a link to the admin area', (role) => {
     labels(role);
     assert.deepEqual(
-      links(screen.getByTestId('SiteMenu-dialog')).find(([label]) => label === "Foto's"),
-      ["Foto's", '/beheer/fotos'],
+      links(screen.getByTestId('SiteMenu-dialog')).find(([label]) => label === 'Beheer'),
+      ['Beheer', '/beheer'],
     );
   });
 
   test('a user does not see it', () => {
-    assert.equal(labels('user').includes("Foto's"), false);
-  });
-});
-
-describe('parsing-rules › Admin sees the link', () => {
-  test('the link is in the menu', () => {
-    assert.equal(labels('admin').includes('Herkenning'), true);
+    assert.equal(labels('user').includes('Beheer'), false);
   });
 
-  test('the superadmin link is not in the menu', () => {
-    assert.equal(labels('admin').includes('Gebruikers'), false);
-  });
-
-  test('it points to the parsing rules', () => {
-    labels('admin');
-    assert.deepEqual(
-      links(screen.getByTestId('SiteMenu-dialog')).find(([label]) => label === 'Herkenning'),
-      ['Herkenning', '/beheer/herkenning'],
-    );
-  });
-});
-
-describe('parsing-rules › Superadmin sees the link', () => {
-  test('the link is in the menu', () => {
-    assert.equal(labels('superadmin').includes('Herkenning'), true);
-  });
-});
-
-describe('parsing-rules › User does not see the link', () => {
-  test('the link is not in the menu', () => {
-    assert.equal(labels('user').includes('Herkenning'), false);
+  test('following it closes the menu', async () => {
+    const { dialog } = show('admin');
+    openMenu();
+    fireEvent.click(screen.getAllByTestId('SiteMenu-link').find((link) => link.textContent === 'Beheer')!);
+    await screen.findByTestId('admin');
+    assert.equal(dialog.hasAttribute('open'), false);
   });
 });
 
@@ -175,24 +154,14 @@ describe('site-menu › Menu lists the links for a superadmin', () => {
       'Tags',
       'Instellingen',
       'Over',
-      'Herkenning',
-      "Foto's",
-      'Gebruikers',
+      'Beheer',
       'Uitloggen',
     ]);
-  });
-
-  test('Gebruikers points to the users page', () => {
-    labels('superadmin');
-    assert.deepEqual(
-      links(screen.getByTestId('SiteMenu-dialog')).find(([label]) => label === 'Gebruikers'),
-      ['Gebruikers', '/beheer/gebruikers'],
-    );
   });
 });
 
 describe('site-menu › Menu lists the links for an admin', () => {
-  test('the menu lists the links without the users page', () => {
+  test('the menu lists Beheer and no separate admin pages', () => {
     assert.deepEqual(labels('admin'), [
       'Home',
       'Koelkast',
@@ -201,8 +170,7 @@ describe('site-menu › Menu lists the links for an admin', () => {
       'Tags',
       'Instellingen',
       'Over',
-      'Herkenning',
-      "Foto's",
+      'Beheer',
       'Uitloggen',
     ]);
   });

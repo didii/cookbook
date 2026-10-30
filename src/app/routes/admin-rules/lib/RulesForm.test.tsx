@@ -51,6 +51,81 @@ describe('RulesForm', () => {
   });
 });
 
+const sections = () => screen.getAllByTestId('RulesForm-section') as HTMLDetailsElement[];
+const toggle = (title: string) =>
+  fireEvent.click(within(sections().find((s) => within(s).getByTestId('RulesForm-title').textContent === title)!).getByTestId('RulesForm-toggle'));
+const sectionOf = (title: string) => sections().find((s) => within(s).getByTestId('RulesForm-title').textContent === title)!;
+
+describe('parsing-rules › Sections start closed', () => {
+  test('the four headings are shown', () => {
+    show();
+    assert.deepEqual(
+      sections().map((s) => within(s).getByTestId('RulesForm-title').textContent),
+      ['Eenheden', 'Duur', 'Graden', 'Basisproducten'],
+    );
+  });
+
+  test('none of the sections is open', () => {
+    show();
+    assert.deepEqual(
+      sections().map((s) => s.open),
+      [false, false, false, false],
+    );
+  });
+});
+
+describe('parsing-rules › Open a section', () => {
+  test('activating "Duur" opens only its section', () => {
+    show();
+    toggle('Duur');
+    assert.deepEqual(
+      sections().map((s) => s.open),
+      [false, true, false, false],
+    );
+  });
+});
+
+describe('parsing-rules › Close a section', () => {
+  test('activating the heading of an open section closes it', () => {
+    show();
+    toggle('Duur');
+    toggle('Duur');
+    assert.equal(sectionOf('Duur').open, false);
+  });
+});
+
+describe('parsing-rules › Folding keeps the typed rows', () => {
+  test('a unit typed before closing "Eenheden" is posted', () => {
+    show();
+    toggle('Eenheden');
+    type(rowsOf(unitsList()).at(-1)!, 'kopje');
+    toggle('Eenheden');
+    assert.ok(posted().units.includes('kopje'));
+  });
+
+  test('the closed section keeps its fields in the form', () => {
+    show();
+    assert.ok(within(sectionOf('Eenheden')).getByTestId('RulesForm-units'));
+  });
+});
+
+describe('parsing-rules › Refused save opens the section', () => {
+  const errors = { degreeWords: { rows: { 0: 'staat ook bij duur' } } };
+
+  test('"Graden" is open and the others are closed', () => {
+    show(toRows(defaultRules), errors);
+    assert.deepEqual(
+      sections().map((s) => s.open),
+      [false, false, true, false],
+    );
+  });
+
+  test('the message is shown in it', () => {
+    show(toRows(defaultRules), errors);
+    assert.ok(within(sectionOf('Graden')).getByTestId('RuleRow-error'));
+  });
+});
+
 describe('staple-management › The page has the staples', () => {
   test('the category Basisproducten is shown after Graden', () => {
     show();

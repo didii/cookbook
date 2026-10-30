@@ -18,10 +18,10 @@ export function meta() {
 /** Master: the list on top; the selected user's detail (a child route) renders below it. */
 export default function AdminUsersPage({ loaderData }: Route.ComponentProps) {
   return (
-    <main id="main" className="mx-auto max-w-3xl px-[max(1rem,4vw)] pt-6 pb-16">
+    <div className="pb-16">
       <h1 className="text-[clamp(2rem,6vw,3rem)] leading-[1.05] font-black tracking-[-0.03em]">Gebruikers</h1>
       <UserList users={loaderData.users} capped={loaderData.capped} limit={loaderData.limit} />
       <Outlet />
-    </main>
+    </div>
   );
 }

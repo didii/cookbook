@@ -47,6 +47,24 @@
         ],
         "createdAt": "2026-10-26T10:23:52.401Z",
         "reason": "user confirmed: suppress; element not traceable, mockup only"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "docs/design/admin.html"
+        ],
+        "createdAt": "2026-10-30T15:58:59.767Z",
+        "reason": "project token --por from app.css, established cookbook world (PRODUCT.md/DESIGN world), not a new choice"
+      },
+      {
+        "rule": "repeating-stripes-gradient",
+        "value": "*",
+        "files": [
+          "docs/design/admin.html"
+        ],
+        "createdAt": "2026-10-30T15:59:00.137Z",
+        "reason": "the app's yellow Fret border strip under the header, copied from the real header"
       }
     ]
   }
