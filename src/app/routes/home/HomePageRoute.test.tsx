@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { createMemoryRouter, RouterContextProvider, RouterProvider, useLoaderData } from 'react-router';
 import { afterEach, describe } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
+import { filterParams } from '~app/shared/filterParams';
 import type { RecipeSummary } from '~app/shared/recipe';
 import { createRecipe } from '~app/shared/recipes.server';
 import { cssFor } from '~testing/css';
@@ -10,7 +11,7 @@ import { fake } from '~testing/fake';
 import { test } from '~testing/test';
 import type { Route } from './+types/HomePageRoute';
 import HomePage, { loader, shouldRevalidate } from './HomePageRoute';
-import { filterParams, noFilters } from './lib/filterRecipes';
+import { noFilters } from './lib/filterRecipes';
 
 const load = async (db: D1Database) => {
   const context = new RouterContextProvider();

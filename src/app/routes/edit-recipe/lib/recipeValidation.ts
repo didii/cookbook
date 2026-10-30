@@ -4,25 +4,60 @@ import { findQuantities } from './quantities';
 import { parseQuantity } from './quantity';
 import { parseIngredient, type ParsedIngredient } from './shared/ingredients';
 
-export type RecipeFormField = 'title' | 'author' | 'servings' | 'time' | 'intro' | 'image';
+export type RecipeFormField = 'title' | 'author' | 'servings' | 'time' | 'intro' | 'image' | 'source';
 
-/** The trimmed form values; servings stays text because it can be empty. Time, intro and image are free text, so they have no validation. */
+/** The trimmed form values; servings stays text because it can be empty. Time, intro, image and source are free text, so they have no validation. */
 export type RecipeForm = Record<RecipeFormField, string>;
 
-/** One message per invalid field. Servings may be empty, but when filled in it must be a whole number of at least 1. */
+/** The size limits of a recipe. The migrations `0016_size_limits.sql` and `0017_recipe_source.sql` (the source) repeat the column ones in SQL. */
+export const limits = {
+  title: 200,
+  author: 100,
+  time: 100,
+  source: 500,
+  intro: 5000,
+  ingredientLine: 200,
+  step: 2000,
+  timerName: 100,
+  chipQuantity: 50,
+  chipName: 200,
+  ingredients: 100,
+  steps: 100,
+  chips: 100,
+  tags: 50,
+  tag: 100,
+  servings: 999,
+};
+
+const tooLong = (max: number) => `Hoogstens ${max} tekens.`;
+
+/** One message per invalid field. Servings may be empty, but when filled in it must be a whole number from 1 to the limit. */
 export function validate(values: RecipeForm): Partial<Record<RecipeFormField, string>> {
   const errors: Partial<Record<RecipeFormField, string>> = {};
   if (!values.title) errors.title = 'Geef het recept een titel.';
+  else if (values.title.length > limits.title) errors.title = tooLong(limits.title);
   if (!values.author) errors.author = 'Vul in van wie het recept is.';
-  if (values.servings && (!/^\d+$/.test(values.servings) || Number(values.servings) < 1))
-    errors.servings = 'Vul een heel aantal porties in, minstens 1.';
+  else if (values.author.length > limits.author) errors.author = tooLong(limits.author);
+  if (values.time.length > limits.time) errors.time = tooLong(limits.time);
+  if (values.source.length > limits.source) errors.source = tooLong(limits.source);
+  if (values.intro.length > limits.intro) errors.intro = tooLong(limits.intro);
+  if (values.servings && (!/^\d+$/.test(values.servings) || Number(values.servings) < 1 || Number(values.servings) > limits.servings))
+    errors.servings = `Vul een heel aantal porties in, van 1 tot ${limits.servings}.`;
   return errors;
 }
 
 /** The trimmed values of a submitted form. */
 export function readForm(form: FormData): RecipeForm {
   const text = (name: RecipeFormField) => String(form.get(name) ?? '').trim();
-  return { title: text('title'), author: text('author'), servings: text('servings'), time: text('time'), intro: text('intro'), image: text('image') };
+  return {
+    title: text('title'),
+    author: text('author'),
+    servings: text('servings'),
+    time: text('time'),
+    intro: text('intro'),
+    image: text('image'),
+    source: text('source'),
+  };
 }
 
 /** Valid form values as recipe fields: empty optional ones become undefined. */
@@ -34,14 +69,15 @@ export function toRecipeFields(values: RecipeForm) {
     time: values.time || undefined,
     intro: values.intro,
     image: values.image || undefined,
+    source: values.source || undefined,
   };
 }
 
 /** Field errors, plus one message per ingredient row (keyed by the row's place in the posted list). */
-export type RecipeFormErrors = Partial<Record<RecipeFormField | 'tags', string>> & { ingredients?: Record<number, string> };
-
-/** The longest a tag may be. */
-export const maxTagLength = 100;
+export type RecipeFormErrors = Partial<Record<RecipeFormField | 'tags', string>> & {
+  ingredients?: Record<number, string>;
+  steps?: Record<number, string>;
+};
 
 /** The posted tag names, trimmed with blanks dropped. The form carries them as a JSON list of names; a missing or malformed field gives undefined (keep the stored tags), which is not the same as an empty list (clear them). Duplicates and spelling are settled when the tags are stored. */
 export function readTags(form: FormData): string[] | undefined {
@@ -53,9 +89,13 @@ export function readTags(form: FormData): string[] | undefined {
   }
 }
 
-/** A message when a tag is too long. */
+/** A message when a tag is too long or there are too many tags. */
 export const tagError = (tags: string[] | undefined) =>
-  tags?.some((t) => t.length > maxTagLength) ? `Een tag mag hoogstens ${maxTagLength} tekens hebben.` : undefined;
+  tags && tags.length > limits.tags
+    ? `Een recept heeft hoogstens ${limits.tags} tags.`
+    : tags?.some((t) => t.length > limits.tag)
+      ? `Een tag mag hoogstens ${limits.tag} tekens hebben.`
+      : undefined;
 
 /** The posted ingredient lines, as typed. The form carries them as a JSON list of `{ text }`; a missing or malformed field gives undefined, which is not the same as an empty list. */
 function readLines(form: FormData): string[] | undefined {
@@ -73,8 +113,16 @@ export function readIngredients(form: FormData, rules: Rules) {
   const lines = posted ?? [];
   const ingredients: ParsedIngredient[] | undefined = posted && [];
   const errors: Record<number, string> = {};
+  let count = 0;
   lines.forEach((line, i) => {
     if (!line) return;
+    // Only the first row over the limit gets the message.
+    if (++count > limits.ingredients) {
+      if (count === limits.ingredients + 1) errors[i] = `Hoogstens ${limits.ingredients} ingrediënten.`;
+      return;
+    }
+    if (line.length > limits.ingredientLine) errors[i] = tooLong(limits.ingredientLine);
+    if (errors[i]) return;
     const parsed = parseIngredient(line, rules);
     if (parsed.name) ingredients?.push(parsed);
     else errors[i] = `Vul bij "${parsed.quantityText}" ook een naam in.`;
@@ -126,10 +174,27 @@ function cleanStep(posted: unknown, rules: Rules): Step {
   };
 }
 
+/** The first limit a cleaned step goes over, as a message. */
+function stepError(s: ReturnType<typeof cleanStep>) {
+  if (s.body.length > limits.step) return tooLong(limits.step);
+  if ((s.timer?.label?.length ?? 0) > limits.timerName) return `De naam van de timer mag hoogstens ${limits.timerName} tekens hebben.`;
+  if (s.ingredients.length > limits.chips) return `Hoogstens ${limits.chips} ingrediënten in een stap.`;
+  if (s.ingredients.some((c) => c.name.length > limits.chipName))
+    return `Een ingrediënt in een stap heeft een naam van hoogstens ${limits.chipName} tekens.`;
+  if (s.ingredients.some((c) => c.quantityText.length > limits.chipQuantity))
+    return `Een hoeveelheid in een stap mag hoogstens ${limits.chipQuantity} tekens hebben.`;
+}
+
 /** Parses the posted steps here, never trusting the client's cleaning (see `cleanStep`); blank ones are dropped. `lines` is every posted step cleaned the same way, to show again after a refusal. `steps` is undefined when the form carried no (valid) list, so a submit without the field leaves the stored steps alone instead of clearing them; an explicit empty list does clear them. Each stored step gets the amounts found in its cleaned text, against the recipe's `ingredients` and the `rules`; the browser sends none. */
 export function readSteps(form: FormData, ingredients: Ingredient[], rules: Rules) {
   const posted = readPosted(form);
   const rows = ingredients.map((r, i) => ({ id: String(i), ...r }));
   const lines = (posted ?? []).map((step) => cleanStep(step, rules));
-  return { lines, steps: posted && lines.filter((s) => s.body).map((s) => ({ ...s, quantities: findQuantities(s.body, rows, rules) })) };
+  const errors: Record<number, string> = {};
+  let count = 0;
+  lines.forEach((s, i) => {
+    const message = s.body && ++count > limits.steps ? count === limits.steps + 1 && `Hoogstens ${limits.steps} stappen.` : stepError(s);
+    if (message) errors[i] = message;
+  });
+  return { lines, errors, steps: posted && lines.filter((s) => s.body).map((s) => ({ ...s, quantities: findQuantities(s.body, rows, rules) })) };
 }

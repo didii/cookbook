@@ -1,8 +1,10 @@
+import { useEffect, useState } from 'react';
 import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router';
 import type { Route } from './+types/root';
 import './app.css';
 import { ServiceWorker, SkipLink, ThemeColor } from './shared/components';
 import { envContext, userEmailContext } from './shared/context.server';
+import { isSessionExpired } from './shared/isSessionExpired';
 import { getRules } from './shared/rules.server';
 import { getUser } from './shared/users.server';
 import { redirectToWelcome } from './shared/welcome.server';
@@ -31,7 +33,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
         <ThemeColor />
         <Meta />
-        <Links />
+        {/* Links need no nonce (style-src and script-src allow 'self'). The empty value keeps the server's nonce off them: browsers hide it from the DOM, so hydration would warn about a mismatch. */}
+        <Links nonce="" />
       </head>
       <body>
         {children}
@@ -64,6 +67,23 @@ export default function App() {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+  // A failed `fetch` (TypeError) may be an expired Access session: reload so Access shows its sign-in.
+  const maybeExpired = error instanceof TypeError;
+  const [checking, setChecking] = useState(maybeExpired);
+  useEffect(() => {
+    if (!maybeExpired) return;
+    let cancelled = false;
+    void isSessionExpired(location.href).then((expired) => {
+      if (cancelled) return;
+      if (expired) location.reload();
+      else setChecking(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [maybeExpired]);
+  if (checking) return <p data-testid="ErrorBoundary-signin">Opnieuw inloggen…</p>;
+
   let message = 'Oeps!';
   let details = 'Er ging iets mis.';
   let stack: string | undefined;
@@ -77,7 +97,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   }
 
   return (
-    <main className="mx-auto max-w-272 px-[max(1rem,4vw)] pt-8 pb-16">
+    <main data-testid="ErrorBoundary-error" className="mx-auto max-w-272 px-[max(1rem,4vw)] pt-8 pb-16">
       <h1 className="text-5xl font-black">{message}</h1>
       <p>{details}</p>
       {stack && (

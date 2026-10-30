@@ -21,7 +21,7 @@ afterEach(() => {
 });
 
 function Panel() {
-  return <NotePanel note={useNote('soep', 'oud', false)} />;
+  return <NotePanel note={useNote('soep', 'oud', false, '')} />;
 }
 const field = () => screen.getByTestId<HTMLTextAreaElement>('NotePanel-field');
 const type = (value: string) => act(async () => void fireEvent.change(field(), { target: { value } }));

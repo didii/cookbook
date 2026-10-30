@@ -9,6 +9,12 @@ import type { TextEdit } from './textEdit';
 
 interface StepListProps extends ComponentProps<'div'> {
   steps: StepDraft[];
+  /** Messages by step index. */
+  errors?: Record<number, string>;
+  /** Focus the first step in error when the errors change; set by the parent when this list holds the first error on the page. */
+  focusErrors?: boolean;
+  /** The most characters a step's text takes. */
+  maxLength?: number;
   /** What each step's chips are read against, one per step. */
   contexts: Context[];
   /** Changes the chips of a step with a function of the chip logic. */
@@ -28,11 +34,27 @@ interface StepListProps extends ComponentProps<'div'> {
 /** How long a removed step can be brought back. */
 const undoSeconds = 8;
 
+const noErrors: Record<number, string> = {};
+
 /** A step that was removed and can still be restored, with the place it had. */
 type Removed = { step: StepDraft; at: number };
 
 /** The steps of a recipe: numbered and reorderable, ending with an empty step that typing fills. */
-export function StepList({ steps, contexts, onChips, onType, onEdit, onAdd, onRemove, onRestore, onMove, ...props }: StepListProps) {
+export function StepList({
+  steps,
+  errors = noErrors,
+  focusErrors = false,
+  maxLength,
+  contexts,
+  onChips,
+  onType,
+  onEdit,
+  onAdd,
+  onRemove,
+  onRestore,
+  onMove,
+  ...props
+}: StepListProps) {
   const items = useRef(new Map<string, ItemHandle>());
   const undoButton = useRef<HTMLButtonElement>(null);
   // The steps as of the latest render, for focus requests that run after the next one. Declared before `useAfterRender`, so it is up to date when a request runs.
@@ -57,6 +79,14 @@ export function StepList({ steps, contexts, onChips, onType, onEdit, onAdd, onRe
     const timer = setTimeout(() => setRemoved(undefined), undoSeconds * 1000);
     return () => clearTimeout(timer);
   }, [removed]);
+
+  // After a refused submit, put focus on the first step in error so its message is read.
+  useEffect(() => {
+    const first = steps.findIndex((_, i) => errors[i]);
+    if (focusErrors && first >= 0) items.current.get(steps[first].id)?.focusField('end');
+    // Only when the errors change, not on every keystroke.
+    // oxlint-disable-next-line react/exhaustive-deps
+  }, [errors]);
 
   const focusStep = (index: number, caret: 'start' | 'end') => afterRender(() => items.current.get(latest.current[index]?.id)?.focusField(caret));
 
@@ -117,6 +147,8 @@ export function StepList({ steps, contexts, onChips, onType, onEdit, onAdd, onRe
               }}
               number={i + 1}
               step={step}
+              error={errors[i]}
+              maxLength={maxLength}
               context={contexts[i]}
               onChips={(change) => onChips(step.id, change)}
               canUp={i > 0}

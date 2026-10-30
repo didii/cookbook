@@ -128,7 +128,7 @@ The system SHALL, while a family member types in the tags field, suggest the sto
 - **THEN** "Soep" is shown as picked and no new tag is offered
 
 ### Requirement: A tag is at most 100 characters
-The system SHALL NOT let the tags field take more than 100 characters in a tag, and SHALL refuse a save that has a longer tag, storing nothing and showing a message at the tags field. The number of tags SHALL NOT be limited.
+The system SHALL NOT let the tags field take more than 100 characters in a tag, and SHALL refuse a save that has a longer tag, storing nothing and showing a message at the tags field. The number of tags is limited by the `recipe-limits` capability.
 
 #### Scenario: Tag length is limited
 - **WHEN** a family member types more than 100 characters in the tags field
@@ -141,3 +141,22 @@ The system SHALL NOT let the tags field take more than 100 characters in a tag, 
 #### Scenario: Many tags are accepted
 - **WHEN** a family member picks 30 tags and saves
 - **THEN** the recipe has all 30
+
+### Requirement: Tag suggestions show the category of a tag
+The system SHALL show, for every suggested stored tag in the tag field's popup that has a category, that category as a pill next to the tag's name. A suggested tag without a category SHALL show no pill, and neither SHALL the offer to add a new tag. Picked tags in the field SHALL NOT show a category.
+
+#### Scenario: Suggestion with a category
+- **WHEN** a family member focuses the tag field and the stored tag "Soep" has the category "Gerecht"
+- **THEN** the suggestion "Soep" shows a pill "Gerecht"
+
+#### Scenario: Suggestion without a category
+- **WHEN** a family member focuses the tag field and the stored tag "Winter" has no category
+- **THEN** the suggestion "Winter" shows no pill
+
+#### Scenario: Offer for a new tag has no pill
+- **WHEN** a family member types text that matches no stored tag
+- **THEN** the offer to add it shows no pill
+
+#### Scenario: Picked tag has no category pill
+- **WHEN** a family member picks the tag "Soep" that has the category "Gerecht"
+- **THEN** the picked tag in the field shows no pill
