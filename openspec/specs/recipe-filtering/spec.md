@@ -6,7 +6,7 @@ Lets a family member find a specific recipe or look for inspiration on the home 
 ## Requirements
 
 ### Requirement: Search narrows the recipes as you type
-The system SHALL show a search box on the home page. It SHALL show only the recipes whose title or author contains the typed text, ignoring case and accents, updating on every keystroke without a submit step and without reloading the page.
+The system SHALL show a search box on the home page. It SHALL show only the recipes whose title, author or any tag contains the typed text, ignoring case and accents, updating on every keystroke without a submit step and without reloading the page.
 
 #### Scenario: Searching by title
 - **WHEN** a family member types "appel" and a recipe titled "Appeltaart" and another titled "Erwtensoep" are stored
@@ -16,19 +16,43 @@ The system SHALL show a search box on the home page. It SHALL show only the reci
 - **WHEN** a family member types "oma" and a recipe by "Oma" and a recipe by "Papa" are stored
 - **THEN** only the recipe by "Oma" is shown
 
+#### Scenario: Searching by tag
+- **WHEN** a family member types "soep" and a recipe tagged "Soep" and another tagged "Dessert" are stored
+- **THEN** only the recipe tagged "Soep" is shown
+
 #### Scenario: Clearing the search
 - **WHEN** a family member clears the search box
 - **THEN** all recipes that match the other active filters are shown again
 
 ### Requirement: Recipes can be filtered on author
-The system SHALL show a chip per author (each author once, case variants counted as one) plus an "Iedereen" chip. Exactly one chip is selected, "Iedereen" by default, and selecting an author shows only that author's recipes. The chips SHALL appear whenever at least one recipe is stored.
+The system SHALL show a "Van wie" field: a multi-select with autocomplete over the authors (each author once, case variants counted as one). Typing narrows the suggestions to the authors that contain the typed text, ignoring case and accents; a picked author is not suggested again and shows as a chip with a button to remove it. With no author picked, which is the default, recipes by everyone are shown; with one or more picked, a recipe is shown when its author is any of them. The field SHALL appear whenever at least one recipe is stored.
 
 #### Scenario: Choosing an author
-- **WHEN** a family member selects the chip "Papa" and Papa has two of five stored recipes
+- **WHEN** a family member picks "Papa" and Papa has two of five stored recipes
 - **THEN** only those two recipes are shown
 
+#### Scenario: Choosing several authors
+- **WHEN** a family member picks "Papa" and "Oma", Papa has two and Oma one of five stored recipes
+- **THEN** those three recipes are shown
+
+#### Scenario: No author picked
+- **WHEN** no author is picked
+- **THEN** recipes by everyone are shown
+
+#### Scenario: Finding an author by typing
+- **WHEN** a family member types "pa" in the field and the authors are "Mama", "Oma" and "Papa"
+- **THEN** "Papa" is suggested and "Oma" is not
+
+#### Scenario: Picked author is not suggested again
+- **WHEN** "Papa" is picked and the family member types "pa"
+- **THEN** "Papa" is not suggested
+
+#### Scenario: Removing a picked author
+- **WHEN** a family member presses the remove button on the chip "Papa"
+- **THEN** "Papa" is no longer picked and the recipes of the remaining picks, or of everyone, are shown
+
 #### Scenario: Search and author combine
-- **WHEN** an author chip is selected and text is typed in the search box
+- **WHEN** an author is picked and text is typed in the search box
 - **THEN** only recipes that match both are shown
 
 ### Requirement: Recipes can be sorted
@@ -54,7 +78,7 @@ The system SHALL show how many recipes are shown, as "N recepten" when no filter
 - **THEN** the page says "12 recepten"
 
 ### Requirement: No match offers a way out
-The system SHALL, when the active filters match no recipe, say that nothing was found for them and offer a "Wis filters" button that clears search and author and restores the default order. The search box stays in place.
+The system SHALL, when the active filters match no recipe, say that nothing was found for them and offer a "Wis filters" button that clears search, authors and tags and restores the default order. The search box stays in place.
 
 #### Scenario: Nothing found
 - **WHEN** a family member searches for text that matches no recipe
@@ -62,14 +86,22 @@ The system SHALL, when the active filters match no recipe, say that nothing was 
 
 #### Scenario: Clearing all filters
 - **WHEN** a family member presses "Wis filters"
-- **THEN** search is empty, "Iedereen" and "Nieuwste" are selected and all recipes are shown
+- **THEN** search is empty, no author and no tag is picked, "Nieuwste" is selected and all recipes are shown
 
 ### Requirement: Filters are kept in the address
-The system SHALL keep the search text, author and order in the page address (`q`, `auteur`, `sort`), omitting values that are the default, so a reload or a shared link shows the same list. Changing a filter SHALL replace the current history entry instead of adding one.
+The system SHALL keep the search text, authors, tags and order in the page address (`q`, `auteur` once per picked author, `tag` once per picked tag, and `sort`), omitting values that are the default, so a reload or a shared link shows the same list. Changing a filter SHALL replace the current history entry instead of adding one.
 
 #### Scenario: Opening a filtered address
 - **WHEN** a family member opens the home page with `?q=appel`
 - **THEN** the search box holds "appel" and only matching recipes are shown
+
+#### Scenario: Opening an address with authors
+- **WHEN** a family member opens the home page with `?auteur=Oma&auteur=Papa`
+- **THEN** "Oma" and "Papa" are picked and only their recipes are shown
+
+#### Scenario: Opening an address with tags
+- **WHEN** a family member opens the home page with `?tag=Soep&tag=Vegetarisch`
+- **THEN** "Soep" and "Vegetarisch" are picked and only recipes with one of them are shown
 
 #### Scenario: Filtering does not fill the history
 - **WHEN** a family member types a search and then presses the browser's back button
@@ -87,19 +119,23 @@ The system SHALL, on screens narrower than 48rem, fix the search bar to the bott
 - **THEN** the last card can be scrolled fully clear of the bar
 
 ### Requirement: Detailed filters open in a sheet above the bar
-The system SHALL, on screens narrower than 48rem, show a "Filter" button next to the search box that opens and closes a sheet above it with the author chips, the sort control and a "Wis filters" button. Pressing Escape closes the sheet. The button shows the number of active filters (author and order each count when not the default).
+The system SHALL, on screens narrower than 48rem, show a "Filter" button next to the search box that opens and closes a sheet above it with the "Van wie" field, the "Tags" field, the sort control and a "Wis filters" button. Pressing Escape closes the sheet, except that when the suggestions of a field are open, the first Escape closes only those. The button shows the number of active filters: authors (one, however many are picked), tags (one, however many are picked) and order, each counted when not the default.
 
 #### Scenario: Opening the sheet
 - **WHEN** a family member presses "Filter"
-- **THEN** the sheet with chips, sort and "Wis filters" appears above the search box, the search box stays where it was, and the button shows it is expanded
+- **THEN** the sheet with the fields, sort and "Wis filters" appears above the search box, the search box stays where it was, and the button shows it is expanded
 
 #### Scenario: Closing the sheet
 - **WHEN** the sheet is open and a family member presses "Filter" again or presses Escape
 - **THEN** the sheet closes
 
+#### Scenario: Escape closes the suggestions first
+- **WHEN** the sheet is open, the suggestions of a field are open and a family member presses Escape twice
+- **THEN** the first press closes the suggestions and the sheet stays open, the second closes the sheet
+
 #### Scenario: Active filter count
-- **WHEN** an author is selected and the order is "A–Z"
-- **THEN** the "Filter" button shows the number 2
+- **WHEN** two authors and one tag are picked and the order is "A–Z"
+- **THEN** the "Filter" button shows the number 3
 
 ### Requirement: The sheet does not move the search box
 The system SHALL keep the search box at the same position on screen whether the sheet is open or closed, and SHALL separate the sheet from the search box with a gray line, the same distance above the search box as the bar's top edge is when the sheet is closed. The sheet appears with a short rise animation (0.22 s), which reduced motion turns off.
@@ -112,16 +148,51 @@ The system SHALL keep the search box at the same position on screen whether the 
 - **WHEN** a person who prefers reduced motion opens the sheet
 - **THEN** it appears without the rise animation
 
-### Requirement: Chips show their state by line style
-The system SHALL show an unselected author chip with a dashed border and no fill or shadow, and the selected chip with a solid dark fill, white text and a solid border.
-
-#### Scenario: Selected and unselected chips
-- **WHEN** the sheet shows the chips and "Oma" is selected
-- **THEN** "Oma" has a solid dark look and the other chips have dashed borders
-
 ### Requirement: On wide screens the filters are always visible
-The system SHALL, on screens at least 48rem wide, show the search box, author chips and sort control inline under the introduction, above the result count, without a "Filter" button and without fixing them to the screen.
+The system SHALL, on screens at least 48rem wide, show the search box, the "Van wie" and "Tags" fields and the sort control inline under the introduction, above the result count, without a "Filter" button and without fixing them to the screen.
 
 #### Scenario: Wide screen
 - **WHEN** a family member opens the home page on a wide screen
-- **THEN** search, chips and sort are visible in the page without opening anything
+- **THEN** search, fields and sort are visible in the page without opening anything
+
+### Requirement: Recipes can be filtered on tags
+The system SHALL show a "Tags" field next to "Van wie": a multi-select with autocomplete over the tags that at least one stored recipe has. Typing narrows the suggestions as in "Van wie", but text that matches no tag is not offered as a new one. Picked tags show as removable chips. With no tag picked, tags do not narrow the list; with one or more picked, a recipe is shown when it has any of them. The field SHALL appear whenever at least one stored recipe has a tag.
+
+#### Scenario: Choosing a tag
+- **WHEN** a family member picks "Soep" and two of five stored recipes have that tag
+- **THEN** only those two recipes are shown
+
+#### Scenario: Choosing several tags
+- **WHEN** a family member picks "Soep" and "Vegetarisch", one recipe has both, another only "Soep", another only "Vegetarisch" and a fourth neither
+- **THEN** the first three recipes are shown and the fourth is not
+
+#### Scenario: Finding a tag by typing
+- **WHEN** a family member types "soe" in the field and recipes have the tags "Soep" and "Dessert"
+- **THEN** "Soep" is suggested and "Dessert" is not
+
+#### Scenario: Unknown text is not offered
+- **WHEN** a family member types text that matches no tag
+- **THEN** no suggestion is shown and nothing can be added
+
+#### Scenario: Removing a picked tag
+- **WHEN** a family member presses the remove button on the chip "Soep"
+- **THEN** "Soep" is no longer picked and the list is wider again
+
+#### Scenario: Search and tags combine
+- **WHEN** a tag is picked and text is typed in the search box
+- **THEN** only recipes that match both are shown
+
+#### Scenario: No tags stored
+- **WHEN** recipes are stored and none has a tag
+- **THEN** the "Tags" field is not shown
+
+### Requirement: Recipes with more picked tags come first
+The system SHALL, when tags are picked, show the recipes that have more of the picked tags before those that have fewer. Recipes with the same number of picked tags keep the chosen order ("Nieuwste" or "A–Z") within their group. With no tag picked the chosen order applies to the whole list.
+
+#### Scenario: More matches first
+- **WHEN** "Soep" and "Vegetarisch" are picked, recipe A has only "Soep" and is newer than recipe B, which has both
+- **THEN** B is shown before A
+
+#### Scenario: Same number of matches keep the chosen order
+- **WHEN** "Soep" and "Vegetarisch" are picked and two recipes have exactly one of them
+- **THEN** they are shown newest first, or by title when "A–Z" is selected

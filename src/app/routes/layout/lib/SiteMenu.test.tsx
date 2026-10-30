@@ -6,27 +6,39 @@ import { cssFor } from '~testing/css';
 import { fireEvent, render, screen } from '~testing/dom';
 import { SiteMenu } from './SiteMenu';
 
-const show = (role: Role = 'user') => {
-  const router = createMemoryRouter([
-    // The menu sits in a layout, as in the app, so it survives the navigation.
-    {
-      element: (
-        <>
-          <SiteMenu role={role} />
-          <Outlet />
-        </>
-      ),
-      children: [
-        { path: '/', element: <p>Start</p> },
-        { path: '/over', element: <p data-testid="about">Over pagina</p> },
-      ],
-    },
-  ]);
+const show = (role: Role = 'user', path = '/') => {
+  const router = createMemoryRouter(
+    [
+      // The menu sits in a layout, as in the app, so it survives the navigation.
+      {
+        element: (
+          <>
+            <SiteMenu role={role} />
+            <Outlet />
+          </>
+        ),
+        children: [
+          { path: '/', element: <p data-testid="home">Start</p> },
+          { path: '/over', element: <p data-testid="about">Over pagina</p> },
+        ],
+      },
+    ],
+    { initialEntries: [path] },
+  );
   const view = render(<RouterProvider router={router} />);
   return { ...view, dialog: screen.getByTestId('SiteMenu-dialog') };
 };
 const links = (dialog: HTMLElement) => [...dialog.querySelectorAll('a')].map((a) => [a.textContent, a.getAttribute('href')]);
 const openMenu = () => fireEvent.click(screen.getByTestId('SiteMenu-open'));
+
+/** Open the menu, follow the link with this label and wait for the navigation to settle. Returns the dialog. */
+const follow = async (label: string, role: Role = 'user', path = '/') => {
+  const { dialog } = show(role, path);
+  openMenu();
+  fireEvent.click(screen.getAllByTestId('SiteMenu-link').find((link) => link.textContent === label)!);
+  await screen.findByTestId(label === 'Home' ? 'home' : 'about');
+  return dialog;
+};
 
 const labels = (role: Role) => {
   const { dialog } = show(role);
@@ -50,6 +62,7 @@ describe('site-menu › Menu lists the links', () => {
     const { dialog } = show();
     openMenu();
     assert.deepEqual(links(dialog), [
+      ['Home', '/'],
       ['Nieuw recept', '/recepten/nieuw'],
       ['Recept importeren', '/recepten/importeren'],
       ['Tags', '/tags'],
@@ -57,6 +70,17 @@ describe('site-menu › Menu lists the links', () => {
       ['Over', '/over'],
       ['Uitloggen', '/cdn-cgi/access/logout'],
     ]);
+  });
+});
+
+describe('site-menu › Home link', () => {
+  test.each(['user', 'admin', 'superadmin'] as const)('the %s is taken to the home page', async (role) => {
+    await follow('Home', role, '/over');
+    await screen.findByTestId('home');
+  });
+
+  test('the menu is closed', async () => {
+    assert.equal((await follow('Home', 'user', '/over')).hasAttribute('open'), false);
   });
 });
 
@@ -113,6 +137,7 @@ describe('parsing-rules › User does not see the link', () => {
 describe('site-menu › Menu lists the links for a superadmin', () => {
   test('the menu lists all links', () => {
     assert.deepEqual(labels('superadmin'), [
+      'Home',
       'Nieuw recept',
       'Recept importeren',
       'Tags',
@@ -135,7 +160,7 @@ describe('site-menu › Menu lists the links for a superadmin', () => {
 
 describe('site-menu › Menu lists the links for an admin', () => {
   test('the menu lists the links without the users page', () => {
-    assert.deepEqual(labels('admin'), ['Nieuw recept', 'Recept importeren', 'Tags', 'Instellingen', 'Over', 'Herkenning', 'Uitloggen']);
+    assert.deepEqual(labels('admin'), ['Home', 'Nieuw recept', 'Recept importeren', 'Tags', 'Instellingen', 'Over', 'Herkenning', 'Uitloggen']);
   });
 });
 
@@ -189,20 +214,12 @@ describe('site-menu › Menu closes', () => {
 });
 
 describe('site-menu › Following a link closes the menu', () => {
-  const follow = async () => {
-    const { dialog } = show();
-    openMenu();
-    fireEvent.click(screen.getAllByTestId('SiteMenu-link').find((link) => link.textContent === 'Over')!);
-    await screen.findByTestId('about');
-    return dialog;
-  };
-
   test('the menu stays in the layout', async () => {
-    assert.equal((await follow()).isConnected, true);
+    assert.equal((await follow('Over')).isConnected, true);
   });
 
   test('the menu is closed', async () => {
-    assert.equal((await follow()).hasAttribute('open'), false);
+    assert.equal((await follow('Over')).hasAttribute('open'), false);
   });
 });
 

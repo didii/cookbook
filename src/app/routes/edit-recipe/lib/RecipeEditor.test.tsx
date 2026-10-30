@@ -4,7 +4,8 @@ import { createMemoryRouter, RouterProvider } from 'react-router';
 import { beforeEach, describe, test, vi } from 'vitest';
 import { defaultRules } from '~app/shared/rules';
 import { act, cleanup, fireEvent, openAutocomplete, precedes, render, screen } from '~testing/dom';
-import { emptyDraftSeed } from './draft';
+import { emptyDraftSeed, startingDraft } from './draft';
+import { browserStorage, draftKey, saveDraft } from './draftStore';
 import type { ImportedRecipe } from './import/readRecipe';
 import { RecipeEditor } from './RecipeEditor';
 import { limits } from './recipeValidation';
@@ -446,30 +447,50 @@ describe('RecipeEditor import', () => {
     });
   });
 
+  describe('recipe-import › Form waits for an import', () => {
+    test('the form is not shown yet', () => {
+      show({ canImport: true });
+      assert.equal(screen.queryByTestId('RecipeEditor-form'), null);
+    });
+
+    test('a link leads to the plain new recipe form', () => {
+      show({ canImport: true });
+      assert.equal(screen.getByTestId('RecipeEditor-typeItself').getAttribute('href'), '/recepten/nieuw');
+    });
+
+    test('the form is shown after an import', async () => {
+      show({ canImport: true });
+      await importNow();
+      assert.ok(screen.getByTestId('RecipeEditor-form'));
+    });
+  });
+
   describe('recipe-import › Import is offered only on an untouched form', () => {
     test('the import box is offered on an untouched form', () => {
       show({ canImport: true });
       assert.ok(screen.getByTestId('ImportBox-import'));
     });
 
-    test('it is gone once the member typed something', () => {
-      show({ canImport: true });
-      fireEvent.change(field('RecipeEditor-title'), { target: { value: 'Eigen recept' } });
+    test('it is gone once the form holds changes', () => {
+      const initial = { ...emptyDraftSeed, title: 'Oud' };
+      show({ canImport: true, initial, values: { ...initial, title: 'Eigen recept' } });
       assert.equal(screen.queryByTestId('ImportBox-import'), null);
+      assert.ok(screen.getByTestId('RecipeEditor-form'));
     });
 
     test('it is gone after an import', async () => {
       show({ canImport: true });
       await importNow();
       assert.equal(screen.queryByTestId('ImportBox-import'), null);
+      assert.equal(screen.queryByTestId('RecipeEditor-typeItself'), null);
     });
 
-    test('it returns when the form is reset, and the form is empty again', async () => {
+    test('it returns instead of the form when the form is reset', async () => {
       show({ canImport: true });
       await importNow();
       reset();
       assert.ok(screen.getByTestId('ImportBox-import'));
-      assert.equal(field('RecipeEditor-title').value, '');
+      assert.equal(screen.queryByTestId('RecipeEditor-form'), null);
     });
 
     test('a reset drops an image that arrives afterwards', async () => {
@@ -496,7 +517,135 @@ describe('RecipeEditor import', () => {
       await importNow();
       cleanup();
       show({ canImport: true });
+      fireEvent.click(screen.getByTestId('RestoreDraftDialog-use'));
       assert.equal(field('RecipeEditor-title').value, imported.title);
+    });
+  });
+});
+
+describe('unfinished draft of a new recipe', () => {
+  const keyFor = (slug?: string) => draftKey('', slug);
+  /** Puts a draft of a half-written recipe on the device. */
+  const keepDraft = (slug?: string) => {
+    const initial = startingDraft(defaultRules, emptyDraftSeed);
+    saveDraft(browserStorage(), keyFor(slug), {
+      state: { ...initial, title: 'Soep van gisteren' },
+      initial,
+      base: {},
+      uploading: false,
+      settledImage: '',
+      now: new Date(),
+      rules: defaultRules,
+    });
+  };
+  const title = () => screen.getByTestId<HTMLInputElement>('RecipeEditor-title').value;
+
+  describe('recipe-draft › An unfinished new recipe returns', () => {
+    test('a popup asks about the draft', () => {
+      keepDraft();
+      show();
+      assert.ok(screen.getByTestId('RestoreDraftDialog-heading'));
+    });
+
+    test('the popup is offered the stored draft', () => {
+      keepDraft();
+      show();
+      assert.equal(screen.getByTestId('RestoreDraftDialog-title').textContent, 'Soep van gisteren');
+    });
+
+    test('the form is not filled yet', () => {
+      keepDraft();
+      show();
+      assert.equal(title(), '');
+    });
+  });
+
+  describe('recipe-draft › Using the draft', () => {
+    test('the popup closes', () => {
+      keepDraft();
+      show();
+      fireEvent.click(screen.getByTestId('RestoreDraftDialog-use'));
+      assert.equal(screen.queryByTestId('RestoreDraftDialog-heading'), null);
+    });
+
+    test('the form shows what was written', () => {
+      keepDraft();
+      show();
+      fireEvent.click(screen.getByTestId('RestoreDraftDialog-use'));
+      assert.equal(title(), 'Soep van gisteren');
+    });
+
+    test('the save bar says a draft was restored', () => {
+      keepDraft();
+      show();
+      fireEvent.click(screen.getByTestId('RestoreDraftDialog-use'));
+      assert.ok(screen.getByTestId('RecipeEditor-restored'));
+    });
+  });
+
+  describe('recipe-draft › Discarding the draft', () => {
+    test('the popup closes and the form is empty', () => {
+      keepDraft();
+      show();
+      fireEvent.click(screen.getByTestId('RestoreDraftDialog-discard'));
+      assert.equal(screen.queryByTestId('RestoreDraftDialog-heading'), null);
+      assert.equal(title(), '');
+    });
+
+    test('the draft is removed from the device', () => {
+      keepDraft();
+      show();
+      fireEvent.click(screen.getByTestId('RestoreDraftDialog-discard'));
+      assert.equal(localStorage.getItem(keyFor()), null);
+    });
+
+    test('on the import page the import box is shown', () => {
+      keepDraft();
+      show({ canImport: true });
+      fireEvent.click(screen.getByTestId('RestoreDraftDialog-discard'));
+      assert.ok(screen.getByTestId('ImportBox-import'));
+    });
+  });
+
+  describe('recipe-draft › The popup cannot be dismissed without a choice', () => {
+    test('Escape leaves the offered draft on the device', () => {
+      keepDraft();
+      const offered = localStorage.getItem(keyFor());
+      show();
+      fireEvent(screen.getByTestId('RestoreDraftDialog-dialog'), new Event('cancel', { cancelable: true }));
+      assert.equal(localStorage.getItem(keyFor()), offered);
+    });
+  });
+
+  describe('recipe-draft › Nothing is written before the choice', () => {
+    test('hiding the page leaves the offered draft unchanged', () => {
+      keepDraft();
+      const offered = localStorage.getItem(keyFor());
+      show();
+      window.dispatchEvent(new Event('pagehide'));
+      assert.equal(localStorage.getItem(keyFor()), offered);
+    });
+
+    test('closing the editor leaves the offered draft unchanged', () => {
+      keepDraft();
+      const offered = localStorage.getItem(keyFor());
+      show();
+      cleanup();
+      assert.equal(localStorage.getItem(keyFor()), offered);
+    });
+  });
+
+  describe('recipe-draft › A stored recipe asks nothing', () => {
+    test('no popup is shown', () => {
+      keepDraft('soep');
+      show({ slug: 'soep' });
+      assert.equal(screen.queryByTestId('RestoreDraftDialog-heading'), null);
+    });
+
+    test('the draft is restored', () => {
+      keepDraft('soep');
+      show({ slug: 'soep' });
+      assert.equal(title(), 'Soep van gisteren');
     });
   });
 });

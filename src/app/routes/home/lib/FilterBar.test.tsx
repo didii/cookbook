@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import { beforeEach, describe, test } from 'vitest';
+import type { Filters } from '~app/shared/filterParams';
 import { cssFor } from '~testing/css';
 import { act, fireEvent, openAutocomplete, precedes, render, screen, within } from '~testing/dom';
 import { FilterBar } from './FilterBar';
-import { noFilters, type Filters } from './filterRecipes';
+import { noFilters } from './filterRecipes';
 
 const authors = ['Mama', 'Oma', 'Papa'];
 const tags = ['Dessert', 'Soep'];
@@ -430,6 +431,3 @@ describe('FilterBar author field', () => {
 
 // Whether the suggestions sit above the phone keyboard needs a real viewport and keyboard.
 test.todo('FilterBar suggestions stay visible above the phone keyboard');
-
-// The author chips are gone; the main spec still lists this scenario until the change is archived. Delete this todo then.
-test.todo('recipe-filtering › Selected and unselected chips');

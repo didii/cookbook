@@ -24,7 +24,7 @@ function Sheet({ saved }: { saved: string }) {
   );
 }
 function NoteSheetWithState({ saved }: { saved: string }) {
-  return <NoteSheet note={useNote('soep', saved, true)} />;
+  return <NoteSheet note={useNote('soep', saved, true, '')} />;
 }
 const button = () => screen.getByTestId('NoteSheet-button');
 const field = () => screen.getByTestId<HTMLTextAreaElement>('NoteSheet-field');

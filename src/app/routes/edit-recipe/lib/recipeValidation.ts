@@ -25,6 +25,7 @@ export const limits = {
   steps: 100,
   chips: 100,
   tags: 50,
+  tag: 100,
   servings: 999,
 };
 
@@ -78,9 +79,6 @@ export type RecipeFormErrors = Partial<Record<RecipeFormField | 'tags', string>>
   steps?: Record<number, string>;
 };
 
-/** The longest a tag may be. */
-export const maxTagLength = 100;
-
 /** The posted tag names, trimmed with blanks dropped. The form carries them as a JSON list of names; a missing or malformed field gives undefined (keep the stored tags), which is not the same as an empty list (clear them). Duplicates and spelling are settled when the tags are stored. */
 export function readTags(form: FormData): string[] | undefined {
   try {
@@ -95,8 +93,8 @@ export function readTags(form: FormData): string[] | undefined {
 export const tagError = (tags: string[] | undefined) =>
   tags && tags.length > limits.tags
     ? `Een recept heeft hoogstens ${limits.tags} tags.`
-    : tags?.some((t) => t.length > maxTagLength)
-      ? `Een tag mag hoogstens ${maxTagLength} tekens hebben.`
+    : tags?.some((t) => t.length > limits.tag)
+      ? `Een tag mag hoogstens ${limits.tag} tekens hebben.`
       : undefined;
 
 /** The posted ingredient lines, as typed. The form carries them as a JSON list of `{ text }`; a missing or malformed field gives undefined, which is not the same as an empty list. */
@@ -176,6 +174,17 @@ function cleanStep(posted: unknown, rules: Rules): Step {
   };
 }
 
+/** The first limit a cleaned step goes over, as a message. */
+function stepError(s: ReturnType<typeof cleanStep>) {
+  if (s.body.length > limits.step) return tooLong(limits.step);
+  if ((s.timer?.label?.length ?? 0) > limits.timerName) return `De naam van de timer mag hoogstens ${limits.timerName} tekens hebben.`;
+  if (s.ingredients.length > limits.chips) return `Hoogstens ${limits.chips} ingrediënten in een stap.`;
+  if (s.ingredients.some((c) => c.name.length > limits.chipName))
+    return `Een ingrediënt in een stap heeft een naam van hoogstens ${limits.chipName} tekens.`;
+  if (s.ingredients.some((c) => c.quantityText.length > limits.chipQuantity))
+    return `Een hoeveelheid in een stap mag hoogstens ${limits.chipQuantity} tekens hebben.`;
+}
+
 /** Parses the posted steps here, never trusting the client's cleaning (see `cleanStep`); blank ones are dropped. `lines` is every posted step cleaned the same way, to show again after a refusal. `steps` is undefined when the form carried no (valid) list, so a submit without the field leaves the stored steps alone instead of clearing them; an explicit empty list does clear them. Each stored step gets the amounts found in its cleaned text, against the recipe's `ingredients` and the `rules`; the browser sends none. */
 export function readSteps(form: FormData, ingredients: Ingredient[], rules: Rules) {
   const posted = readPosted(form);
@@ -184,20 +193,7 @@ export function readSteps(form: FormData, ingredients: Ingredient[], rules: Rule
   const errors: Record<number, string> = {};
   let count = 0;
   lines.forEach((s, i) => {
-    const chipTooLong = s.ingredients.find((c) => c.quantityText.length > limits.chipQuantity || c.name.length > limits.chipName);
-    const message =
-      s.body && ++count > limits.steps
-        ? count === limits.steps + 1 && `Hoogstens ${limits.steps} stappen.`
-        : s.body.length > limits.step
-          ? tooLong(limits.step)
-          : (s.timer?.label?.length ?? 0) > limits.timerName
-            ? `De naam van de timer mag hoogstens ${limits.timerName} tekens hebben.`
-            : s.ingredients.length > limits.chips
-              ? `Hoogstens ${limits.chips} ingrediënten in een stap.`
-              : chipTooLong &&
-                (chipTooLong.name.length > limits.chipName
-                  ? `Een ingrediënt in een stap heeft een naam van hoogstens ${limits.chipName} tekens.`
-                  : `Een hoeveelheid in een stap mag hoogstens ${limits.chipQuantity} tekens hebben.`);
+    const message = s.body && ++count > limits.steps ? count === limits.steps + 1 && `Hoogstens ${limits.steps} stappen.` : stepError(s);
     if (message) errors[i] = message;
   });
   return { lines, errors, steps: posted && lines.filter((s) => s.body).map((s) => ({ ...s, quantities: findQuantities(s.body, rows, rules) })) };
