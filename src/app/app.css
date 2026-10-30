@@ -10,6 +10,8 @@
   --color-ink: #1c1512;
   --color-por: #f4eee0;
   --color-muted: #5c4f48;
+  /* The faint tint of anything hovered (fields, rows, buttons, cards): `hover:bg-hover`. */
+  --color-hover: color-mix(in srgb, var(--color-ink) 5%, white);
 
   /* Header bar (py-3 + 44px menu button) + fret (14px), without the margin below the header. The menu sidebar's plaid top is as tall. */
   --spacing-header: 5.125rem;
@@ -97,6 +99,8 @@ body {
     outline-offset: 3px;
   }
 }
-a {
-  color: inherit;
+@layer base {
+  a {
+    color: inherit;
+  }
 }

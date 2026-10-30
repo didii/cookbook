@@ -29,7 +29,7 @@ export function DeleteActions({ tag, onCancel, pending }: DeleteActionsProps) {
           type="submit"
           data-testid="DeleteActions-confirm"
           disabled={pending}
-          className={`${action} bg-red text-white hover:not-disabled:bg-red`}
+          className={`${action} bg-red text-white hover:not-disabled:bg-red hover:not-disabled:brightness-90`}
         >
           Verwijder tag
         </Button>

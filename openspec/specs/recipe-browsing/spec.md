@@ -57,7 +57,7 @@ The system SHALL show a short welcome (the heading "Wat eten we vandaag?" and on
 
 #### Scenario: Card reacts to the pointer
 - **WHEN** the pointer is over a card
-- **THEN** the card lifts a little and its hard shadow grows, unless the person prefers reduced motion
+- **THEN** the card gets a slight tint, like a hovered field, and neither moves nor changes its shadow
 
 ### Requirement: A card shows the tags of its recipe
 The system SHALL show on a card the first two tags of the recipe, in the order the listing gives them, as small pills below the author line. When the recipe has more than two, a further pill SHALL say how many are left ("+1", "+2" and so on). The pills SHALL NOT be links or buttons, and a recipe without tags SHALL show none.

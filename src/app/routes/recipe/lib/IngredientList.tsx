@@ -15,7 +15,7 @@ export function IngredientList({ ingredients, ticked, onToggleIngredient, classN
         <li key={i} id={`ingredient-${i + 1}`}>
           <label
             data-testid="IngredientList-row"
-            className="group flex min-h-13 cursor-pointer items-center gap-3 rounded-[0.625rem] border-3 border-ink bg-white px-3.5 py-2 text-[1.1875rem] font-bold hover:not-focus:bg-[color-mix(in_srgb,var(--color-ink)_5%,white)] has-checked:opacity-55"
+            className="group flex min-h-13 cursor-pointer items-center gap-3 rounded-[0.625rem] border-3 border-ink bg-white px-3.5 py-2 text-[1.1875rem] font-bold hover:not-focus:bg-hover has-checked:opacity-55"
           >
             <input
               type="checkbox"

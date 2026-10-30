@@ -24,7 +24,7 @@ export function TagActions({ pending, onMerge, onDelete }: TagActionsProps) {
         data-testid="TagActions-delete"
         disabled={pending}
         onClick={onDelete}
-        className={`${action} bg-red text-white hover:not-disabled:bg-red`}
+        className={`${action} bg-red text-white hover:not-disabled:bg-red hover:not-disabled:brightness-90`}
       >
         Verwijderen
       </Button>

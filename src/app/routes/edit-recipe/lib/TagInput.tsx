@@ -47,7 +47,7 @@ export function TagInput({ tags, tagCategories = {}, value, onValueChange, id, i
     >
       <Combobox.Chips
         data-testid="TagInput-chips"
-        className="mt-1 flex min-h-13 flex-wrap items-center gap-1.5 rounded-[0.625rem] border-3 border-ink bg-white px-2 py-1.5 focus-within:shadow-focus has-aria-invalid:border-red"
+        className="mt-1 flex min-h-13 flex-wrap items-center gap-1.5 rounded-[0.625rem] border-3 border-ink bg-white px-2 py-1.5 hover:not-focus-within:bg-hover focus-within:shadow-focus has-aria-invalid:border-red"
       >
         <Combobox.Value>
           {(picked: string[]) =>

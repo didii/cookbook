@@ -3,7 +3,7 @@ import type { ComponentProps } from 'react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { afterEach, beforeEach, describe, test } from 'vitest';
 import type { Recipe, Step } from '~app/shared/recipe';
-import { cssFor, hidesAt } from '~testing/css';
+import { cssFor, hidesAt, mediaFor } from '~testing/css';
 import { cleanup, fireEvent, precedes, render, screen, setViewport } from '~testing/dom';
 import { RecipeView } from './RecipeView';
 import { scaleIngredient, scaleText } from './scale/scale';
@@ -200,6 +200,36 @@ describe('recipe-viewing › Recipe with tags', () => {
   test('no pill stands in for hidden tags', () => {
     tagged();
     assert.equal(screen.getByTestId('RecipeView-tags').childElementCount, 3);
+  });
+});
+
+describe('recipe-viewing › Pill size', () => {
+  const pillCss = async () => {
+    page({ recipe: { ...recipe, tags: ['Soep'] } });
+    return cssFor(screen.getByTestId('RecipeView-tag').className);
+  };
+
+  test('the text is as large as the body text', async () => {
+    assert.match(await pillCss(), /font-size: var\(--text-base\)/);
+  });
+
+  test('the pill is at least 36 pixels high', async () => {
+    assert.match(await pillCss(), /min-height: calc\(var\(--spacing\) \* 9\)/);
+  });
+});
+
+describe('recipe-viewing › Pill background', () => {
+  test('the pill has a white background', async () => {
+    page({ recipe: { ...recipe, tags: ['Soep'] } });
+    assert.match(await cssFor(screen.getByTestId('RecipeView-tag').className), /background-color: var\(--color-white\)/);
+  });
+});
+
+describe('recipe-viewing › Hovering a pill', () => {
+  test('the pill takes the hover tint when its link is hovered', async () => {
+    page({ recipe: { ...recipe, tags: ['Soep'] } });
+    assert.ok(screen.getByTestId('RecipeView-tagLink').className.split(' ').includes('group'));
+    assert.match(await mediaFor(screen.getByTestId('RecipeView-tag').className, '(hover: hover)'), /background-color: var\(--color-hover\)/);
   });
 });
 

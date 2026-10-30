@@ -29,7 +29,7 @@ export function DurationCells({ label, minutes, fixed, onChange, onStep }: Durat
               onStep(e.key === 'ArrowUp' ? -1 : 1);
             }
           }}
-          className="block min-h-10 w-full rounded-[0.625rem] border-3 border-ink bg-white py-0 pr-10 pl-2.5 text-right text-base leading-[1.4] font-bold text-ink hover:not-focus:bg-ink/5 focus:shadow-focus focus:outline-transparent"
+          className="block min-h-10 w-full rounded-[0.625rem] border-3 border-ink bg-white py-0 pr-10 pl-2.5 text-right text-base leading-[1.4] font-bold text-ink hover:not-focus:bg-hover focus:shadow-focus focus:outline-transparent"
         />
         <span
           aria-hidden="true"

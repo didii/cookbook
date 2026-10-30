@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { useState } from 'react';
 import { describe, test } from 'vitest';
+import { mediaFor } from '~testing/css';
 import { act, fireEvent, openAutocomplete, render, screen } from '~testing/dom';
 import { SuggestInput } from './SuggestInput';
 
@@ -44,5 +45,10 @@ describe('SuggestInput', () => {
     await typeInto('Gelegenheid');
     assert.equal(screen.getByTestId<HTMLInputElement>('SuggestInput-field').value, 'Gelegenheid');
     assert.deepEqual(options(), []);
+  });
+
+  test('the field tints on hover', async () => {
+    render(<Field items={[]} />);
+    assert.match(await mediaFor(screen.getByTestId('SuggestInput-field').className, '(hover: hover)'), /background-color: var\(--color-hover\)/);
   });
 });

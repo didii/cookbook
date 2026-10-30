@@ -18,7 +18,7 @@ interface UserFormProps extends ComponentProps<'section'> {
 
 const labels = { user: 'Gebruiker', admin: 'Beheerder', superadmin: 'Superadmin' };
 const field =
-  'mt-1 block min-h-12 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-lg text-ink focus:shadow-focus focus:outline-transparent disabled:opacity-40 aria-invalid:border-red';
+  'mt-1 block min-h-12 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-lg text-ink hover:not-focus:bg-hover focus:shadow-focus focus:outline-transparent disabled:opacity-40 aria-invalid:border-red';
 
 /** The edit form of one user. Fields are uncontrolled, so "Herstel" (`type="reset"`) puts the stored values back; the caller keys it by user id. */
 export function UserForm({ user, lastSuperadmin, isSelf, accessUrl, error, refused, saved, className, ...props }: UserFormProps) {

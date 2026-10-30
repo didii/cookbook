@@ -38,7 +38,7 @@ export function Segmented<V extends string>({ legend, options, value, onChange, 
               htmlFor={`${id}-${option.value}`}
               className={cn(
                 control,
-                'relative bg-white peer-checked:bg-red peer-checked:text-white peer-focus-visible:outline-4 peer-focus-visible:outline-offset-3 peer-focus-visible:outline-blu',
+                'relative bg-white not-peer-checked:hover:bg-hover peer-checked:bg-red peer-checked:text-white peer-checked:hover:brightness-95 peer-focus-visible:outline-4 peer-focus-visible:outline-offset-3 peer-focus-visible:outline-blu',
                 i > 0 && 'ml-[-3px] rounded-l-none',
                 i < options.length - 1 && 'rounded-r-none',
               )}

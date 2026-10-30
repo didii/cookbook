@@ -59,7 +59,7 @@ export function ScaleControl({ value, onScaleChange, servings, className, ...pro
           }}
           onBlur={() => setDraft(undefined)}
           onKeyDown={(e) => e.key === 'Enter' && setDraft(undefined)}
-          className="min-h-11 w-16 rounded-lg border-3 border-ink bg-white px-2 text-center font-extrabold tabular-nums"
+          className="min-h-11 w-16 rounded-lg border-3 border-ink bg-white px-2 text-center font-extrabold tabular-nums hover:not-focus:bg-hover"
         />
         <button data-testid="ScaleControl-more" type="button" aria-label="Meer" onClick={() => step(1)} className={button}>
           +

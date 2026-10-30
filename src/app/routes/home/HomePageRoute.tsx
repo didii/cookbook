@@ -2,6 +2,7 @@ import { Link, useRevalidator, useSearchParams, type ShouldRevalidateFunctionArg
 import { Button } from '~app/shared/components';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { filterParams, type Filters } from '~app/shared/filterParams';
+import { hoverUnderline } from '~app/shared/hover';
 import { listRecipes } from '~app/shared/recipes.server';
 import { listManagedTags } from '~app/shared/tagManagement.server';
 import { categoriesOf } from '~app/shared/tags';
@@ -46,7 +47,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
       {recipes.length === 0 ? (
         <p data-testid="HomePage-empty" className="mt-2 text-lg text-muted">
           Er zijn nog geen recepten.{' '}
-          <Link to="/recepten/nieuw" data-testid="HomePage-add">
+          <Link to="/recepten/nieuw" data-testid="HomePage-add" className={hoverUnderline}>
             Voeg het eerste recept toe.
           </Link>
         </p>

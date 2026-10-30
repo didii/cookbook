@@ -25,7 +25,7 @@ export function RecipeCard({ recipe: r, tile, eager, onSaved, className, ...prop
       {...props}
       data-testid="RecipeCard-card"
       className={cn(
-        '@container relative overflow-hidden rounded-xl border-3 border-ink bg-white shadow-hard transition-[transform,box-shadow] duration-180 ease-[cubic-bezier(0.22,1,0.36,1)] has-[a:focus-visible]:outline-4 has-[a:focus-visible]:outline-offset-3 has-[a:focus-visible]:outline-blu hover:-translate-0.5 hover:shadow-hard-lg motion-reduce:transition-none',
+        '@container relative overflow-hidden rounded-xl border-3 border-ink bg-white shadow-hard has-[a:focus-visible]:outline-4 has-[a:focus-visible]:outline-offset-3 has-[a:focus-visible]:outline-blu hover:bg-hover',
         className,
       )}
     >

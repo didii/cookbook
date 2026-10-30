@@ -34,7 +34,7 @@ export function Filters({ filters, onChange, selecting, onSelectingChange, shown
           placeholder="Zoek op naam"
           autoComplete="off"
           onChange={(e) => onChange({ ...filters, q: e.target.value })}
-          className="block min-h-12 w-full rounded-[0.625rem] border-3 border-ink bg-white pr-3 pl-10 text-base font-bold text-ink placeholder:font-medium placeholder:text-muted focus:shadow-focus focus:outline-transparent"
+          className="block min-h-12 w-full rounded-[0.625rem] border-3 border-ink bg-white pr-3 pl-10 text-base font-bold text-ink hover:not-focus:bg-hover placeholder:font-medium placeholder:text-muted focus:shadow-focus focus:outline-transparent"
         />
       </label>
       <div className="flex flex-wrap items-center gap-2">
@@ -82,7 +82,11 @@ function Chip({ pressed, className, ...props }: ChipProps) {
       {...props}
       type="button"
       aria-pressed={pressed}
-      className={cn(control, 'min-h-10 rounded-full bg-white px-3.5 font-extrabold hover:bg-ink/8 aria-pressed:bg-yel', className)}
+      className={cn(
+        control,
+        'min-h-10 rounded-full bg-white px-3.5 font-extrabold hover:not-aria-pressed:bg-hover aria-pressed:bg-yel aria-pressed:hover:brightness-95',
+        className,
+      )}
     />
   );
 }

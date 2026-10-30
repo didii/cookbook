@@ -41,7 +41,7 @@ export function MultiSelect({ options, categories = {}, value, onValueChange, pl
     >
       <Combobox.Chips
         data-testid="MultiSelect-chips"
-        className="flex min-h-12 flex-wrap items-center gap-1.5 rounded-[0.625rem] border-3 border-ink bg-white px-2 py-1 focus-within:shadow-focus"
+        className="flex min-h-12 flex-wrap items-center gap-1.5 rounded-[0.625rem] border-3 border-ink bg-white px-2 py-1 hover:not-focus-within:bg-hover focus-within:shadow-focus"
       >
         <Combobox.Value>
           {(picked: string[]) =>

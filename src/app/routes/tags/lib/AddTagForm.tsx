@@ -53,7 +53,7 @@ export function AddTagForm({ onDone }: AddTagFormProps) {
           onChange={(e) => setName(e.target.value)}
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? `${id}-error` : undefined}
-          className="block min-h-12 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-base font-bold text-ink placeholder:font-medium placeholder:text-muted focus:shadow-focus focus:outline-transparent aria-invalid:border-red"
+          className="block min-h-12 w-full rounded-[0.625rem] border-3 border-ink bg-white px-3 text-base font-bold text-ink hover:not-focus:bg-hover placeholder:font-medium placeholder:text-muted focus:shadow-focus focus:outline-transparent aria-invalid:border-red"
         />
         {error && (
           <p id={`${id}-error`} data-testid="AddTagForm-error" role="alert" className="mt-1.5 font-extrabold text-red">
