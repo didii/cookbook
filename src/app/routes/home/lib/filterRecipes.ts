@@ -38,10 +38,10 @@ export function tagsOf(recipes: Pick<RecipeSummary, 'tags'>[]): string[] {
   return sortTags(tags);
 }
 
-/** The recipes whose title, author or a tag contain the search text, whose author is any picked author and that have any picked tag. Recipes with more picked tags come first; within a group the chosen order holds. `recipes` is newest first. */
-export function filterRecipes<T extends Pick<RecipeSummary, 'title' | 'author' | 'tags'>>(
+/** The recipes whose title, author or a tag contain the search text, whose author is any picked author, that have any picked tag and, when favourites are on, that the member liked. Recipes with more picked tags come first; within a group the chosen order holds. `recipes` is newest first. */
+export function filterRecipes<T extends Pick<RecipeSummary, 'title' | 'author' | 'tags' | 'liked'>>(
   recipes: T[],
-  { q = '', authors = [], tags = [], sort }: Filters,
+  { q = '', authors = [], tags = [], sort, liked = false }: Filters,
 ): T[] {
   const needle = fold(q).trim();
   // A tag picked twice (in another letter case) counts once.
@@ -51,6 +51,7 @@ export function filterRecipes<T extends Pick<RecipeSummary, 'title' | 'author' |
     .filter(
       (r) =>
         (authors.length === 0 || authors.some((a) => sameName(r.author, a))) &&
+        (!liked || r.liked) &&
         (!needle || fold(r.title).includes(needle) || fold(r.author).includes(needle) || r.tags.some((t) => fold(t).includes(needle))),
     )
     .map((recipe) => ({ recipe, matches: matches(recipe) }))
@@ -62,9 +63,9 @@ export function filterRecipes<T extends Pick<RecipeSummary, 'title' | 'author' |
 }
 
 /** Whether anything narrows or reorders the list: the "N van M" line and the Wis filters button depend on it. */
-export const isFiltered = ({ q = '', authors = [], tags = [], sort }: Filters) =>
-  q.trim() !== '' || authors.length > 0 || tags.length > 0 || sort === 'az';
+export const isFiltered = ({ q = '', authors = [], tags = [], sort, liked = false }: Filters) =>
+  q.trim() !== '' || authors.length > 0 || tags.length > 0 || sort === 'az' || liked;
 
-/** The number on the Filter button: the authors and the tags (each one, however many) and the order, when not the default. The search text has its own box. */
-export const activeFilterCount = ({ authors = [], tags = [], sort }: Filters) =>
-  Number(authors.length > 0) + Number(tags.length > 0) + Number(sort === 'az');
+/** The number on the Filter button: the authors and the tags (each one, however many), the favourites and the order, when not the default. The search text has its own box. */
+export const activeFilterCount = ({ authors = [], tags = [], sort, liked = false }: Filters) =>
+  Number(authors.length > 0) + Number(tags.length > 0) + Number(liked) + Number(sort === 'az');
