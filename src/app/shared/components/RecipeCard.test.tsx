@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import type { ReactNode } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, test, vi } from 'vitest';
 import { cssFor, mediaFor } from '~testing/css';
@@ -50,10 +50,10 @@ const recipe: RecipeSummary = {
   liked: false,
   hasNote: false,
 };
-const card = (r: Partial<RecipeSummary> = {}) =>
+const card = (r: Partial<RecipeSummary> = {}, extra: Partial<ComponentProps<typeof RecipeCard>> = {}) =>
   render(
     <MemoryRouter>
-      <RecipeCard recipe={{ ...recipe, ...r }} tile={0} />
+      <RecipeCard recipe={{ ...recipe, ...r }} tile={0} {...extra} />
     </MemoryRouter>,
   );
 const pills = () => screen.queryAllByTestId('RecipeCard-tag').map((p) => p.textContent);
@@ -325,5 +325,39 @@ describe('recipe-new-marker › Marker on a card without an image', () => {
   test('is announced as the description of the link', () => {
     card({ isNew: true, image: null });
     assert.equal(screen.getByTestId('RecipeCard-link').getAttribute('aria-describedby'), screen.getByTestId('RecipeCard-new').id);
+  });
+});
+
+describe('RecipeCard footer and children', () => {
+  test('the footer is shown under the tags', () => {
+    card({ tags: ['Soep'] }, { footer: <p data-testid="Test-footer" /> });
+    assert.ok(precedes(screen.getByTestId('RecipeCard-tags'), screen.getByTestId('Test-footer')));
+  });
+
+  test('the footer is part of the link area, with the title and not the children', () => {
+    card({}, { footer: <p data-testid="Test-footer" />, children: <p data-testid="Test-child" /> });
+    const area = screen.getByTestId('RecipeCard-link').parentElement!;
+    assert.ok(area.contains(screen.getByTestId('Test-footer')));
+    assert.ok(!area.contains(screen.getByTestId('Test-child')));
+  });
+
+  test('the children are below the link area', () => {
+    card({}, { children: <p data-testid="Test-child" /> });
+    assert.ok(precedes(screen.getByTestId('RecipeCard-author'), screen.getByTestId('Test-child')));
+  });
+
+  test('the children are not inside the link', () => {
+    card({}, { children: <p data-testid="Test-child" /> });
+    assert.ok(!screen.getByTestId('RecipeCard-link').contains(screen.getByTestId('Test-child')));
+  });
+
+  test('the children sit above the stretched link', async () => {
+    card({}, { children: <p data-testid="Test-child" /> });
+    assert.match(await cssFor(screen.getByTestId('RecipeCard-extra').className), /z-index: 2/);
+  });
+
+  test('without footer and children there is no extra part', () => {
+    card();
+    assert.equal(screen.queryByTestId('RecipeCard-extra'), null);
   });
 });
