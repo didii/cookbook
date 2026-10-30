@@ -4,7 +4,7 @@ Per CLAUDE.md: test names follow the spec scenarios, run `pnpm test:spec add-fri
 
 ## 1. Staples storage
 
-- [ ] 1.1 Add `shared/staples.ts` (default staples) and `shared/staples.server.ts` (`getStaples`, `readStaples` with validation, `saveStaples`, `resetStaples`) on the `settings` table; verify with `staples.server.test.ts` for the scenarios "Default staples", "Unreadable list", "A saved list replaces the defaults", "A saved empty list means no staples", "Repeated staple", "Other characters", "Too long a word" and "Too many staples" at function level.
+- [x] 1.1 Add `shared/staples.ts` (default staples) and `shared/staples.server.ts` (`getStaples`, `readStaples` with validation, `saveStaples`, `resetStaples`) on the `settings` table; verify with `staples.server.test.ts` for the scenarios "Default staples", "Unreadable list", "A saved list replaces the defaults", "A saved empty list means no staples", "Repeated staple", "Other characters", "Too long a word" and "Too many staples" at function level.
 
 ## 2. Card and list input
 
