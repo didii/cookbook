@@ -86,3 +86,5 @@ Behaviour: pressing Enter in an input, or its button, adds the word as a chip to
 - Matching is whole word only. Staples (zout, peper, boter...) are managed by admins and never listed as missing.
 
 Colours, fonts and spacing follow the tokens in `app/app.css`; if those change, update the mockup or treat the app as the truth.
+
+Differences in the built page: "Wis alles" shows only while a list or the A–Z order is set, a card shows no plain part when nothing is missing or unused, and the count line says "1 recept" for a single stored recipe, as on home.
