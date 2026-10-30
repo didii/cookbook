@@ -1,10 +1,37 @@
 import assert from 'node:assert/strict';
 import { createMemoryRouter, data, RouterProvider, useLoaderData } from 'react-router';
-import { describe, test } from 'vitest';
+import { describe, test, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '~testing/dom';
 import { formatSize, photoCount } from './format';
 import { PhotoList } from './PhotoList';
 import { photoCap, readFilters, type DeleteResult, type StoredPhotoInfo } from './photos';
+
+// Stand-ins for the children (they have their own tests): they show the props PhotoList passes on.
+vi.mock('./PhotoTile', () => ({
+  PhotoTile: ({ photo, checked, onChange }: { photo: StoredPhotoInfo; checked: boolean; onChange: (on: boolean) => void }) => (
+    <li data-testid="PhotoTile-tile" data-recipe={photo.recipe?.slug}>
+      {!photo.recipe && <input type="checkbox" data-testid="PhotoTile-check" checked={checked} onChange={(e) => onChange(e.target.checked)} />}
+    </li>
+  ),
+}));
+vi.mock('./DeleteDialog', () => ({
+  DeleteDialog: ({
+    ref,
+    photos,
+    onCancel,
+    onConfirm,
+  }: {
+    ref: React.Ref<HTMLDialogElement>;
+    photos: StoredPhotoInfo[];
+    onCancel: () => void;
+    onConfirm: () => void;
+  }) => (
+    <dialog ref={ref} data-testid="DeleteDialog-dialog" data-names={photos.map((p) => p.name).join(',')}>
+      <button type="button" data-testid="DeleteDialog-cancel" aria-label="Annuleer" onClick={onCancel} />
+      <button type="button" data-testid="DeleteDialog-confirm" aria-label="Verwijder" onClick={onConfirm} />
+    </dialog>
+  ),
+}));
 
 type PhotoListProps = Parameters<typeof PhotoList>[0];
 const photo = (n: number, extra: Partial<StoredPhotoInfo> = {}): StoredPhotoInfo => ({
@@ -44,6 +71,7 @@ function show(page: Page, answer: DeleteResult = { deleted: 0, kept: [] }, url =
 }
 const checks = () => screen.findAllByTestId<HTMLInputElement>('PhotoTile-check');
 const text = (id: string) => screen.getByTestId(id).textContent;
+const dialogNames = () => dialog().dataset.names;
 const dialog = () => screen.getByTestId<HTMLDialogElement>('DeleteDialog-dialog');
 const choose = async (...indexes: number[]) => {
   const boxes = await checks();
@@ -194,7 +222,7 @@ describe('orphaned-photos › Deleting asks to confirm', () => {
     show({ photos: [photo(1), photo(2), photo(3)] });
     await ask(0, 1);
     assert.equal(dialog().open, true);
-    assert.ok(text('DeleteDialog-summary')?.includes(photoCount(2)));
+    assert.equal(dialogNames(), '1.jpg,2.jpg');
   });
 
   test('deletes nothing yet', async () => {
@@ -212,18 +240,18 @@ describe('orphaned-photos › Deleting asks to confirm', () => {
 });
 
 describe('orphaned-photos › Warning for recent photos', () => {
-  test('the dialog gets the recent photo', async () => {
+  test('the dialog gets the recent photo, whose date it warns about', async () => {
     show({ photos: [photo(1), photo(2, { recent: true })] });
     await ask(0, 1);
-    assert.ok(screen.queryByTestId('DeleteDialog-warning'));
+    assert.equal(dialogNames(), '1.jpg,2.jpg');
   });
 });
 
 describe('orphaned-photos › No warning without recent photos', () => {
-  test('a recent photo that is not selected gives no warning', async () => {
+  test('the dialog does not get a recent photo that is not selected', async () => {
     show({ photos: [photo(1), photo(2, { recent: true })] });
     await ask(0);
-    assert.equal(screen.queryByTestId('DeleteDialog-warning'), null);
+    assert.equal(dialogNames(), '1.jpg');
   });
 });
 
@@ -318,7 +346,11 @@ describe('orphaned-photos › Kept photo shows its recipe', () => {
     // A recipe started to use the photo: the reload that follows the delete lists it as used.
     page.photos = [photo(1, { recipe: taart }), photo(2)];
     fireEvent.click(screen.getByTestId('DeleteDialog-confirm'));
-    await waitFor(() => assert.equal(screen.getAllByTestId('PhotoTile-recipe').length, 1));
-    assert.equal(screen.getByTestId('PhotoTile-recipe').getAttribute('href'), '/recepten/appeltaart');
+    await waitFor(() =>
+      assert.deepEqual(
+        screen.getAllByTestId('PhotoTile-tile').map((t) => t.dataset.recipe),
+        ['appeltaart', undefined],
+      ),
+    );
   });
 });

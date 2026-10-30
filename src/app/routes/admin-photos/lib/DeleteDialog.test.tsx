@@ -56,22 +56,39 @@ describe('orphaned-photos › Cancelling', () => {
     assert.deepEqual(calls, { cancel: 1, confirm: 0 });
   });
 
+  // Happy-dom has no layout, so the box of the dialog is stubbed: it spans 10..110 in both directions.
+  const withBox = (dialog: HTMLDialogElement) => {
+    dialog.getBoundingClientRect = () => new DOMRect(10, 10, 100, 100);
+    dialog.open = true;
+  };
+
   test('a click outside the box closes the dialog', () => {
     const { dialog } = show([photo(1)]);
-    dialog.open = true;
-    fireEvent.click(dialog, { clientX: 5, clientY: 5 });
+    withBox(dialog);
+    fireEvent.click(dialog, { clientX: 5, clientY: 50 });
     assert.equal(dialog.open, false);
   });
 
-  test('a click inside the box leaves the dialog open', () => {
+  test('a click inside the box, on the dialog itself, leaves it open', () => {
     const { dialog } = show([photo(1)]);
-    dialog.open = true;
-    fireEvent.click(screen.getByTestId('DeleteDialog-title'));
+    withBox(dialog);
+    fireEvent.click(dialog, { clientX: 50, clientY: 50 });
     assert.equal(dialog.open, true);
   });
 
-  test('"Annuleer" has focus when the dialog opens', () => {
-    show([photo(1)]);
+  test('a click on something inside the box leaves it open', () => {
+    const { dialog } = show([photo(1)]);
+    withBox(dialog);
+    fireEvent.click(screen.getByTestId('DeleteDialog-title'), { clientX: 50, clientY: 50 });
+    assert.equal(dialog.open, true);
+  });
+
+  // Needs a browser: Escape is the native cancel of a modal dialog, which happy-dom does not do.
+  test.todo('Escape closes the dialog');
+
+  test('"Annuleer" has focus when the dialog is opened', () => {
+    const { dialog } = show([photo(1)]);
+    dialog.showModal();
     assert.equal(document.activeElement, screen.getByTestId('DeleteDialog-cancel'));
   });
 });

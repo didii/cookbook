@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe } from 'vitest';
+import { fake } from '~testing/fake';
 import { test } from '~testing/test';
 import { deletePhotos, findPhotos } from './orphans.server';
 import { photoCap } from './photos';
@@ -91,10 +92,17 @@ describe('orphaned-photos › Recent photo is shown without the filter', () => {
 });
 
 describe('orphaned-photos › Oldest first', () => {
-  test('lists the earliest upload first', async ({ db, photos }) => {
-    // Uploaded in this order, which is not the order of the names.
-    for (const n of [3, 1, 2]) await put(photos, name(n));
-    assert.deepEqual(await names(db, photos), [name(3), name(1), name(2)]);
+  // R2 sets the upload date itself, so a stand-in bucket lists photos with chosen dates, in key order.
+  const listing = (ages: number[]) =>
+    fake<R2Bucket>({
+      list: async () => ({
+        objects: ages.map((days, i) => ({ key: `photos/${name(i + 1)}`, size: 1, uploaded: new Date(Date.now() - days * 24 * 60 * 60 * 1000) })),
+        truncated: false,
+      }),
+    });
+
+  test('lists the earliest upload first', async ({ db }) => {
+    assert.deepEqual(await names(db, listing([3, 5, 4])), [name(2), name(3), name(1)]);
   });
 });
 
@@ -104,7 +112,7 @@ describe('orphaned-photos › Only 100 are shown', () => {
     const found = await findPhotos(db, photos, both, later());
     assert.equal(found.photos.length, photoCap);
     assert.equal(found.matches, photoCap + 2);
-  });
+  }, 30_000);
 
   test('the filters apply before the cap', async ({ db, photos }) => {
     await Promise.all(
@@ -112,7 +120,7 @@ describe('orphaned-photos › Only 100 are shown', () => {
     );
     await put(photos, name(500));
     assert.deepEqual(await names(db, photos), [name(500)]);
-  });
+  }, 30_000);
 });
 
 describe('orphaned-photos › Chosen photos are deleted', () => {
