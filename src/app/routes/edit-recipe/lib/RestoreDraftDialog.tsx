@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ComponentProps } from 'react';
 import { cn } from '~app/shared/cn';
+import { Button } from '~app/shared/components';
 import type { RecipeDraft } from './draft';
 import { describeSavedAt } from './draftStore';
 
@@ -15,7 +16,7 @@ interface RestoreDraftDialogProps extends Omit<ComponentProps<'dialog'>, 'onCanc
 const shownIngredients = 3;
 const shownSteps = 2;
 
-/** Modal popup that opens on mount and asks whether to use the draft of a new recipe; it stays until one of the two buttons is pressed. */
+/** Modal popup that opens on mount and asks whether to use the draft of a new recipe; it stays until a button is pressed or the backdrop is clicked (which keeps the draft). */
 export function RestoreDraftDialog({ draft, savedAt, onUse, onDiscard, className, ...props }: RestoreDraftDialogProps) {
   const dialog = useRef<HTMLDialogElement>(null);
   const [kept] = useState(() => describeSavedAt(savedAt, new Date()));
@@ -25,6 +26,7 @@ export function RestoreDraftDialog({ draft, savedAt, onUse, onDiscard, className
   const ingredients = draft.ingredients.map((row) => row.text.trim()).filter(Boolean);
   const steps = draft.steps.map((step) => step.body.trim()).filter(Boolean);
   return (
+    // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- the backdrop click is a mouse shortcut; the buttons cover the keyboard
     <dialog
       {...props}
       ref={dialog}
@@ -34,6 +36,8 @@ export function RestoreDraftDialog({ draft, savedAt, onUse, onDiscard, className
       // Chromium can still close it on a second Escape without a `cancel`; it opens again until a choice is made.
       onClose={(e) => e.currentTarget.showModal()}
       {...{ closedby: 'none' }}
+      // A click on the backdrop lands on the dialog itself (its content sits in the padded div) and keeps the draft.
+      onClick={(e) => e.target === e.currentTarget && onUse()}
       data-testid="RestoreDraftDialog-dialog"
       className={cn(
         'm-auto max-h-[calc(100dvh-2rem)] w-[min(28rem,calc(100vw-2rem))] overflow-y-auto rounded-xl border-3 border-ink bg-white p-0 text-ink shadow-hard backdrop:bg-ink/40',
@@ -62,53 +66,58 @@ export function RestoreDraftDialog({ draft, savedAt, onUse, onDiscard, className
           </p>
         )}
         {ingredients.length > 0 && (
-          <ul className="list-disc pl-5">
-            {ingredients.slice(0, shownIngredients).map((text, i) => (
-              <li key={i} data-testid="RestoreDraftDialog-ingredient">
-                {text}
-              </li>
-            ))}
-          </ul>
-        )}
-        {ingredients.length > shownIngredients && (
-          <p data-testid="RestoreDraftDialog-moreIngredients" className="text-muted">
-            + {ingredients.length - shownIngredients} meer
-          </p>
+          <div>
+            <ul className="list-disc pl-5">
+              {ingredients.slice(0, shownIngredients).map((text, i) => (
+                <li key={i} data-testid="RestoreDraftDialog-ingredient">
+                  {text}
+                </li>
+              ))}
+            </ul>
+            {ingredients.length > shownIngredients && (
+              <p data-testid="RestoreDraftDialog-moreIngredients" className="text-muted">
+                + {ingredients.length - shownIngredients} meer
+              </p>
+            )}
+          </div>
         )}
         {steps.length > 0 && (
-          <ol className="list-decimal pl-5">
-            {steps.slice(0, shownSteps).map((body, i) => (
-              <li key={i} data-testid="RestoreDraftDialog-step">
-                {body}
-              </li>
-            ))}
-          </ol>
+          <div>
+            <ol className="list-decimal pl-5">
+              {steps.slice(0, shownSteps).map((body, i) => (
+                <li key={i} data-testid="RestoreDraftDialog-step">
+                  {body}
+                </li>
+              ))}
+            </ol>
+            {steps.length > shownSteps && (
+              <p data-testid="RestoreDraftDialog-moreSteps" className="text-muted">
+                + {steps.length - shownSteps} meer
+              </p>
+            )}
+          </div>
         )}
-        {steps.length > shownSteps && (
-          <p data-testid="RestoreDraftDialog-moreSteps" className="text-muted">
-            + {steps.length - shownSteps} meer
-          </p>
-        )}
-        <div className="flex flex-wrap justify-end gap-3">
+        <div className="flex items-center justify-end gap-3">
           <button
             type="button"
             data-testid="RestoreDraftDialog-discard"
             onClick={onDiscard}
-            className="min-h-11 cursor-pointer rounded-full border-3 border-ink bg-white px-5 font-extrabold hover:bg-yel"
+            className="inline-flex min-h-13 cursor-pointer items-center px-2 font-black hover:underline"
           >
             Weggooien
           </button>
-          <button
+          <Button
             type="button"
+            main
             // The safe choice has the focus: Enter right away must not discard the draft.
             // oxlint-disable-next-line jsx-a11y/no-autofocus -- the dialog opens with this button focused on purpose
             autoFocus
             data-testid="RestoreDraftDialog-use"
             onClick={onUse}
-            className="min-h-11 cursor-pointer rounded-full border-3 border-ink bg-yel px-5 font-extrabold"
+            className="max-w-none flex-none px-4"
           >
-            Gebruik concept
-          </button>
+            Herstel concept
+          </Button>
         </div>
       </div>
     </dialog>

@@ -140,12 +140,13 @@ export function RecipeEditor({
   const [base, setBase] = useState<{ updatedAt?: string }>({ updatedAt });
   const [restored, setRestored] = useState<{ at: string; draft: RecipeDraft }>();
   const [changedMeanwhile, setChangedMeanwhile] = useState(false);
-  // The draft of a new recipe waits here until the family member chose to use or discard it.
+  // The draft of a new recipe shows in the form behind the popup and stays here until the family member chose to use or discard it.
   const [pending, setPending] = useState<Start>();
   const applyStart = (start: Start) => {
     setCurrent(start.state);
     setBase(start.base);
-    setRestored({ at: start.restoredAt!, draft: start.state });
+    // A new recipe asks first, so its form needs no line saying a draft was restored.
+    if (slug !== undefined) setRestored({ at: start.restoredAt!, draft: start.state });
     setChangedMeanwhile(start.changedMeanwhile);
     // The step texts keep their own text while mounted, so they start over on what was restored.
     setResets((n) => n + 1);
@@ -159,11 +160,11 @@ export function RecipeEditor({
       // The flag is used up: a reload from here on restores the new draft instead of starting fresh again.
       navigate(`${location.pathname}${location.search}`, { replace: true, state: null });
     }
+    if (start.restoredAt) applyStart(start);
     if (start.restoredAt && slug === undefined) {
       setPending(start);
       return;
     }
-    if (start.restoredAt) applyStart(start);
     setReady(true);
     // Once, on mount.
     // oxlint-disable-next-line react-hooks/exhaustive-deps
@@ -474,12 +475,11 @@ export function RecipeEditor({
           draft={pending.state}
           savedAt={pending.restoredAt!}
           onUse={() => {
-            applyStart(pending);
             setPending(undefined);
             setReady(true);
           }}
           onDiscard={() => {
-            clearDraft(browserStorage(), key);
+            reset();
             setPending(undefined);
             setReady(true);
           }}

@@ -15,7 +15,7 @@
 - **Leave guard.** The form is not dirty while the popup is open, so no leave confirmation fires; the draft stays on the device and is offered again next time.
 - **Component.** `RestoreDraftDialog` in `lib/`, same `<dialog>` + `showModal()` pattern as `DeleteRecipe`, opened by an effect when `pending` is set. Props: the draft's `RecipeDraft`, `savedAt`, `onUse`, `onDiscard`. No backdrop-click close. Escape fires `cancel`; its default is prevented so the popup stays. The photo uses `draft.image` as `src`, as `PhotoField` does for its `value`.
 - **What it shows.** Name, servings, source, photo; first 3 non-blank ingredient texts and first 2 non-blank step bodies, with "+ N meer" when more. Empty fields are left out. It also shows when the draft was kept, via the existing `describeSavedAt`.
-- **Copy** in Dutch like the rest: "Je hebt nog een onafgemaakt recept", "Gebruik concept", "Weggooien".
+- **Copy** in Dutch like the rest: "Je hebt nog een onafgemaakt recept", "Herstel concept", "Weggooien".
 
 ## Risks / Trade-offs
 
