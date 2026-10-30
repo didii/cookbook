@@ -12,9 +12,7 @@ const links = [
   { to: '/tags', label: 'Tags' },
   { to: '/instellingen', label: 'Instellingen' },
   { to: '/over', label: 'Over' },
-  { to: '/beheer/herkenning', label: 'Herkenning', admin: true },
-  { to: '/beheer/fotos', label: "Foto's", admin: true },
-  { to: '/beheer/gebruikers', label: 'Gebruikers', superadmin: true },
+  { to: '/beheer', label: 'Beheer', admin: true },
 ];
 const focus = 'focus-visible:outline-white';
 const item = `flex min-h-11 items-center rounded-[0.625rem] px-2 text-lg font-black no-underline hover:bg-white/15 ${focus}`;
@@ -56,7 +54,7 @@ export function SiteMenu({ role }: { role: Role }) {
           </div>
           <nav className="flex flex-col gap-2 p-4">
             {links
-              .filter((l) => (!l.admin || role !== 'user') && (!l.superadmin || role === 'superadmin'))
+              .filter((l) => !l.admin || role !== 'user')
               .map(({ to, label }) => (
                 <Link key={to} to={to} onClick={close} data-testid="SiteMenu-link" className={item}>
                   {label}

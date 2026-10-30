@@ -36,21 +36,6 @@ The system SHALL keep the words it recognises in recipe text as stored rules of 
 - **WHEN** the saved rules hold the minute words "minuten", the hour words "uur" and the spoken duration "een kwartier" with 15
 - **THEN** the rules in use hold "minuten" with 1 minute per number, "uur" with 60 minutes per number and the fixed duration "een kwartier" with 15 minutes
 
-### Requirement: Admins see the rules menu link
-The system SHALL show a link "Herkenning" in the sidebar menu to a signed-in member whose role is `admin` or `superadmin`, going to the rules page, and SHALL NOT show it to a member whose role is `user`.
-
-#### Scenario: Admin sees the link
-- **WHEN** an admin opens the menu
-- **THEN** it lists "Herkenning" after "Nieuw recept", "Instellingen" and "Over"
-
-#### Scenario: Superadmin sees the link
-- **WHEN** a superadmin opens the menu
-- **THEN** it lists "Herkenning"
-
-#### Scenario: User does not see the link
-- **WHEN** a user opens the menu
-- **THEN** it does not list "Herkenning"
-
 ### Requirement: Only admins reach the rules
 The system SHALL refuse every request for the rules page, and every request that changes rules, with HTTP 403 when the member's role is not `admin` or `superadmin`, whatever the page showed or hid, and SHALL change nothing for a refused request.
 
@@ -259,3 +244,26 @@ The system SHALL show on the rules page, fixed to the bottom of the screen, the 
 #### Scenario: Save bar
 - **WHEN** an admin opens the rules page
 - **THEN** the bar with "Standaardwaarden herstellen" on the left and "Opslaan" on the right is fixed to the bottom of the screen
+
+### Requirement: The rules sections fold
+The system SHALL show each section of the rules page (Eenheden, Duur, Graden, Basisproducten) under a heading that opens and closes it, and SHALL show every section closed when the page opens. Closing a section SHALL only hide it: the rows in it, as typed, stay part of the form and are saved with the other lists.
+
+#### Scenario: Sections start closed
+- **WHEN** an admin opens the rules page
+- **THEN** the four section headings are shown and none of their lists is
+
+#### Scenario: Open a section
+- **WHEN** an admin activates the heading "Duur"
+- **THEN** the durations list is shown
+
+#### Scenario: Close a section
+- **WHEN** an admin activates the heading of an open section
+- **THEN** its list is hidden
+
+#### Scenario: Folding keeps the typed rows
+- **WHEN** an admin adds a unit, closes the section "Eenheden" and saves
+- **THEN** the unit is saved with the other lists
+
+#### Scenario: Refused save opens the section
+- **WHEN** a save is refused with a message on a row in "Graden"
+- **THEN** the section "Graden" is open and shows the message, and a section without a message is closed
