@@ -658,4 +658,40 @@ describe('unfinished draft of a new recipe', () => {
       assert.equal(title(), 'Soep van gisteren');
     });
   });
+
+  const copy = { ...emptyDraftSeed, title: 'Appeltaart', author: 'Oma' };
+  /** The editor as the "Kopieer" link opens it: the copy as seed and the navigation state asking for a fresh start. */
+  const showCopy = (state?: { fresh: true }) =>
+    render(
+      <RouterProvider
+        router={createMemoryRouter([{ path: '/', element: <RecipeEditor {...editorProps} initial={copy} values={copy} /> }], {
+          initialEntries: [{ pathname: '/', state }],
+        })}
+      />,
+    );
+
+  describe('recipe-creation › The copy replaces an old draft', () => {
+    test('the form shows the copy without asking about the old draft', () => {
+      keepDraft();
+      showCopy({ fresh: true });
+      assert.equal(screen.queryByTestId('RestoreDraftDialog-heading'), null);
+      assert.equal(title(), 'Appeltaart');
+    });
+
+    test('the old draft is removed from the device', () => {
+      keepDraft();
+      showCopy({ fresh: true });
+      assert.equal(localStorage.getItem(keyFor()), null);
+    });
+  });
+
+  describe('recipe-creation › A reload keeps the copy changes', () => {
+    test('the form shows the changes after the page is opened again without the flag', () => {
+      showCopy({ fresh: true });
+      fireEvent.change(screen.getByTestId('RecipeEditor-title'), { target: { value: 'Appeltaart met kaneel' } });
+      cleanup();
+      showCopy();
+      assert.equal(title(), 'Appeltaart met kaneel');
+    });
+  });
 });
