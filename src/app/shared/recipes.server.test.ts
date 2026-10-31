@@ -218,6 +218,12 @@ describe('isImageUsed', () => {
     assert.equal(await isImageUsed(db, '/full.jpg'), true);
   });
 
+  test('is true for the image of a step', async ({ db }) => {
+    await seedOrdering(db);
+    await db.prepare("UPDATE steps SET image = '/foto/step.jpg' WHERE position = 1").run();
+    assert.equal(await isImageUsed(db, '/foto/step.jpg'), true);
+  });
+
   test('is false for an image no recipe has', async ({ db }) => {
     await seedOrdering(db);
     assert.equal(await isImageUsed(db, '/other.jpg'), false);

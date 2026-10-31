@@ -14,7 +14,9 @@ import { recipeSeed } from './lib/recipeSeed';
 import NewRecipePage, { action, loader } from './NewRecipePageRoute';
 
 // Passes through to the real form and records the props the route gave it.
-const spy = vi.hoisted(() => ({ props: undefined as { heading: string; canImport?: boolean } | undefined }));
+const spy = vi.hoisted(() => ({
+  props: undefined as { heading: string; canImport?: boolean; loaderData: { seed: typeof emptyDraftSeed } } | undefined,
+}));
 vi.mock('./lib/NewRecipeForm', async (importOriginal) => {
   const original = await importOriginal<typeof import('./lib/NewRecipeForm')>();
   return {
@@ -277,12 +279,11 @@ describe('recipe-creation › The form is filled in from the recipe', () => {
     assert.equal(seed.steps[0]?.ingredients[0]?.name, 'appels');
   });
 
-  test('the page shows the seeded title', async ({ db }) => {
+  test('the page hands the seed to the form', async ({ db }) => {
     await stored(db);
-    cleanup();
     const props = fake<Route.ComponentProps>({ loaderData: await openCopy(db, '?kopie=appeltaart') });
     render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <NewRecipePage {...props} /> }])} />);
-    assert.equal((document.getElementById('title') as HTMLInputElement).value, 'Appeltaart');
+    assert.deepEqual(spy.props?.loaderData.seed, recipeSeed((await getRecipe(db, 'appeltaart'))!));
   });
 });
 

@@ -1,3 +1,5 @@
+import { isImageUsed } from './recipes.server';
+
 export const maxPhotoBytes = 2 * 1024 * 1024;
 
 /** Photo paths as stored in `recipes.image`: `/foto/<uuid>.<ext>`. */
@@ -46,6 +48,15 @@ export async function copyPhoto(bucket: R2Bucket, path: string) {
   const copy = `${crypto.randomUUID()}.${file.slice(file.lastIndexOf('.') + 1)}`;
   await bucket.put(keyOf(copy), await original.arrayBuffer(), { httpMetadata: original.httpMetadata });
   return `/foto/${copy}`;
+}
+
+/** The image to store for a recipe whose accepted image is `image` (its own stored image is `own`): a photo file belongs to one recipe, so a photo another recipe or step uses is copied. A failed copy leaves the recipe without a photo. */
+export async function ownPhoto(db: D1Database, bucket: R2Bucket, image: string | undefined, own: string | null) {
+  if (!image || image === own || !(await isImageUsed(db, image))) return image;
+  return copyPhoto(bucket, image).catch((error: unknown) => {
+    console.error('Photo not copied', image, error);
+    return undefined;
+  });
 }
 
 /** The image value to store for a submitted form: empty, unchanged from what is stored, or an uploaded photo's path. Anything else is dropped, so nobody can plant an arbitrary link. */

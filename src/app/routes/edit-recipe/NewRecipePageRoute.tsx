@@ -1,7 +1,7 @@
 import { data, redirect } from 'react-router';
 import { envContext, userEmailContext } from '~app/shared/context.server';
-import { acceptImage, copyPhoto } from '~app/shared/photos.server';
-import { chooseSeal, createRecipe, getRecipe, isImageUsed, listAuthors } from '~app/shared/recipes.server';
+import { acceptImage, ownPhoto } from '~app/shared/photos.server';
+import { chooseSeal, createRecipe, getRecipe, listAuthors } from '~app/shared/recipes.server';
 import { getRules } from '~app/shared/rules.server';
 import { seals } from '~app/shared/seals';
 import { listManagedTags } from '~app/shared/tagManagement.server';
@@ -52,9 +52,7 @@ export async function action({ request, context }: Route.ActionArgs) {
 
   const fields = toRecipeFields(values);
   const { DB, PHOTOS } = context.get(envContext);
-  let image = acceptImage(fields.image, null);
-  // A photo file belongs to one recipe: a copy gets its own file, and is saved without a photo when that fails.
-  if (image && (await isImageUsed(DB, image))) image = await copyPhoto(PHOTOS, image).catch(() => undefined);
+  const image = await ownPhoto(DB, PHOTOS, acceptImage(fields.image, null), null);
   const slug = await createRecipe(DB, {
     ...fields,
     ingredients,

@@ -1,6 +1,6 @@
 import { data, redirect, useRouteLoaderData } from 'react-router';
 import { envContext } from '~app/shared/context.server';
-import { acceptImage, deletePhoto } from '~app/shared/photos.server';
+import { acceptImage, deletePhoto, ownPhoto } from '~app/shared/photos.server';
 import { getRecipe, listAuthors, updateRecipe } from '~app/shared/recipes.server';
 import { defaultRules, type Rules } from '~app/shared/rules';
 import { getRules } from '~app/shared/rules.server';
@@ -52,7 +52,7 @@ export async function action({ request, params, context }: Route.ActionArgs) {
     return data({ errors, values: { ...values, ingredients: lines, steps: stepLines, tags: tags ?? [] } }, { status: 400 });
 
   const fields = toRecipeFields(values);
-  const image = stored && acceptImage(fields.image, stored.image);
+  const image = stored && (await ownPhoto(DB, PHOTOS, acceptImage(fields.image, stored.image), stored.image));
   const updated = stored && (await updateRecipe(DB, params.slug, { ...fields, image, ingredients, steps, tags }));
   if (!updated) throw notFound();
   // After the write, so a failed delete leaves an orphan and never a recipe pointing at a missing file. The recipe is saved either way, so a failure must not turn into an error page.

@@ -331,9 +331,9 @@ export async function recordView(db: D1Database, email: string, slug: string): P
     .run();
 }
 
-/** Whether a recipe uses the photo at this path. */
+/** Whether a recipe or a step uses the photo at this path. */
 export async function isImageUsed(db: D1Database, image: string) {
-  return !!(await db.prepare('SELECT 1 FROM recipes WHERE image = ?').bind(image).first());
+  return !!(await db.prepare('SELECT 1 FROM recipes WHERE image = ?1 UNION ALL SELECT 1 FROM steps WHERE image = ?1 LIMIT 1').bind(image).first());
 }
 
 /** Deletes a recipe; its ingredients, steps, chips and views go with it (foreign keys cascade). Returns the image it had, or undefined when the recipe doesn't exist. */
