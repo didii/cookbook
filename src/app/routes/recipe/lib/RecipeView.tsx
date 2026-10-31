@@ -14,6 +14,7 @@ import { RecipeHead } from './RecipeHead';
 import { ScaleControl } from './scale/ScaleControl';
 import { StepList } from './StepList';
 import { TabBar } from './tabs/TabBar';
+import { headingIds, panelClass } from './tabs/tabs';
 import { TimerDock, TimersContext, TimerSidebar } from './timers';
 import { useCooking } from './useCooking';
 
@@ -66,17 +67,22 @@ export function RecipeView({ recipe: r, tile, steps, liked = false, note: savedN
         </div>
 
         <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-10 min-[52rem]:grid-cols-[minmax(16rem,22rem)_1fr] min-[52rem]:items-start">
-          <section id="panel-ingredients" data-testid="RecipeView-ingredients" aria-labelledby="ing" className={c.panel('ingredients')}>
+          <section
+            id="panel-ingredients"
+            data-testid="RecipeView-ingredients"
+            aria-labelledby={headingIds.ingredients}
+            className={panelClass(c.tab, 'ingredients')}
+          >
             <TimerSidebar timers={c.timers.active} onJump={c.jump} onPeek={c.setPeek} />
-            <h2 id="ing" className="mb-4 scroll-mt-[calc(var(--stack-h,0px)+0.75rem)] text-2xl font-black">
+            <h2 id={headingIds.ingredients} className="mb-4 scroll-mt-[calc(var(--stack-h,0px)+0.75rem)] text-2xl font-black">
               Ingrediënten
             </h2>
             <IngredientList ingredients={c.scaled.ingredients} ticked={c.ticked} onToggleIngredient={c.toggleTicked} />
             <NotePanel note={note} />
           </section>
 
-          <section id="panel-steps" data-testid="RecipeView-steps" aria-labelledby="bereiding" className={c.panel('steps')}>
-            <h2 id="bereiding" className="mb-4 scroll-mt-[calc(var(--stack-h,0px)+0.75rem)] text-2xl font-black">
+          <section id="panel-steps" data-testid="RecipeView-steps" aria-labelledby={headingIds.steps} className={panelClass(c.tab, 'steps')}>
+            <h2 id={headingIds.steps} className="mb-4 scroll-mt-[calc(var(--stack-h,0px)+0.75rem)] text-2xl font-black">
               Bereiding
             </h2>
             <StepList steps={c.scaled.steps} highlight={c.flash} peek={c.peek} />

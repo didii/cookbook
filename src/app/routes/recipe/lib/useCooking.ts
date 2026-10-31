@@ -1,10 +1,9 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { cn } from '~app/shared/cn';
 import type { Recipe, Step } from '~app/shared/recipe';
 import { initialCook, observe, setByHand, wantsCookMode } from './cook/cookMode';
 import { useWakeLock } from './cook/useWakeLock';
 import { scaleIngredient, scaleText } from './scale/scale';
-import { arrive, tabFromHash, type Positions, type TabId } from './tabs/tabs';
+import { arrive, headingIds, tabFromHash, type Positions, type TabId } from './tabs/tabs';
 import { useTimers } from './timers/useTimers';
 import { toggled } from './toggled';
 import { useNarrow } from './useNarrow';
@@ -67,7 +66,7 @@ export function useCooking(r: Pick<Recipe, 'slug' | 'servings' | 'ingredients'>,
     const from = leaving.current;
     leaving.current = undefined;
     if (from === undefined) return;
-    const heading = document.getElementById(tab === 'ingredients' ? 'ing' : 'bereiding');
+    const heading = document.getElementById(headingIds[tab]);
     if (!heading) return;
     const top = heading.getBoundingClientRect().top + window.scrollY;
     const to = arrive(positions.current, from, tab, top, stackHeight.current + 12);
@@ -111,10 +110,6 @@ export function useCooking(r: Pick<Recipe, 'slug' | 'servings' | 'ingredients'>,
   // The step whose sidebar card the mouse is over gets a light tint.
   const [peek, setPeek] = useState<number>();
 
-  // Below 52rem only the open tab shows, at least as tall as the screen under the stack, with the page's bottom padding inside it; from 52rem both show, side by side.
-  const panel = (id: TabId) =>
-    cn('min-w-0 max-[51.99rem]:min-h-[calc(100svh-var(--stack-h,3.5rem))] max-[51.99rem]:pb-16', tab !== id && 'max-[51.99rem]:hidden');
-
   return {
     tab,
     select,
@@ -135,6 +130,5 @@ export function useCooking(r: Pick<Recipe, 'slug' | 'servings' | 'ingredients'>,
     toggleCook: () => setCook((c) => setByHand(c, !wantsCookMode(c, true))),
     peek,
     setPeek,
-    panel,
   };
 }
