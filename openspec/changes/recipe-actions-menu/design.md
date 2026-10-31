@@ -16,12 +16,12 @@
 
 ## Decisions
 
-- **New sub-module `lib/actions/`** with `RecipeActionsMenu.tsx` (exports one component) and the three-dots icon beside it. Only the recipe page uses it, so it is not in `shared/`.
+- **New sub-module `lib/actions/`** with `RecipeActionsMenu.tsx` (exports one component). The three-dots icon (`Ellipsis`) goes in `shared/icons.tsx` with the other icons.
 - **Disclosure, not an ARIA menu.** A button with `aria-expanded` and `aria-controls` toggles a panel of plain links and buttons. A `role="menu"` would promise arrow-key handling that is not built; Tab order through the items is enough. Alternative: the native `popover` attribute, rejected because happy-dom support is uncertain and the component test would not exercise it.
 - **Closing** is state in the component: Escape and a pointer-down outside close it and return focus to the button on Escape; choosing an item closes it.
 - **Disabled items** are `<button disabled>`: dimmed, not focusable, not operable, no `onClick`. Native disabled needs no extra ARIA.
 - **"Bewerk" stays a `Link`** with `state={{ fresh: true }}`; only its place changes. Its testid becomes `RecipeActionsMenu-edit`.
-- **Hover:** items use `hoverTint` from `shared/hover.ts`; the icon button uses the same helper as the like button.
+- **Hover:** items use `hoverTint` from `shared/hover.ts`; the icon button uses `hoverTint` too.
 
 ## Risks / Trade-offs
 

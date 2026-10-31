@@ -1,9 +1,16 @@
 import assert from 'node:assert/strict';
-import { createMemoryRouter, RouterProvider } from 'react-router';
+import { createMemoryRouter, Outlet, RouterProvider, useLocation } from 'react-router';
 import { describe, test } from 'vitest';
 import { fireEvent, precedes, render, screen } from '~testing/dom';
 import { RecipeActionsMenu } from './RecipeActionsMenu';
 
+/** The page a link leads to: shows the navigation state. */
+function Target() {
+  const { state } = useLocation() as { state: { fresh?: boolean } | null };
+  return <p data-testid="Test-fresh">{String(state?.fresh)}</p>;
+}
+
+// The menu sits in a layout route, so it stays mounted after a link is followed.
 const menu = () =>
   render(
     <RouterProvider
@@ -14,10 +21,14 @@ const menu = () =>
             <>
               <RecipeActionsMenu slug="appeltaart" />
               <p data-testid="Test-outside" />
+              <Outlet />
             </>
           ),
+          children: [
+            { index: true, element: null },
+            { path: '*', element: <Target /> },
+          ],
         },
-        { path: '*', element: null },
       ])}
     />,
   );
@@ -69,6 +80,12 @@ describe('recipe-actions-menu › Bewerk links to the edit form', () => {
     open();
     assert.equal(screen.getByTestId('RecipeActionsMenu-edit').getAttribute('href'), '/recepten/appeltaart/bewerken');
   });
+
+  test('it navigates with the state that starts the editor fresh', async () => {
+    open();
+    fireEvent.click(screen.getByTestId('RecipeActionsMenu-edit'));
+    assert.equal((await screen.findByTestId('Test-fresh')).textContent, 'true');
+  });
 });
 
 describe('recipe-actions-menu › Kopieer is disabled', () => {
@@ -114,9 +131,10 @@ describe('recipe-actions-menu › A click outside closes the menu', () => {
 });
 
 describe('recipe-actions-menu › Choosing an item closes the menu', () => {
-  test('the menu closes', () => {
+  test('the menu closes', async () => {
     open();
     fireEvent.click(screen.getByTestId('RecipeActionsMenu-edit'));
+    await screen.findByTestId('Test-fresh');
     assert.equal(screen.queryByTestId('RecipeActionsMenu-panel'), null);
   });
 });

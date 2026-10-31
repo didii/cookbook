@@ -42,11 +42,12 @@ export function RecipeActionsMenu({ slug }: Props) {
         data-testid="RecipeActionsMenu-button"
         aria-label="Meer acties"
         aria-expanded={open}
-        aria-controls={id}
+        aria-controls={open ? id : undefined}
         onClick={() => setOpen((o) => !o)}
         className={cn(
-          'grid size-11 cursor-pointer place-items-center rounded-[10px] border-3 border-ink bg-white text-ink hover:bg-yel',
+          'grid size-11 cursor-pointer place-items-center rounded-[10px] border-3 border-ink bg-white text-ink',
           pressCss('xs'),
+          hoverTint,
         )}
       >
         <Ellipsis className="size-7" />

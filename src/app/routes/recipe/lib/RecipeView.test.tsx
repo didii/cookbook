@@ -94,10 +94,6 @@ describe('RecipeView note', () => {
     page({ liked: true, note: 'minder zout' });
   });
 
-  test('the leaf comes before the menu button', () => {
-    assert.ok(precedes(screen.getByTestId('LikeButton-leaf'), screen.getByTestId('RecipeActionsMenu-button')));
-  });
-
   test('the note panel sits under the ingredients', () => {
     const column = ingredientsPanel();
     assert.ok(column.contains(screen.getByTestId('NotePanel-panel')));
@@ -271,12 +267,12 @@ describe('recipe-actions-menu › The button is shown instead of the edit link',
     assert.ok(screen.getByTestId('RecipeActionsMenu-button'));
   });
 
-  test('the menu is closed', () => {
-    assert.equal(screen.queryByTestId('RecipeActionsMenu-panel'), null);
+  test('the button comes after the like button', () => {
+    assert.ok(precedes(screen.getByTestId('LikeButton-leaf'), screen.getByTestId('RecipeActionsMenu-button')));
   });
 
-  test('there is no Bewerk link on the page', () => {
-    assert.equal(screen.queryByTestId('RecipeActionsMenu-edit'), null);
+  test('the page has no separate edit link', () => {
+    assert.equal(screen.queryByTestId('RecipeView-edit'), null);
   });
 });
 
