@@ -1,5 +1,4 @@
 export * from './alarm';
-export * from './clock';
 export * from './TimerButton';
 export * from './TimerCard';
 export * from './TimerChip';

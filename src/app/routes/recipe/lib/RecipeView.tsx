@@ -20,7 +20,6 @@ import { StepList } from './StepList';
 import { TabBar } from './tabs/TabBar';
 import { arrive, tabFromHash, type Positions, type TabId } from './tabs/tabs';
 import { TimerDock, TimersContext, TimerSidebar } from './timers';
-import { ClockSetting } from './timers/ClockSetting';
 import { useTimers } from './timers/useTimers';
 import { toggled } from './toggled';
 import { useNarrow } from './useNarrow';
@@ -191,7 +190,6 @@ export function RecipeView({ recipe: r, tile, steps, liked = false, note: savedN
           </div>
         )}
 
-        <ClockSetting />
         <CookSwitch wanted={wanted} lock={lock} manual={cook.manual} onToggle={() => setCook((c) => setByHand(c, !wantsCookMode(c, true)))} />
 
         <div className="mt-6 min-[52rem]:mt-10">
