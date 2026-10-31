@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { describe, test } from 'vitest';
+import { afterEach, describe, test } from 'vitest';
 import type { Recipe, Step } from '~app/shared/recipe';
 import { fireEvent, render, screen } from '~testing/dom';
 import { scaleIngredient } from './scale/scale';
@@ -30,6 +30,8 @@ function Probe() {
 const text = (id: string) => screen.getByTestId(id).textContent;
 
 describe('useCooking', () => {
+  afterEach(() => history.replaceState(null, '', '/'));
+
   test('starts on the ingredients tab', () => {
     render(<Probe />);
     assert.equal(text('Probe-tab'), 'ingredients');
