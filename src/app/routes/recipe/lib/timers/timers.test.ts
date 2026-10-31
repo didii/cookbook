@@ -1,22 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'vitest';
 import type { Step } from '~app/shared/recipe';
-import {
-  activeTimers,
-  add,
-  finishTitle,
-  formatCountdown,
-  handOver,
-  newlyFinished,
-  restore,
-  serialize,
-  start,
-  startTimer,
-  stop,
-  timerDefs,
-  timerView,
-  undoHandOver,
-} from './timers';
+import { activeTimers, add, finishTitle, formatCountdown, newlyFinished, restore, serialize, start, stop, timerDefs, timerView } from './timers';
 
 // Eleven steps; the ones with a timer are 2, 5, 6, 10 and 11.
 const timerAt: Record<number, { minutes: number; label: string }> = {
@@ -191,6 +176,16 @@ describe('restore', () => {
   });
 });
 
+describe('restore of a stored timer from before the clock app was removed', () => {
+  test('a timer with the old field was only a note and is dropped', () => {
+    assert.deepEqual(restore(JSON.stringify({ '1': { endsAt: T0, handedOver: 5 } }), defs), {});
+  });
+
+  test('a timer without the field is read as before', () => {
+    assert.deepEqual(restore(JSON.stringify({ '1': { endsAt: T0 } }), defs), { '1': { endsAt: T0 } });
+  });
+});
+
 describe('step-timers › Timers follow the order of the steps', () => {
   test('the earlier step comes first although the later was started first', () => {
     const timers = start(start({}, defs[3], T0), rust, T0 + MIN);
@@ -217,59 +212,8 @@ describe('formatCountdown', () => {
   }
 });
 
-describe('step-timers › Hand over a running timer', () => {
-  const left = 14 * MIN + 32_000;
-
-  test('the page keeps only a note with the time left', () => {
-    const view = timerView(handOver({}, rust.id, left, T0), rust, T0 + 99 * MIN);
-    assert.deepEqual([view.state, formatCountdown(view.remainingMs)], ['native', '14:32']);
-  });
-});
-
-describe('step-timers › Handover is undone', () => {
-  const running = start({}, rust, T0);
-  const handed = handOver(running, rust.id, 20 * MIN, T0 + 10 * MIN);
-
-  test('while handed over, the page shows the note and counts nothing', () => {
-    // Handed over at 20:00 left.
-    assert.equal(timerView(handed, rust, T0 + 12 * MIN).state, 'native');
-  });
-
-  test('while handed over, the page does not finish the timer', () => {
-    assert.equal(timerView(handed, rust, T0 + 45 * MIN).state, 'native');
-  });
-
-  test('taking it back continues from the original start, not from the hand-over', () => {
-    const back = undoHandOver(handed, rust.id);
-    const view = timerView(back, rust, T0 + 12 * MIN);
-    assert.deepEqual([view.state, formatCountdown(view.remainingMs)], ['running', '18:00']);
-  });
-
-  test('a timer taken back finishes at its original end', () => {
-    assert.equal(timerView(undoHandOver(handed, rust.id), rust, T0 + 31 * MIN).state, 'finished');
-  });
-
-  test('it survives a reload while handed over', () => {
-    assert.equal(timerView(restore(serialize(handed), defs), rust, T0 + 12 * MIN).state, 'native');
-  });
-
-  test('wiping the note ends the timer', () => {
-    assert.equal(timerView(stop(handed, rust.id), rust, T0 + 12 * MIN).state, 'idle');
-  });
-
-  test('started in the app right away, the undo gives a timer that has run since the start', () => {
-    const auto = undoHandOver(startTimer({}, rust, T0, true), rust.id);
-    assert.equal(formatCountdown(timerView(auto, rust, T0 + 5 * MIN).remainingMs), '25:00');
-  });
-});
-
-describe('step-timers › Timers handed over automatically', () => {
-  test('a started timer is handed over at once', () => {
-    const view = timerView(startTimer({}, rust, T0, true), rust, T0);
-    assert.deepEqual([view.state, formatCountdown(view.remainingMs)], ['native', '30:00']);
-  });
-
-  test('without the setting it is an ordinary running timer', () => {
-    assert.equal(timerView(startTimer({}, rust, T0, false), rust, T0).state, 'running');
-  });
-});
+// Scenarios of the requirement removed by `remove-app-timers`: delete these when that change is archived.
+test.todo('step-timers › Hand over a running timer');
+test.todo('step-timers › Handover is undone');
+test.todo('step-timers › Timers handed over automatically');
+test.todo('step-timers › Clock app not available');

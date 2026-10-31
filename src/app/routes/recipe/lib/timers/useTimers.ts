@@ -1,25 +1,8 @@
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Step } from '~app/shared/recipe';
 import { soundAlarm } from './alarm';
-import { clockAvailable, clockIntentUrl, readClockSetting, writeClockSetting } from './clock';
-import {
-  activeTimers,
-  add,
-  finishTitle,
-  handOver,
-  newlyFinished,
-  restore,
-  serialize,
-  startTimer,
-  stop,
-  timerDefs,
-  timerView,
-  undoHandOver,
-  type Timers,
-} from './timers';
+import { activeTimers, add, finishTitle, newlyFinished, restore, serialize, start, stop, timerDefs, timerView, type Timers } from './timers';
 import type { TimerControls } from './timersContext';
-
-const subscribeNever = () => () => {};
 
 /** The state until sessionStorage has been read, told apart from a restored (even empty) state by identity. */
 const notRestored: Timers = {};
@@ -88,23 +71,6 @@ export function useTimers(slug: string, steps: Step[]): TimerControls {
     };
   }, [finishedStep]);
 
-  // The device is only known in the browser: false while rendering on the server and hydrating.
-  const available = useSyncExternalStore(
-    subscribeNever,
-    () => clockAvailable(),
-    () => false,
-  );
-  const [auto, setAuto] = useState(false);
-  useEffect(() => {
-    // oxlint-disable-next-line react/set-state-in-effect -- localStorage may only be read after hydration
-    setAuto(readClockSetting());
-  }, []);
-
-  // Starts the clock app's timer: an intent link, which the browser only follows from a tap.
-  const startInClock = (seconds: number, step: number, label?: string) => {
-    window.location.href = clockIntentUrl(seconds, label ?? `Stap ${step + 1}`);
-  };
-
   const update = (change: (t: Timers, at: number) => Timers) => {
     const at = Date.now();
     setTimers((t) => change(t, at));
@@ -127,27 +93,9 @@ export function useTimers(slug: string, steps: Step[]): TimerControls {
       } catch {
         // No Web Audio: the visual and title signals remain.
       }
-      const toClock = available && auto;
-      if (toClock) startInClock(def.minutes * 60, def.step, def.label);
-      update((t, at) => startTimer(t, def, at, toClock));
+      update((t, at) => start(t, def, at));
     },
     add: (id, minutes) => update((t, at) => add(t, id, minutes, at)),
     stop: (id) => update((t) => stop(t, id)),
-    handOver: (id) => {
-      const def = defs.find((d) => d.id === id);
-      const view = def && timerView(timers, def, Date.now());
-      if (!def || view?.state !== 'running') return;
-      startInClock(view.remainingMs / 1000, def.step, def.label);
-      update((t, at) => handOver(t, id, view.remainingMs, at));
-    },
-    undoHandOver: (id) => update((t) => undoHandOver(t, id)),
-    clock: {
-      available,
-      auto: available && auto,
-      setAuto: (on) => {
-        setAuto(on);
-        writeClockSetting(on);
-      },
-    },
   };
 }
