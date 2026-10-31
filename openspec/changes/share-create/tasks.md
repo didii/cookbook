@@ -8,7 +8,7 @@
 
 ## 2. Routes
 
-- [ ] 2.1 Add `recipe/ShareCreateRoute.ts` (POST `/recepten/:slug/delen`, JSON `{ token, expiresAt }`, 403 without user row, 404 unknown recipe) and register it in `routes.ts`; verify `ShareCreateRoute.test.ts`
+- [x] 2.1 Add `recipe/ShareCreateRoute.ts` (POST `/recepten/:slug/delen`, JSON `{ token, expiresAt }`, 403 without user row, 404 unknown recipe) and register it in `routes.ts`; verify `ShareCreateRoute.test.ts`
 - [ ] 2.2 Add `recipe/ShareExpiryUpdateRoute.ts` (POST `/recepten/:slug/delen/verloop` with `expires`, 400/404 as designed) and register it; verify `ShareExpiryUpdateRoute.test.ts` covers "Another member's share is refused", "An expired share is refused", "Unknown choice is refused", "A choice is stored at once", "Nooit removes the end date"
 
 ## 3. Popup
