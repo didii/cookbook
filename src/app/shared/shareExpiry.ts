@@ -23,7 +23,10 @@ function addMonths(now: Date, months: number) {
   return date;
 }
 
-/** The end date for a choice made at `now`, as stored (ISO-8601 UTC, whole seconds); null for "never". */
+/** A moment as stored: ISO-8601 UTC, whole seconds. */
+export const stored = (date: Date) => date.toISOString().replace(/\.\d{3}Z$/, 'Z');
+
+/** The end date for a choice made at `now`, as stored; null for "never". */
 export function expiryFor(choice: ExpiryChoice, now: Date): string | null {
   const end = {
     '24h': () => new Date(now.getTime() + 24 * hour),
@@ -33,5 +36,5 @@ export function expiryFor(choice: ExpiryChoice, now: Date): string | null {
     '1y': () => addMonths(now, 12),
     never: () => undefined,
   }[choice]();
-  return end ? end.toISOString().replace(/\.\d{3}Z$/, 'Z') : null;
+  return end ? stored(end) : null;
 }
