@@ -162,7 +162,7 @@ export function purgeDrafts(storage: DraftStorage | undefined, now: Date) {
   }
 }
 
-/** Whether the navigation that opened the editor was the "Bewerk" link, which marks itself in the history state. */
+/** Whether the navigation that opened the editor was the "Bewerk" item of the recipe actions menu, which marks itself in the history state. */
 export const isFresh = (locationState: unknown) => isObject(locationState) && locationState.fresh === true;
 
 const fits = (body: string, anchor?: { start: number; end: number }) =>
