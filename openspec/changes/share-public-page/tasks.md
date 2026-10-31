@@ -12,7 +12,7 @@
 
 ## 3. The page
 
-- [ ] 3.1 Add `routes/recipe/SharePageRoute.tsx` (whitelist loader, 404, `meta`, no `recordView`) and register `share/:slug` outside the layout in `routes.ts`; verify `SharePageRoute.test.ts` against in-memory D1 for "Unknown recipe", "No member data in the response" and "Viewing is not recorded"
+- [x] 3.1 Add `routes/recipe/SharePageRoute.tsx` (whitelist loader, 404, `meta`, no `recordView`) and register `share/:slug` outside the layout in `routes.ts`; verify `SharePageRoute.test.ts` against in-memory D1 for "Unknown recipe", "No member data in the response" and "Viewing is not recorded"
 - [x] 3.2 Add `routes/recipe/lib/SharedRecipeView.tsx` from `RecipeHead`, `useCooking` and the existing lists, with plain tag pills and no member parts; verify `SharedRecipeView.test.tsx` covers "Recipe content", "Scaling", "No in-app navigation or actions", "Tags are not links", "The source link stays", "Ticking an ingredient" and "Starting a timer", and a `test.todo` with reason for "Public page needs no identity proof" through a real browser if not automatable
 - [ ] 3.3 Check the page in the browser at 390px and 1280px next to the recipe page, anonymous (no stand-in member) and with the console open for CSP or `/__manifest` errors; run `pnpm format:fix`, `pnpm lint:fix`, `pnpm test:spec share-public-page`, `pnpm test:ai`, `pnpm format:check` and `pnpm lint:check`
 
