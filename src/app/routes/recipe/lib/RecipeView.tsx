@@ -6,6 +6,7 @@ import { filterParams } from '~app/shared/filterParams';
 import { hoverRecolor, hoverUnderline } from '~app/shared/hover';
 import { ChevronBack } from '~app/shared/icons';
 import type { Recipe, Step } from '~app/shared/recipe';
+import { RecipeActionsMenu } from './actions/RecipeActionsMenu';
 import { initialCook, observe, setByHand, wantsCookMode } from './cook/cookMode';
 import { CookSwitch } from './cook/CookSwitch';
 import { useWakeLock } from './cook/useWakeLock';
@@ -142,14 +143,7 @@ export function RecipeView({ recipe: r, tile, steps, liked = false, note: savedN
           </Link>
           <div className="flex items-center gap-3.5">
             <LikeButton slug={r.slug} initialLiked={liked} />
-            <Link
-              to={`/recepten/${r.slug}/bewerken`}
-              state={{ fresh: true }}
-              data-testid="RecipeView-edit"
-              className={`inline-flex min-h-11 items-center font-extrabold ${hoverUnderline}`}
-            >
-              Bewerk
-            </Link>
+            <RecipeActionsMenu slug={r.slug} />
           </div>
         </div>
         <h1 data-testid="RecipeView-title" className="text-[clamp(2rem,6vw,3.5rem)] leading-[1.05] font-black tracking-[-0.03em] text-balance">

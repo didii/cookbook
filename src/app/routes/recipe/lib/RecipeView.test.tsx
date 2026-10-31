@@ -94,8 +94,8 @@ describe('RecipeView note', () => {
     page({ liked: true, note: 'minder zout' });
   });
 
-  test('the leaf comes before "Bewerk"', () => {
-    assert.ok(precedes(screen.getByTestId('LikeButton-leaf'), screen.getByTestId('RecipeView-edit')));
+  test('the leaf comes before the menu button', () => {
+    assert.ok(precedes(screen.getByTestId('LikeButton-leaf'), screen.getByTestId('RecipeActionsMenu-button')));
   });
 
   test('the note panel sits under the ingredients', () => {
@@ -255,9 +255,28 @@ describe('recipe-deletion › No delete button on the recipe page', () => {
 });
 
 describe('recipe-viewing › Link to the edit form', () => {
-  test('the edit button points at the edit address', () => {
+  test('the menu gets the recipe slug, which Bewerk links to', () => {
     page();
-    assert.equal(screen.getByTestId('RecipeView-edit').getAttribute('href'), '/recepten/appeltaart/bewerken');
+    fireEvent.click(screen.getByTestId('RecipeActionsMenu-button'));
+    assert.equal(screen.getByTestId('RecipeActionsMenu-edit').getAttribute('href'), '/recepten/appeltaart/bewerken');
+  });
+});
+
+describe('recipe-actions-menu › The button is shown instead of the edit link', () => {
+  beforeEach(() => {
+    page();
+  });
+
+  test('the menu button is shown', () => {
+    assert.ok(screen.getByTestId('RecipeActionsMenu-button'));
+  });
+
+  test('the menu is closed', () => {
+    assert.equal(screen.queryByTestId('RecipeActionsMenu-panel'), null);
+  });
+
+  test('there is no Bewerk link on the page', () => {
+    assert.equal(screen.queryByTestId('RecipeActionsMenu-edit'), null);
   });
 });
 
