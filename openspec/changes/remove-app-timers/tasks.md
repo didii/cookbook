@@ -6,4 +6,4 @@
 
 ## 2. Finish
 
-- [ ] 2.1 Run `pnpm test:spec remove-app-timers`, `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check` and `pnpm test:ai`. Verify: all pass; no test names a removed scenario.
+- [x] 2.1 Run `pnpm test:spec remove-app-timers`, `pnpm format:fix`, `pnpm lint:fix`, then `pnpm format:check`, `pnpm lint:check` and `pnpm test:ai`. Verify: all pass; no test names a removed scenario.
