@@ -9,4 +9,4 @@
 ## 2. Recipe page
 
 - [x] 2.1 Replace the "Bewerk" link in `RecipeView` by `RecipeActionsMenu` after `LikeButton`; update `RecipeView.test.tsx` (the order test compares the like button and the menu button, the href test moves to `RecipeActionsMenu.test.tsx`) and add a test for "The button is shown instead of the edit link"
-- [ ] 2.2 Run `pnpm format:fix`, `pnpm lint:fix`, `pnpm test:spec recipe-actions-menu`, `pnpm test:ai`, `pnpm format:check` and `pnpm lint:check`; verify all pass and every delta scenario has a test or a `test.todo`
+- [x] 2.2 Run `pnpm format:fix`, `pnpm lint:fix`, `pnpm test:spec recipe-actions-menu`, `pnpm test:ai`, `pnpm format:check` and `pnpm lint:check`; verify all pass and every delta scenario has a test or a `test.todo`
