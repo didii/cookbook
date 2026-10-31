@@ -26,7 +26,7 @@ The system SHALL let a family member start a timer chip of a step, see its remai
 - **THEN** both count down independently
 
 ### Requirement: A running timer is shown at its step
-The system SHALL show a running timer at its step. On a narrow screen it is a card on its own line below the step label with the countdown, the label and the controls (add one minute, add five minutes, hand over to the app where available, stop). On a wide screen the chip stays in place at its normal size and only shows the countdown instead of the duration (and "Klaar" when finished); the controls are in the sidebar.
+The system SHALL show a running timer at its step. On a narrow screen it is a card on its own line below the step label with the countdown, the label and the controls (add one minute, add five minutes, stop). On a wide screen the chip stays in place at its normal size and only shows the countdown instead of the duration (and "Klaar" when finished); the controls are in the sidebar.
 
 #### Scenario: Timer card on a narrow screen
 - **WHEN** a timer runs on a narrow screen and its step is in view
@@ -81,25 +81,6 @@ The system SHALL, when a timer reaches zero, mark it as finished with more than 
 #### Scenario: Finished timer is dismissed
 - **WHEN** a family member marks a finished timer as done
 - **THEN** it shows its start state again and the page title is restored
-
-### Requirement: A timer can be handed to the clock app
-The system SHALL, on devices where it can start a timer in the phone's clock app, let a family member choose per timer to hand it over: a running timer has an "App" control that starts a timer in the clock app with the time that is left, and replaces the page timer with a note showing what was handed over. The note SHALL offer to take the timer back, and the timer then continues here as if it had never been handed over, and to remove the note, which ends the timer on the page. A setting, kept in the browser and off by default, SHALL hand every timer over as soon as it is started. A handed-over timer is not counted down, docked or signalled by the page, and removing its note does not cancel the clock app's timer. Where the clock app cannot be started, neither the control nor the setting is offered.
-
-#### Scenario: Hand over a running timer
-- **WHEN** a family member chooses the clock app control of a timer with 14:32 left
-- **THEN** a timer of 14:32 is started in the clock app and the page shows a note that it was handed over with that time, instead of a countdown
-
-#### Scenario: Handover is undone
-- **WHEN** a family member hands a timer over to the app by mistake and chooses to take it back
-- **THEN** the timer runs on the page again, counting from its original start, and finishes at the time it would have without the hand-over
-
-#### Scenario: Timers handed over automatically
-- **WHEN** the setting to use the clock app is on and a family member starts a timer
-- **THEN** the timer is started in the clock app right away and only the note is shown
-
-#### Scenario: Clock app not available
-- **WHEN** the device cannot start a timer in a clock app
-- **THEN** no clock app control and no setting is offered
 
 ### Requirement: Timers survive a reload
 The system SHALL keep running timers when the page is reloaded in the same browser tab, counting from their end time, so a timer that ended in the meantime is shown as finished.
