@@ -1,19 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Step } from '~app/shared/recipe';
 import { soundAlarm } from './alarm';
-import {
-  activeTimers,
-  add,
-  finishTitle,
-  newlyFinished,
-  restore,
-  serialize,
-  start,
-  stop,
-  timerDefs,
-  timerView,
-  type Timers,
-} from './timers';
+import { activeTimers, add, finishTitle, newlyFinished, restore, serialize, start, stop, timerDefs, timerView, type Timers } from './timers';
 import type { TimerControls } from './timersContext';
 
 /** The state until sessionStorage has been read, told apart from a restored (even empty) state by identity. */

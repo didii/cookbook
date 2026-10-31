@@ -39,7 +39,6 @@ export function TimerChip({ timerId, minutes, label, className, ...props }: Time
       </li>
     );
   }
-  if (view.state === 'native') return null;
 
   const finished = view.state === 'finished';
   return (

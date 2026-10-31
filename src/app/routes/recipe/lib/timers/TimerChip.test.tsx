@@ -14,9 +14,6 @@ const chip = (view?: TimerView) => {
     start() {},
     add() {},
     stop() {},
-    handOver() {},
-    undoHandOver() {},
-    clock: { available: false, auto: false, setAuto() {} },
   };
   return render(
     <TimersContext value={controls}>
@@ -45,14 +42,6 @@ describe('TimerChip running timer', () => {
 
   test('has no start button', () => {
     chip(running);
-    assert.equal(screen.queryByTestId('TimerChip-start'), null);
-  });
-});
-
-describe('TimerChip handed over timer', () => {
-  test('shows nothing', () => {
-    chip({ ...timer, state: 'native', remainingMs: 872_000 });
-    assert.equal(screen.queryByTestId('TimerChip-countdown'), null);
     assert.equal(screen.queryByTestId('TimerChip-start'), null);
   });
 });

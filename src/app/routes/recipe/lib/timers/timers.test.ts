@@ -1,19 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'vitest';
 import type { Step } from '~app/shared/recipe';
-import {
-  activeTimers,
-  add,
-  finishTitle,
-  formatCountdown,
-  newlyFinished,
-  restore,
-  serialize,
-  start,
-  stop,
-  timerDefs,
-  timerView,
-} from './timers';
+import { activeTimers, add, finishTitle, formatCountdown, newlyFinished, restore, serialize, start, stop, timerDefs, timerView } from './timers';
 
 // Eleven steps; the ones with a timer are 2, 5, 6, 10 and 11.
 const timerAt: Record<number, { minutes: number; label: string }> = {

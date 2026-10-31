@@ -1,6 +1,6 @@
 import { useContext, type ComponentProps } from 'react';
 import { cn } from '~app/shared/cn';
-import { Alarm, Stop } from '~app/shared/icons';
+import { Stop } from '~app/shared/icons';
 import { TimerButton } from './TimerButton';
 import { formatCountdown, type TimerView } from './timers';
 import { TimersContext } from './timersContext';
@@ -12,47 +12,10 @@ interface TimerCardProps extends CommonProps {
   view: TimerView;
 }
 
-/** A timer under its step's label: running or finished on a narrow screen, so the chips do not move; the note of a hand-over to the app on any screen. */
+/** A timer under its step's label: running or finished on a narrow screen, so the chips do not move. */
 export function TimerCard({ view, className, ...props }: TimerCardProps) {
   const timers = useContext(TimersContext);
   const finished = view.state === 'finished';
-
-  if (view.state === 'native') {
-    return (
-      <output
-        {...props}
-        className={cn('flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border-3 border-dashed border-ink py-2 pr-2 pl-3.5', className)}
-      >
-        <span className="grid">
-          <span data-testid="TimerCard-note" className="font-black tabular-nums">
-            In je app · {formatCountdown(view.remainingMs)}
-          </span>
-          {view.label && (
-            <small data-testid="TimerCard-noteLabel" className="font-extrabold text-muted">
-              {view.label}
-            </small>
-          )}
-        </span>
-        <span className="ml-auto flex gap-1.5">
-          <TimerButton
-            data-testid="TimerCard-restore"
-            onClick={() => timers.undoHandOver(view.id)}
-            aria-label="Laat de timer hier verder lopen (de timer in je app loopt door)"
-          >
-            {timers.clock.auto ? 'Hier laten lopen' : 'Herstel'}
-          </TimerButton>
-          <TimerButton
-            data-testid="TimerCard-wipe"
-            onClick={() => timers.stop(view.id)}
-            aria-label="Wis deze notitie (de timer in je app loopt door)"
-            className="hover:bg-red hover:text-white"
-          >
-            Wis
-          </TimerButton>
-        </span>
-      </output>
-    );
-  }
 
   return (
     <div
@@ -78,12 +41,6 @@ export function TimerCard({ view, className, ...props }: TimerCardProps) {
         <TimerButton data-testid="TimerCard-add5" onClick={() => timers.add(view.id, 5)} aria-label="Vijf minuten erbij">
           +5
         </TimerButton>
-        {!finished && timers.clock.available && (
-          <TimerButton data-testid="TimerCard-app" onClick={() => timers.handOver(view.id)} aria-label="Geef de resterende tijd aan je klok-app">
-            <Alarm className="size-4" />
-            App
-          </TimerButton>
-        )}
         {finished ? (
           <TimerButton main data-testid="TimerCard-done" onClick={() => timers.stop(view.id)}>
             Klaar
