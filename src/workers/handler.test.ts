@@ -3,7 +3,7 @@ import { generateKeyPair, SignJWT } from 'jose';
 import type { RouterContextProvider } from 'react-router';
 import { describe } from 'vitest';
 import { loader as fetchPhoto } from '~app/routes/photo/PhotoFetchRoute';
-import { envContext, importAllowContext, userEmailContext } from '~app/shared/context.server';
+import { envContext, importAllowContext, publicRequestContext, userEmailContext } from '~app/shared/context.server';
 import { storePhoto } from '~app/shared/photos.server';
 import { createUser } from '~app/shared/users.server';
 import { fake } from '~testing/fake';
@@ -316,6 +316,202 @@ describe('recipe-import › Not a family member', () => {
       assert.equal(calls.length, 0);
     });
   }
+});
+
+const site = 'https://cookbook.example.com';
+const anonymous = (path: string, method = 'GET') => new Request(`${site}${path}`, { method });
+
+describe('family-access › Public page needs no identity proof', () => {
+  test('the page request reaches the app and is not refused', async () => {
+    const { calls, fetch } = setup(false);
+    const res = await fetch(anonymous('/share/appeltaart'), env);
+    assert.notEqual(res.status, 403);
+    assert.equal(calls.length, 1);
+  });
+
+  test('a HEAD request is let through too', async () => {
+    const { calls, fetch } = setup(false);
+    await fetch(anonymous('/share/appeltaart', 'HEAD'), env);
+    assert.equal(calls.length, 1);
+  });
+
+  test('the data request of the page is let through', async () => {
+    const { calls, fetch } = setup(false);
+    await fetch(anonymous('/share/appeltaart.data'), env);
+    assert.equal(calls.length, 1);
+  });
+
+  test('the request has no member email and is marked public', async () => {
+    const { calls, fetch } = setup(false);
+    await fetch(anonymous('/share/appeltaart'), env);
+    assert.throws(() => calls[0]!.get(userEmailContext));
+    assert.equal(calls[0]!.get(publicRequestContext), true);
+  });
+
+  test('a signed-in request for another page is not marked public', async () => {
+    const { calls, fetch } = setup(false);
+    await fetch(get(await token()), env);
+    assert.equal(calls[0]!.get(publicRequestContext), false);
+  });
+});
+
+describe('family-access › Other pages stay closed', () => {
+  for (const path of [
+    '/',
+    '/recepten/appeltaart',
+    '/recepten/appeltaart.data',
+    '/_root.data',
+    '/share',
+    '/share/',
+    '/share/a/b',
+    '/foto',
+    '/foto/a/b',
+    '/share/x/../recepten/appeltaart',
+    '/share/x/%2e%2e/recepten/appeltaart',
+    '//',
+    '//share/x',
+    '/SHARE/x',
+  ])
+    test(`GET ${path} is refused with 403 and never reaches the app`, async () => {
+      const { calls, fetch } = setup(false);
+      const res = await fetch(anonymous(path), env);
+      assert.equal(res.status, 403);
+      assert.equal(calls.length, 0);
+    });
+});
+
+describe('shared-recipe-view › Writing is refused', () => {
+  for (const method of ['POST', 'PUT', 'PATCH', 'DELETE'])
+    test(`${method} to a public page is refused with 403 and never reaches the app`, async () => {
+      const { calls, fetch } = setup(false);
+      const res = await fetch(anonymous('/share/appeltaart', method), env);
+      assert.equal(res.status, 403);
+      assert.equal(calls.length, 0);
+    });
+});
+
+describe('shared-recipe-view › Photo without identity', () => {
+  test('the photo is served', async ({ photos }) => {
+    const stored = await storePhoto(photos, new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1]).buffer);
+    assert.ok('path' in stored);
+    const fetch = createFetch({
+      requestHandler: (_request, context) =>
+        fetchPhoto(fake<Parameters<typeof fetchPhoto>[0]>({ params: { file: stored.path.slice('/foto/'.length) }, context })) as Promise<Response>,
+      dev: false,
+      getKey: async () => publicKey,
+    });
+    const res = await fetch(anonymous(stored.path), { ...env, PHOTOS: photos });
+    assert.equal(res.status, 200);
+    assert.equal(res.headers.get('Content-Type'), 'image/jpeg');
+  });
+});
+
+describe('shared-recipe-view › Upload without identity', () => {
+  test('is refused with 403 and never reaches the app', async () => {
+    const { calls, fetch } = setup(false);
+    const res = await fetch(anonymous('/foto', 'POST'), env);
+    assert.equal(res.status, 403);
+    assert.equal(calls.length, 0);
+  });
+});
+
+/** A fetch whose app answers with the given response and counts its calls; the cache is a map. */
+function sharing(answer: () => Response) {
+  const stored = new Map<string, Response>();
+  const cache = {
+    match: async (request: Request | string) => stored.get(typeof request === 'string' ? request : request.url)?.clone(),
+    put: async (request: Request | string, response: Response) => void stored.set(typeof request === 'string' ? request : request.url, response),
+  };
+  let calls = 0;
+  const fetch = createFetch({ requestHandler: () => (calls++, answer()), dev: false, getKey: async () => publicKey, cache });
+  return { stored, calls: () => calls, fetch };
+}
+const found = () => new Response('recept');
+const missing = () => new Response('weg', { status: 404 });
+
+describe('security-headers › Public page is not indexed', () => {
+  test('has X-Robots-Tag noindex, nofollow', async () => {
+    const res = await sharing(found).fetch(anonymous('/share/appeltaart'), env);
+    assert.equal(res.headers.get('X-Robots-Tag'), 'noindex, nofollow');
+  });
+});
+
+describe('security-headers › A missing public page is not indexed', () => {
+  test('has X-Robots-Tag noindex, nofollow', async () => {
+    const res = await sharing(missing).fetch(anonymous('/share/weg'), env);
+    assert.equal(res.status, 404);
+    assert.equal(res.headers.get('X-Robots-Tag'), 'noindex, nofollow');
+  });
+});
+
+describe('security-headers › Other pages carry no such header', () => {
+  test('a signed-in request for / has no X-Robots-Tag', async () => {
+    const res = await setup(false).fetch(get(await token()), env);
+    assert.equal(res.headers.get('X-Robots-Tag'), null);
+  });
+});
+
+describe('shared-recipe-view › Successful page is cacheable', () => {
+  test('has Cache-Control public, max-age=60', async () => {
+    const res = await sharing(found).fetch(anonymous('/share/appeltaart'), env);
+    assert.equal(res.headers.get('Cache-Control'), 'public, max-age=60');
+  });
+});
+
+describe('shared-recipe-view › Repeat visits come from the cache', () => {
+  test('the second request does not reach the app', async () => {
+    const shared = sharing(found);
+    await shared.fetch(anonymous('/share/appeltaart'), env);
+    const second = await shared.fetch(anonymous('/share/appeltaart'), env);
+    assert.equal(await second.text(), 'recept');
+    assert.equal(shared.calls(), 1);
+  });
+
+  test('the cached page keeps its headers', async () => {
+    const shared = sharing(found);
+    await shared.fetch(anonymous('/share/appeltaart'), env);
+    const second = await shared.fetch(anonymous('/share/appeltaart'), env);
+    assert.equal(second.headers.get('X-Robots-Tag'), 'noindex, nofollow');
+    assertHeaders(second);
+  });
+});
+
+describe('shared-recipe-view › A 404 is not cached', () => {
+  test('nothing is stored and the next request reaches the app again', async () => {
+    const shared = sharing(missing);
+    await shared.fetch(anonymous('/share/weg'), env);
+    await shared.fetch(anonymous('/share/weg'), env);
+    assert.equal(shared.stored.size, 0);
+    assert.equal(shared.calls(), 2);
+  });
+});
+
+describe('public page cache', () => {
+  test('a request with a query is not stored', async () => {
+    const shared = sharing(found);
+    await shared.fetch(anonymous('/share/appeltaart?r=1'), env);
+    assert.equal(shared.stored.size, 0);
+  });
+
+  test('a different query does not skip the app by hitting the stored page', async () => {
+    const shared = sharing(found);
+    await shared.fetch(anonymous('/share/appeltaart'), env);
+    await shared.fetch(anonymous('/share/appeltaart?r=1'), env);
+    assert.equal(shared.calls(), 2);
+  });
+
+  test('the _routes parameter of a data request is stored', async () => {
+    const shared = sharing(found);
+    await shared.fetch(anonymous('/share/appeltaart.data?_routes=routes%2Fshare'), env);
+    assert.equal(shared.stored.size, 1);
+  });
+
+  test('a HEAD request gets Cache-Control but is not stored', async () => {
+    const shared = sharing(found);
+    const res = await shared.fetch(anonymous('/share/appeltaart', 'HEAD'), env);
+    assert.equal(res.headers.get('Cache-Control'), 'public, max-age=60');
+    assert.equal(shared.stored.size, 0);
+  });
 });
 
 // Not automated: sign-in happens at Cloudflare Access, outside this code.

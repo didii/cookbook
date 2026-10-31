@@ -6,6 +6,7 @@ export default [
   route('foto/:file', 'routes/photo/PhotoFetchRoute.ts'),
   route('importeren/pagina', 'routes/import-fetch/ImportPageFetchRoute.ts'),
   route('importeren/foto', 'routes/import-fetch/ImportImageFetchRoute.ts'),
+  route('share/:slug', 'routes/recipe/SharePageRoute.tsx'),
   route('recepten/:slug/favoriet', 'routes/recipe/LikeUpdateRoute.ts'),
   route('recepten/:slug/notitie', 'routes/recipe/NoteUpdateRoute.ts'),
   route('recepten/:slug/verwijderen', 'routes/recipe/RecipeDeleteRoute.ts'),

@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
-import type { HtmlLinkDescriptor } from 'react-router';
+import { RouterContextProvider, type HtmlLinkDescriptor } from 'react-router';
 import { afterEach, beforeEach, describe, test, vi } from 'vitest';
 import { render, waitFor, within } from '~testing/dom';
+import { fake } from '~testing/fake';
 import type { Route } from './+types/root';
-import { ErrorBoundary, links } from './root';
+import { ErrorBoundary, links, loader as rootLoader } from './root';
 import { ThemeColor } from './shared/components';
+import { envContext, publicRequestContext } from './shared/context.server';
 import { isSessionExpired } from './shared/isSessionExpired';
 
 vi.mock('./shared/isSessionExpired', () => ({ isSessionExpired: vi.fn() }));
@@ -93,6 +95,25 @@ describe('ErrorBoundary', () => {
       getByTestId('ErrorBoundary-error');
       assert.equal(vi.mocked(isSessionExpired).mock.calls.length, 0);
     });
+  });
+});
+
+describe('loader', () => {
+  const load = (context: RouterContextProvider) =>
+    rootLoader(fake<Route.LoaderArgs>({ request: new Request('http://localhost/share/appeltaart'), context }));
+
+  // The environment has no database: a lookup of the member would throw.
+  test('for a public request returns an empty member without looking anyone up', async () => {
+    const context = new RouterContextProvider();
+    context.set(publicRequestContext, true);
+    context.set(envContext, fake<Env>({}));
+    assert.deepEqual(await load(context), { email: '', role: 'user' });
+  });
+
+  test('for any other request needs the member', async () => {
+    const context = new RouterContextProvider();
+    context.set(envContext, fake<Env>({}));
+    await assert.rejects(load(context));
   });
 });
 

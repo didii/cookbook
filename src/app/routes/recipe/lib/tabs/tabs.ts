@@ -1,9 +1,18 @@
+import { cn } from '~app/shared/cn';
+
 export const tabs = [
   { id: 'ingredients', label: 'Ingrediënten' },
   { id: 'steps', label: 'Bereiding' },
 ] as const;
 
 export type TabId = (typeof tabs)[number]['id'];
+
+/** The id of each tab's heading: where a tab switch scrolls to, and what the panel is labelled by. */
+export const headingIds: Record<TabId, string> = { ingredients: 'ing', steps: 'bereiding' };
+
+/** Below 52rem only the open tab's panel shows, at least as tall as the screen under the stack, with the page's bottom padding inside it; from 52rem both show, side by side. */
+export const panelClass = (open: TabId, id: TabId) =>
+  cn('min-w-0 max-[51.99rem]:min-h-[calc(100svh-var(--stack-h,3.5rem))] max-[51.99rem]:pb-16', open !== id && 'max-[51.99rem]:hidden');
 
 /** The tab named by a location hash (`#steps`), or undefined for any other hash. */
 export function tabFromHash(hash: string): TabId | undefined {

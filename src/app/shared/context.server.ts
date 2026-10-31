@@ -6,5 +6,8 @@ export const userEmailContext = createContext<string>();
 /** Whether this key (the member's email) may fetch another page or image for an import now. Set for every request in workers/handler.ts. */
 export const importAllowContext = createContext<(key: string) => Promise<boolean>>();
 
+/** Whether the request is a public one (see `isPublicRequest` in workers/handler.ts): it carries no identity, so `userEmailContext` is unset. Set for every request in workers/handler.ts. */
+export const publicRequestContext = createContext<boolean>(false);
+
 /** Worker bindings (D1 etc.). Set for every request in workers/app.ts. */
 export const envContext = createContext<Env>();
