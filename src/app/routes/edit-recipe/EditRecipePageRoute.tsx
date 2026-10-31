@@ -10,8 +10,8 @@ import { tileFor } from '~app/shared/tile';
 import type { Route } from './+types/EditRecipePageRoute';
 import { endDraftAfterSave } from './lib/endDraftAfterSave';
 import { RecipeEditor } from './lib/RecipeEditor';
+import { recipeSeed } from './lib/recipeSeed';
 import { readForm, readIngredients, readSteps, readTags, tagError, toRecipeFields, validate, type RecipeFormErrors } from './lib/recipeValidation';
-import { joinIngredient } from './lib/shared/ingredients';
 
 const notFound = () => data('Recept niet gevonden', { status: 404 });
 
@@ -19,26 +19,13 @@ export async function loader({ params, context }: Route.LoaderArgs) {
   const db = context.get(envContext).DB;
   const [recipe, authors, managed] = await Promise.all([getRecipe(db, params.slug), listAuthors(db), listManagedTags(db)]);
   if (!recipe) throw notFound();
-  const values = {
-    title: recipe.title,
-    author: recipe.author,
-    servings: recipe.servings?.toString() ?? '',
-    time: recipe.time ?? '',
-    intro: recipe.intro,
-    image: recipe.image ?? '',
-    source: recipe.source ?? '',
-    ingredients: recipe.ingredients.map((i) => joinIngredient({ quantityText: i.quantityText, name: i.name })),
-    // The editor types the text; stored amounts would go stale and are found again on save.
-    steps: recipe.steps.map(({ body, ingredients, ovenTemperature, timer }) => ({ body, ingredients, ovenTemperature, timer })),
-    tags: recipe.tags,
-  };
   return {
     slug: params.slug,
     title: recipe.title,
     authors,
     tags: sortTags(managed.map((t) => t.name)),
     tagCategories: categoriesOf(managed),
-    values,
+    values: recipeSeed(recipe),
     tile: tileFor(recipe.id),
     seal: recipe.seal ?? undefined,
     updatedAt: recipe.updated_at,
