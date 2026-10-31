@@ -1,5 +1,4 @@
 import {
-  AlarmClock,
   ArrowBigDown,
   ArrowBigUp,
   ArrowRight,
@@ -40,7 +39,6 @@ const icon =
 
 export const Play = icon(LucidePlay, 'fill-current');
 export const Stop = icon(Square, 'fill-current');
-export const Alarm = icon(AlarmClock);
 export const Thermometer = icon(LucideThermometer);
 export const Book = icon(LucideBook);
 export const Camera = icon(LucideCamera);

@@ -211,3 +211,9 @@ describe('formatCountdown', () => {
     });
   }
 });
+
+// Scenarios of the requirement removed by `remove-app-timers`: delete these when that change is archived.
+test.todo('step-timers › Hand over a running timer');
+test.todo('step-timers › Handover is undone');
+test.todo('step-timers › Timers handed over automatically');
+test.todo('step-timers › Clock app not available');
