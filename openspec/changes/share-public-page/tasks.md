@@ -6,9 +6,9 @@
 
 ## 2. Public requests in the Worker
 
-- [ ] 2.1 Add `isPublicRequest` and `publicRequestContext` (default `false`) and let `createFetch` skip `identify` for them without setting `userEmailContext`; verify `handler.test.ts` covers "Public page needs no identity proof", "Other pages stay closed", "Writing is refused", "Photo without identity", "Upload without identity" and that `.data` requests of `/share/…` count as public
+- [x] 2.1 Add `isPublicRequest` and `publicRequestContext` (default `false`) and let `createFetch` skip `identify` for them without setting `userEmailContext`; verify `handler.test.ts` covers "Public page needs no identity proof", "Other pages stay closed", "Writing is refused", "Photo without identity", "Upload without identity" and that `.data` requests of `/share/…` count as public
 - [ ] 2.2 Make `root.tsx`'s loader return an empty member for a public request without user lookup or welcome redirect; verify `root.test.tsx`
-- [ ] 2.3 Add `X-Robots-Tag` for `/share/…` responses and the one-minute cache (Cache API keyed by URL, only 200, `cache` and `waitUntil` injectable); verify `handler.test.ts` covers "Public page is not indexed", "A missing public page is not indexed", "Other pages carry no such header", "Successful page is cacheable", "Repeat visits come from the cache" and "A 404 is not cached"
+- [x] 2.3 Add `X-Robots-Tag` for `/share/…` responses and the one-minute cache (Cache API keyed by URL, only 200, `cache` and `waitUntil` injectable); verify `handler.test.ts` covers "Public page is not indexed", "A missing public page is not indexed", "Other pages carry no such header", "Successful page is cacheable", "Repeat visits come from the cache" and "A 404 is not cached"
 
 ## 3. The page
 
