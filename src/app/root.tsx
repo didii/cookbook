@@ -3,7 +3,7 @@ import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration }
 import type { Route } from './+types/root';
 import './app.css';
 import { ServiceWorker, SkipLink, ThemeColor } from './shared/components';
-import { envContext, userEmailContext } from './shared/context.server';
+import { envContext, publicRequestContext, userEmailContext } from './shared/context.server';
 import { isSessionExpired } from './shared/isSessionExpired';
 import { getRules } from './shared/rules.server';
 import { getUser } from './shared/users.server';
@@ -46,6 +46,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export async function loader({ request, context }: Route.LoaderArgs) {
+  // A public request has no member: no lookup, no welcome screen.
+  if (context.get(publicRequestContext)) return { email: '', role: 'user' as const };
   const email = context.get(userEmailContext);
   // A member without a user row is welcomed first and sent on to the page they asked for.
   const db = context.get(envContext).DB;
