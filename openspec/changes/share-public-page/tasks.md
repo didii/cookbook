@@ -2,7 +2,7 @@
 
 ## 1. Extract the page state (no behaviour change)
 
-- [ ] 1.1 With `remove-app-timers` merged, extract `lib/useCooking.ts` (tab and hash, ticks, servings and scaled values, timers, jump and flash, cook mode, scroll positions) and `lib/RecipeHead.tsx` (title, author, time, servings, source, intro, photo frame) from `RecipeView` and move `RecipeView` onto them; verify the existing `RecipeView.test.tsx` passes without edits and add `useCooking.test.tsx` / `RecipeHead.test.tsx` for the behaviour they now own
+- [x] 1.1 With `remove-app-timers` merged, extract `lib/useCooking.ts` (tab and hash, ticks, servings and scaled values, timers, jump and flash, cook mode, scroll positions) and `lib/RecipeHead.tsx` (title, author, time, servings, source, intro, photo frame) from `RecipeView` and move `RecipeView` onto them; verify the existing `RecipeView.test.tsx` passes without edits and add `useCooking.test.tsx` / `RecipeHead.test.tsx` for the behaviour they now own
 
 ## 2. Public requests in the Worker
 
