@@ -1,12 +1,12 @@
 import { useRouteLoaderData } from 'react-router';
 import { defaultRules, type Rules } from '~app/shared/rules';
-import { emptyDraftSeed, type DraftSeed } from './draft';
+import type { DraftSeed } from './draft';
 import { RecipeEditor } from './RecipeEditor';
 import type { RecipeFormErrors } from './recipeValidation';
 
 interface NewRecipeFormProps {
   /** What the loader of a new recipe page gives. */
-  loaderData: { callingName: string; authors: string[]; tags: string[]; tagCategories?: Record<string, string>; tile: number; seal?: string };
+  loaderData: { seed: DraftSeed; authors: string[]; tags: string[]; tagCategories?: Record<string, string>; tile: number; seal?: string };
   /** What a refused submit hands back (nothing on first opening). */
   actionData?: { errors: RecipeFormErrors; values: DraftSeed };
   heading: string;
@@ -14,9 +14,9 @@ interface NewRecipeFormProps {
   canImport?: boolean;
 }
 
-/** The editor for a new recipe, started with the member's calling name as author; the new recipe page and the import page both show it. */
+/** The editor for a new recipe, started with the loader's seed (empty with the member's calling name as author, or a copy); the new recipe page and the import page both show it. */
 export function NewRecipeForm({ loaderData, actionData, heading, canImport }: NewRecipeFormProps) {
-  const seed = { ...emptyDraftSeed, author: loaderData.callingName };
+  const { seed } = loaderData;
   return (
     <RecipeEditor
       rules={useRouteLoaderData<{ rules?: Rules }>('root')?.rules ?? defaultRules}

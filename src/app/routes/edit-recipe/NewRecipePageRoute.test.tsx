@@ -3,13 +3,14 @@ import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react
 import { describe, vi } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
 import { deletePhoto, getPhoto, storePhoto } from '~app/shared/photos.server';
-import { deleteRecipe, getRecipe } from '~app/shared/recipes.server';
+import { createRecipe, deleteRecipe, getRecipe } from '~app/shared/recipes.server';
 import { createUser } from '~app/shared/users.server';
 import { cleanup, fireEvent, openAutocomplete, render, screen } from '~testing/dom';
 import { fake } from '~testing/fake';
 import { test } from '~testing/test';
 import type { Route } from './+types/NewRecipePageRoute';
 import { emptyDraftSeed } from './lib/draft';
+import { recipeSeed } from './lib/recipeSeed';
 import NewRecipePage, { action, loader } from './NewRecipePageRoute';
 
 // Passes through to the real form and records the props the route gave it.
@@ -176,7 +177,7 @@ describe('recipe-form › Many tags are accepted', () => {
 /** The new recipe page as the router shows it, with what a refused submit hands back (nothing on first opening). */
 const form = (actionData?: { errors: Record<string, string>; values: typeof emptyDraftSeed }) => {
   const props = fake<Route.ComponentProps>({
-    loaderData: { callingName: '', authors: ['Oma', 'Mama'], tags: [], tile: 0, seal: undefined },
+    loaderData: { seed: emptyDraftSeed, authors: ['Oma', 'Mama'], tags: [], tile: 0, seal: undefined },
     actionData,
   });
   return render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <NewRecipePage {...props} /> }])} />);
@@ -224,7 +225,7 @@ describe('recipe-form › Nothing stored before saving', () => {
     const context = new RouterContextProvider();
     context.set(envContext, fake<Env>({ DB: db }));
     context.set(userEmailContext, 'oma@example.com');
-    await loader(fake<Route.LoaderArgs>({ context }));
+    await loader(fake<Route.LoaderArgs>({ request: new Request('http://localhost/recepten/nieuw'), context }));
     assert.equal(await count(), rowsBefore);
   });
 });
@@ -239,9 +240,95 @@ describe('the new recipe loader tag categories', () => {
     const context = new RouterContextProvider();
     context.set(envContext, fake<Env>({ DB: db }));
     context.set(userEmailContext, 'oma@example.com');
-    const { tagCategories, tags } = await loader(fake<Route.LoaderArgs>({ context }));
+    const { tagCategories, tags } = await loader(fake<Route.LoaderArgs>({ request: new Request('http://localhost/recepten/nieuw'), context }));
     assert.deepEqual(tagCategories, { Soep: 'Gerecht' });
     assert.deepEqual(tags, ['Soep', 'Winter']);
+  });
+});
+
+const openCopy = (db: D1Database, query: string) => {
+  const context = new RouterContextProvider();
+  context.set(envContext, fake<Env>({ DB: db }));
+  context.set(userEmailContext, 'oma@example.com');
+  return loader(fake<Route.LoaderArgs>({ request: new Request(`http://localhost/recepten/nieuw${query}`), context }));
+};
+const count = async (db: D1Database) => (await db.prepare('SELECT COUNT(*) AS n FROM recipes').first<{ n: number }>())?.n;
+
+const stored = (db: D1Database) =>
+  createRecipe(db, {
+    title: 'Appeltaart',
+    author: 'Oma',
+    servings: 8,
+    time: '1u',
+    intro: 'Warm',
+    image: '/foto/00000000-0000-4000-8000-000000000000.jpg',
+    source: 'Libelle',
+    tags: ['Taart'],
+    ingredients: [{ name: 'appels', quantityText: '4' }],
+    steps: [{ body: 'Bak 30 minuten op 180 graden', ovenTemperature: 180, ingredients: [{ name: 'appels', quantityText: '4' }] }],
+  });
+
+describe('recipe-creation › The form is filled in from the recipe', () => {
+  test('the loader seeds every field of the recipe', async ({ db }) => {
+    await stored(db);
+    const { seed } = await openCopy(db, '?kopie=appeltaart');
+    // The mapping itself is tested in recipeSeed.test.ts.
+    assert.deepEqual(seed, recipeSeed((await getRecipe(db, 'appeltaart'))!));
+    assert.equal(seed.steps[0]?.ingredients[0]?.name, 'appels');
+  });
+
+  test('the page shows the seeded title', async ({ db }) => {
+    await stored(db);
+    cleanup();
+    const props = fake<Route.ComponentProps>({ loaderData: await openCopy(db, '?kopie=appeltaart') });
+    render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <NewRecipePage {...props} /> }])} />);
+    assert.equal((document.getElementById('title') as HTMLInputElement).value, 'Appeltaart');
+  });
+});
+
+describe('recipe-creation › Opening the copy stores nothing', () => {
+  test('no recipe was added and the original is unchanged', async ({ db }) => {
+    await stored(db);
+    const before = await getRecipe(db, 'appeltaart');
+    await openCopy(db, '?kopie=appeltaart');
+    assert.equal(await count(db), 1);
+    assert.deepEqual(await getRecipe(db, 'appeltaart'), before);
+  });
+});
+
+describe('recipe-creation › Saving the copy makes a new recipe', () => {
+  test('a new recipe with its own slug and the member as creator is stored', async ({ db }) => {
+    await stored(db);
+    const { seed } = await openCopy(db, '?kopie=appeltaart');
+    await submit(db, { title: seed.title, author: seed.author });
+    assert.equal(
+      (await db.prepare("SELECT created_by FROM recipes WHERE slug = 'appeltaart-2'").first<{ created_by: string }>())?.created_by,
+      'oma@example.com',
+    );
+  });
+
+  test('the original is unchanged', async ({ db }) => {
+    await stored(db);
+    const before = await getRecipe(db, 'appeltaart');
+    await submit(db, { title: 'Appeltaart', author: 'Oma' });
+    assert.deepEqual(await getRecipe(db, 'appeltaart'), before);
+  });
+});
+
+describe('recipe-creation › Unknown recipe', () => {
+  test('the seed is the empty form with the calling name', async ({ db }) => {
+    await createUser(db, 'oma@example.com', 'Jos');
+    const { seed } = await openCopy(db, '?kopie=bestaat-niet');
+    assert.deepEqual(seed, { ...emptyDraftSeed, author: 'Jos' });
+  });
+});
+
+describe('the new recipe page without a copy', () => {
+  test('starts with the empty seed and the calling name', async ({ db }) => {
+    await createUser(db, 'oma@example.com', 'Jos');
+    await stored(db);
+    const { seed } = await openCopy(db, '');
+    assert.deepEqual(seed, { ...emptyDraftSeed, author: 'Jos' });
   });
 });
 
@@ -260,7 +347,7 @@ const openFormAs = async (db: D1Database, email: string) => {
   const context = new RouterContextProvider();
   context.set(envContext, fake<Env>({ DB: db }));
   context.set(userEmailContext, email);
-  const loaderData = await loader(fake<Route.LoaderArgs>({ context }));
+  const loaderData = await loader(fake<Route.LoaderArgs>({ request: new Request('http://localhost/recepten/nieuw'), context }));
   const props = fake<Route.ComponentProps>({ loaderData });
   return render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <NewRecipePage {...props} /> }])} />);
 };

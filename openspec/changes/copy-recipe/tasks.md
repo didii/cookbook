@@ -7,7 +7,7 @@
 
 ## 2. The copy form
 
-- [ ] 2.1 Read `kopie` in the `NewRecipePageRoute` loader, return the seed (empty for an unknown slug) and let `NewRecipeForm` use `loaderData.seed`; verify `NewRecipePageRoute.test.ts` covers "The form is filled in from the recipe", "Opening the copy stores nothing", "Saving the copy makes a new recipe" and "Unknown recipe", and that the plain new page and the import page still start empty
+- [x] 2.1 Read `kopie` in the `NewRecipePageRoute` loader, return the seed (empty for an unknown slug) and let `NewRecipeForm` use `loaderData.seed`; verify `NewRecipePageRoute.test.ts` covers "The form is filled in from the recipe", "Opening the copy stores nothing", "Saving the copy makes a new recipe" and "Unknown recipe", and that the plain new page and the import page still start empty
 - [ ] 2.2 Check that the editor starts fresh for the copy (`state={{ fresh: true }}`) and keeps the member's changes on reload; verify `NewRecipeForm.test.tsx` or `RecipeEditor.test.tsx` covers "The copy replaces an old draft" and "A reload keeps the copy's changes"
 
 ## 3. Menu

@@ -17,7 +17,8 @@ vi.mock('./RecipeEditor', () => ({
   },
 }));
 
-const loaderData = { callingName: 'Jos', authors: ['Oma'], tags: ['Soep'], tagCategories: { Soep: 'Gang' }, tile: 2, seal: 'jia-wei' };
+const seed = { ...emptyDraftSeed, title: 'Soep', author: 'Jos' };
+const loaderData = { seed, authors: ['Oma'], tags: ['Soep'], tagCategories: { Soep: 'Gang' }, tile: 2, seal: 'jia-wei' };
 const show = (props: Partial<ComponentProps<typeof NewRecipeForm>> = {}) =>
   render(
     <RouterProvider
@@ -34,10 +35,9 @@ beforeEach(() => {
 });
 
 describe('NewRecipeForm', () => {
-  test('starts with the calling name as author', () => {
+  test('starts with the seed of the loader', () => {
     show();
-    assert.equal(editor().initial.author, 'Jos');
-    assert.deepEqual({ ...editor().initial, author: '' }, emptyDraftSeed);
+    assert.equal(editor().initial, seed);
   });
 
   test('shows the starting values when nothing was refused', () => {
