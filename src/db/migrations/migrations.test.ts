@@ -1125,3 +1125,33 @@ describe('recipe-source › Source over the limit is refused by the database', (
     assert.equal((await db.prepare('SELECT source FROM recipes WHERE id = ?').bind(recipe).first<{ source: null }>())?.source, null);
   });
 });
+
+const addShare = (db: D1Database, user: number, recipe: number, token: string) =>
+  db.prepare('INSERT INTO recipe_shares (token, recipe_id, user_id) VALUES (?, ?, ?)').bind(token, recipe, user).run();
+
+describe('recipe-sharing › Deleting a recipe deletes its shares', () => {
+  test('no share of it remains', async ({ db }) => {
+    const recipe = await addRecipe(db, 'share-recipe-cascade');
+    await addShare(db, await userId(db, 'share-cascade-a@example.com'), recipe, 'token-a');
+    await addShare(db, await userId(db, 'share-cascade-b@example.com'), recipe, 'token-b');
+    await db.prepare('DELETE FROM recipes WHERE id = ?').bind(recipe).run();
+    assert.equal(await count(db, 'SELECT id FROM recipe_shares WHERE recipe_id = ?', recipe), 0);
+  });
+});
+
+describe('recipe-sharing › Deleting a member deletes their shares', () => {
+  test('none of their shares remain', async ({ db }) => {
+    const user = await userId(db, 'share-user-cascade@example.com');
+    await addShare(db, user, await addRecipe(db, 'share-user-cascade'), 'token-c');
+    await db.prepare('DELETE FROM users WHERE id = ?').bind(user).run();
+    assert.equal(await count(db, 'SELECT id FROM recipe_shares WHERE user_id = ?', user), 0);
+  });
+
+  test('the recipes remain', async ({ db }) => {
+    const user = await userId(db, 'share-user-keep@example.com');
+    const recipe = await addRecipe(db, 'share-user-keep');
+    await addShare(db, user, recipe, 'token-d');
+    await db.prepare('DELETE FROM users WHERE id = ?').bind(user).run();
+    assert.equal(await count(db, 'SELECT id FROM recipes WHERE id = ?', recipe), 1);
+  });
+});

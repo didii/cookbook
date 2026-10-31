@@ -276,6 +276,57 @@ describe('recipe-actions-menu › The button is shown instead of the edit link',
   });
 });
 
+describe('RecipeView share popup', () => {
+  const realFetch = globalThis.fetch;
+  let urls: string[];
+  beforeEach(() => {
+    urls = [];
+    globalThis.fetch = ((url: string) => {
+      urls.push(url);
+      return Promise.resolve(Response.json({ token: 'tok', expiresAt: null, created: true }));
+    }) as typeof fetch;
+    page();
+  });
+  afterEach(() => {
+    globalThis.fetch = realFetch;
+  });
+  const share = () => {
+    fireEvent.click(screen.getByTestId('RecipeActionsMenu-button'));
+    fireEvent.click(screen.getByTestId('RecipeActionsMenu-share'));
+  };
+
+  test('the popup is not there at first', () => {
+    assert.equal(screen.queryByTestId('ShareDialog-dialog'), null);
+  });
+
+  test('Deel opens the popup', () => {
+    share();
+    assert.ok(screen.getByTestId('ShareDialog-dialog'));
+  });
+
+  test('the popup shares the recipe of the page', async () => {
+    share();
+    await screen.findByTestId('ShareDialog-link');
+    assert.deepEqual(urls, ['/recepten/appeltaart/delen']);
+  });
+
+  test('the popup is gone once it closed', async () => {
+    share();
+    await screen.findByTestId('ShareDialog-link');
+    fireEvent(screen.getByTestId('ShareDialog-dialog'), new Event('close'));
+    assert.equal(screen.queryByTestId('ShareDialog-dialog'), null);
+  });
+
+  test('opening it again makes a new request', async () => {
+    share();
+    await screen.findByTestId('ShareDialog-link');
+    fireEvent(screen.getByTestId('ShareDialog-dialog'), new Event('close'));
+    share();
+    await screen.findByTestId('ShareDialog-link');
+    assert.equal(urls.length, 2);
+  });
+});
+
 describe('cook-mode › Switch on a narrow screen', () => {
   beforeEach(() => {
     page();

@@ -5,12 +5,16 @@ import { hoverTint } from '~app/shared/hover';
 import { Ellipsis } from '~app/shared/icons';
 import { pressCss } from '~app/shared/press';
 
-type Props = { slug: string };
+type Props = {
+  slug: string;
+  /** "Deel" was chosen; the caller shows the share popup. */
+  onShare: () => void;
+};
 
 const item = cn('flex min-h-11 w-full items-center px-4 text-left font-extrabold disabled:cursor-not-allowed disabled:opacity-40', hoverTint);
 
-/** The "Meer acties" button of the recipe page with its popup: Bewerk, Kopieer and Deel. Kopieer and Deel are disabled until their features exist. */
-export function RecipeActionsMenu({ slug }: Props) {
+/** The "Meer acties" button of the recipe page with its popup: Bewerk, Kopieer and Deel. Kopieer is disabled until its feature exists. */
+export function RecipeActionsMenu({ slug, onShare }: Props) {
   const [open, setOpen] = useState(false);
   const id = useId();
   const root = useRef<HTMLDivElement>(null);
@@ -70,7 +74,15 @@ export function RecipeActionsMenu({ slug }: Props) {
           <button type="button" disabled data-testid="RecipeActionsMenu-copy" className={item}>
             Kopieer
           </button>
-          <button type="button" disabled data-testid="RecipeActionsMenu-share" className={item}>
+          <button
+            type="button"
+            data-testid="RecipeActionsMenu-share"
+            onClick={() => {
+              setOpen(false);
+              onShare();
+            }}
+            className={item}
+          >
             Deel
           </button>
         </div>

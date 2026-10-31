@@ -9,6 +9,8 @@ export default [
   route('recepten/:slug/favoriet', 'routes/recipe/LikeUpdateRoute.ts'),
   route('recepten/:slug/notitie', 'routes/recipe/NoteUpdateRoute.ts'),
   route('recepten/:slug/verwijderen', 'routes/recipe/RecipeDeleteRoute.ts'),
+  route('recepten/:slug/delen', 'routes/recipe/ShareCreateRoute.ts'),
+  route('recepten/:slug/delen/verloop', 'routes/recipe/ShareExpiryUpdateRoute.ts'),
   layout('routes/layout/LayoutRoute.tsx', [
     index('routes/home/HomePageRoute.tsx'),
     route('koelkast', 'routes/fridge/FridgePageRoute.tsx'),
