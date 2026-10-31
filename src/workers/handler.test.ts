@@ -366,6 +366,11 @@ describe('family-access › Other pages stay closed', () => {
     '/share/a/b',
     '/foto',
     '/foto/a/b',
+    '/share/x/../recepten/appeltaart',
+    '/share/x/%2e%2e/recepten/appeltaart',
+    '//',
+    '//share/x',
+    '/SHARE/x',
   ])
     test(`GET ${path} is refused with 403 and never reaches the app`, async () => {
       const { calls, fetch } = setup(false);
@@ -478,6 +483,34 @@ describe('shared-recipe-view › A 404 is not cached', () => {
     await shared.fetch(anonymous('/share/weg'), env);
     assert.equal(shared.stored.size, 0);
     assert.equal(shared.calls(), 2);
+  });
+});
+
+describe('public page cache', () => {
+  test('a request with a query is not stored', async () => {
+    const shared = sharing(found);
+    await shared.fetch(anonymous('/share/appeltaart?r=1'), env);
+    assert.equal(shared.stored.size, 0);
+  });
+
+  test('a different query does not skip the app by hitting the stored page', async () => {
+    const shared = sharing(found);
+    await shared.fetch(anonymous('/share/appeltaart'), env);
+    await shared.fetch(anonymous('/share/appeltaart?r=1'), env);
+    assert.equal(shared.calls(), 2);
+  });
+
+  test('the _routes parameter of a data request is stored', async () => {
+    const shared = sharing(found);
+    await shared.fetch(anonymous('/share/appeltaart.data?_routes=routes%2Fshare'), env);
+    assert.equal(shared.stored.size, 1);
+  });
+
+  test('a HEAD request gets Cache-Control but is not stored', async () => {
+    const shared = sharing(found);
+    const res = await shared.fetch(anonymous('/share/appeltaart', 'HEAD'), env);
+    assert.equal(res.headers.get('Cache-Control'), 'public, max-age=60');
+    assert.equal(shared.stored.size, 0);
   });
 });
 
