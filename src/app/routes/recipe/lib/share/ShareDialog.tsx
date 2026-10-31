@@ -111,7 +111,7 @@ export function ShareDialog({ slug, onClose }: Props) {
                 )}
               </p>
               {share.picking ? (
-                <ExpiryPicker value={share.choice} onChoose={(c) => void share.choose(c)} />
+                <ExpiryPicker value={share.choice} onChoose={(c) => void share.choose(c)} disabled={share.saving} />
               ) : (
                 <Button
                   type="button"

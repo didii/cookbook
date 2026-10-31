@@ -43,6 +43,7 @@ function Harness() {
           choice: share.choice,
           check: share.check,
           error: share.error,
+          saving: share.saving,
         })}
       </output>
       <button data-testid="change" aria-label="change" onClick={share.change} />
@@ -69,7 +70,16 @@ describe('useShare', () => {
 
   test('a share made by this open starts picking, on Nooit', async () => {
     await show();
-    assert.deepEqual(state(), { state: 'ready', token: 'tok', expiresAt: null, picking: true, choice: 'never', check: 'off', error: false });
+    assert.deepEqual(state(), {
+      state: 'ready',
+      token: 'tok',
+      expiresAt: null,
+      picking: true,
+      choice: 'never',
+      check: 'off',
+      error: false,
+      saving: false,
+    });
   });
 
   test('an existing share starts closed, without a choice', async () => {
@@ -98,6 +108,29 @@ describe('useShare', () => {
     await show();
     await choose();
     assert.deepEqual(calls[1], { url: '/recepten/soep/delen/verloop', body: 'expires=7d' });
+  });
+
+  test('saving is on while a choice is out and off after the answer', async () => {
+    let answer = () => {};
+    const fast = globalThis.fetch;
+    await show();
+    globalThis.fetch = ((url: string, init: RequestInit) =>
+      new Promise<Response>((resolve) => {
+        answer = () => void fast(url, init).then(resolve);
+      })) as typeof fetch;
+    await choose();
+    assert.equal(state().saving, true);
+    globalThis.fetch = fast;
+    answer();
+    await act(async () => {});
+    assert.equal(state().saving, false);
+  });
+
+  test('saving is off again after a refused choice', async () => {
+    answers.expiry = { status: 400, body: {} };
+    await show();
+    await choose();
+    assert.equal(state().saving, false);
   });
 
   test('a choice shows the end date the server answered', async () => {

@@ -8,3 +8,5 @@ CREATE TABLE recipe_shares (
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
   UNIQUE (recipe_id, user_id)
 );
+
+CREATE INDEX recipe_shares_user_id ON recipe_shares (user_id);

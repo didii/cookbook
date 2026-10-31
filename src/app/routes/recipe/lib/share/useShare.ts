@@ -21,6 +21,8 @@ export function useShare(slug: string) {
   const [choice, setChoice] = useState<ExpiryChoice | ''>('');
   const [check, setCheck] = useState<Check>('off');
   const [error, setError] = useState(false);
+  // One request at a time, so answers cannot arrive out of order.
+  const [saving, setSaving] = useState(false);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useEffect(() => {
@@ -69,11 +71,14 @@ export function useShare(slug: string) {
     check,
     /** Storing the last choice failed; the end date shown is the earlier one. */
     error,
+    /** A choice is being stored; the dropdown waits. */
+    saving,
     /** "Wijzig": shows the dropdown, without a choice. */
     change: () => setPicking(true),
     /** Stores the end date that `value` gives, counted from now. */
     choose: async (value: ExpiryChoice) => {
       setError(false);
+      setSaving(true);
       try {
         const response = await fetch(`/recepten/${slug}/delen/verloop`, { method: 'POST', body: new URLSearchParams({ expires: value }) });
         if (!response.ok) throw new Error(String(response.status));
@@ -83,6 +88,8 @@ export function useShare(slug: string) {
         showCheck();
       } catch {
         setError(true);
+      } finally {
+        setSaving(false);
       }
     },
   };

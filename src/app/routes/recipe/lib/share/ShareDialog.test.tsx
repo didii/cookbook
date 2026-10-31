@@ -91,6 +91,30 @@ describe('ShareDialog', () => {
   });
 });
 
+describe('ShareDialog choice feedback', () => {
+  test('it shows a checkmark after a choice', async () => {
+    await show();
+    await choose('1y');
+    assert.ok(screen.getByTestId('ShareDialog-check'));
+  });
+
+  test('a refused choice shows an error and keeps the earlier end date', async () => {
+    await show();
+    globalThis.fetch = (() => Promise.resolve(new Response(null, { status: 404 }))) as typeof fetch;
+    fireEvent.change(select(), { target: { value: '1y' } });
+    assert.ok(await screen.findByTestId('ShareDialog-error'));
+    assert.equal(expiry(), 'Verloopt nooit');
+  });
+
+  test('the dropdown is disabled while a choice is being stored', async () => {
+    await show();
+    globalThis.fetch = (() => new Promise<Response>(() => {})) as typeof fetch;
+    fireEvent.change(select(), { target: { value: '1y' } });
+    await act(async () => {});
+    assert.equal(select().disabled, true);
+  });
+});
+
 describe('recipe-sharing › Device with a share sheet', () => {
   beforeEach(sharing);
 
@@ -147,20 +171,6 @@ describe('recipe-sharing › End date after a choice', () => {
     await show();
     await choose('1y');
     assert.equal(expiry(), `Verloopt op ${date('2027-03-10T12:00:00Z')}`);
-  });
-
-  test('it shows a checkmark', async () => {
-    await show();
-    await choose('1y');
-    assert.ok(screen.getByTestId('ShareDialog-check'));
-  });
-
-  test('a refused choice shows an error and keeps the earlier end date', async () => {
-    await show();
-    globalThis.fetch = (() => Promise.resolve(new Response(null, { status: 404 }))) as typeof fetch;
-    fireEvent.change(select(), { target: { value: '1y' } });
-    assert.ok(await screen.findByTestId('ShareDialog-error'));
-    assert.equal(expiry(), 'Verloopt nooit');
   });
 });
 
