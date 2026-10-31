@@ -4,7 +4,7 @@ import { expiryChoices } from '~app/shared/shareExpiry';
 import { fireEvent, render, screen } from '~testing/dom';
 import { ExpiryPicker } from './ExpiryPicker';
 
-const select = () => screen.getByTestId<HTMLSelectElement>('ExpiryPicker-select');
+const select = () => screen.getByTestId('ExpiryPicker-select') as unknown as HTMLSelectElement;
 
 describe('recipe-sharing › The choices', () => {
   test('the six choices are offered in order', () => {

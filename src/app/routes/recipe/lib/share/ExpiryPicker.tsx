@@ -19,7 +19,10 @@ export function ExpiryPicker({ value, onChoose, disabled }: Props) {
         value={value}
         disabled={disabled}
         onChange={(e) => onChoose(e.target.value as ExpiryChoice)}
-        className={cn('min-h-11 cursor-pointer rounded-[10px] border-3 border-ink bg-white px-3 disabled:cursor-not-allowed disabled:opacity-40', hoverTint)}
+        className={cn(
+          'min-h-11 cursor-pointer rounded-[10px] border-3 border-ink bg-white px-3 disabled:cursor-not-allowed disabled:opacity-40',
+          hoverTint,
+        )}
       >
         <option value="" disabled data-testid="ExpiryPicker-placeholder">
           Kies…

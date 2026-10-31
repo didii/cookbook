@@ -31,7 +31,7 @@ const show = async () => {
 const dialog = () => screen.getByTestId<HTMLDialogElement>('ShareDialog-dialog');
 const link = () => screen.getByTestId<HTMLInputElement>('ShareDialog-link');
 const expiry = () => screen.getByTestId('ShareDialog-expiry').textContent;
-const select = () => screen.getByTestId<HTMLSelectElement>('ExpiryPicker-select');
+const select = () => screen.getByTestId('ExpiryPicker-select') as unknown as HTMLSelectElement;
 const choose = async (value: string) => {
   fireEvent.change(select(), { target: { value } });
   await screen.findByTestId('ShareDialog-check');

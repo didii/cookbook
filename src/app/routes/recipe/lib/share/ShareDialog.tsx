@@ -91,15 +91,17 @@ export function ShareDialog({ slug, onClose }: Props) {
                   {canShare ? 'Deel' : 'Kopieer link'}
                 </Button>
                 {copied && (
-                  <span data-testid="ShareDialog-copied" role="status" className="font-bold">
+                  <output data-testid="ShareDialog-copied" className="font-bold">
                     Gekopieerd
-                  </span>
+                  </output>
                 )}
               </div>
             </div>
             <div className="grid gap-3">
               <p className="flex items-center gap-2 font-extrabold">
-                <span data-testid="ShareDialog-expiry">{share.expiresAt ? `Verloopt op ${dateFormat.format(new Date(share.expiresAt))}` : 'Verloopt nooit'}</span>
+                <span data-testid="ShareDialog-expiry">
+                  {share.expiresAt ? `Verloopt op ${dateFormat.format(new Date(share.expiresAt))}` : 'Verloopt nooit'}
+                </span>
                 {share.check !== 'off' && (
                   <Check
                     data-testid="ShareDialog-check"
@@ -111,7 +113,12 @@ export function ShareDialog({ slug, onClose }: Props) {
               {share.picking ? (
                 <ExpiryPicker value={share.choice} onChoose={(c) => void share.choose(c)} />
               ) : (
-                <Button type="button" data-testid="ShareDialog-change" onClick={share.change} className="min-h-11 flex-none self-start px-5 text-base">
+                <Button
+                  type="button"
+                  data-testid="ShareDialog-change"
+                  onClick={share.change}
+                  className="min-h-11 flex-none self-start px-5 text-base"
+                >
                   Wijzig
                 </Button>
               )}
