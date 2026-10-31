@@ -1,7 +1,7 @@
 import { data, redirect } from 'react-router';
 import { envContext, userEmailContext } from '~app/shared/context.server';
-import { acceptImage } from '~app/shared/photos.server';
-import { chooseSeal, createRecipe, listAuthors } from '~app/shared/recipes.server';
+import { acceptImage, ownPhoto } from '~app/shared/photos.server';
+import { chooseSeal, createRecipe, getRecipe, listAuthors } from '~app/shared/recipes.server';
 import { getRules } from '~app/shared/rules.server';
 import { seals } from '~app/shared/seals';
 import { listManagedTags } from '~app/shared/tagManagement.server';
@@ -9,18 +9,23 @@ import { categoriesOf, sortTags } from '~app/shared/tags';
 import { tiles } from '~app/shared/tile';
 import { getUser } from '~app/shared/users.server';
 import type { Route } from './+types/NewRecipePageRoute';
+import { emptyDraftSeed } from './lib/draft';
 import { endDraftAfterSave } from './lib/endDraftAfterSave';
 import { NewRecipeForm } from './lib/NewRecipeForm';
+import { recipeSeed } from './lib/recipeSeed';
 import { readForm, readIngredients, readSteps, readTags, tagError, toRecipeFields, validate, type RecipeFormErrors } from './lib/recipeValidation';
 
-export async function loader({ context }: Route.LoaderArgs) {
+export async function loader({ request, context }: Route.LoaderArgs) {
   const db = context.get(envContext).DB;
-  // The author field starts as the member's calling name; the welcome gate means there is a user (empty only when it is bypassed).
   const managed = await listManagedTags(db);
+  // `kopie=<slug>` starts the form as a copy of that recipe; an unknown slug gives the empty form. Nothing is written.
+  const copyOf = new URL(request.url).searchParams.get('kopie');
+  const original = copyOf ? await getRecipe(db, copyOf) : undefined;
+  // The author field starts as the member's calling name; the welcome gate means there is a user (empty only when it is bypassed).
   const callingName = (await getUser(db, context.get(userEmailContext)))?.callingName ?? '';
   // The tile is picked here rather than while rendering, so the server and the browser agree. The seal is posted back, so the recipe gets the one the editor showed.
   return {
-    callingName,
+    seed: original ? recipeSeed(original) : { ...emptyDraftSeed, author: callingName },
     authors: await listAuthors(db),
     tags: sortTags(managed.map((t) => t.name)),
     tagCategories: categoriesOf(managed),
@@ -46,12 +51,14 @@ export async function action({ request, context }: Route.ActionArgs) {
     return data({ errors, values: { ...values, ingredients: lines, steps: stepLines, tags: tags ?? [] } }, { status: 400 });
 
   const fields = toRecipeFields(values);
-  const slug = await createRecipe(context.get(envContext).DB, {
+  const { DB, PHOTOS } = context.get(envContext);
+  const image = await ownPhoto(DB, PHOTOS, acceptImage(fields.image, null), null);
+  const slug = await createRecipe(DB, {
     ...fields,
     ingredients,
     steps,
     tags,
-    image: acceptImage(fields.image, null),
+    image,
     seal: seals.find((s) => s === form.get('seal')),
     createdBy: context.get(userEmailContext),
   });

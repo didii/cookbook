@@ -219,6 +219,28 @@ describe('recipe-photo › Non-upload images are never deleted', () => {
   });
 });
 
+describe('the edit action with a photo another recipe uses', () => {
+  test("posting another recipe's photo stores a copy under a new name", async ({ db, photos }) => {
+    const shared = await upload(photos);
+    await addRecipe(db, 'a', shared);
+    await addRecipe(db, 'b');
+    await submit(db, photos, 'b', { title: 'T', author: 'Oma', image: shared });
+    const image = (await getRecipe(db, 'b'))?.image;
+    assert.ok(image);
+    assert.notEqual(image, shared);
+    assert.equal(await isStored(photos, image), true);
+  });
+
+  test('the other recipe keeps its photo', async ({ db, photos }) => {
+    const shared = await upload(photos);
+    await addRecipe(db, 'a', shared);
+    await addRecipe(db, 'b');
+    await submit(db, photos, 'b', { title: 'T', author: 'Oma', image: shared });
+    assert.equal((await getRecipe(db, 'a'))?.image, shared);
+    assert.equal(await isStored(photos, shared), true);
+  });
+});
+
 describe('image links on save', () => {
   test('a forged external image link is dropped', async ({ db, photos }) => {
     await addRecipe(db, 'vals', null);

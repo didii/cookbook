@@ -7,6 +7,7 @@ import {
   deleteRecipe,
   getMemberRecipeData,
   getRecipe,
+  isImageUsed,
   listAuthors,
   listIngredientNames,
   listRecipes,
@@ -208,6 +209,24 @@ describe('recipe-creation › Existing authors are suggested', () => {
     await createRecipe(db, { title: 'B', author: 'Oma', servings: 1 });
     await db.prepare("INSERT INTO recipes (slug, title, author, servings) VALUES ('c', 'C', 'OMA', 1)").run();
     assert.deepEqual(await listAuthors(db), ['Oma', 'Papa']);
+  });
+});
+
+describe('isImageUsed', () => {
+  test('is true for the image of a recipe', async ({ db }) => {
+    await seedOrdering(db);
+    assert.equal(await isImageUsed(db, '/full.jpg'), true);
+  });
+
+  test('is true for the image of a step', async ({ db }) => {
+    await seedOrdering(db);
+    await db.prepare("UPDATE steps SET image = '/foto/step.jpg' WHERE position = 1").run();
+    assert.equal(await isImageUsed(db, '/foto/step.jpg'), true);
+  });
+
+  test('is false for an image no recipe has', async ({ db }) => {
+    await seedOrdering(db);
+    assert.equal(await isImageUsed(db, '/other.jpg'), false);
   });
 });
 

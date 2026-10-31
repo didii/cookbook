@@ -9,6 +9,7 @@ import { test } from '~testing/test';
 import type { Route } from './+types/ImportRecipePageRoute';
 import type { Route as NewRoute } from './+types/NewRecipePageRoute';
 import ImportRecipePage, { action, loader } from './ImportRecipePageRoute';
+import { emptyDraftSeed } from './lib/draft';
 import * as newRecipe from './NewRecipePageRoute';
 
 // Passes through to the real form and records the props the route gave it.
@@ -55,7 +56,7 @@ describe('recipe-import › Import page saves like a new recipe', () => {
 
 describe('the import page', () => {
   const show = () => {
-    const props = fake<Route.ComponentProps>({ loaderData: { callingName: '', authors: [], tags: [], tile: 0, seal: undefined } });
+    const props = fake<Route.ComponentProps>({ loaderData: { seed: emptyDraftSeed, authors: [], tags: [], tile: 0, seal: undefined } });
     render(<RouterProvider router={createMemoryRouter([{ path: '/', element: <ImportRecipePage {...props} /> }])} />);
   };
 

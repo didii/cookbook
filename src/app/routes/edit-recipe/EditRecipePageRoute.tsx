@@ -1,6 +1,6 @@
 import { data, redirect, useRouteLoaderData } from 'react-router';
 import { envContext } from '~app/shared/context.server';
-import { acceptImage, deletePhoto } from '~app/shared/photos.server';
+import { acceptImage, deletePhoto, ownPhoto } from '~app/shared/photos.server';
 import { getRecipe, listAuthors, updateRecipe } from '~app/shared/recipes.server';
 import { defaultRules, type Rules } from '~app/shared/rules';
 import { getRules } from '~app/shared/rules.server';
@@ -10,8 +10,8 @@ import { tileFor } from '~app/shared/tile';
 import type { Route } from './+types/EditRecipePageRoute';
 import { endDraftAfterSave } from './lib/endDraftAfterSave';
 import { RecipeEditor } from './lib/RecipeEditor';
+import { recipeSeed } from './lib/recipeSeed';
 import { readForm, readIngredients, readSteps, readTags, tagError, toRecipeFields, validate, type RecipeFormErrors } from './lib/recipeValidation';
-import { joinIngredient } from './lib/shared/ingredients';
 
 const notFound = () => data('Recept niet gevonden', { status: 404 });
 
@@ -19,26 +19,13 @@ export async function loader({ params, context }: Route.LoaderArgs) {
   const db = context.get(envContext).DB;
   const [recipe, authors, managed] = await Promise.all([getRecipe(db, params.slug), listAuthors(db), listManagedTags(db)]);
   if (!recipe) throw notFound();
-  const values = {
-    title: recipe.title,
-    author: recipe.author,
-    servings: recipe.servings?.toString() ?? '',
-    time: recipe.time ?? '',
-    intro: recipe.intro,
-    image: recipe.image ?? '',
-    source: recipe.source ?? '',
-    ingredients: recipe.ingredients.map((i) => joinIngredient({ quantityText: i.quantityText, name: i.name })),
-    // The editor types the text; stored amounts would go stale and are found again on save.
-    steps: recipe.steps.map(({ body, ingredients, ovenTemperature, timer }) => ({ body, ingredients, ovenTemperature, timer })),
-    tags: recipe.tags,
-  };
   return {
     slug: params.slug,
     title: recipe.title,
     authors,
     tags: sortTags(managed.map((t) => t.name)),
     tagCategories: categoriesOf(managed),
-    values,
+    values: recipeSeed(recipe),
     tile: tileFor(recipe.id),
     seal: recipe.seal ?? undefined,
     updatedAt: recipe.updated_at,
@@ -65,7 +52,7 @@ export async function action({ request, params, context }: Route.ActionArgs) {
     return data({ errors, values: { ...values, ingredients: lines, steps: stepLines, tags: tags ?? [] } }, { status: 400 });
 
   const fields = toRecipeFields(values);
-  const image = stored && acceptImage(fields.image, stored.image);
+  const image = stored && (await ownPhoto(DB, PHOTOS, acceptImage(fields.image, stored.image), stored.image));
   const updated = stored && (await updateRecipe(DB, params.slug, { ...fields, image, ingredients, steps, tags }));
   if (!updated) throw notFound();
   // After the write, so a failed delete leaves an orphan and never a recipe pointing at a missing file. The recipe is saved either way, so a failure must not turn into an error page.

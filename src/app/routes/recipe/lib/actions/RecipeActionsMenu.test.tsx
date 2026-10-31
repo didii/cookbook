@@ -88,10 +88,21 @@ describe('recipe-actions-menu › Bewerk links to the edit form', () => {
   });
 });
 
-describe('recipe-actions-menu › Kopieer is disabled', () => {
-  test('Kopieer is disabled', () => {
+describe('recipe-actions-menu › Kopieer links to the copy form', () => {
+  test('Kopieer points at the copy address of the recipe', () => {
     open();
-    assert.equal(screen.getByTestId<HTMLButtonElement>('RecipeActionsMenu-copy').disabled, true);
+    assert.equal(screen.getByTestId('RecipeActionsMenu-copy').getAttribute('href'), '/recepten/nieuw?kopie=appeltaart');
+  });
+
+  test('Kopieer is not disabled', () => {
+    open();
+    assert.equal(screen.getByTestId('RecipeActionsMenu-copy').getAttribute('aria-disabled'), null);
+  });
+
+  test('it navigates with the state that starts the editor fresh', async () => {
+    open();
+    fireEvent.click(screen.getByTestId('RecipeActionsMenu-copy'));
+    assert.equal((await screen.findByTestId('Test-fresh')).textContent, 'true');
   });
 });
 
