@@ -2,7 +2,7 @@
 
 ## 1. Database and data access
 
-- [ ] 1.1 Add migration `0018_recipe_shares.sql` (`recipe_shares` with unique token, `UNIQUE (recipe_id, user_id)`, cascades on recipe and user); verify `migrations.test.ts` covers "Deleting a recipe deletes its shares" and "Deleting a member deletes their shares"
+- [x] 1.1 Add migration `0018_recipe_shares.sql` (`recipe_shares` with unique token, `UNIQUE (recipe_id, user_id)`, cascades on recipe and user); verify `migrations.test.ts` covers "Deleting a recipe deletes its shares" and "Deleting a member deletes their shares"
 - [ ] 1.2 Add `shared/shareExpiry.ts` (the six choices, `expiryFor(choice, now)` with calendar months clamped to the last day); verify `shareExpiry.test.ts` covers hours, days, "A month ends on the last day when needed", leap years and "never"
 - [ ] 1.3 Add `shared/shares.server.ts` (`getOrCreateShare`, one upsert statement plus select in one batch; `setShareExpiry` for the owner's live share) with random 128-bit base64url tokens; verify `shares.server.test.ts` (db fixture) covers "The first share creates a link", "Opening again shows the same link", "Another member has their own link", "Tokens are long and different", "Expired share is replaced", "A live share is not replaced" and the owner/expired refusals
 
