@@ -10,6 +10,7 @@ import {
   ChevronLeft as LucideChevronLeft,
   ChevronUp as LucideChevronUp,
   Clock as LucideClock,
+  Ellipsis as LucideEllipsis,
   Info as LucideInfo,
   Link as LucideLink,
   Lock as LucideLock,
@@ -56,6 +57,7 @@ export const Plus = icon(LucidePlus);
 export const Minus = icon(LucideMinus);
 export const Arrow = icon(ArrowRight);
 export const Link = icon(LucideLink);
+export const Ellipsis = icon(LucideEllipsis);
 export const Menu = icon(LucideMenu);
 export const Pin = icon(LucidePin);
 export const Search = icon(LucideSearch);
