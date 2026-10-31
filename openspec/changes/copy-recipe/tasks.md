@@ -12,5 +12,5 @@
 
 ## 3. Menu
 
-- [ ] 3.1 Make "Kopieer" a `Link` to `/recepten/nieuw?kopie=<slug>` with `state={{ fresh: true }}` in `RecipeActionsMenu`; remove the "Kopieer is disabled" test; verify `RecipeActionsMenu.test.tsx` covers "Kopieer links to the copy form"
+- [x] 3.1 Make "Kopieer" a `Link` to `/recepten/nieuw?kopie=<slug>` with `state={{ fresh: true }}` in `RecipeActionsMenu`; remove the "Kopieer is disabled" test; verify `RecipeActionsMenu.test.tsx` covers "Kopieer links to the copy form"
 - [ ] 3.2 Run `pnpm format:fix`, `pnpm lint:fix`, `pnpm test:spec copy-recipe`, `pnpm test:ai`, `pnpm format:check` and `pnpm lint:check`; copy a recipe with a photo in the browser, save it, delete the original and check the copy's photo

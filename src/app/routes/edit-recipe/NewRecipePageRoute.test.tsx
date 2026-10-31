@@ -110,7 +110,7 @@ describe('recipe-creation › The copy gets its own photo', () => {
   });
 });
 
-describe('recipe-creation › Deleting the original keeps the copy photo', () => {
+describe("recipe-creation › Deleting the original keeps the copy's photo", () => {
   test('the copy still has its photo', async ({ db, photos }) => {
     const path = await withPhoto(db, photos);
     await submit(db, { title: 'Soep kopie', author: 'Oma', image: path }, photos);

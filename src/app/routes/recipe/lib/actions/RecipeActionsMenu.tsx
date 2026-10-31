@@ -9,7 +9,7 @@ type Props = { slug: string };
 
 const item = cn('flex min-h-11 w-full items-center px-4 text-left font-extrabold disabled:cursor-not-allowed disabled:opacity-40', hoverTint);
 
-/** The "Meer acties" button of the recipe page with its popup: Bewerk, Kopieer and Deel. Kopieer and Deel are disabled until their features exist. */
+/** The "Meer acties" button of the recipe page with its popup: Bewerk, Kopieer and Deel. Deel is disabled until its feature exists. */
 export function RecipeActionsMenu({ slug }: Props) {
   const [open, setOpen] = useState(false);
   const id = useId();
@@ -67,9 +67,15 @@ export function RecipeActionsMenu({ slug }: Props) {
           >
             Bewerk
           </Link>
-          <button type="button" disabled data-testid="RecipeActionsMenu-copy" className={item}>
+          <Link
+            to={`/recepten/nieuw?kopie=${slug}`}
+            state={{ fresh: true }}
+            data-testid="RecipeActionsMenu-copy"
+            onClick={() => setOpen(false)}
+            className={item}
+          >
             Kopieer
-          </button>
+          </Link>
           <button type="button" disabled data-testid="RecipeActionsMenu-share" className={item}>
             Deel
           </button>

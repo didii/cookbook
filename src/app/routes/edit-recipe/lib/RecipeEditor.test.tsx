@@ -685,7 +685,7 @@ describe('unfinished draft of a new recipe', () => {
     });
   });
 
-  describe('recipe-creation › A reload keeps the copy changes', () => {
+  describe("recipe-creation › A reload keeps the copy's changes", () => {
     test('the form shows the changes after the page is opened again without the flag', () => {
       showCopy({ fresh: true });
       fireEvent.change(screen.getByTestId('RecipeEditor-title'), { target: { value: 'Appeltaart met kaneel' } });
