@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe } from 'vitest';
 import { test } from '~testing/test';
-import { deletePhoto, getPhoto, isPhotoPath, maxPhotoBytes, storePhoto } from './photos.server';
+import { copyPhoto, deletePhoto, getPhoto, isPhotoPath, maxPhotoBytes, storePhoto } from './photos.server';
 
 const bytes = (...head: number[]) => {
   const b = new Uint8Array(64);
@@ -75,6 +75,34 @@ describe('recipe-photo › Unknown photo', () => {
   test('names that are not <uuid>.<ext> never reach the bucket', async ({ photos }) => {
     await photos.put('photos/secret', 'x');
     assert.equal(await getPhoto(photos, 'secret'), null);
+  });
+});
+
+describe('copyPhoto', () => {
+  test('stores the same content and type under a new name', async ({ photos }) => {
+    const res = await storePhoto(photos, jpeg());
+    assert.ok('path' in res);
+    const path = await copyPhoto(photos, res.path);
+    assert.ok(path);
+    assert.notEqual(path, res.path);
+    const copy = await getPhoto(photos, fileOf(path));
+    assert.equal(copy?.httpMetadata?.contentType, 'image/jpeg');
+    assert.deepEqual(await copy?.arrayBuffer(), jpeg().slice(0, 64));
+  });
+
+  test('keeps the original', async ({ photos }) => {
+    const res = await storePhoto(photos, jpeg());
+    assert.ok('path' in res);
+    await copyPhoto(photos, res.path);
+    assert.ok(await getPhoto(photos, fileOf(res.path)));
+  });
+
+  test('gives undefined for a photo that is not stored', async ({ photos }) => {
+    assert.equal(await copyPhoto(photos, '/foto/00000000-0000-4000-8000-000000000000.jpg'), undefined);
+  });
+
+  test('gives undefined for another path', async ({ photos }) => {
+    assert.equal(await copyPhoto(photos, '/img/appeltaart.jpg'), undefined);
   });
 });
 

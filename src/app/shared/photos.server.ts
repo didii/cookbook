@@ -37,6 +37,17 @@ export async function deletePhoto(bucket: R2Bucket, path: string) {
   if (isPhotoPath(path)) await bucket.delete(keyOf(path.slice('/foto/'.length)));
 }
 
+/** Copies the photo at a `/foto/...` path to a new random name; returns the new path, or undefined when there is no such photo. */
+export async function copyPhoto(bucket: R2Bucket, path: string) {
+  if (!isPhotoPath(path)) return;
+  const file = path.slice('/foto/'.length);
+  const original = await bucket.get(keyOf(file));
+  if (!original) return;
+  const copy = `${crypto.randomUUID()}.${file.slice(file.lastIndexOf('.') + 1)}`;
+  await bucket.put(keyOf(copy), await original.arrayBuffer(), { httpMetadata: original.httpMetadata });
+  return `/foto/${copy}`;
+}
+
 /** The image value to store for a submitted form: empty, unchanged from what is stored, or an uploaded photo's path. Anything else is dropped, so nobody can plant an arbitrary link. */
 export const acceptImage = (submitted: string | undefined, stored: string | null) =>
   submitted && (submitted === stored || isPhotoPath(submitted)) ? submitted : undefined;

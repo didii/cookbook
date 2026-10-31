@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import { createMemoryRouter, RouterContextProvider, RouterProvider } from 'react-router';
 import { describe, vi } from 'vitest';
 import { envContext, userEmailContext } from '~app/shared/context.server';
-import { getRecipe } from '~app/shared/recipes.server';
+import { deletePhoto, getPhoto, storePhoto } from '~app/shared/photos.server';
+import { deleteRecipe, getRecipe } from '~app/shared/recipes.server';
 import { createUser } from '~app/shared/users.server';
 import { cleanup, fireEvent, openAutocomplete, render, screen } from '~testing/dom';
 import { fake } from '~testing/fake';
@@ -23,9 +24,9 @@ vi.mock('./lib/NewRecipeForm', async (importOriginal) => {
   };
 });
 
-const submit = (db: D1Database, fields: Record<string, string>) => {
+const submit = (db: D1Database, fields: Record<string, string>, photos?: R2Bucket) => {
   const context = new RouterContextProvider();
-  context.set(envContext, fake<Env>({ DB: db }));
+  context.set(envContext, fake<Env>({ DB: db, PHOTOS: photos }));
   context.set(userEmailContext, 'oma@example.com');
   return action(
     fake<Route.ActionArgs>({
@@ -66,6 +67,55 @@ describe('recipe-creation › Time, intro and image are stored', () => {
     await submit(db, { title: 'Compleet', author: 'Oma', time: ' 45 min ', intro: 'Lekker', image });
     const r = await getRecipe(db, 'compleet');
     assert.deepEqual([r?.time, r?.intro, r?.image], ['45 min', 'Lekker', image]);
+  });
+});
+
+/** A recipe with a stored photo, the way a copy form is opened on it; returns the photo path. */
+const withPhoto = async (db: D1Database, photos: R2Bucket) => {
+  const stored = await storePhoto(photos, new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3]).buffer);
+  assert.ok('path' in stored);
+  await db.prepare("INSERT INTO recipes (slug, title, author, image) VALUES ('origineel', 'Soep', 'Oma', ?)").bind(stored.path).run();
+  return stored.path;
+};
+
+describe('recipe-creation › The copy gets its own photo', () => {
+  test('the new recipe has a different photo path', async ({ db, photos }) => {
+    const path = await withPhoto(db, photos);
+    await submit(db, { title: 'Soep kopie', author: 'Oma', image: path }, photos);
+    const image = (await getRecipe(db, 'soep-kopie'))?.image;
+    assert.ok(image);
+    assert.notEqual(image, path);
+  });
+
+  test('the copy has the same content', async ({ db, photos }) => {
+    const path = await withPhoto(db, photos);
+    await submit(db, { title: 'Soep kopie', author: 'Oma', image: path }, photos);
+    const copy = await getPhoto(photos, (await getRecipe(db, 'soep-kopie'))!.image!.slice('/foto/'.length));
+    assert.deepEqual([...new Uint8Array((await copy?.arrayBuffer()) ?? [])], [0xff, 0xd8, 0xff, 0xe0, 1, 2, 3]);
+  });
+
+  test('the original keeps its photo', async ({ db, photos }) => {
+    const path = await withPhoto(db, photos);
+    await submit(db, { title: 'Soep kopie', author: 'Oma', image: path }, photos);
+    assert.equal((await getRecipe(db, 'origineel'))?.image, path);
+    assert.ok(await getPhoto(photos, path.slice('/foto/'.length)));
+  });
+
+  test('a photo no recipe uses yet is kept as it is', async ({ db, photos }) => {
+    const stored = await storePhoto(photos, new Uint8Array([0xff, 0xd8, 0xff, 0xe0]).buffer);
+    assert.ok('path' in stored);
+    await submit(db, { title: 'Eigen foto', author: 'Oma', image: stored.path }, photos);
+    assert.equal((await getRecipe(db, 'eigen-foto'))?.image, stored.path);
+  });
+});
+
+describe('recipe-creation › Deleting the original keeps the copy photo', () => {
+  test('the copy still has its photo', async ({ db, photos }) => {
+    const path = await withPhoto(db, photos);
+    await submit(db, { title: 'Soep kopie', author: 'Oma', image: path }, photos);
+    await deleteRecipe(db, 'origineel');
+    await deletePhoto(photos, path);
+    assert.ok(await getPhoto(photos, (await getRecipe(db, 'soep-kopie'))!.image!.slice('/foto/'.length)));
   });
 });
 

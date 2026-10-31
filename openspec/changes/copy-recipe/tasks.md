@@ -3,7 +3,7 @@
 ## 1. Seed and photo
 
 - [x] 1.1 Move the stored-recipe-to-seed mapping out of `EditRecipePageRoute.tsx` into one function in `routes/edit-recipe/lib/` used by both loaders; verify the edit page tests pass unchanged and add a unit test for the mapping
-- [ ] 1.2 Add `copyPhoto(bucket, path)` to `shared/photos.server.ts` (new uuid name, same content and type) and use it in the new-recipe action when the accepted image path is already used by another recipe; verify `photos.server.test.ts` and `NewRecipePageRoute.test.ts` cover "The copy gets its own photo" and "Deleting the original keeps the copy's photo"
+- [x] 1.2 Add `copyPhoto(bucket, path)` to `shared/photos.server.ts` (new uuid name, same content and type) and use it in the new-recipe action when the accepted image path is already used by another recipe; verify `photos.server.test.ts` and `NewRecipePageRoute.test.ts` cover "The copy gets its own photo" and "Deleting the original keeps the copy's photo"
 
 ## 2. The copy form
 

@@ -1,7 +1,7 @@
 import { data, redirect } from 'react-router';
 import { envContext, userEmailContext } from '~app/shared/context.server';
-import { acceptImage } from '~app/shared/photos.server';
-import { chooseSeal, createRecipe, listAuthors } from '~app/shared/recipes.server';
+import { acceptImage, copyPhoto } from '~app/shared/photos.server';
+import { chooseSeal, createRecipe, isImageUsed, listAuthors } from '~app/shared/recipes.server';
 import { getRules } from '~app/shared/rules.server';
 import { seals } from '~app/shared/seals';
 import { listManagedTags } from '~app/shared/tagManagement.server';
@@ -46,12 +46,16 @@ export async function action({ request, context }: Route.ActionArgs) {
     return data({ errors, values: { ...values, ingredients: lines, steps: stepLines, tags: tags ?? [] } }, { status: 400 });
 
   const fields = toRecipeFields(values);
-  const slug = await createRecipe(context.get(envContext).DB, {
+  const { DB, PHOTOS } = context.get(envContext);
+  let image = acceptImage(fields.image, null);
+  // A photo file belongs to one recipe: a copy gets its own file, and is saved without a photo when that fails.
+  if (image && (await isImageUsed(DB, image))) image = await copyPhoto(PHOTOS, image).catch(() => undefined);
+  const slug = await createRecipe(DB, {
     ...fields,
     ingredients,
     steps,
     tags,
-    image: acceptImage(fields.image, null),
+    image,
     seal: seals.find((s) => s === form.get('seal')),
     createdBy: context.get(userEmailContext),
   });
