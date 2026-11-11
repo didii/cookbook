@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createMemoryRouter, Outlet, RouterProvider, useLocation } from 'react-router';
-import { describe, test } from 'vitest';
+import { beforeEach, describe, test, vi } from 'vitest';
 import { fireEvent, precedes, render, screen } from '~testing/dom';
 import { RecipeActionsMenu } from './RecipeActionsMenu';
 
@@ -9,6 +9,9 @@ function Target() {
   const { state } = useLocation() as { state: { fresh?: boolean } | null };
   return <p data-testid="Test-fresh">{String(state?.fresh)}</p>;
 }
+
+const onShare = vi.fn();
+beforeEach(() => onShare.mockClear());
 
 // The menu sits in a layout route, so it stays mounted after a link is followed.
 const menu = () =>
@@ -19,7 +22,7 @@ const menu = () =>
           path: '/',
           element: (
             <>
-              <RecipeActionsMenu slug="appeltaart" />
+              <RecipeActionsMenu slug="appeltaart" onShare={onShare} />
               <p data-testid="Test-outside" />
               <Outlet />
             </>
@@ -95,10 +98,22 @@ describe('recipe-actions-menu › Kopieer is disabled', () => {
   });
 });
 
-describe('recipe-actions-menu › Deel is disabled', () => {
-  test('Deel is disabled', () => {
+describe('RecipeActionsMenu Deel', () => {
+  test('Deel is enabled', () => {
     open();
-    assert.equal(screen.getByTestId<HTMLButtonElement>('RecipeActionsMenu-share').disabled, true);
+    assert.equal(screen.getByTestId<HTMLButtonElement>('RecipeActionsMenu-share').disabled, false);
+  });
+
+  test('choosing Deel tells the caller', () => {
+    open();
+    fireEvent.click(screen.getByTestId('RecipeActionsMenu-share'));
+    assert.equal(onShare.mock.calls.length, 1);
+  });
+
+  test('choosing Deel closes the menu', () => {
+    open();
+    fireEvent.click(screen.getByTestId('RecipeActionsMenu-share'));
+    assert.equal(screen.queryByTestId('RecipeActionsMenu-panel'), null);
   });
 });
 

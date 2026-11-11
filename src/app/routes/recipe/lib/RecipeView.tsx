@@ -16,6 +16,7 @@ import { NoteSheet } from './notes/NoteSheet';
 import { useNote } from './notes/useNote';
 import { scaleIngredient, scaleText } from './scale/scale';
 import { ScaleControl } from './scale/ScaleControl';
+import { ShareDialog } from './share/ShareDialog';
 import { sourceLink } from './sourceLink';
 import { StepList } from './StepList';
 import { TabBar } from './tabs/TabBar';
@@ -31,6 +32,7 @@ type Props = { recipe: Omit<Recipe, 'steps'>; tile: number; steps: Step[]; liked
 
 export function RecipeView({ recipe: r, tile, steps, liked = false, note: savedNote = '' }: Props) {
   const [tab, setTab] = useState<TabId>('ingredients');
+  const [sharing, setSharing] = useState(false);
   // Lives here, not in the list, because both tabs stay mounted and cook mode reads it.
   const [ticked, setTicked] = useState<ReadonlySet<number>>(new Set());
 
@@ -142,7 +144,7 @@ export function RecipeView({ recipe: r, tile, steps, liked = false, note: savedN
           </Link>
           <div className="flex items-center gap-3.5">
             <LikeButton slug={r.slug} initialLiked={liked} />
-            <RecipeActionsMenu slug={r.slug} />
+            <RecipeActionsMenu slug={r.slug} onShare={() => setSharing(true)} />
           </div>
         </div>
         <h1 data-testid="RecipeView-title" className="text-[clamp(2rem,6vw,3.5rem)] leading-[1.05] font-black tracking-[-0.03em] text-balance">
@@ -218,6 +220,7 @@ export function RecipeView({ recipe: r, tile, steps, liked = false, note: savedN
           </section>
         </div>
         <NoteSheet note={note} />
+        {sharing && <ShareDialog slug={r.slug} onClose={() => setSharing(false)} />}
       </main>
     </TimersContext>
   );
